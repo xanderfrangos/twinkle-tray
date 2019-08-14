@@ -56,7 +56,10 @@ export default class Monitor extends React.Component {
           <div className="title">{this.state.name}</div>
         </div>
         <div className="input--range">
-          <input type="range" min="0" max="100" value={this.state.level} onChange={this.handleChange} onWheel={this.handleWheel} className="range" />
+          <div className="rangeGroup">
+            <input type="range" min="0" max="100" value={this.state.level} data-percent={this.state.level + "%"} onChange={this.handleChange} onWheel={this.handleWheel} className="range" />
+            <div className="progress" style={{transform: "scaleX(" + (this.state.level * 0.01) + ")"}}></div>
+          </div>
           <input type="number" min="0" max="100" value={this.state.level} onChange={this.handleChange} onWheel={this.handleWheel} className="val" />
         </div>
       </div>

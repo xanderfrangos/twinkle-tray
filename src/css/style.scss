@@ -116,9 +116,28 @@ body {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    position: relative;
+
+    .progress {
+        background: var(--system-accent-color);
+        height: 2px;
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        margin-top: -1px;
+        will-change: transform;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+    }
+
+    .rangeGroup {
+        flex: 2;
+        position: relative;
+    }
 
     .range {
-        flex: 2;
+        
         display: block;
         appearance: none;
         width: 100%;
@@ -152,6 +171,8 @@ body {
             background: var(--system-accent-color);
             cursor: pointer;
             margin-top: -13px;
+            z-index: 3;
+            position: relative;
         }
 
         &::-webkit-slider-runnable-track {

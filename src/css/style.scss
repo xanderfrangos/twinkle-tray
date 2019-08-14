@@ -52,6 +52,7 @@ body {
 #root {
     background: var(--tray-background);
     border: 1px solid var(--tray-border);
+    border-width: 1px 0px 0px 1px;
     color: var(--tray-text);
     font-family: 'Segoe UI';
     width: 100vw;

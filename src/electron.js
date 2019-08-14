@@ -1,8 +1,6 @@
 const electron = require("electron");
-const app = electron.app;
-const ipc = require('electron').ipcMain
 const path = require('path');
-const { systemPreferences, Menu, Tray, BrowserWindow } = require('electron')
+const { systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 
@@ -12,6 +10,11 @@ var WmiClient = require('wmi-client');
 let monitors = []
 let mainWindow;
 let tray = null
+
+const panelSize = {
+  width: 356,
+  height: 500
+}
 
 var wmi = new WmiClient({
   host: 'localhost',
@@ -139,7 +142,7 @@ refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
 //
 //
 
-ipc.on('request-colors', () => {
+ipcMain.on('request-colors', () => {
   mainWindow.webContents.send('update-colors', {
     accent: "#" + systemPreferences.getAccentColor().substr(0, 6),
     darkMode: systemPreferences.isDarkMode()
@@ -147,7 +150,7 @@ ipc.on('request-colors', () => {
 })
 
 
-ipc.on('update-brightness', function (event, data) {
+ipcMain.on('update-brightness', function (event, data) {
   const monitor = monitors[data.index]
 
   try {
@@ -164,7 +167,7 @@ ipc.on('update-brightness', function (event, data) {
 
 })
 
-ipc.on('request-monitors', function (event, arg) {
+ipcMain.on('request-monitors', function (event, arg) {
   refreshMonitors()
 })
 
@@ -185,10 +188,10 @@ function createPanel() {
   })
 
   mainWindow = new BrowserWindow({
-    width: 356,
-    height: 230,
-    x: externalDisplay.workArea.width - 356,
-    y: externalDisplay.workArea.height - 230,
+    width: panelSize.width,
+    height: panelSize.height,
+    x: externalDisplay.workArea.width - panelSize.width,
+    y: externalDisplay.workArea.height - panelSize.height,
     backgroundColor: "#00000000",
     frame: false,
     transparent: true,
@@ -209,7 +212,9 @@ function createPanel() {
 
   mainWindow.on("closed", () => (mainWindow = null));
 
-  createTray()
+  mainWindow.webContents.once('dom-ready', () => {
+    createTray()
+  })
 }
 
 
@@ -223,6 +228,11 @@ app.on("activate", () => {
   if (mainWindow === null) {
     createPanel();
   }
+
+  app.on('quit', () => {
+    tray.destroy()
+  })
+
 });
 
 
@@ -236,6 +246,7 @@ app.on("activate", () => {
 function createTray() {
   tray = new Tray(path.join(__dirname, 'assets/logo.png'))
   const contextMenu = Menu.buildFromTemplate([
+    { label: 'Settings', type: 'normal', click: quitApp },
     { label: 'Quit', type: 'normal', click: quitApp }
   ])
   tray.setToolTip('Twinkle Tray')
@@ -249,6 +260,7 @@ function quitApp() {
 
 function toggleTray() {
   refreshMonitors()
+  mainWindow.setBounds({y: tray.getBounds().y - panelSize.height})
   mainWindow.webContents.send("tray-clicked")
   mainWindow.focus()
 }

@@ -138,7 +138,6 @@ body {
     }
 
     .range {
-        
         display: block;
         appearance: none;
         width: 100%;
@@ -163,15 +162,14 @@ body {
         }
 
         &::-webkit-slider-thumb {
-
             -webkit-appearance: none;
-            height: 26px;
-            width: 9px;
+            height: 24px;
+            width: 8px;
             box-sizing: content-box;
             border-radius: 20px;
             background: var(--system-accent-color);
             cursor: pointer;
-            margin-top: -13px;
+            margin-top: -12px;
             z-index: 3;
             position: relative;
         }

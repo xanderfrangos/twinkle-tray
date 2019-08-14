@@ -5,7 +5,12 @@ const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 
 const ddcci = require("@hensm/ddcci");
-var WmiClient = require('wmi-client');
+if(isDev) {
+  var WmiClient = require('wmi-client');
+} else {
+  var WmiClient = require(path.join(app.getAppPath(), '../app.asar.unpacked/node_modules/wmi-client'));
+}
+
 
 let monitors = []
 let mainWindow;

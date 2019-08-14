@@ -129,6 +129,7 @@ body {
         will-change: transform;
         transform: scaleX(0);
         transform-origin: 0 50%;
+        pointer-events: none;
     }
 
     .rangeGroup {

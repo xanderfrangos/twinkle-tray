@@ -41,7 +41,8 @@
     ],
     "win": {
       "target": "nsis",
-      "artifactName":  "${productName} v${version}.${ext}"
+      "artifactName":  "${productName} v${version}.${ext}",
+      "icon": "src/assets/logo.ico"
     }
   },
   "devDependencies": {

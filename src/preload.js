@@ -76,7 +76,7 @@ browser.on('blur', () => {
         setPanelVisibility(false)
     } else {
         // Keep interactive if devTools open
-        browser.focus()
+        browser.moveTop()
     }
 })
 

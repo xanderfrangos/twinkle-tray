@@ -50,7 +50,9 @@ refreshMonitors = async () => {
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
-        type: 'ddcci'
+        type: 'ddcci',
+        min: 0,
+        max: 1
       })
     } catch {
 
@@ -199,6 +201,7 @@ function createPanel() {
     y: externalDisplay.workArea.height - panelSize.height,
     backgroundColor: "#00000000",
     frame: false,
+    show: false,
     transparent: true,
     skipTaskbar: true,
     resizable: false,
@@ -220,6 +223,11 @@ function createPanel() {
   mainWindow.webContents.once('dom-ready', () => {
     createTray()
   })
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+  })
+
 }
 
 

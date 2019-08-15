@@ -97,6 +97,14 @@ body {
 
         div {
             cursor: pointer;
+            opacity: 0.7;
+            &:hover {
+                opacity: 1;
+            }
+            &[data-active="true"] {
+                color: var(--system-accent-color);
+                opacity: 1;
+            }
         }
 
         div+div {

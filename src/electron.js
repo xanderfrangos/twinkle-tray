@@ -52,7 +52,7 @@ refreshMonitors = async () => {
         brightness: ddcci.getBrightness(monitor),
         type: 'ddcci',
         min: 0,
-        max: 1
+        max: 100
       })
     } catch {
 

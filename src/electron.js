@@ -257,7 +257,7 @@ app.on("activate", () => {
 //
 
 function createTray() {
-  tray = new Tray(path.join(__dirname, 'assets/icon.png'))
+  tray = new Tray(path.join(__dirname, 'assets/icon.ico'))
   const contextMenu = Menu.buildFromTemplate([
     //{ label: 'Settings', type: 'normal', click: quitApp },
     { label: 'Quit', type: 'normal', click: quitApp }

@@ -30,7 +30,7 @@ export default class Titlebar extends React.Component {
         <div className="title">Adjust Brightness</div>
         <div className="icons">
           { this.getLinkIcon() }
-          <div title="Settings" className="settings">&#xE713;</div>
+          <div style={{display: "none"}} title="Settings" className="settings">&#xE713;</div>
         </div>
       </div>
     );

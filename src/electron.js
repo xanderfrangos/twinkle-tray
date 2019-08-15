@@ -259,7 +259,7 @@ app.on("activate", () => {
 function createTray() {
   tray = new Tray(path.join(__dirname, 'assets/logo.png'))
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Settings', type: 'normal', click: quitApp },
+    //{ label: 'Settings', type: 'normal', click: quitApp },
     { label: 'Quit', type: 'normal', click: quitApp }
   ])
   tray.setToolTip('Twinkle Tray')

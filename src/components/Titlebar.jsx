@@ -10,7 +10,7 @@ export default class Titlebar extends React.Component {
   }
 
   getLinkIcon = () => {
-    if(window.allMonitors && window.allMonitors.length > 0) {
+    if(window.allMonitors && window.allMonitors.length > 1) {
       return (
       <div title="Link levels" data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
       )

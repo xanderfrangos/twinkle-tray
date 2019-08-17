@@ -4,12 +4,12 @@
   "description": "",
   "main": "src/electron.js",
   "scripts": {
-    "parcel-dev": "parcel -p 3000 index.html --out-dir build",
-    "parcel-build": "parcel build index.html --out-dir build --public-url ./",
+    "parcel-dev": "parcel *.html --port 3000 --out-dir build",
+    "parcel-build": "parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting",
     "electron-build": "electron-builder",
     "clean-build": "del build/ .cache dist/",
     "build": "npm clean-build && npm react-build && npm electron-build",
-    "start": "wait-on http://localhost:3000 && electron . "
+    "start": "wait-on http://localhost:3000/index.html && electron . "
   },
   "keywords": [
     "electron",
@@ -41,7 +41,7 @@
     ],
     "win": {
       "target": "nsis",
-      "artifactName":  "${productName} v${version}.${ext}",
+      "artifactName": "${productName} v${version}.${ext}",
       "icon": "src/assets/logo.ico"
     }
   },

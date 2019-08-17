@@ -40,6 +40,10 @@ function updateBrightness(index, level) {
     })
 }
 
+function openSettings() {
+    ipc.send("open-settings")
+}
+
 // Tray icon clicked
 ipc.on('tray-clicked', () => {
     setPanelVisibility(true)
@@ -83,6 +87,7 @@ browser.on('blur', () => {
 
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
+window.openSettings = openSettings
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

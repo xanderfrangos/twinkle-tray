@@ -178,6 +178,8 @@ ipcMain.on('request-monitors', function (event, arg) {
   refreshMonitors()
 })
 
+ipcMain.on('open-settings', createSettings)
+
 
 
 
@@ -214,7 +216,7 @@ function createPanel() {
 
   mainWindow.loadURL(
     isDev
-      ? "http://localhost:3000"
+      ? "http://localhost:3000/index.html"
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
 
@@ -259,7 +261,7 @@ app.on("activate", () => {
 function createTray() {
   tray = new Tray(path.join(__dirname, 'assets/icon.ico'))
   const contextMenu = Menu.buildFromTemplate([
-    //{ label: 'Settings', type: 'normal', click: quitApp },
+    { label: 'Settings', type: 'normal', click: createSettings },
     { label: 'Quit', type: 'normal', click: quitApp }
   ])
   tray.setToolTip('Twinkle Tray')
@@ -276,4 +278,38 @@ function toggleTray() {
   mainWindow.setBounds({y: tray.getBounds().y - panelSize.height})
   mainWindow.webContents.send("tray-clicked")
   mainWindow.focus()
+}
+
+
+//
+//
+//    Settings Window
+//
+//
+
+let settingsWindow
+function createSettings() {
+
+  settingsWindow = new BrowserWindow({
+    width: 400,
+    height: 600,
+    show: false,
+    maximizable: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'settings-preload.js')
+    }
+  });
+
+  settingsWindow.loadURL(
+    isDev
+      ? "http://localhost:3000/settings.html"
+      : `file://${path.join(__dirname, "../build/settings.html")}`
+  );
+
+  settingsWindow.on("closed", () => (settingsWindow = null));
+
+  settingsWindow.once('ready-to-show', () => {
+    settingsWindow.show()
+  })
+
 }

@@ -26,6 +26,11 @@ export default class App extends PureComponent {
         monitors: window.allMonitors
       })
     })
+    window.addEventListener("namessUpdated", (e) => {
+      this.setState({
+        monitors: window.allMonitors
+      })
+    })
   }
 
   render() {

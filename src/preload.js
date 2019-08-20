@@ -91,6 +91,7 @@ window.openSettings = openSettings
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
+window.settings = {}
 
 const monitorsUpdated = new Event("monitorsUpdated")
 const namesUpdated = new Event("namesUpdated")

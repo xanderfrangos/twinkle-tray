@@ -290,6 +290,12 @@ function toggleTray() {
 let settingsWindow
 function createSettings() {
 
+  if(settingsWindow != null) {
+    // Don't make window if already open
+    settingsWindow.focus()
+    return false;
+  }
+
   settingsWindow = new BrowserWindow({
     width: 400,
     height: 600,

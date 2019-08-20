@@ -9,23 +9,38 @@
     --slider-track-color-focus: #A5A5A5;
 }
 
+
+@mixin light-mode {
+    --tray-background: #e4e4e4;
+    --tray-text: black;
+    --tray-border: #aaaaaa;
+}
+
+@mixin dark-mode {
+    --tray-background: #1f1f1f;
+    --tray-text: white;
+    --tray-border: #434343;
+}
+
 // Light mode (default)
 @media screen and (prefers-color-scheme: light),
 screen and (prefers-color-scheme: no-preference) {
     :root {
-        --tray-background: #e4e4e4;
-        --tray-text: black;
-        --tray-border: #aaaaaa;
+        @include light-mode()
     }
 }
 
 // Dark Mode
 @media screen and (prefers-color-scheme: dark) {
     :root {
-        --tray-background: #1f1f1f;
-        --tray-text: white;
-        --tray-border: #434343;
+        @include dark-mode()
     }
+}
+.window-base[data-theme="light"] {
+    @include light-mode()
+}
+.window-base[data-theme="dark"] {
+    @include dark-mode()
 }
 
 

@@ -35,7 +35,7 @@ export default class App extends PureComponent {
 
   render() {
     return (
-      <div>
+      <div className="window-base" data-theme={window.settings.theme || "default"}>
         <Titlebar />
         { this.getMonitors() }
       </div>

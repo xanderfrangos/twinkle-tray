@@ -1,8 +1,7 @@
 import React, { PureComponent, useState } from "react";
-import Monitor from "./components/Monitor";
-import Titlebar from "./components/Titlebar";
+import Monitor from "./Monitor";
 
-export default class App extends PureComponent {
+export default class BrightnessPanel extends PureComponent {
   getMonitors = () => {
     if(this.state.monitors.length == 0) {
       return (<div className="no-displays-message">No displays found.</div>)
@@ -13,10 +12,26 @@ export default class App extends PureComponent {
     }
   }
 
+  toggleLinkedLevels = () => {
+    window.linkedLevelsActive = (window.linkedLevelsActive ? false : true)
+    this.setState({
+      linkedLevelsActive: window.linkedLevelsActive
+    })
+  }
+
+  getLinkIcon = () => {
+    if(window.allMonitors && window.allMonitors.length > 1) {
+      return (
+      <div title="Link levels" data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
+      )
+    }
+  }
+
   constructor(props) {
     super(props);
     this.state = {
-      monitors: []
+      monitors: [],
+      linkedLevelsActive: window.linkedLevelsActive
     }
 }
 
@@ -25,11 +40,13 @@ export default class App extends PureComponent {
       this.setState({
         monitors: window.allMonitors
       })
+      this.forceUpdate()
     })
     window.addEventListener("namessUpdated", (e) => {
       this.setState({
         monitors: window.allMonitors
       })
+      this.forceUpdate()
     })
     window.addEventListener("settingsUpdated", (e) => {
       this.forceUpdate()
@@ -39,7 +56,13 @@ export default class App extends PureComponent {
   render() {
     return (
       <div className="window-base" data-theme={window.settings.theme || "default"}>
-        <Titlebar />
+        <div className="titlebar">
+        <div className="title">Adjust Brightness</div>
+        <div className="icons">
+          { this.getLinkIcon() }
+          <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
+        </div>
+      </div>
         { this.getMonitors() }
       </div>
     );

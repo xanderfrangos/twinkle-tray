@@ -25,6 +25,10 @@ function requestSettings() {
     ipc.send('request-settings')
 }
 
+function openURL(url) {
+    ipc.send('open-url', url)
+}
+
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
     window.allMonitors = monitors
@@ -43,6 +47,7 @@ ipc.on("names-updated", (e, monitors) => {
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
     window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.accent = data.accent
 })
 
 ipc.on('settings-updated', (event, settings) => {
@@ -63,8 +68,12 @@ window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
 window.settings = {}
 window.thisWindow = browser
+window.accent = "cyan"
+
+window.version = 'v' + remote.app.getVersion()

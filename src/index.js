@@ -1,5 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import BrightnessPanel from "./components/BrightnessPanel";
 
-ReactDOM.render(<App monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
+ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));

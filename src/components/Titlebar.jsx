@@ -2,38 +2,28 @@ import React from "react";
 
 export default class Titlebar extends React.Component {
 
-  toggleLinkedLevels = () => {
-    window.linkedLevelsActive = (window.linkedLevelsActive ? false : true)
-    this.setState({
-      linkedLevelsActive: window.linkedLevelsActive
-    })
-  }
-
-  getLinkIcon = () => {
-    if(window.allMonitors && window.allMonitors.length > 1) {
-      return (
-      <div title="Link levels" data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
-      )
-    }
-  }
-
   constructor(props) {
     super(props)
     this.state = {
-      linkedLevelsActive: window.linkedLevelsActive
+      active: false
     }
   }
 
-
-
-
   render() {
     return (
-      <div className="titlebar">
-        <div className="title">Adjust Brightness</div>
-        <div className="icons">
-          { this.getLinkIcon() }
-          <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
+      <div className="window-titlebar">
+        <div className="titlebar-drag-region"></div>
+        <div className="window-title">{this.props.title || ""}</div>
+        <div className="window-controls-container">
+          <div className="window-icon-bg" onClick={() => { window.thisWindow.minimize() }}>
+            <div className="window-icon window-minimize"></div>
+          </div>
+          <div className="window-icon-bg" onClick={() => { window.thisWindow.maximize() }}>
+            <div className="window-icon window-max-restore window-maximize"></div>
+          </div>
+          <div className="window-icon-bg window-close-bg" onClick={() => { window.thisWindow.close() }}>
+            <div className="window-icon window-close"></div>
+          </div>
         </div>
       </div>
     );

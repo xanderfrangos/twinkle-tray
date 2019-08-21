@@ -241,6 +241,10 @@ ipcMain.on('request-monitors', function (event, arg) {
 ipcMain.on('open-settings', createSettings)
 
 
+ipcMain.on('open-url', (event, url) => {
+  require("electron").shell.openExternal(url)
+})
+
 
 
 //
@@ -359,12 +363,15 @@ function createSettings() {
   }
 
   settingsWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
+    width: 450,
+    height: 500,
+    minHeight: 500,
+    minWidth: 400,
     show: false,
-    maximizable: false,
-    resizable: false,
-    minimizable: false,
+    maximizable: true,
+    resizable: true,
+    minimizable: true,
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js')
     }

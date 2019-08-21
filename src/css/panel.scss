@@ -1,0 +1,235 @@
+
+//
+// Defaults
+//
+
+html,
+body {
+    background: transparent;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    user-select: none;
+}
+
+
+
+//
+// Panel
+//
+
+#root {
+
+    & > .window-base {
+        background: var(--tray-background);
+        border: 1px solid var(--tray-border);
+        border-width: 1px 0px 0px 1px;
+        color: var(--tray-text);
+        font-family: 'Segoe UI';
+        width: 100vw;
+        box-sizing: border-box;
+        padding: 15px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
+        transform: translateY(100%);
+        will-change: transform, opacity;
+        pointer-events: none;
+    }
+
+    &[data-visible="true"] > .window-base {
+        transform: translateY(0%);
+        opacity: 1;
+        pointer-events: all;
+    }
+
+}
+
+
+//
+// Titlebar
+//
+
+.titlebar {
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+    margin-bottom: 20px;
+
+    .title {
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .icons {
+        display: flex;
+        font-family: "Segoe MDL2 Assets";
+        font-size: 22px;
+
+        div {
+            cursor: pointer;
+            opacity: 0.7;
+            &:hover {
+                opacity: 1;
+            }
+            &[data-active="true"] {
+                color: var(--system-accent-color);
+                opacity: 1;
+            }
+        }
+
+        div+div {
+            margin-left: 20px;
+        }
+    }
+}
+
+
+
+
+//
+// Inputs
+//
+
+.input--range {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: relative;
+
+    .progress {
+        background: var(--system-accent-color);
+        height: 2px;
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        margin-top: -1px;
+        will-change: transform;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        pointer-events: none;
+    }
+
+    .rangeGroup {
+        flex: 2;
+        position: relative;
+    }
+
+    .range {
+        display: block;
+        appearance: none;
+        width: 100%;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin-right: 15px;
+        -webkit-appearance: none;
+
+        &:hover {
+            &::-webkit-slider-thumb {
+                background: white;
+            }
+        }
+
+        &::-webkit-progress-value {
+            background-color: var(--system-accent-color);
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 8px;
+            box-sizing: content-box;
+            border-radius: 20px;
+            background: var(--system-accent-color);
+            cursor: pointer;
+            margin-top: -12px;
+            z-index: 3;
+            position: relative;
+        }
+
+        &::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 22px;
+            cursor: pointer;
+            background: var(--slider-track-color);
+            border-radius: 0px;
+            transition: background 0.1s;
+            border: 10px solid var(--tray-background);
+            border-left: 0;
+            border-right: 0;
+            box-sizing: border-box;
+
+        }
+
+        &:focus::-webkit-slider-runnable-track {
+            background: var(--slider-track-color-focus);
+        }
+    }
+
+    .val {
+        width: 52px;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        background: none;
+        outline: none;
+        border: none;
+        font-size: 22px;
+        text-align: center;
+        color: var(--tray-text);
+        font-family: "Segoe UI";
+        margin-right: -10px;
+        margin-left: 5px;
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+    }
+}
+
+
+//
+// Monitors
+//
+
+.no-displays-message {
+    margin-top: 13px;
+}
+
+.monitor-item {
+
+    &+.monitor-item {
+        margin-top: 20px;
+    }
+
+    .name-row {
+        display: flex;
+        justify-content: flex-start;
+        width: 100%;
+
+        .title {
+            font-size: 14px;
+        }
+
+        .icon {
+            font-family: "Segoe MDL2 Assets";
+            font-size: 22px;
+            margin-right: 10px;
+        }
+    }
+}
+

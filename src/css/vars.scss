@@ -1,0 +1,72 @@
+//
+// Variables
+//
+
+:root {
+    --system-accent-color: white;
+
+    --slider-track-color: #727272;
+    --slider-track-color-focus: #A5A5A5;
+}
+
+
+@mixin light-mode {
+    --tray-background: #e4e4e4;
+    --tray-text: black;
+    --tray-border: #aaaaaa;
+
+    --page-background: #ffffff;
+    --page-text: #000;
+    --page-text-mid: #333;
+
+    --window-border: #ddd;
+
+    --titlebar-icon: #888;
+    --titlebar-icon-hover: #000;
+
+    --input-border: #555;
+    --input-border-hover: #000;
+    --input-active-background: #ddd;
+}
+
+@mixin dark-mode {
+    --tray-background: #1f1f1f;
+    --tray-text: white;
+    --tray-border: #434343;
+
+    --page-background: #030303;
+    --page-text: #fff;
+    --page-text-mid: #bbb;
+    
+    --window-border: #222;
+
+    --titlebar-icon: #888;
+    --titlebar-icon-hover: #fff;
+
+    --input-border: #6f6f6f;
+    --input-border-hover: #fff;
+    --input-active-background: #444;
+
+
+}
+
+// Light mode (default)
+@media screen and (prefers-color-scheme: light),
+screen and (prefers-color-scheme: no-preference) {
+    :root {
+        @include light-mode()
+    }
+}
+
+// Dark Mode
+@media screen and (prefers-color-scheme: dark) {
+    :root {
+        @include dark-mode()
+    }
+}
+.window-base[data-theme="light"] {
+    @include light-mode()
+}
+.window-base[data-theme="dark"] {
+    @include dark-mode()
+}

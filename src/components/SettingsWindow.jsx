@@ -63,7 +63,7 @@ export default class SettingsWindow extends PureComponent {
                     <label>Launch at startup</label>
                     <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" id="theme" />
                     <label>App Theme</label>
-                    <select value={this.state.theme} onChange={this.themeChanged}>
+                    <select value={window.settings.theme} onChange={this.themeChanged}>
                         <option value="default">System Preference (Default)</option>
                         <option value="dark">Dark Mode</option>
                         <option value="light">Light Mode</option>

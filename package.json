@@ -33,6 +33,7 @@
     "files": [
       "src/electron.js",
       "src/preload.js",
+      "src/settings-preload.js",
       "src/assets/*",
       "build/**/*"
     ],

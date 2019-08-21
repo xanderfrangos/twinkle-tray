@@ -39,7 +39,8 @@ let settings = {}
 try {
   if (fs.existsSync(settingsPath)) {
     settings = JSON.parse(fs.readFileSync(settingsPath))
-    app.setLoginItemSettings({openAtLogin: (settings.openAtLogin || false)})
+    if(!isDev)
+      app.setLoginItemSettings({openAtLogin: (settings.openAtLogin || false)})
   } else {
     fs.writeFileSync(settingsPath, JSON.stringify({}))
   }
@@ -54,7 +55,8 @@ function writeSettings(newSettings = {}) {
   sendToAllWindows('settings-updated', settings)
 
   // Update login setting
-  app.setLoginItemSettings({ openAtLogin: (settings.openAtLogin || false) })
+  if(!isDev)
+    app.setLoginItemSettings({ openAtLogin: (settings.openAtLogin || false) })
 
   // Save new settings
   try {
@@ -328,7 +330,7 @@ function createTray() {
     { label: 'Settings', type: 'normal', click: createSettings },
     { label: 'Quit', type: 'normal', click: quitApp }
   ])
-  tray.setToolTip('Twinkle Tray')
+  tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   tray.setContextMenu(contextMenu)
   tray.on("click", toggleTray)
 }

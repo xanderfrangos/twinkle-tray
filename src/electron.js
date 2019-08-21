@@ -34,7 +34,7 @@ var wmi = new WmiClient({
 //
 //
 
-const settingsPath = path.join(app.getPath("userData"), '\\settings.json')
+const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
 let settings = {}
 try {
   if (fs.existsSync(settingsPath)) {

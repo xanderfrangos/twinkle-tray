@@ -1,5 +1,6 @@
 const electron = require("electron");
 const path = require('path');
+const fs = require('fs')
 const { systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
@@ -26,6 +27,65 @@ var wmi = new WmiClient({
   namespace: '\\\\root\\WMI'
 });
 
+
+//
+//
+//    Settings init
+//
+//
+
+const settingsPath = path.join(app.getPath("userData"), '\\settings.json')
+let settings = {}
+try {
+  if (fs.existsSync(settingsPath)) {
+    settings = JSON.parse(fs.readFileSync(settingsPath))
+    app.setLoginItemSettings({openAtLogin: (settings.openAtLogin || false)})
+  } else {
+    fs.writeFileSync(settingsPath, JSON.stringify({}))
+  }
+  console.log('Settings loaded:', settings)
+} catch(e) {
+  console.error("Couldn't load settings", e)
+}
+
+
+function writeSettings(newSettings = {}) {
+  settings = Object.assign(settings, newSettings)
+  sendToAllWindows('settings-updated', settings)
+
+  // Update login setting
+  app.setLoginItemSettings({ openAtLogin: (settings.openAtLogin || false) })
+
+  // Save new settings
+  try {
+    fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) console.error(e)})
+  } catch(e) {
+    console.error("Couldn't save settings.", settingsPath, e)
+  }
+  
+}
+
+function getSettings() {
+  sendToAllWindows('settings-updated', settings)
+}
+
+
+function sendToAllWindows(eventName, data) {
+  if(mainWindow) {
+    mainWindow.webContents.send(eventName, data)
+  }
+  if(settingsWindow) {
+    settingsWindow.webContents.send(eventName, data)
+  }
+}
+
+ipcMain.on('send-settings', (event, newSettings) => {
+  writeSettings(newSettings)
+})
+
+ipcMain.on('request-settings', (event) => {
+  getSettings()
+})
 
 
 //
@@ -108,12 +168,12 @@ refreshMonitors = async () => {
   // Basic info acquired, send it off
 
   monitors = foundMonitors
-  mainWindow.webContents.send('monitors-updated', monitors)
+  sendToAllWindows('monitors-updated', monitors)
 
   // Get names
 
   refreshNames(() => {
-    mainWindow.webContents.send('names-updated', monitors)
+    sendToAllWindows('names-updated', monitors)
   })
 }
 
@@ -150,7 +210,7 @@ refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
 //
 
 ipcMain.on('request-colors', () => {
-  mainWindow.webContents.send('update-colors', {
+  sendToAllWindows('update-colors', {
     accent: "#" + systemPreferences.getAccentColor().substr(0, 6),
     darkMode: systemPreferences.isDarkMode()
   })
@@ -185,7 +245,7 @@ ipcMain.on('open-settings', createSettings)
 
 //
 //
-//    Initialize
+//    Initialize Panel
 //
 //
 
@@ -275,9 +335,11 @@ function quitApp() {
 
 function toggleTray() {
   refreshMonitors()
-  mainWindow.setBounds({y: tray.getBounds().y - panelSize.height})
-  mainWindow.webContents.send("tray-clicked")
-  mainWindow.focus()
+  if(mainWindow) {
+    mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
+    mainWindow.webContents.send("tray-clicked")
+    mainWindow.focus()
+  }
 }
 
 
@@ -301,6 +363,8 @@ function createSettings() {
     height: 600,
     show: false,
     maximizable: false,
+    resizable: false,
+    minimizable: false,
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js')
     }
@@ -319,3 +383,5 @@ function createSettings() {
   })
 
 }
+
+

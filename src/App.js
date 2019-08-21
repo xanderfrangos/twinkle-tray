@@ -31,6 +31,9 @@ export default class App extends PureComponent {
         monitors: window.allMonitors
       })
     })
+    window.addEventListener("settingsUpdated", (e) => {
+      this.forceUpdate()
+    })
   }
 
   render() {

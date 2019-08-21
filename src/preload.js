@@ -44,6 +44,14 @@ function openSettings() {
     ipc.send("open-settings")
 }
 
+function sendSettings(newSettings) {
+    ipc.send('send-settings', newSettings)
+}
+
+function requestSettings() {
+    ipc.send('request-settings')
+}
+
 // Tray icon clicked
 ipc.on('tray-clicked', () => {
     setPanelVisibility(true)
@@ -69,10 +77,18 @@ ipc.on('update-colors', (event, data) => {
     window.document.body.style.setProperty("--system-accent-color", data.accent)
 })
 
+ipc.on('settings-updated', (event, settings) => {
+    window.settings = settings
+    window.dispatchEvent(new CustomEvent('settingsUpdated', {
+        detail: settings
+    }))
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestMonitors()
     requestAccent()
+    requestSettings()
 })
 
 browser.on('blur', () => {
@@ -88,6 +104,8 @@ browser.on('blur', () => {
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.openSettings = openSettings
+window.sendSettings = sendSettings
+window.requestSettings = requestSettings
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

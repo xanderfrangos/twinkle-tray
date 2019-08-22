@@ -109,6 +109,7 @@ refreshMonitors = async () => {
       foundMonitors.push({
         name: `Display ${local + 1}`,
         id: monitor,
+        device: monitor,
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
@@ -138,6 +139,7 @@ refreshMonitors = async () => {
             out.push({
               name: `Display ${local + 1}`,
               id: monitor.InstanceName,
+              device: monitor.InstanceName,
               num: local,
               localID: local,
               brightness: monitor.CurrentBrightness,
@@ -196,6 +198,7 @@ refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
       for (knownMonitor of monitors) {
         if (knownMonitor.id == monitor[0]) {
           knownMonitor.name = monitor[1]
+          knownMonitor.device = monitor[2]
           break;
         }
       }

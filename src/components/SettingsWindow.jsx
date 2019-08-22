@@ -1,5 +1,6 @@
 import React, { PureComponent, useState } from "react";
 import Titlebar from './Titlebar'
+import Monitor from './SettingsMonitor'
 
 
 export default class SettingsWindow extends PureComponent {
@@ -9,11 +10,24 @@ export default class SettingsWindow extends PureComponent {
         super(props)
         this.state = {
             theme: 'default',
-            openAtLogin: false
+            openAtLogin: false,
+            monitors: []
         }
     }
 
     componentDidMount() {
+        window.addEventListener("monitorsUpdated", (e) => {
+            this.setState({
+              monitors: window.allMonitors
+            })
+            this.forceUpdate()
+          })
+          window.addEventListener("namessUpdated", (e) => {
+            this.setState({
+              monitors: window.allMonitors
+            })
+            this.forceUpdate()
+          })
         window.addEventListener("settingsUpdated", (e) => {
             this.forceUpdate()
         })
@@ -52,6 +66,17 @@ export default class SettingsWindow extends PureComponent {
             )
         }
     }
+
+
+    getMonitors = () => {
+        if(this.state.monitors == undefined || this.state.monitors.length == 0) {
+          return (<div className="no-displays-message">No displays found.</div>)
+        } else {
+          return this.state.monitors.map((monitor, index) => (
+            <Monitor key={index} monitorNum={index} name={monitor.name} level={monitor.brightness} lastUpdate={this.props.lastUpdate} />
+          ))
+        }
+      }
    
 
     render() {
@@ -69,9 +94,12 @@ export default class SettingsWindow extends PureComponent {
                         <option value="light">Light Mode</option>
                     </select>
                 </div>
-                <div className="pageSection" style={{display:'none'}}>
+                <div className="pageSection" style={{display:'block'}}>
                     <div className="sectionTitle">Monitors</div>
                     <p>Give monitors different names, or remap the min/max brightness so that the levels across all monitors are normalized.</p>
+                    
+                    { this.getMonitors() }
+                    
                     <div>
                         <label>Rename</label>
                         <input type="text" />

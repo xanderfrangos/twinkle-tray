@@ -1,0 +1,22 @@
+$break-down-tablet: 1168px;
+$break-down-mobile: 810px;
+$break-down-appnav: 900px;
+
+
+@mixin tablet {
+    @media (max-width: $break-down-tablet) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media (max-width: $break-down-mobile) {
+        @content;
+    }
+}
+
+@mixin appnav {
+    @media (max-width: $break-down-appnav) {
+        @content;
+    }
+}

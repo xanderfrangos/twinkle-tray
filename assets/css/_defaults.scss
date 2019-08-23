@@ -1,0 +1,313 @@
+clear, .clear {
+    &:after,
+    &:before {
+        content: ' ';
+        display: block;
+        clear: both;
+    }
+}
+
+html, body {
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #515151;
+    line-height: 1;
+    background: #ffffff;
+    
+    @include appnav {
+        font-size: 15px;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    @extend clear;
+}
+
+img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+}
+
+h1 {
+    color: white;
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: bold;
+    
+    @include tablet {
+        font-size: 28px;
+    }
+}
+
+a {
+    color: inherit;
+    transition: opacity 0.2s;
+    &:hover {
+        opacity: 0.75;
+    }
+    &:active {
+        opacity: 0.85;
+    }
+}
+
+main {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 35px;
+    
+    @include tablet {
+        position: static;
+        padding: 10px;
+    }
+    
+    img {
+        width: 172px;
+        height: 53px;
+        will-change: transform;
+        @include tablet {
+            margin: auto;
+        }
+    }
+    a {
+        display: block;
+        position: absolute;
+        top: 35px;
+        right: 35px;
+        color: white;
+        text-decoration: none;
+        font-size: 13px;
+        transition: opacity 0.2s;
+        
+        @include tablet {
+            position: static;
+            margin: 20px auto;
+            text-align: center;
+        }
+        
+        &:hover {
+            opacity: 0.75;
+        }
+        
+        span {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        svg {
+            margin-left: 14px;
+            fill: white;
+            width: 29px;
+            height: 29px;
+            display: inline-block;
+        }
+    }
+}
+
+.background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    background: url('../img/bg.jpg') center center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.foreground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    
+    @include tablet {
+        display: block;
+        position: relative;
+        height: auto;
+    }
+    
+    .inner {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 1080px; 
+        padding-left: 20px;
+        box-sizing: content-box;
+        justify-content: space-between;
+        
+        @include tablet {
+            max-width: 400px;
+            display: block;
+            box-sizing: border-box;
+            margin: auto;
+            padding: 12px;
+        }
+    }
+    
+    .text {
+        width: 60%;
+        padding-right: 35px;
+        text-align: center;
+        color: white;
+        
+        @include tablet {
+            width: 100%;
+            padding: 0;
+        }
+        
+        .logo {
+            width: 336px;
+            height: 89px;
+            padding-bottom: 20px;
+            display: block;
+            
+            @include tablet {
+                margin: 15px auto 0;
+                width: 210px;
+                height: auto;
+            }
+        }
+        p {
+            line-height: 24px;
+            font-size: 19px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            @include tablet {
+                font-size: 15px;
+                line-height: 19px;
+            }
+        }
+        .buttons {
+            font-weight: bold;
+            a {
+                background: rgba(255, 255, 255, 0.3);
+                border: 2px solid rgba(255, 255, 255, 0);
+                color: white;
+                padding: 10px 20px;;
+                font-size: 13px;
+                font-weight: 400;
+                display: inline-block;
+                text-align: center;
+                transition: background 0.1s;
+                @include tablet {
+                    width: 100%;
+                }
+                
+                &:hover {
+                    border-color: rgba(255, 255, 255, 0.3);
+                    opacity: 1;
+                }
+                &:active {
+                    background: rgba(255, 255, 255, 0.5);
+                    opacity: 1;
+                }
+                
+                span {
+                    display: inline-block;
+                    vertical-align: middle;
+                    line-height: 1;
+                    & + span {
+                        padding-left: 10px;
+                    }
+                }
+                svg {
+                    width: 22px;
+                    height: 21px;
+                    fill: white;
+                }
+                
+                & + a {
+                    margin-left: 10px;
+                    @include tablet {
+                        margin: 10px 0 0 0;
+                    }
+                }
+            }
+        }
+    }
+    .download-info {
+        padding-top: 20px;
+        p {
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+        }
+    }
+    .screenshot {
+        width: 54%;
+        margin-left: auto;
+        
+        img {
+            display: block;
+            margin: auto;
+            max-width: 356px;
+        }
+        
+        @include tablet {
+            display: none;
+        }
+    }
+    .mob-screenshot {
+        display: none;
+        max-width: 300px;
+        height: auto;
+        margin: auto;
+        
+        @include tablet {
+            display: block;
+        }
+    }
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    
+    @include tablet {
+        position: relative;
+        display: block;
+        text-align: center;
+        padding: 20px 0;
+    }
+    
+    
+    & > div {
+        padding: 35px;
+        font-size: 12px;
+        @include tablet {
+            padding: 5px;
+        }
+    }
+    .left {
+        color: rgba(255,255,255,0.5);
+    }
+    .right {
+        color: rgba(255,255,255,0.5);
+    }
+}

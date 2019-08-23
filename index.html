@@ -25,11 +25,7 @@ layout: compress
     </script>
     <script>
         var git = {
-            'latest_release': {
-                {
-                    site.github.latest_release.assets | jsonify
-                }
-            }
+            'latest_release': {{ site.github.latest_release.assets | jsonify }}
         }
     </script>
     <main>

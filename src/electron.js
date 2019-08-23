@@ -102,7 +102,7 @@ refreshMonitors = async () => {
   let local = 0
 
   // First, let's get DDC/CI monitors. They're easy.
-
+  ddcci._refresh()
   const ddcciMonitors = ddcci.getMonitorList()
   for (monitor of ddcciMonitors) {
     try {

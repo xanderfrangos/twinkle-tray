@@ -45,7 +45,7 @@ export default class Monitor extends React.Component {
   }
 
   sendLinkedLevel = (level) => {
-    if(window.linkedLevelsActive == true) {
+    if(window.linkedLevelsActive && window.linkedLevelsActive == true) {
       window.dispatchEvent(new CustomEvent('linkedLevelsUpdated', {
         detail: {
           from: this.props.monitorNum,
@@ -90,7 +90,12 @@ export default class Monitor extends React.Component {
         this.setState({
           lastLevel: this.state.level
         })
-        window.updateBrightness(this.props.monitorNum, this.adjust(this.state.level, true) );
+        try {
+          window.updateBrightness(this.props.monitorNum, this.adjust(this.state.level, true) );
+        } catch (e) {
+          console.error("Could not update brightness")
+        }
+        
       }
     }, 250)
 

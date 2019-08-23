@@ -125,6 +125,13 @@ main {
     background: url('../img/bg.jpg') center center;
     background-size: cover;
     background-attachment: fixed;
+    opacity: 0.35;
+    animation: bgIn 2s;
+    @keyframes bgIn {
+        0% { opacity: 0; }
+        30% { opacity: 0; }
+        100% { opacity: 0.35; }
+    }
 }
 
 .foreground {

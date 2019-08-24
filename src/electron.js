@@ -260,16 +260,11 @@ ipcMain.on('open-url', (event, url) => {
 
 function createPanel() {
 
-  let displays = electron.screen.getAllDisplays()
-  let externalDisplay = displays.find((display) => {
-    return display.bounds.x == 0 || display.bounds.y == 0
-  })
-
   mainWindow = new BrowserWindow({
     width: panelSize.width,
     height: panelSize.height,
-    x: externalDisplay.workArea.width - panelSize.width,
-    y: externalDisplay.workArea.height - panelSize.height,
+    x: 0,
+    y: 0,
     backgroundColor: "#00000000",
     frame: false,
     show: false,
@@ -297,8 +292,23 @@ function createPanel() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
+    repositionPanel()
   })
 
+}
+
+function repositionPanel() {
+  let displays = electron.screen.getAllDisplays()
+  let externalDisplay = displays.find((display) => {
+    return display.bounds.x == 0 || display.bounds.y == 0
+  })
+
+  if (mainWindow) {
+    mainWindow.setBounds({
+      x: externalDisplay.workArea.width - panelSize.width,
+      y: externalDisplay.workArea.height - panelSize.height
+    })
+  }
 }
 
 
@@ -346,6 +356,7 @@ function toggleTray() {
   refreshMonitors()
   if(mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
+    repositionPanel()
     mainWindow.webContents.send("tray-clicked")
     mainWindow.focus()
   }
@@ -395,5 +406,3 @@ function createSettings() {
   })
 
 }
-
-

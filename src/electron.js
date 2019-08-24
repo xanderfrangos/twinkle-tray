@@ -250,6 +250,11 @@ ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)
 })
 
+ipcMain.on('panel-height', (event, height) => {
+  panelSize.height = height
+  repositionPanel()
+})
+
 
 
 //
@@ -299,16 +304,63 @@ function createPanel() {
 
 function repositionPanel() {
   let displays = electron.screen.getAllDisplays()
-  let externalDisplay = displays.find((display) => {
+  let primaryDisplay = displays.find((display) => {
     return display.bounds.x == 0 || display.bounds.y == 0
   })
 
+  const taskbar = taskbarPosition()
+  sendToAllWindows('taskbar', taskbar)
+
   if (mainWindow) {
-    mainWindow.setBounds({
-      x: externalDisplay.workArea.width - panelSize.width,
-      y: externalDisplay.workArea.height - panelSize.height
-    })
+    if(taskbar.position == "LEFT") {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: taskbar.gap,
+        y: primaryDisplay.workArea.height - panelSize.height
+      })
+    } else if(taskbar.position == "TOP") {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: primaryDisplay.workArea.width - panelSize.width,
+        y: taskbar.gap
+      })
+    } else {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: primaryDisplay.workArea.width - panelSize.width,
+        y: primaryDisplay.workArea.height - panelSize.height
+      })
+    }
   }
+}
+
+
+function taskbarPosition() {
+  let displays = electron.screen.getAllDisplays()
+  let primaryDisplay = displays.find((display) => {
+    return display.bounds.x == 0 || display.bounds.y == 0
+  })
+  const bounds = primaryDisplay.bounds
+  const workArea = primaryDisplay.workArea
+  let gap = 0
+  let position = "BOTTOM"
+  if(bounds.x < workArea.x) {
+    position = "LEFT"
+    gap = bounds.width - workArea.width
+  } else if( bounds.y < workArea.y) {
+    position = "TOP"
+    gap = bounds.height - workArea.height
+  } else if(bounds.width > workArea.width) {
+    position = "RIGHT"
+    gap = bounds.width - workArea.width
+  } else {
+    position = "BOTTOM"
+    gap = bounds.height - workArea.height
+  }
+  return { position, gap }
 }
 
 

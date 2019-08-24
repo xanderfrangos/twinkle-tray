@@ -1,4 +1,4 @@
-import React, { PureComponent, useState } from "react";
+import React, { PureComponent } from "react";
 import Slider from "./Slider";
 
 export default class BrightnessPanel extends PureComponent {
@@ -178,8 +178,6 @@ syncBrightness = () => {
 }
 
 
-
-
   constructor(props) {
     super(props);
     this.state = {
@@ -201,9 +199,13 @@ syncBrightness = () => {
 
   }
 
+  componentDidUpdate() {
+    window.sendHeight(window.document.getElementById("panel").offsetHeight)
+  }
+
   render() {
     return (
-      <div className="window-base" data-theme={window.settings.theme || "default"}>
+      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
         <div className="titlebar">
         <div className="title">Adjust Brightness</div>
         <div className="icons">

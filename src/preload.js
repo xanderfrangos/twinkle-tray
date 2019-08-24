@@ -52,6 +52,10 @@ function requestSettings() {
     ipc.send('request-settings')
 }
 
+function sendHeight(height) {
+    ipc.send('panel-height', height)
+}
+
 // Tray icon clicked
 ipc.on('tray-clicked', () => {
     setPanelVisibility(true)
@@ -110,6 +114,7 @@ window.requestMonitors = requestMonitors
 window.openSettings = openSettings
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.sendHeight = sendHeight
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

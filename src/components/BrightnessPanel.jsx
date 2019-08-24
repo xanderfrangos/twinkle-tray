@@ -125,12 +125,7 @@ recievedNames = (e) => {
 recievedSettings = (e) => {
   const settings = e.detail
   const linkedLevelsActive = (settings.linkedLevelsActive || false)
-  const remaps = {
-    "XB270HU": {
-      min: 7,
-      max: 80
-    }
-  }
+  const remaps = (settings.remaps || {})
   this.setState({
     linkedLevelsActive,
     remaps

@@ -13,7 +13,9 @@ export default class SettingsWindow extends PureComponent {
             theme: 'default',
             openAtLogin: false,
             monitors: [],
-            remaps: {}
+            remaps: {},
+            linkedLevelsActive: false,
+            updateInterval: 500
         }
         this.lastLevels = []
     }
@@ -21,10 +23,7 @@ export default class SettingsWindow extends PureComponent {
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("namesUpdated", this.recievedNames)
-
-        window.addEventListener("settingsUpdated", (e) => {
-            this.forceUpdate()
-        })
+        window.addEventListener("settingsUpdated", this.recievedSettings)
 
         fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => { response.json().then( (json) => {
             this.setState({
@@ -226,6 +225,21 @@ recievedMonitors = (e) => {
     }
     
     this.forceUpdate()
+  }
+
+  // Update settings
+recievedSettings = (e) => {
+    const settings = e.detail
+    const linkedLevelsActive = (settings.linkedLevelsActive || false)
+    const updateInterval = (settings.updateInterval || 500) * 1
+    const remaps = (settings.remaps || {})
+    this.setState({
+      linkedLevelsActive,
+      remaps,
+      updateInterval
+    }, () => {
+      this.forceUpdate()
+    })
   }
 
 

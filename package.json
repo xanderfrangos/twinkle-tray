@@ -8,7 +8,7 @@
     "parcel-build": "parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting",
     "electron-build": "electron-builder",
     "clean-build": "del build/ .cache dist/",
-    "build": "npm clean-build && npm react-build && npm electron-build",
+    "build": "npm run parcel-build && npm run electron-build",
     "start": "wait-on http://localhost:3000/index.html && electron . "
   },
   "keywords": [

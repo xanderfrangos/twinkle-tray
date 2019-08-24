@@ -251,23 +251,20 @@ recievedMonitors = (e) => {
                         <label>Brightness update rate</label>
                         <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
                         <select value={window.settings.updateInterval} onChange={this.updateIntervalChanged}>
-                            <option value="250">Fast (0.25s)</option>
-                            <option value="500">Normal (0.5s)</option>
-                            <option value="1000">Slow (1s)</option>
-                            <option value="2000">Very Slow (2s)</option>
+                            <option value="250">Fast (0.25 seconds)</option>
+                            <option value="500">Normal (0.5 seconds)</option>
+                            <option value="1000">Slow (1 second)</option>
+                            <option value="2000">Very Slow (2 seconds)</option>
                         </select>
                     </div>
                     <div className="pageSection">
                         <div className="sectionTitle">Normalize Brightness</div>
                         <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent.</p>
-                        <br />
-                        <a className="button" onClick={ () => {} }>Run normalization assistant</a>
-                        <br /><br />
                         <div style={{ maxWidth: "320px" }}>
                             { this.getMinMaxMonitors() }
                         </div> 
                     </div>
-                    <div className="pageSection" style={{display:'block'}}>
+                    <div className="pageSection" style={{display:'none'}}>
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
                         

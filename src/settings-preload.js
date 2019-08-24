@@ -81,5 +81,3 @@ window.thisWindow = browser
 window.accent = "cyan"
 
 window.version = 'v' + remote.app.getVersion()
-
-require('electron-react-devtools').install()

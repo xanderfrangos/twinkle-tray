@@ -60,7 +60,6 @@
     "cross-env": "5.2.0",
     "electron": "6.0.1",
     "electron-builder": "20.38.4",
-    "electron-react-devtools": "^0.5.3",
     "electron-rebuild": "^1.8.5",
     "parcel-bundler": "1.12.3",
     "sass": "^1.22.9",

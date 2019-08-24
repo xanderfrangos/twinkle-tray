@@ -61,7 +61,9 @@ ipc.on('tray-clicked', () => {
 ipc.on("monitors-updated", (e, monitors) => {
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
-    window.dispatchEvent(monitorsUpdated)
+    window.dispatchEvent(new CustomEvent('monitorsUpdated', {
+        detail: monitors
+    }))
 })
 
 // Monitor names updated
@@ -69,7 +71,9 @@ ipc.on("monitors-updated", (e, monitors) => {
 ipc.on("names-updated", (e, monitors) => {
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
-    window.dispatchEvent(namesUpdated)
+    window.dispatchEvent(new CustomEvent('namesUpdated', {
+        detail: monitors
+    }))
 })
 
 // Accent colors recieved
@@ -110,6 +114,3 @@ window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
 window.settings = {}
-
-const monitorsUpdated = new Event("monitorsUpdated")
-const namesUpdated = new Event("namesUpdated")

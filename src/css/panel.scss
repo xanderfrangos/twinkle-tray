@@ -109,7 +109,7 @@ body {
         width: 100%;
         position: absolute;
         top: 50%;
-        left: 0;
+        left: 0px;
         margin-top: -1px;
         will-change: transform;
         transform: scaleX(0);
@@ -129,6 +129,7 @@ body {
         background: transparent;
         border: none;
         padding: 0;
+        margin-left: 0px;
         margin-right: 15px;
         -webkit-appearance: none;
 

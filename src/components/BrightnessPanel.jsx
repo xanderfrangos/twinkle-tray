@@ -1,56 +1,199 @@
 import React, { PureComponent, useState } from "react";
-import Monitor from "./Monitor";
+import Slider from "./Slider";
 
 export default class BrightnessPanel extends PureComponent {
+
+
+  // Render <Slider> components
   getMonitors = () => {
     if(this.state.monitors.length == 0) {
       return (<div className="no-displays-message">No displays found.</div>)
     } else {
       return this.state.monitors.map((monitor, index) => (
-        <Monitor key={index} monitorNum={index} name={monitor.name} level={monitor.brightness} lastUpdate={this.props.lastUpdate} />
+        <Slider name={ monitor.name } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } key={ index } onChange={ this.handleChange } />
       ))
     }
   }
 
-  toggleLinkedLevels = () => {
-    window.linkedLevelsActive = (window.linkedLevelsActive ? false : true)
-    this.setState({
-      linkedLevelsActive: window.linkedLevelsActive
-    })
-  }
-
+  // Render link icon, if available
   getLinkIcon = () => {
-    if(window.allMonitors && window.allMonitors.length > 1) {
+    if(this.state.monitors.length > 1) {
       return (
       <div title="Link levels" data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
       )
     }
   }
 
+
+
+
+  // Enable/Disable linked levels
+  toggleLinkedLevels = () => {
+    const linkedLevelsActive = (this.state.linkedLevelsActive ? false : true)
+    this.setState({
+      linkedLevelsActive
+    })
+    window.sendSettings({
+      linkedLevelsActive
+    })
+  }
+
+  // Handle <Slider> changes
+  handleChange = (level, slider) => {
+    const monitors = Object.assign(this.state.monitors, {})
+    const activeMon = monitors[slider.props.num]
+    
+    if(monitors.length > 0 && this.state.linkedLevelsActive) {
+      // Update all monitors (linked)
+      for(let monitor of monitors) {
+        monitor.brightness = level
+        if(slider.props.num != monitor.num) {
+          monitor.brightness = this.normalize(this.normalize(level, false, activeMon.min, activeMon.max), true, monitor.min, monitor.max)
+        } else {
+
+        }
+      }
+      this.setState({
+        monitors
+      })
+    } else if(monitors.length > 0) {
+      // Update single monitor
+      monitors[slider.props.num].brightness = level
+      this.setState({
+        monitors
+      })
+    }
+    this.forceUpdate()
+  }
+
+
+
+
+
+
+// Update monitor info
+recievedMonitors = (e) => {
+  if(this.state.monitors.length > 0 || e.detail.length > 0) {
+
+    let idx = 0
+    let newMonitors = Object.assign(e.detail, {})
+
+    this.lastLevels.length = e.detail.length
+
+    for(let monitor of this.state.monitors) {
+      newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
+      idx++
+    }
+
+    this.setState({
+      monitors: newMonitors
+    })
+  }
+  
+  this.forceUpdate()
+}
+
+// Update monitor names
+recievedNames = (e) => {
+  if(this.state.monitors.length > 0) {
+
+    let idx = 0
+    let newMonitors = Object.assign(this.state.monitors, {})
+    
+    for(let monitor of e.detail) {
+      newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name })
+
+      for(let remap in this.state.remaps) {
+        if(monitor.name == remap) {
+          newMonitors[idx].min = this.state.remaps[remap].min
+          newMonitors[idx].max = this.state.remaps[remap].max
+        }
+      }
+
+      idx++
+    }
+
+    this.setState({
+      monitors: newMonitors
+    })
+  }
+  
+  this.forceUpdate()
+}
+
+// Update settings (just linked levels for now)
+recievedSettings = (e) => {
+  const settings = e.detail
+  const linkedLevelsActive = (settings.linkedLevelsActive || false)
+  const remaps = {
+    "XB270HU": {
+      min: 7,
+      max: 80
+    }
+  }
+  this.setState({
+    linkedLevelsActive,
+    remaps
+  })
+}
+
+
+
+normalize(level, sending = false, min = 0, max = 100) {
+  if(min > 0 || max < 100) {
+    let out = level
+    if(sending) {
+      out = (min + ( ( level / 100) * (max - min) ) )
+    } else {
+      out = ((level - min) * (100 / (max - min)))
+    }
+    return Math.round(out)
+  } else {
+    return level
+  } 
+}
+
+
+
+
+// Send new brightness to monitors, if changed
+syncBrightness = () => {
+  const monitors = this.state.monitors
+  if (window.showPanel && monitors.length) {
+
+    try {
+      for(let idx = 0; idx < monitors.length; idx++) {
+        if(monitors[idx].brightness != this.lastLevels[idx]) {
+          window.updateBrightness(idx, monitors[idx].brightness)
+        }
+      }
+    } catch (e) {
+      console.error("Could not update brightness")
+    }        
+  }
+}
+
+
+
+
   constructor(props) {
     super(props);
     this.state = {
       monitors: [],
-      linkedLevelsActive: window.linkedLevelsActive
+      linkedLevelsActive: false
     }
+    this.lastLevels = []
 }
 
   componentDidMount() {
-    window.addEventListener("monitorsUpdated", (e) => {
-      this.setState({
-        monitors: window.allMonitors
-      })
-      this.forceUpdate()
-    })
-    window.addEventListener("namessUpdated", (e) => {
-      this.setState({
-        monitors: window.allMonitors
-      })
-      this.forceUpdate()
-    })
-    window.addEventListener("settingsUpdated", (e) => {
-      this.forceUpdate()
-    })
+
+    window.addEventListener("monitorsUpdated", this.recievedMonitors)
+    window.addEventListener("namesUpdated", this.recievedNames)
+    window.addEventListener("settingsUpdated", this.recievedSettings)
+
+    // Update brightness every interval, if changed
+    setInterval( this.syncBrightness, this.state.updateInterval || 500)
+
   }
 
   render() {
@@ -67,4 +210,6 @@ export default class BrightnessPanel extends PureComponent {
       </div>
     );
   }
+
+
 }

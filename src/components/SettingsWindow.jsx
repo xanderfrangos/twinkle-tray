@@ -40,8 +40,13 @@ export default class SettingsWindow extends PureComponent {
     }
 
     themeChanged = (event) => {
-        this.setState({theme: event.target.value})
+        this.setState({ theme: event.target.value })
         window.sendSettings({ theme: event.target.value })
+    }
+
+    updateIntervalChanged = (event) => {
+        this.setState({ updateInterval: event.target.value * 1 })
+        window.sendSettings({ updateInterval: event.target.value * 1 })
     }
 
     startupChanged = (event) => {
@@ -92,6 +97,13 @@ export default class SettingsWindow extends PureComponent {
                         <option value="default">System Preference (Default)</option>
                         <option value="dark">Dark Mode</option>
                         <option value="light">Light Mode</option>
+                    </select>
+                    <label>Brightness update rate</label>
+                    <select value={window.settings.updateInterval} onChange={this.updateIntervalChanged}>
+                        <option value="250">Fast (0.25s)</option>
+                        <option value="500">Normal (0.5s)</option>
+                        <option value="1000">Slow (1s)</option>
+                        <option value="2000">Very Slow (2s)</option>
                     </select>
                 </div>
                 <div className="pageSection" style={{display:'block'}}>

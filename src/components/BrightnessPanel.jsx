@@ -125,10 +125,14 @@ recievedNames = (e) => {
 recievedSettings = (e) => {
   const settings = e.detail
   const linkedLevelsActive = (settings.linkedLevelsActive || false)
+  const updateInterval = (settings.updateInterval || 500) * 1
   const remaps = (settings.remaps || {})
   this.setState({
     linkedLevelsActive,
-    remaps
+    remaps,
+    updateInterval
+  }, () => {
+    this.resetBrightnessInterval()
   })
 }
 
@@ -148,6 +152,11 @@ normalize(level, sending = false, min = 0, max = 100) {
   } 
 }
 
+
+resetBrightnessInterval = () => {
+  if(this.updateInterval) clearInterval(this.updateInterval)
+  this.updateInterval = setInterval( this.syncBrightness, (this.state.updateInterval || 500))
+}
 
 
 
@@ -178,6 +187,7 @@ syncBrightness = () => {
       linkedLevelsActive: false
     }
     this.lastLevels = []
+    this.updateInterval = null
 }
 
   componentDidMount() {
@@ -187,7 +197,7 @@ syncBrightness = () => {
     window.addEventListener("settingsUpdated", this.recievedSettings)
 
     // Update brightness every interval, if changed
-    setInterval( this.syncBrightness, this.state.updateInterval || 500)
+    this.resetBrightnessInterval()
 
   }
 

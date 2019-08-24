@@ -85,6 +85,12 @@ ipc.on('update-colors', (event, data) => {
     window.document.body.style.setProperty("--system-accent-color", data.accent)
 })
 
+// Taskbar position recieved
+ipc.on('taskbar', (event, taskbar) => {
+    window.document.getElementById("root").dataset["position"] = taskbar.position
+})
+
+// Settings recieved
 ipc.on('settings-updated', (event, settings) => {
     window.settings = settings
     window.dispatchEvent(new CustomEvent('settingsUpdated', {

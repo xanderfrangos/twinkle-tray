@@ -42,9 +42,23 @@ body {
     }
 
     &[data-visible="true"] > .window-base {
-        transform: translateY(0%);
+        transform: translateY(0%) !important;
         opacity: 1;
         pointer-events: all;
+    }
+
+    &[data-position="TOP"] > .window-base {
+        border-width: 0 0 1px 1px;
+        transform: translateY(-100%);
+    }
+
+    &[data-position="LEFT"] > .window-base {
+        border-width: 1px 1px 0 0;
+        transform: translateX(-100%);
+    }
+
+    &[data-position="RIGHT"] > .window-base {
+        transform: translateX(100%);
     }
 
 }

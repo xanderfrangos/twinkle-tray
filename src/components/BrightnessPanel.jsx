@@ -146,7 +146,7 @@ recievedNames = (e) => {
   this.forceUpdate()
 }
 
-// Update settings (just linked levels for now)
+// Update settings
 recievedSettings = (e) => {
   const settings = e.detail
   const linkedLevelsActive = (settings.linkedLevelsActive || false)

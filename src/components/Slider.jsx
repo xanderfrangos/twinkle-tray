@@ -1,8 +1,8 @@
 import React from "react";
-import {useEffect, PureComponent} from "react"
+import {useEffect, Component} from "react"
 import PropTypes from 'prop-types';
 
-export default class Slider extends PureComponent {
+export default class Slider extends Component {
 
     firingEvent = false
     handleChange = (event) => {
@@ -57,6 +57,14 @@ export default class Slider extends PureComponent {
             level: this.cap((this.props.level === undefined ? 50 : this.props.level)),
         }
         this.fireChange()
+    }
+
+    componentDidUpdate(oldProps) {
+        if(oldProps.max != this.props.max || oldProps.min != this.props.min) {
+            this.setState({
+                level: this.cap(this.props.level)
+            }, this.fireChange())
+        }
     }
 
     render() {

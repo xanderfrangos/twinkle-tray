@@ -110,6 +110,8 @@ updateMinMax = () => {
 
     this.setState({
       monitors: newMonitors
+    }, () => {
+      this.doBackgroundEvent = true
     })
   }
 }
@@ -136,6 +138,8 @@ recievedNames = (e) => {
 
     this.setState({
       monitors: newMonitors
+    }, () => {
+      this.doBackgroundEvent = true
     })
   }
   
@@ -156,8 +160,8 @@ recievedSettings = (e) => {
     this.resetBrightnessInterval()
     this.updateMinMax()
     this.forceUpdate()
+    this.doBackgroundEvent = true
   })
-  
 }
 
 
@@ -187,7 +191,8 @@ resetBrightnessInterval = () => {
 // Send new brightness to monitors, if changed
 syncBrightness = () => {
   const monitors = this.state.monitors
-  if (window.showPanel && monitors.length) {
+  if ((window.showPanel || this.doBackgroundEvent) && monitors.length) {
+    this.doBackgroundEvent = false
 
     try {
       for(let idx = 0; idx < monitors.length; idx++) {
@@ -210,6 +215,7 @@ syncBrightness = () => {
     }
     this.lastLevels = []
     this.updateInterval = null
+    this.doBackgroundEvent = false
 }
 
   componentDidMount() {

@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/electron.js",
   "scripts": {
-    "parcel-dev": "parcel *.html --port 3000 --out-dir build",
+    "parcel": "parcel *.html --port 3000 --out-dir build",
     "parcel-build": "parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting",
     "electron-build": "electron-builder",
     "clean-build": "del build/ .cache dist/",

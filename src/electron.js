@@ -409,6 +409,13 @@ function quitApp() {
 
 function toggleTray() {
   refreshMonitors()
+
+  // Send accent
+  sendToAllWindows('update-colors', {
+    accent: "#" + systemPreferences.getAccentColor().substr(0, 6),
+    darkMode: systemPreferences.isDarkMode()
+  })
+
   if(mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
     repositionPanel()

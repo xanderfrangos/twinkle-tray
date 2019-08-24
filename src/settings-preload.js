@@ -33,7 +33,9 @@ function openURL(url) {
 ipc.on("monitors-updated", (e, monitors) => {
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
-    window.dispatchEvent(new Event("monitorsUpdated"))
+    window.dispatchEvent(new CustomEvent('monitorsUpdated', {
+        detail: monitors
+    }))
 })
 
 // Monitor names updated
@@ -41,7 +43,9 @@ ipc.on("monitors-updated", (e, monitors) => {
 ipc.on("names-updated", (e, monitors) => {
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
-    window.dispatchEvent(new Event("namesUpdated"))
+    window.dispatchEvent(new CustomEvent('namesUpdated', {
+        detail: monitors
+    }))
 })
 
 // Accent colors recieved
@@ -77,3 +81,5 @@ window.thisWindow = browser
 window.accent = "cyan"
 
 window.version = 'v' + remote.app.getVersion()
+
+require('electron-react-devtools').install()

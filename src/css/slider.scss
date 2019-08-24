@@ -1,0 +1,143 @@
+
+//
+// Inputs
+//
+
+.input--range {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    position: relative;
+
+    .progress {
+        background: var(--system-accent-color);
+        height: 2px;
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 0px;
+        margin-top: -1px;
+        will-change: transform;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        pointer-events: none;
+    }
+
+    .rangeGroup {
+        flex: 2;
+        position: relative;
+    }
+
+    .range {
+        display: block;
+        appearance: none;
+        width: 100%;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0 15px 0 0;
+        -webkit-appearance: none;
+
+        &:hover {
+            &::-webkit-slider-thumb {
+                background: var(--tray-text);
+            }
+        }
+
+        &::-webkit-progress-value {
+            background-color: var(--system-accent-color);
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 8px;
+            box-sizing: content-box;
+            border-radius: 20px;
+            background: var(--system-accent-color);
+            cursor: pointer;
+            margin-top: -12px;
+            z-index: 3;
+            position: relative;
+        }
+
+        &::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 22px;
+            cursor: pointer;
+            background: var(--slider-track-color);
+            border-radius: 0px;
+            transition: background 0.1s;
+            border: 10px solid var(--tray-background);
+            border-left: 0;
+            border-right: 0;
+            box-sizing: border-box;
+
+        }
+
+        &:focus::-webkit-slider-runnable-track {
+            background: var(--slider-track-color-focus);
+        }
+    }
+
+    .val {
+        width: 52px;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        background: none;
+        outline: none;
+        border: none;
+        font-size: 22px;
+        text-align: center;
+        color: var(--tray-text);
+        font-family: "Segoe UI";
+        margin: 0;
+        margin-right: -10px;
+        margin-left: 5px;
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+    }
+}
+
+
+//
+// Monitors
+//
+
+.no-displays-message {
+    margin-top: 13px;
+}
+
+.monitor-item {
+
+    &+.monitor-item {
+        margin-top: 20px;
+    }
+
+    .name-row {
+        display: flex;
+        justify-content: flex-start;
+        width: 100%;
+
+        .title {
+            font-size: 14px;
+        }
+
+        .icon {
+            font-family: "Segoe MDL2 Assets";
+            font-size: 22px;
+            margin-right: 10px;
+        }
+    }
+}

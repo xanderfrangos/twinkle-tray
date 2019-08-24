@@ -143,7 +143,9 @@ refreshMonitors = async () => {
               num: local,
               localID: local,
               brightness: monitor.CurrentBrightness,
-              type: 'wmi'
+              type: 'wmi',
+              min: 0,
+              max: 100
             })
             local++
           }
@@ -431,8 +433,8 @@ function createSettings() {
   }
 
   settingsWindow = new BrowserWindow({
-    width: 450,
-    height: 500,
+    width: 600,
+    height: 650,
     minHeight: 500,
     minWidth: 400,
     show: false,

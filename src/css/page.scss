@@ -9,14 +9,40 @@
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 20px;
-    padding-top: 40px;
+    padding-top: 30px;
     box-sizing: border-box;
     border: 1px solid var(--window-border);
     user-select: none;
-    overflow: auto;
+    overflow: hidden;
+
+    --tray-background: var(--page-background);
 }
 
+#page {
+    overflow: auto;
+    
+    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(122, 122, 122, 1); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+    background: rgba(122, 122, 122, 0.5); 
+}
 
 
 
@@ -172,6 +198,9 @@ input[type="checkbox"] {
 label {
     font-size: 14px;
     display: block;
+    & + p {
+        margin-top: 2px;
+    }
 }
 
 
@@ -182,8 +211,28 @@ label {
     margin-bottom: 20px;
     line-height: 1;
 }
+
+.sectionSubtitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1;
+    display: flex;
+
+    .icon {
+        font-size: 22px;
+        font-weight: 400;
+        margin-top: -1px;
+    }
+
+    div + div {
+        margin-left: 10px;
+    }
+}
+
 .pageSection {
     margin-bottom: 20px;
+    max-width: 800px;
 }
 
 p {
@@ -192,6 +241,13 @@ p {
     b, strong {
         color: var(--page-text);
     }
+}
+
+
+
+
+.icon {
+    font-family: "Segoe MDL2 Assets";
 }
 
 

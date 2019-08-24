@@ -93,6 +93,27 @@ recievedMonitors = (e) => {
   this.forceUpdate()
 }
 
+
+updateMinMax = () => {
+  if(this.state.monitors.length > 0) {
+
+    let newMonitors = Object.assign(this.state.monitors, {})
+    
+    for(let monitor of newMonitors) {
+      for(let remap in this.state.remaps) {
+        if(monitor.name == remap) {
+          monitor.min = this.state.remaps[remap].min
+          monitor.max = this.state.remaps[remap].max
+        }
+      }
+    }
+
+    this.setState({
+      monitors: newMonitors
+    })
+  }
+}
+
 // Update monitor names
 recievedNames = (e) => {
   if(this.state.monitors.length > 0) {
@@ -133,7 +154,10 @@ recievedSettings = (e) => {
     updateInterval
   }, () => {
     this.resetBrightnessInterval()
+    this.updateMinMax()
+    this.forceUpdate()
   })
+  
 }
 
 

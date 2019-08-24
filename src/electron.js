@@ -275,6 +275,7 @@ function createPanel() {
     backgroundColor: "#00000000",
     frame: false,
     show: false,
+    alwaysOnTop: true,
     transparent: true,
     skipTaskbar: true,
     resizable: false,

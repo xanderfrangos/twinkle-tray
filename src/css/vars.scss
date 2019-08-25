@@ -3,10 +3,15 @@
 //
 
 :root {
-    --system-accent-color: white;
+    --system-accent-color: hsl(200, 80%, 83%);
+    --system-accent-light: hsl(200, 80%, 83%);
+    --system-accent-medium: hsl(200, 81%, 45%);
+    --system-accent-dark: hsl(200, 80%, 20%);
 
     --slider-track-color: #727272;
     --slider-track-color-focus: #A5A5A5;
+
+
 }
 
 
@@ -90,4 +95,10 @@ body[data-transparent="true"] {
 }
 .window-base[data-theme="dark"] {
     @include dark-mode()
+}
+
+body[data-colored-taskbar="true"] {
+    .window-base {
+        --tray-background: var(--system-accent-dark) !important;
+    }
 }

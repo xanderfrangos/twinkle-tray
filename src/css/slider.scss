@@ -12,7 +12,7 @@
     position: relative;
 
     .progress {
-        background: var(--system-accent-color);
+        background: var(--system-accent-light);
         height: 2px;
         width: 100%;
         position: absolute;
@@ -44,7 +44,7 @@
         }
 
         &::-webkit-progress-value {
-            background-color: var(--system-accent-color);
+            background-color: var(--system-accent-light);
         }
 
         &:focus {

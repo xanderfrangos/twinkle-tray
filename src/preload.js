@@ -91,6 +91,11 @@ ipc.on("names-updated", (e, monitors) => {
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
     window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.document.body.style.setProperty("--system-accent-light", data.light)
+    window.document.body.style.setProperty("--system-accent-medium", data.medium)
+    window.document.body.style.setProperty("--system-accent-medium-dark", data.mediumDark)
+    window.document.body.style.setProperty("--system-accent-transparent", data.transparent)
+    window.document.body.style.setProperty("--system-accent-dark", data.dark)
 })
 
 // Taskbar position recieved
@@ -112,9 +117,11 @@ ipc.on('theme-settings', (event, theme) => {
         console.log(theme)
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
+        window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
     } catch (e) {
         window.document.body.dataset["systemTheme"] = "default"
         window.document.body.dataset["transparent"] = "false"
+        window.document.body.dataset["coloredTaskbar"] = "false"
     }
 })
 

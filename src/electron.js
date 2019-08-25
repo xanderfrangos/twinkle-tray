@@ -5,6 +5,7 @@ const { systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
+const Color = require('color')
 
 const ddcci = require("@hensm/ddcci");
 if(isDev) {
@@ -119,6 +120,25 @@ function getThemeRegistry() {
     }
     
 })
+}
+
+function getAccentColors() {
+  const accent = Color("#" + systemPreferences.getAccentColor().substr(0, 6), "hex")
+  const matchLumi = (color, level) => {
+    console.log(color.hsl())
+    let adjusted = color.hsl()
+    adjusted.color[2] = (level * 100)
+    console.log(adjusted)
+    return adjusted
+  }
+  return {
+    accent: accent.hex(),
+    light: matchLumi(accent, 0.55).hex(),
+    medium: matchLumi(accent, 0.48).hex(),
+    mediumDark: matchLumi(accent, 0.35).hex(),
+    dark: matchLumi(accent, 0.22).hex(),
+    transparent: matchLumi(accent, 0.22).fade(0.1).hex()
+  }
 }
 
 
@@ -249,9 +269,7 @@ refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
 //
 
 ipcMain.on('request-colors', () => {
-  sendToAllWindows('update-colors', {
-    accent: "#" + systemPreferences.getAccentColor().substr(0, 6)
-  })
+  sendToAllWindows('update-colors', getAccentColors())
 })
 
 
@@ -449,10 +467,7 @@ function toggleTray() {
   getSettings()
 
   // Send accent
-  sendToAllWindows('update-colors', {
-    accent: "#" + systemPreferences.getAccentColor().substr(0, 6),
-    darkMode: systemPreferences.isDarkMode()
-  })
+  sendToAllWindows('update-colors', getAccentColors())
 
   if(mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
@@ -526,9 +541,7 @@ function addEventListeners() {
 }
 
 function handleAccentChange() {
-  sendToAllWindows('update-colors', {
-    accent: "#" + systemPreferences.getAccentColor().substr(0, 6)
-  })
+  sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
 }
 

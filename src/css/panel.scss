@@ -36,7 +36,6 @@ body {
         opacity: 0;
         transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
         transform: translateY(100%);
-        will-change: transform, opacity;
         pointer-events: none;
     }
 

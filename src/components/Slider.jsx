@@ -49,7 +49,7 @@ export default class Slider extends Component {
         const min = (this.props.min || 0) * 1
         const max = (this.props.max || 100) * 1
         const level = this.cap((this.props.level || 0) * 1)
-        return { transform: "scaleX(" + (0 + (((level - min) * (100 / (max - min))) * 0.01)) + ")" }
+        return { width: (0 + (((level - min) * (100 / (max - min))))) + "%" }
     }
 
     constructor(props) {

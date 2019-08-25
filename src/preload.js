@@ -106,6 +106,18 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+// User personalization settings recieved
+ipc.on('theme-settings', (event, theme) => {
+    try {
+        console.log(theme)
+        window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
+        window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
+    } catch (e) {
+        window.document.body.dataset["systemTheme"] = "default"
+        window.document.body.dataset["transparent"] = "false"
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestMonitors()

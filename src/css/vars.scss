@@ -48,6 +48,7 @@
     --input-active-background: #444;
 
 
+
 }
 
 // Light mode (default)
@@ -64,6 +65,26 @@ screen and (prefers-color-scheme: no-preference) {
         @include dark-mode()
     }
 }
+
+body[data-system-theme="light"] {
+    @include light-mode();
+    &[data-transparent="true"] {
+        --tray-background-transparent: rgba(219, 219, 219, 0.94);
+    }
+}
+body[data-system-theme="dark"] {
+    @include dark-mode();
+    &[data-transparent="true"] {
+        --tray-background-transparent: rgba(41, 41, 41, 0.95);
+    }
+}
+
+body[data-transparent="true"] {
+    .window-base {
+        --tray-background: var(--tray-background-transparent) !important;
+    }
+}
+
 .window-base[data-theme="light"] {
     @include light-mode()
 }

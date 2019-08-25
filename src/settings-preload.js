@@ -61,6 +61,15 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+// User personalization settings recieved
+ipc.on('theme-settings', (event, theme) => {
+    try {
+        window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
+    } catch (e) {
+        window.document.body.dataset["systemTheme"] = "default"
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestMonitors()

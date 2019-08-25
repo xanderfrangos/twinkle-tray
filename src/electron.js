@@ -4,6 +4,7 @@ const fs = require('fs')
 const { systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
+const regedit = require('regedit')
 
 const ddcci = require("@hensm/ddcci");
 if(isDev) {
@@ -86,8 +87,39 @@ ipcMain.on('send-settings', (event, newSettings) => {
 })
 
 ipcMain.on('request-settings', (event) => {
+  getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of
   getSettings()
 })
+
+// Get the user's Windows Personalization settings
+function getThemeRegistry() { 
+  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function(err, results) {
+    try {
+      if(err) {
+        console.error("Couldn\'t find theme key.", err)
+      } else {
+
+        // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
+        for(let result in results) {
+          let themeSettings = Object.assign(results[result].values, {})
+
+          // We don't need the type, so dump it
+          for(let value in themeSettings) {
+            themeSettings[value] = themeSettings[value].value
+          }
+
+          // Send it off!
+          sendToAllWindows('theme-settings', themeSettings)
+          break; // Only the first one is needed
+        }
+
+      }
+    } catch(e) {
+      console.error("Couldn\'t get theme info.", e)
+    }
+    
+})
+}
 
 
 //
@@ -218,8 +250,7 @@ refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
 
 ipcMain.on('request-colors', () => {
   sendToAllWindows('update-colors', {
-    accent: "#" + systemPreferences.getAccentColor().substr(0, 6),
-    darkMode: systemPreferences.isDarkMode()
+    accent: "#" + systemPreferences.getAccentColor().substr(0, 6)
   })
 })
 
@@ -372,6 +403,7 @@ function taskbarPosition() {
 
 
 app.on("ready", createPanel);
+app.on("ready", addEventListeners);
 
 app.on("window-all-closed", () => {
   app.quit();
@@ -413,6 +445,8 @@ function quitApp() {
 
 function toggleTray() {
   refreshMonitors()
+  getThemeRegistry()
+  getSettings()
 
   // Send accent
   sendToAllWindows('update-colors', {
@@ -472,4 +506,33 @@ function createSettings() {
     settingsWindow.show()
   })
 
+}
+
+
+
+//
+//
+//    System event listeners
+//
+//
+
+function addEventListeners() {
+  systemPreferences.on('accent-color-changed', handleAccentChange)
+  systemPreferences.on('color-changed', handleAccentChange)
+  
+  electron.screen.on('display-added', handleMonitorChange)
+  electron.screen.on('display-removed', handleMonitorChange)
+  electron.screen.on('display-metrics-changed', handleMonitorChange)
+}
+
+function handleAccentChange() {
+  sendToAllWindows('update-colors', {
+    accent: "#" + systemPreferences.getAccentColor().substr(0, 6)
+  })
+  getThemeRegistry()
+}
+
+function handleMonitorChange() {
+  refreshMonitors()
+  repositionPanel()
 }

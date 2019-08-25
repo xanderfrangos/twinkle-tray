@@ -69,16 +69,21 @@
 
         &::-webkit-slider-runnable-track {
             width: 100%;
-            height: 22px;
+            height: 2px;
             cursor: pointer;
             background: var(--slider-track-color);
             border-radius: 0px;
             transition: background 0.1s;
-            border: 10px solid var(--tray-background);
             border-left: 0;
             border-right: 0;
             box-sizing: border-box;
 
+        }
+
+        ::-webkit-slider-container {
+            padding: 7px 0;
+            background: #ff000000;
+            cursor: pointer;
         }
 
         &:focus::-webkit-slider-runnable-track {

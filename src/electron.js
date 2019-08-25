@@ -257,6 +257,10 @@ ipcMain.on('panel-height', (event, height) => {
   repositionPanel()
 })
 
+ipcMain.on('panel-hidden', () => {
+  mainWindow.setAlwaysOnTop(false)
+})
+
 
 
 //
@@ -419,6 +423,7 @@ function toggleTray() {
   if(mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
     repositionPanel()
+    mainWindow.setAlwaysOnTop(true)
     mainWindow.webContents.send("tray-clicked")
     mainWindow.focus()
   }

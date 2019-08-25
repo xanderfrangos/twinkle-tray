@@ -34,3 +34,7 @@ window.addEventListener("enableDemoMode", () => {
     window.document.getElementById("root").dataset["visible"] = true
     window.document.body.style.setProperty("--system-accent-color", window.accent || "#744DA9")
 })
+
+window.document.getElementById("root").addEventListener('transitionend', function () {
+    window.panelAnimationDone()
+});

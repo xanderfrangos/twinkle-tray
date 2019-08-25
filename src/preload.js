@@ -56,8 +56,16 @@ function sendHeight(height) {
     ipc.send('panel-height', height)
 }
 
+function panelAnimationDone() {
+    if(showPanel === false) {
+        ipc.send('panel-hidden')
+        window.document.getElementById("root").dataset["sleep"] = true
+    }
+}
+
 // Tray icon clicked
 ipc.on('tray-clicked', () => {
+    window.document.getElementById("root").dataset["sleep"] = false
     setPanelVisibility(true)
 })
 
@@ -121,6 +129,8 @@ window.openSettings = openSettings
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
 window.sendHeight = sendHeight
+window.panelAnimationDone = panelAnimationDone
+window.setPanelVisibility = setPanelVisibility
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

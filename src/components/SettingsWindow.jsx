@@ -137,7 +137,7 @@ export default class SettingsWindow extends PureComponent {
 
       getMinMaxMonitors = () => {
         if(this.state.monitors == undefined || this.state.monitors.length == 0) {
-            return (<div className="no-displays-message">No displays found.<br /><br /></div>)
+            return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.<br /><br /></div>)
           } else {
             return this.state.monitors.map((monitor, index) => {
                 const remap = this.getRemap(monitor.name)

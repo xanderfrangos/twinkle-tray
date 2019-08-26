@@ -245,6 +245,16 @@ label {
     max-width: 800px;
 }
 
+.monitorItem {
+    max-width: 320px;
+    animation: sliderFadeIn 0.4s;
+    @keyframes sliderFadeIn {
+        0% { opacity: 0; }
+        33% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+}
+
 p {
     font-size: 14px;
     color: var(--page-text-mid);

@@ -274,7 +274,7 @@ recievedSettings = (e) => {
                     <div className="pageSection">
                         <div className="sectionTitle">Normalize Brightness</div>
                         <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent.</p>
-                        <div style={{ maxWidth: "320px" }}>
+                        <div className="monitorItem">
                             { this.getMinMaxMonitors() }
                         </div> 
                     </div>

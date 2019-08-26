@@ -140,11 +140,12 @@ function getAccentColors() {
   }
   return {
     accent: accent.hex(),
-    light: matchLumi(accent, 0.55).hex(),
+    lighter: matchLumi(accent, 0.85).hex(),
+    light: matchLumi(accent, 0.52).hex(),
     medium: matchLumi(accent, 0.48).hex(),
-    mediumDark: matchLumi(accent, 0.35).hex(),
-    dark: matchLumi(accent, 0.22).hex(),
-    transparent: matchLumi(accent, 0.22).fade(0.1).hex()
+    mediumDark: matchLumi(accent, 0.33).desaturate(0.1).hex(),
+    dark: matchLumi(accent, 0.275).desaturate(0.1).hex(),
+    transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string()
   }
 }
 

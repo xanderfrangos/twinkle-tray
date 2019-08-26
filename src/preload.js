@@ -91,6 +91,7 @@ ipc.on("names-updated", (e, monitors) => {
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
     window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.document.body.style.setProperty("--system-accent-lighter", data.lighter)
     window.document.body.style.setProperty("--system-accent-light", data.light)
     window.document.body.style.setProperty("--system-accent-medium", data.medium)
     window.document.body.style.setProperty("--system-accent-medium-dark", data.mediumDark)

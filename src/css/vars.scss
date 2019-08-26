@@ -32,6 +32,10 @@
     --input-border: #555;
     --input-border-hover: #000;
     --input-active-background: #ddd;
+
+
+    --slider-track-color: rgba(0, 0, 0, 0.4);
+    --slider-track-color-focus: rgba(0, 0, 0, 0.65);
 }
 
 @mixin dark-mode {
@@ -52,7 +56,8 @@
     --input-border-hover: #fff;
     --input-active-background: #444;
 
-
+    --slider-track-color: rgba(255, 255, 255, 0.4);
+    --slider-track-color-focus: rgba(255, 255, 255, 0.65);
 
 }
 
@@ -100,5 +105,10 @@ body[data-transparent="true"] {
 body[data-colored-taskbar="true"] {
     .window-base {
         --tray-background: var(--system-accent-dark) !important;
+    }
+    &[data-transparent="true"] {
+        .window-base {
+            --tray-background: var(--system-accent-transparent) !important;
+        }
     }
 }

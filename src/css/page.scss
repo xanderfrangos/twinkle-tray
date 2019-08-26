@@ -1,4 +1,13 @@
+html, body {
+    background: transparent;
+}
 
+body {
+    display: none;
+    &[data-system-theme] {
+        display: block;
+    }
+}
 
 #settings > .window-base {
     background: var(--page-background);
@@ -14,6 +23,7 @@
     border: 1px solid var(--window-border);
     user-select: none;
     overflow: hidden;
+    //transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 
     --tray-background: var(--page-background);
 }

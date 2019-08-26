@@ -18,6 +18,7 @@ if(isDev) {
 let monitors = []
 let mainWindow;
 let tray = null
+let lastTheme = false
 
 const panelSize = {
   width: 356,
@@ -94,6 +95,9 @@ ipcMain.on('request-settings', (event) => {
 
 // Get the user's Windows Personalization settings
 function getThemeRegistry() { 
+
+  if(lastTheme) sendToAllWindows('theme-settings', lastTheme)
+
   regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function(err, results) {
     try {
       if(err) {
@@ -101,6 +105,7 @@ function getThemeRegistry() {
       } else {
 
         // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
+        if(results)
         for(let result in results) {
           let themeSettings = Object.assign(results[result].values, {})
 
@@ -111,6 +116,10 @@ function getThemeRegistry() {
 
           // Send it off!
           sendToAllWindows('theme-settings', themeSettings)
+          lastTheme = themeSettings
+          if(tray) {
+            tray.setImage((themeSettings.SystemUsesLightTheme ? path.join(__dirname, 'assets/light-theme/icon.ico') : path.join(__dirname, 'assets/icon.ico')))
+          }
           break; // Only the first one is needed
         }
 
@@ -125,10 +134,8 @@ function getThemeRegistry() {
 function getAccentColors() {
   const accent = Color("#" + systemPreferences.getAccentColor().substr(0, 6), "hex")
   const matchLumi = (color, level) => {
-    console.log(color.hsl())
     let adjusted = color.hsl()
     adjusted.color[2] = (level * 100)
-    console.log(adjusted)
     return adjusted
   }
   return {
@@ -493,7 +500,7 @@ function createSettings() {
     settingsWindow.focus()
     return false;
   }
-
+  
   settingsWindow = new BrowserWindow({
     width: 600,
     height: 650,
@@ -504,6 +511,7 @@ function createSettings() {
     resizable: true,
     minimizable: true,
     frame: false,
+    backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js')
     }

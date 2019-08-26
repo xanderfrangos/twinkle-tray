@@ -30,6 +30,9 @@ var wmi = new WmiClient({
   namespace: '\\\\root\\WMI'
 });
 
+// Fix regedit tool path in production
+if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
+
 
 //
 //

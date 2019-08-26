@@ -40,7 +40,8 @@
       "build/**/*"
     ],
     "extraResources": [
-      "src/MonitorInfo.exe"
+      "src/MonitorInfo.exe",
+      "node_modules\\regedit\\vbs\\*"
     ],
     "win": {
       "target": "nsis",

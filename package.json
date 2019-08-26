@@ -51,10 +51,9 @@
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-react-jsx": "^7.3.0",
     "@babel/preset-react": "^7.0.0",
-    "babel-core": "6.26.3",
-    "babel-plugin-transform-object-rest-spread": "6.26.0",
-    "babel-plugin-transform-react-jsx": "6.24.1",
     "babel-preset-env": "1.7.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "6.24.1",
@@ -62,7 +61,6 @@
     "cross-env": "5.2.0",
     "electron": "6.0.1",
     "electron-builder": "20.38.4",
-    "electron-rebuild": "^1.8.5",
     "parcel-bundler": "1.12.3",
     "sass": "^1.22.9",
     "wait-on": "3.2.0"

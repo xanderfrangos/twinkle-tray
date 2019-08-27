@@ -6,6 +6,7 @@ const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
 const Color = require('color')
+const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
 
 const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
 
@@ -47,8 +48,17 @@ let settings = {}
 try {
   if (fs.existsSync(settingsPath)) {
     settings = JSON.parse(fs.readFileSync(settingsPath))
-    if(!isDev)
+    if(!isDev) {
       app.setLoginItemSettings({openAtLogin: (settings.openAtLogin || false)})
+    }
+    // Set autolaunch for AppX
+    if(isAppX) {
+      if(settings.openAtLogin) {
+        WindowsStoreAutoLaunch.enable()
+      } else {
+        WindowsStoreAutoLaunch.disable()
+      }
+    } 
   } else {
     fs.writeFileSync(settingsPath, JSON.stringify({}))
   }
@@ -65,6 +75,15 @@ function writeSettings(newSettings = {}) {
   // Update login setting
   if(!isDev)
     app.setLoginItemSettings({ openAtLogin: (settings.openAtLogin || false) })
+
+    // Set autolaunch for AppX
+    if(isAppX) {
+      if(settings.openAtLogin) {
+        WindowsStoreAutoLaunch.enable()
+      } else {
+        WindowsStoreAutoLaunch.disable()
+      }
+    } 
 
   // Save new settings
   try {

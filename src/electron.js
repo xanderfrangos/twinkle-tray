@@ -7,6 +7,8 @@ const isDev = require("electron-is-dev");
 const regedit = require('regedit')
 const Color = require('color')
 
+const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
+
 const ddcci = require("@hensm/ddcci");
 if(isDev) {
   var WmiClient = require('wmi-client');
@@ -249,7 +251,7 @@ refreshMonitors = async () => {
 // Get monitor names
 refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
   const exePath = (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe'))
-  exec(exePath, {}, (error, stdout, stderr) => {
+  exec(`"${exePath}"`, {}, (error, stdout, stderr) => {
     if (error) {
       console.log(error);
     }

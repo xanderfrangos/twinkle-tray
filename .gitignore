@@ -20,3 +20,5 @@ yarn-error.log*
 
 .log
 logs/
+*.pfx
+.env

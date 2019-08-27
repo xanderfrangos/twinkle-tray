@@ -154,3 +154,4 @@ window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
 window.settings = {}
+window.isAppX = (remote.app.getName() == "twinkle-tray-appx" ? true : false)

@@ -27,7 +27,7 @@ export default class SettingsWindow extends PureComponent {
 
         fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => { response.json().then( (json) => {
             this.setState({
-                releaseURL: json[0].html_url,
+                releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : json[0].html_url),
                 latest: json[0].tag_name
             })
         })});

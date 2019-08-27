@@ -10,6 +10,30 @@ const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
 
 const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
 
+
+// Logging
+const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "")}.log`)
+
+// Remove old log
+if(fs.existsSync(logPath)) {
+  fs.unlinkSync(logPath)
+}
+
+const log = async (...args) => {
+  for(let arg of args) {
+    console.log(arg)
+    fs.appendFile(logPath, arg, () => {})
+  }
+}
+
+const debug = {
+  log,
+  error: log
+}
+
+
+
+
 const ddcci = require("@hensm/ddcci");
 if(isDev) {
   var WmiClient = require('wmi-client');
@@ -37,6 +61,18 @@ var wmi = new WmiClient({
 if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
 
 
+// Set up MonitorInfo path
+let exePath = (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe'))
+if(isAppX) {
+  // We can't actually run this from the AppX, so we copy it somewhere we can.
+  const newPath = path.join(app.getPath("userData"), `\\MonitorInfo.exe`)
+  fs.copyFileSync(exePath, newPath)
+  exePath = newPath
+}
+
+
+
+
 //
 //
 //    Settings init
@@ -45,26 +81,21 @@ if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('ex
 
 const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
 let settings = {}
-try {
-  if (fs.existsSync(settingsPath)) {
-    settings = JSON.parse(fs.readFileSync(settingsPath))
-    if(!isDev) {
-      app.setLoginItemSettings({openAtLogin: (settings.openAtLogin || false)})
+
+function readSettings() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      settings = JSON.parse(fs.readFileSync(settingsPath))
+      
+      updateStartupOption((settings.openAtLogin || false))
+      
+    } else {
+      fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
-    // Set autolaunch for AppX
-    if(isAppX) {
-      if(settings.openAtLogin) {
-        WindowsStoreAutoLaunch.enable()
-      } else {
-        WindowsStoreAutoLaunch.disable()
-      }
-    } 
-  } else {
-    fs.writeFileSync(settingsPath, JSON.stringify({}))
+    debug.log('Settings loaded:', settings)
+  } catch(e) {
+    debug.error("Couldn't load settings", e)
   }
-  console.log('Settings loaded:', settings)
-} catch(e) {
-  console.error("Couldn't load settings", e)
 }
 
 
@@ -72,26 +103,34 @@ function writeSettings(newSettings = {}) {
   settings = Object.assign(settings, newSettings)
   sendToAllWindows('settings-updated', settings)
 
-  // Update login setting
-  if(!isDev)
-    app.setLoginItemSettings({ openAtLogin: (settings.openAtLogin || false) })
+  updateStartupOption((settings.openAtLogin || false))
 
-    // Set autolaunch for AppX
+  // Save new settings
+  try {
+    fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) debug.error(e)})
+  } catch(e) {
+    debug.error("Couldn't save settings.", settingsPath, e)
+  }
+  
+}
+
+
+async function updateStartupOption(openAtLogin) {
+  if(!isDev)
+  app.setLoginItemSettings({ openAtLogin })
+
+  // Set autolaunch for AppX
+  try {
     if(isAppX) {
-      if(settings.openAtLogin) {
+      if(openAtLogin) {
         WindowsStoreAutoLaunch.enable()
       } else {
         WindowsStoreAutoLaunch.disable()
       }
     } 
-
-  // Save new settings
-  try {
-    fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) console.error(e)})
-  } catch(e) {
-    console.error("Couldn't save settings.", settingsPath, e)
+  } catch (e) {
+    debug.error(e)
   }
-  
 }
 
 function getSettings() {
@@ -125,7 +164,7 @@ function getThemeRegistry() {
   regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function(err, results) {
     try {
       if(err) {
-        console.error("Couldn\'t find theme key.", err)
+        debug.error("Couldn\'t find theme key.", err)
       } else {
 
         // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
@@ -149,7 +188,7 @@ function getThemeRegistry() {
 
       }
     } catch(e) {
-      console.error("Couldn\'t get theme info.", e)
+      debug.error("Couldn\'t get theme info.", e)
     }
     
 })
@@ -240,7 +279,7 @@ refreshMonitors = async () => {
       });
 
     } catch (e) {
-      console.log(e)
+      debug.log(e)
       resolve([])
     }
   })
@@ -268,12 +307,13 @@ refreshMonitors = async () => {
 }
 
 // Get monitor names
-refreshNames = (callback = () => { console.log("Done refreshing names") }) => {
-  const exePath = (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe'))
+refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
+  debug.log(exePath)
   exec(`"${exePath}"`, {}, (error, stdout, stderr) => {
     if (error) {
-      console.log(error);
+      debug.log(error);
     }
+    debug.log(stdout)
     let split1 = stdout.split(";;")
     let split2 = []
     for (split of split1) {
@@ -317,7 +357,7 @@ ipcMain.on('update-brightness', function (event, data) {
       exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${data.level})"`)
     }
   } catch (e) {
-    console.error("Could not update brightness", e)
+    debug.error("Could not update brightness", e)
   }
 
 })
@@ -582,3 +622,7 @@ function handleMonitorChange() {
   refreshMonitors()
   repositionPanel()
 }
+
+
+// readSettings
+readSettings()

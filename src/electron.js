@@ -21,7 +21,7 @@ if(fs.existsSync(logPath)) {
 
 const log = async (...args) => {
   for(let arg of args) {
-    console.log(arg)
+    console.log(arg + "\r\n")
     fs.appendFile(logPath, arg, () => {})
   }
 }

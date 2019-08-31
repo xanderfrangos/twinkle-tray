@@ -6,6 +6,7 @@ const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
 const Color = require('color')
+const slash = require('slash')
 const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
 
 const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
@@ -62,11 +63,16 @@ if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('ex
 
 
 // Set up MonitorInfo path
-let exePath = (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe'))
+let exePath = slash( (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe')) )
 if(isAppX) {
   // We can't actually run this from the AppX, so we copy it somewhere we can.
-  const newPath = path.join(app.getPath("userData"), `\\MonitorInfo.exe`)
-  fs.copyFileSync(exePath, newPath)
+  const newPath = slash( path.join(app.getPath("userData"), `\\MonitorInfo.exe`) )
+  try {
+    if(!fs.existsSync(app.getPath("userData"))) fs.mkdirSync(app.getPath("userData"));
+    if(!fs.existsSync(newPath)) fs.copyFileSync(exePath, newPath);
+  } catch (e) {
+    console.error(e)
+  }
   exePath = newPath
 }
 

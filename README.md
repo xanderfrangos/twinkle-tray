@@ -3,19 +3,11 @@
 </p>
 <h1 align="center">Twinkle Tray</h1>
 
-Twinkle Tray lets you easily manage the brightness levels on multiple monitors. Even though Windows is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows also lacks any ability to manage the brightness of multiple monitors. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible monitors. 
+Twinkle Tray lets you easily manage the brightness levels on multiple monitors. Even though Windows 10 is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows 10 also lacks any ability to manage the brightness of multiple monitors. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible monitors. 
 
 Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Make sure you have the appropriate option(s) enabled on your monitor so that it can work with Twinkle Tray.
 
 This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [electron-react-parcel-boilerplate](<https://github.com/kumarryogeshh/electron-react-parcel-boilerplate>).
-
-
-
-## Requirements
-
-- **.NET Framework 4.6.1** - Windows 10 machines should have this pre-installed, but you can download it [here](<https://www.microsoft.com/en-us/download/details.aspx?id=49981>) if needed.
-- **Windows 10** **(May 2019 Update or newer)** - Windows 7 and 8/8.1 may work, but are untested. If earlier versions work, please let me know so I can update this.
-
 
 
 ## Usage

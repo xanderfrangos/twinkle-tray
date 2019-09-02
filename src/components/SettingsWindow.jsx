@@ -15,7 +15,7 @@ export default class SettingsWindow extends PureComponent {
             monitors: [],
             remaps: {},
             linkedLevelsActive: false,
-            updateInterval: 500
+            updateInterval: (window.settings.updateInterval || 500)
         }
         this.lastLevels = []
     }
@@ -264,7 +264,8 @@ recievedSettings = (e) => {
                         </select>
                         <label>Brightness update rate</label>
                         <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
-                        <select value={window.settings.updateInterval} onChange={this.updateIntervalChanged}>
+                        <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
+                            <option value="16">Ludicrous (16ms)</option>
                             <option value="250">Fast (0.25 seconds)</option>
                             <option value="500">Normal (0.5 seconds)</option>
                             <option value="1000">Slow (1 second)</option>

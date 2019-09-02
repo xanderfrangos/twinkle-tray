@@ -212,7 +212,7 @@ refreshMonitors = async () => {
   // First, let's get DDC/CI monitors. They're easy.
   ddcci._refresh()
   const ddcciMonitors = ddcci.getMonitorList()
-  console.log("MONTIORS", ddcciMonitors)
+
   for (monitor of ddcciMonitors) {
     try {
       foundMonitors.push({
@@ -292,7 +292,15 @@ refreshMonitors = async () => {
   })
 }
 
-// Get monitor names
+
+
+
+//
+//
+//    Get monitor names
+//
+//
+
 refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
 
   wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
@@ -300,31 +308,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
     if (err != null) {
       callback([])
     } else if (result) {
-
-
-      let local = 0
       for (monitor of result) {
-
-        console.log(monitor.Active)
-        console.log(readInstanceName(monitor.InstanceName))
-
-        if (monitor.SerialNumberID !== null) {
-          console.log(parseWMIString(monitor.SerialNumberID))
-        }
-        if (monitor.UserFriendlyName !== null) {
-          console.log(parseWMIString(monitor.UserFriendlyName))
-        }
-        if (monitor.ManufacturerName !== null) {
-          console.log(parseWMIString(monitor.ManufacturerName))
-        }
-        if (monitor.ProductCodeID !== null) {
-          console.log(parseWMIString(monitor.ProductCodeID))
-        }
-        let name = ""
-        if (monitor.UserFriendlyName !== null) {
-          name = parseWMIString(result[0].UserFriendlyName)
-        }
-
         let hwid = readInstanceName(monitor.InstanceName)
         if (monitor.UserFriendlyName !== null)
         for (knownMonitor of monitors) {
@@ -333,20 +317,14 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
             break;
           }
         }
-
-        local++
       }
-
       callback(out)
-
     } else {
       callback([])
     }
   });
 
 }
-
-
 
 function parseWMIString(str) {
   let hexed = str.replace('{', '').replace('}', '').replace(/;0;/g, ';00;').replace(/;/g, '')

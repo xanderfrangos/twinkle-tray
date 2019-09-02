@@ -138,6 +138,9 @@ function sendToAllWindows(eventName, data) {
   if(settingsWindow) {
     settingsWindow.webContents.send(eventName, data)
   }
+  if(introWindow) {
+    introWindow.webContents.send(eventName, data)
+  }
 }
 
 ipcMain.on('send-settings', (event, newSettings) => {
@@ -505,9 +508,12 @@ function taskbarPosition() {
   return { position, gap }
 }
 
-app.on("ready", readSettings)
-app.on("ready", createPanel)
-app.on("ready", addEventListeners)
+app.on("ready", () => {
+  readSettings()
+  showIntro()
+  createPanel()
+  addEventListeners()
+})
 
 app.on("window-all-closed", () => {
   app.quit();
@@ -565,6 +571,70 @@ function toggleTray() {
 }
 
 
+
+
+
+//
+//
+//    Intro Window
+//
+//
+
+let introWindow
+function showIntro() {
+
+  // Check if user has already seen the intro
+  if(settings.userClosedIntro) {
+    return false;
+  }
+
+  if(introWindow != null) {
+    // Don't make window if already open
+    introWindow.focus()
+    return false;
+  }
+  
+  introWindow = new BrowserWindow({
+    width: 500,
+    height: 650,
+    show: false,
+    maximizable: false,
+    resizable: false,
+    minimizable: false,
+    frame: false,
+    transparent: true,
+    icon: './src/assets/logo.ico',
+    webPreferences: {
+      preload: path.join(__dirname, 'intro-preload.js')
+    }
+  });
+
+  introWindow.loadURL(
+    isDev
+      ? "http://localhost:3000/intro.html"
+      : `file://${path.join(__dirname, "../build/intro.html")}`
+  );
+
+  introWindow.on("closed", () => (introWindow = null));
+
+  introWindow.once('ready-to-show', () => {
+    introWindow.show()
+  })
+
+}
+
+ipcMain.on('close-intro', (event, newSettings) => {
+  if(introWindow) {
+    introWindow.close()
+    writeSettings({userClosedIntro: true})
+  }
+})
+
+
+
+
+
+
 //
 //
 //    Settings Window
@@ -590,6 +660,7 @@ function createSettings() {
     resizable: true,
     minimizable: true,
     frame: false,
+    icon: './src/assets/logo.ico',
     backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js')

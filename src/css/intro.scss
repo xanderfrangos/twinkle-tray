@@ -1,0 +1,75 @@
+body, html {
+    background: transparent;
+}
+
+body {
+    padding: 80px;
+    box-sizing: border-box;
+}
+
+.page {
+    background: var(--page-background);
+    color: var(--tray-text);
+    font-family: 'Segoe UI';
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    height: calc(100% - 58px);
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid var(--window-border);
+    user-select: none;
+    overflow: visible;
+    text-align: center;
+    box-shadow: 0 3px 12px -8px black;
+    line-height: 1;
+    user-select: none;
+    animation: introIn 1s;
+
+    @keyframes introIn {
+        0% { opacity: 0; transform: scale(0.96); }
+        80% { opacity: 0; transform: scale(0.96); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+}
+
+$margin: 22px;
+
+img {
+    width: 84px;
+    height: 84px;
+    margin: -62px auto 0;
+}
+.intro-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: $margin auto 0;
+}
+
+p {
+    max-width: 320px;
+    margin: $margin auto 0;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+video {
+    margin: $margin auto 0;
+    border: 1px solid rgba(122, 122, 122, 0.25);
+}
+
+.button {
+    background: var(--window-border);
+    border: 2px solid var(--window-border);
+    line-height: 0;
+    padding: 16px 0px;
+    margin: 34px auto 0;
+    display: block;
+    font-size: 16px;
+    width: 200px;
+
+    &:hover {
+        border-color: var(--input-border);
+    }
+}

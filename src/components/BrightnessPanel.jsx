@@ -55,6 +55,9 @@ export default class BrightnessPanel extends PureComponent {
       }
       this.setState({
         monitors
+      }, () => {
+        this.levelsChanged = true
+        if(this.state.updateInterval === 999) this.syncBrightness()
       })
     } else if(monitors.length > 0) {
       // Update single monitor

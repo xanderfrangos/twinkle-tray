@@ -41,6 +41,7 @@
       "src/electron.js",
       "src/preload.js",
       "src/settings-preload.js",
+      "src/intro-preload.js",
       "src/assets/*",
       "src/assets/light-theme/*",
       "build/**/*"

@@ -64,6 +64,14 @@ if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('ex
 //
 //
 
+if(!fs.existsSync(app.getPath("appData"))) {
+  try {
+    fs.mkdirSync(app.getPath("appData"), {recursive: true})
+  } catch (e) {
+    debug.error(e)
+  }
+}
+
 const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
 let settings = {}
 
@@ -497,9 +505,9 @@ function taskbarPosition() {
   return { position, gap }
 }
 
-
-app.on("ready", createPanel);
-app.on("ready", addEventListeners);
+app.on("ready", readSettings)
+app.on("ready", createPanel)
+app.on("ready", addEventListeners)
 
 app.on("window-all-closed", () => {
   app.quit();
@@ -628,7 +636,3 @@ function handleMonitorChange() {
   refreshMonitors()
   repositionPanel()
 }
-
-
-// readSettings
-readSettings()

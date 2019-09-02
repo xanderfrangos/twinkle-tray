@@ -286,7 +286,7 @@ recievedSettings = (e) => {
                         { this.getRenameMonitors() }
 
                     </div>
-                    <div className="pageSection">
+                    <div className="pageSection" style={ { display: (window.isAppX ? "none" : "block") } }>
                         <div className="sectionTitle">Updates</div>
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
                         { this.getUpdate() }

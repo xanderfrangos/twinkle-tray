@@ -265,7 +265,7 @@ recievedSettings = (e) => {
                         <label>Brightness update rate</label>
                         <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
                         <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
-                            <option value="100">Ludicrous (100 ms)</option>
+                            <option value="999">Ludicrous</option>
                             <option value="250">Fast (250 ms)</option>
                             <option value="500">Normal (500 ms)</option>
                             <option value="1000">Slow (1 second)</option>

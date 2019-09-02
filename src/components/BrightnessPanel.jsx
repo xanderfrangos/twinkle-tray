@@ -61,8 +61,12 @@ export default class BrightnessPanel extends PureComponent {
       monitors[slider.props.num].brightness = level
       this.setState({
         monitors
+      }, () => {
+        this.levelsChanged = true
+        if(this.state.updateInterval === 999) this.syncBrightness()
       })
     }
+    
     this.forceUpdate()
   }
 
@@ -108,6 +112,8 @@ updateMinMax = () => {
       }
     }
 
+    this.levelsChanged = true
+
     this.setState({
       monitors: newMonitors
     }, () => {
@@ -152,6 +158,7 @@ recievedSettings = (e) => {
   const linkedLevelsActive = (settings.linkedLevelsActive || false)
   const updateInterval = (settings.updateInterval || 500) * 1
   const remaps = (settings.remaps || {})
+  this.levelsChanged = true
   this.setState({
     linkedLevelsActive,
     remaps,
@@ -191,8 +198,9 @@ resetBrightnessInterval = () => {
 // Send new brightness to monitors, if changed
 syncBrightness = () => {
   const monitors = this.state.monitors
-  if ((window.showPanel || this.doBackgroundEvent) && monitors.length) {
+  if (this.levelsChanged && (window.showPanel || this.doBackgroundEvent) && monitors.length) {
     this.doBackgroundEvent = false
+    this.levelsChanged = false
 
     try {
       for(let idx = 0; idx < monitors.length; idx++) {
@@ -216,6 +224,7 @@ syncBrightness = () => {
     this.lastLevels = []
     this.updateInterval = null
     this.doBackgroundEvent = false
+    this.levelsChanged = false
 }
 
   componentDidMount() {

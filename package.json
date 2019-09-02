@@ -22,7 +22,7 @@
   "author": "Xander Frangos",
   "license": "ISC",
   "dependencies": {
-    "@hensm/ddcci": "file:node-ddcci",
+    "@hensm/ddcci": "file:modules/node-ddcci",
     "color": "^3.1.2",
     "electron-is-dev": "1.0.1",
     "electron-winstore-auto-launch": "^2.0.0",

@@ -1,0 +1,3 @@
+[submodule "node-ddcci"]
+	path = node-ddcci
+	url = https://github.com/hensm/node-ddcci

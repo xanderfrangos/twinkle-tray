@@ -6,11 +6,9 @@ const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
 const Color = require('color')
-const slash = require('slash')
 const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
 
 const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
-
 
 // Logging
 const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "")}.log`)
@@ -31,9 +29,6 @@ const debug = {
   log,
   error: log
 }
-
-
-
 
 const ddcci = require("@hensm/ddcci");
 if(isDev) {
@@ -60,22 +55,6 @@ var wmi = new WmiClient({
 
 // Fix regedit tool path in production
 if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
-
-
-// Set up MonitorInfo path
-let exePath = slash( (isDev ? path.join(__dirname, 'MonitorInfo.exe') : path.join(__dirname, '../../src/MonitorInfo.exe')) )
-if(isAppX) {
-  // We can't actually run this from the AppX, so we copy it somewhere we can.
-  const newPath = slash( path.join(app.getPath("userData"), `\\MonitorInfo.exe`) )
-  try {
-    if(!fs.existsSync(app.getPath("userData"))) fs.mkdirSync(app.getPath("userData"));
-    if(!fs.existsSync(newPath)) fs.copyFileSync(exePath, newPath);
-  } catch (e) {
-    console.error(e)
-  }
-  exePath = newPath
-}
-
 
 
 
@@ -233,12 +212,13 @@ refreshMonitors = async () => {
   // First, let's get DDC/CI monitors. They're easy.
   ddcci._refresh()
   const ddcciMonitors = ddcci.getMonitorList()
+  console.log("MONTIORS", ddcciMonitors)
   for (monitor of ddcciMonitors) {
     try {
       foundMonitors.push({
         name: `Display ${local + 1}`,
         id: monitor,
-        device: monitor,
+        device: monitor.split("#"),
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
@@ -314,29 +294,71 @@ refreshMonitors = async () => {
 
 // Get monitor names
 refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
-  debug.log(exePath)
-  exec(`"${exePath}"`, {}, (error, stdout, stderr) => {
-    if (error) {
-      debug.log(error);
-    }
-    debug.log(stdout)
-    let split1 = stdout.split(";;")
-    let split2 = []
-    for (split of split1) {
-      split2.push(split.split("||"))
-    }
 
-    for (monitor of split2) {
-      for (knownMonitor of monitors) {
-        if (knownMonitor.id == monitor[0]) {
-          knownMonitor.name = monitor[1]
-          knownMonitor.device = monitor[2]
-          break;
+  wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
+    let out = []
+    if (err != null) {
+      callback([])
+    } else if (result) {
+
+
+      let local = 0
+      for (monitor of result) {
+
+        console.log(monitor.Active)
+        console.log(readInstanceName(monitor.InstanceName))
+
+        if (monitor.SerialNumberID !== null) {
+          console.log(parseWMIString(monitor.SerialNumberID))
         }
+        if (monitor.UserFriendlyName !== null) {
+          console.log(parseWMIString(monitor.UserFriendlyName))
+        }
+        if (monitor.ManufacturerName !== null) {
+          console.log(parseWMIString(monitor.ManufacturerName))
+        }
+        if (monitor.ProductCodeID !== null) {
+          console.log(parseWMIString(monitor.ProductCodeID))
+        }
+        let name = ""
+        if (monitor.UserFriendlyName !== null) {
+          name = parseWMIString(result[0].UserFriendlyName)
+        }
+
+        let hwid = readInstanceName(monitor.InstanceName)
+        if (monitor.UserFriendlyName !== null)
+        for (knownMonitor of monitors) {
+          if (knownMonitor.device[1] == hwid[1]) {
+            knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
+            break;
+          }
+        }
+
+        local++
       }
+
+      callback(out)
+
+    } else {
+      callback([])
     }
-    callback(stdout)
   });
+
+}
+
+
+
+function parseWMIString(str) {
+  let hexed = str.replace('{', '').replace('}', '').replace(/;0;/g, ';00;').replace(/;/g, '')
+  var decoded = '';
+  for (var i = 0; (i < hexed.length && hexed.substr(i, 2) !== '00'); i += 2)
+      decoded += String.fromCharCode(parseInt(hexed.substr(i, 2), 10));
+  return decoded;
+}
+
+
+function readInstanceName(insName) {
+  return insName.replace(/&amp;/g, '&').split("\\")
 }
 
 

@@ -10,7 +10,7 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.</div>)
     } else {
       return this.state.monitors.map((monitor, index) => (
-        <Slider name={ monitor.name } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } key={ index } onChange={ this.handleChange } />
+        <Slider name={ monitor.name } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } type={monitor.type} key={ index } onChange={ this.handleChange } />
       ))
     }
   }

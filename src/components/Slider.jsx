@@ -26,7 +26,7 @@ export default class Slider extends Component {
         if (this.props.name) {
             return (
                 <div className="name-row">
-                    <div className="icon">&#xE7F4;</div>
+                    <div className="icon">{(this.props.type == "wmi" ? "&#xE770;" : "&#xE7F4;")}</div>
                     <div className="title">{this.props.name}</div>
                 </div>
             )

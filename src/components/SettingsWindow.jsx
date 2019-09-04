@@ -146,9 +146,9 @@ export default class SettingsWindow extends PureComponent {
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ monitor.name }</div></div>
                         <label>Min</label>
-                        <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={ monitor.name } onChange={this.minMaxChanged} scrolling={ false } />
+                        <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={ monitor.name } monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={ false } />
                         <label>Max</label>
-                        <Slider key={monitor.name + ".max"} type="max" level={remap.max} monitorName={ monitor.name } onChange={this.minMaxChanged} scrolling={ false } />
+                        <Slider key={monitor.name + ".max"} type="max" level={remap.max} monitorName={ monitor.name } monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={ false } />
                     </div>
                   
                 )

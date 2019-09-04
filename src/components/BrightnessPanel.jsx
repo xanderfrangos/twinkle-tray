@@ -252,6 +252,7 @@ syncBrightness = () => {
         <div className="title">Adjust Brightness</div>
         <div className="icons">
           { this.getLinkIcon() }
+          <div title="Turn off displays" className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
           <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
         </div>
       </div>

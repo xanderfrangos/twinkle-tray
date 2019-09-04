@@ -1,4 +1,5 @@
 const { ipcRenderer: ipc, remote } = require('electron');
+const { exec } = require('child_process')
 let browser = remote.getCurrentWindow()
 
 // Show or hide the brightness panel
@@ -61,6 +62,10 @@ function panelAnimationDone() {
         ipc.send('panel-hidden')
         window.document.getElementById("root").dataset["sleep"] = true
     }
+}
+
+function turnOffDisplays() {
+    exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
 }
 
 // Tray icon clicked
@@ -150,6 +155,7 @@ window.requestSettings = requestSettings
 window.sendHeight = sendHeight
 window.panelAnimationDone = panelAnimationDone
 window.setPanelVisibility = setPanelVisibility
+window.turnOffDisplays = turnOffDisplays
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

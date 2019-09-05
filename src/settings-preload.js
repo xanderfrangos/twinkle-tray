@@ -70,7 +70,7 @@ ipc.on('settings-updated', (event, settings) => {
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {
-        window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
+        window.document.body.dataset["systemTheme"] = (parseInt(theme.SystemUsesLightTheme) == 1 ? "light" : "dark")
     } catch (e) {
         window.document.body.dataset["systemTheme"] = "default"
     }

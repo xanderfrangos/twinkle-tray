@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "electron-build": "electron-builder",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
     "appx-signed": "npm run parcel-build && electron-builder -w appx -c.win.certificateFile=cert.pfx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-signed.${ext}\"",
+    "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci && npm start",
     "build": "npm run parcel-build && npm run electron-build",
     "start": "wait-on http://localhost:3000/index.html && electron . "
   },

@@ -73,7 +73,7 @@
     "@babel/preset-react": "^7.7.4",
     "concurrently": "4.1.0",
     "cross-env": "5.2.0",
-    "electron": "6.0.1",
+    "electron": "7.1.8",
     "electron-builder": "21.2.0",
     "electron-rebuild": "^1.8.8",
     "parcel-bundler": "^1.12.4",

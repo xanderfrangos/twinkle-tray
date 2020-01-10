@@ -9,7 +9,7 @@
     "electron-build": "electron-builder",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
     "appx-signed": "npm run parcel-build && electron-builder -w appx -c.win.certificateFile=cert.pfx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-signed.${ext}\"",
-    "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci && npm start",
+    "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci",
     "build": "npm run parcel-build && npm run electron-build",
     "start": "wait-on http://localhost:3000/index.html && electron . "
   },
@@ -26,7 +26,7 @@
     "@hensm/ddcci": "file:modules/node-ddcci",
     "color": "^3.1.2",
     "electron-is-dev": "1.0.1",
-    "electron-winstore-auto-launch": "^2.0.0",
+    "electron-winstore-auto-launch": "^2.0.3",
     "react": "16.9.0",
     "react-dom": "16.9.0",
     "regedit": "^3.0.3",
@@ -68,15 +68,16 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/preset-react": "^7.0.0",
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/preset-react": "^7.7.4",
     "concurrently": "4.1.0",
     "cross-env": "5.2.0",
     "electron": "6.0.1",
     "electron-builder": "21.2.0",
-    "parcel-bundler": "1.12.3",
-    "sass": "^1.22.9",
+    "electron-rebuild": "^1.8.8",
+    "parcel-bundler": "^1.12.4",
+    "sass": "^1.24.4",
     "wait-on": "3.2.0"
   }
 }

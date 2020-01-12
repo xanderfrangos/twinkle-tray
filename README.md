@@ -9,6 +9,10 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Make sure yo
 
 This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [electron-react-parcel-boilerplate](<https://github.com/kumarryogeshh/electron-react-parcel-boilerplate>).
 
+**Download the lastest version from [twinkletray.com](https://twinkletray.com/) or the [Releases page](https://github.com/xanderfrangos/twinkle-tray/releases).**
+
+<a href="https://www.microsoft.com/store/apps/9PLJWWSV01LK" target="_blank"><img width="156" src="https://crushee.app/assets/img/ms-store.svg" alt="Get Twinkle Tray from the Microsoft Store"></a>
+
 
 ## Usage
 
@@ -18,11 +22,16 @@ This app was built with [Electron](https://electronjs.org/), [Node.js](https://n
 - Click away to hide the panel.
 - Right-click the system tray icon to quit.
 
+## Build
 
+- Download or clone.
+- Run *npm install*.
+- Run *npm run build* to build the native modules.
+- Run *npm run parcel* and *npm start*.
 
 ## License
 
-Copyright © 2019 Xander Frangos
+Copyright © 2020 Xander Frangos
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

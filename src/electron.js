@@ -217,8 +217,11 @@ function getAccentColors() {
     adjusted.color[2] = (level * 100)
     return adjusted
   }
+  let adjustedAccent = accent
+  if(accent.hsl().color[2] > 60) adjustedAccent = matchLumi(accent, 0.6);
+  if (accent.hsl().color[2] < 40) adjustedAccent = matchLumi(accent, 0.4);
   return {
-    accent: accent.hex(),
+    accent: adjustedAccent.hex(),
     lighter: matchLumi(accent, 0.85).hex(),
     light: matchLumi(accent, 0.52).hex(),
     medium: matchLumi(accent, 0.48).hex(),

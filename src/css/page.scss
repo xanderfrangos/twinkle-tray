@@ -2,13 +2,6 @@ html, body {
     background: transparent;
 }
 
-body {
-    display: none;
-    &[data-system-theme] {
-        display: block;
-    }
-}
-
 #settings > .window-base {
     background: var(--page-background);
     color: var(--tray-text);

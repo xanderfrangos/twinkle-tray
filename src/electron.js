@@ -1,7 +1,7 @@
 const electron = require("electron");
 const path = require('path');
 const fs = require('fs')
-const { systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
+const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
@@ -73,15 +73,17 @@ if(!fs.existsSync(app.getPath("appData"))) {
 }
 
 const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
-let settings = {}
+let settings = {
+  userClosedIntro: false,
+  theme: "default",
+  updateInterval: 500,
+  openAtLogin: false
+}
 
 function readSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
-      settings = JSON.parse(fs.readFileSync(settingsPath))
-      
-      updateStartupOption((settings.openAtLogin || false))
-      
+      settings = JSON.parse(fs.readFileSync(settingsPath))      
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
@@ -89,14 +91,12 @@ function readSettings() {
   } catch(e) {
     debug.error("Couldn't load settings", e)
   }
+  processSettings()
 }
 
 
-function writeSettings(newSettings = {}) {
+function writeSettings(newSettings = {}, processAfter = true) {
   settings = Object.assign(settings, newSettings)
-  sendToAllWindows('settings-updated', settings)
-
-  updateStartupOption((settings.openAtLogin || false))
 
   // Save new settings
   try {
@@ -104,7 +104,26 @@ function writeSettings(newSettings = {}) {
   } catch(e) {
     debug.error("Couldn't save settings.", settingsPath, e)
   }
-  
+  if (processAfter) processSettings();
+}
+
+
+function processSettings() {
+  if (settings.theme) {
+    nativeTheme.themeSource = determineTheme(settings.theme)
+  }
+  updateStartupOption((settings.openAtLogin || false))
+  sendToAllWindows('settings-updated', settings)
+}
+
+function determineTheme(themeName) {
+  theme = themeName.toLowerCase()
+  if(theme === "dark" || theme === "light") return theme;
+  if(lastTheme && lastTheme.SystemUsesLightTheme) {
+    return "light"
+  } else {
+    return "dark"
+  }
 }
 
 
@@ -127,6 +146,7 @@ async function updateStartupOption(openAtLogin) {
 }
 
 function getSettings() {
+  processSettings()
   sendToAllWindows('settings-updated', settings)
 }
 

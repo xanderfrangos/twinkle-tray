@@ -120,18 +120,24 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getUpdate = () => {
-        if(this.state.latest && this.state.latest != window.version) {
+        if(window.isAppX) {
             return (
-                <div>
-                    <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p><p>Click below to download <b>{this.state.latest || "not available"}</b>.</p>
-                    <br />
-                    <a className="button" onClick={() => { window.openURL(this.state.releaseURL) }}>Get latest version</a>
-                </div>
+                <p>To check for updates, visit the <a onClick={() => { window.openURL("ms-windows-store://pdp/?productid=9PLJWWSV01LK") }}>Microsoft Store app</a>.</p>
             )
         } else {
-            return (
-                <p>There are no updates available at this time.</p>
-            )
+            if(this.state.latest && this.state.latest != window.version) {
+                return (
+                    <div>
+                        <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p><p>Click below to download <b>{this.state.latest || "not available"}</b>.</p>
+                        <br />
+                        <a className="button" onClick={() => { window.openURL(this.state.releaseURL) }}>Get latest version</a>
+                    </div>
+                )
+            } else {
+                return (
+                    <p>There are no updates available at this time.</p>
+                )
+            }
         }
     }
 
@@ -286,7 +292,7 @@ recievedSettings = (e) => {
                         { this.getRenameMonitors() }
 
                     </div>
-                    <div className="pageSection" style={ { display: (window.isAppX ? "none" : "block") } }>
+                    <div className="pageSection">
                         <div className="sectionTitle">Updates</div>
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
                         { this.getUpdate() }

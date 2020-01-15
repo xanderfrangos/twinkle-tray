@@ -10,7 +10,7 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.</div>)
     } else {
       return this.state.monitors.map((monitor, index) => (
-        <Slider name={ monitor.name } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } monitortype={monitor.type} key={ index } onChange={ this.handleChange } />
+        <Slider name={ this.getMonitorName(monitor, this.state.names) } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } monitortype={monitor.type} key={ index } onChange={ this.handleChange } />
       ))
     }
   }
@@ -24,7 +24,13 @@ export default class BrightnessPanel extends PureComponent {
     }
   }
 
-
+  getMonitorName = (monitor, renames) => {
+    if(Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
+      return renames[monitor.id]
+  } else {
+      return monitor.name
+  }
+}
 
 
   // Enable/Disable linked levels
@@ -161,10 +167,12 @@ recievedSettings = (e) => {
   const linkedLevelsActive = (settings.linkedLevelsActive || false)
   const updateInterval = (settings.updateInterval || 500) * 1
   const remaps = (settings.remaps || {})
+  const names = (settings.names || {})
   this.levelsChanged = true
   this.setState({
     linkedLevelsActive,
     remaps,
+    names,
     updateInterval
   }, () => {
     this.resetBrightnessInterval()
@@ -222,7 +230,8 @@ syncBrightness = () => {
     super(props);
     this.state = {
       monitors: [],
-      linkedLevelsActive: false
+      linkedLevelsActive: false,
+      names: {}
     }
     this.lastLevels = []
     this.updateInterval = null

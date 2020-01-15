@@ -14,6 +14,7 @@ export default class SettingsWindow extends PureComponent {
             openAtLogin: false,
             monitors: [],
             remaps: {},
+            names: {},
             linkedLevelsActive: false,
             updateInterval: (window.settings.updateInterval || 500)
         }
@@ -119,6 +120,22 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings({ openAtLogin })
     }
 
+    monitorNameChange = (e, f) => {
+        const idx = e.currentTarget.dataset.key
+        this.state.names[window.allMonitors[idx].id] = e.currentTarget.value
+        this.forceUpdate()
+        window.sendSettings({ names: this.state.names })
+    }
+
+    getMonitorName = (monitor, renames) => {
+        if(Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
+            return renames[monitor.id] + ` (${monitor.name})`
+        } else {
+            return monitor.name
+        }
+    }
+
+
     getUpdate = () => {
         if(window.isAppX) {
             return (
@@ -150,7 +167,7 @@ export default class SettingsWindow extends PureComponent {
                 return (
                     <div key={monitor.name}>
                         <br />
-                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ monitor.name }</div></div>
+                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ this.getMonitorName(monitor, this.state.names) }</div></div>
                         <label>Min</label>
                         <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={ monitor.name } monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={ false } />
                         <label>Max</label>
@@ -170,7 +187,7 @@ export default class SettingsWindow extends PureComponent {
                 <div key={index}>
                     <br />
                     <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ monitor.name }</div></div>
-                    <input type="text" placeholder="Enter name"></input>
+                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
                 </div>
               
             ))
@@ -239,10 +256,12 @@ recievedSettings = (e) => {
     const linkedLevelsActive = (settings.linkedLevelsActive || false)
     const updateInterval = (settings.updateInterval || 500) * 1
     const remaps = (settings.remaps || {})
+    const names = (settings.names || {})
     this.setState({
       linkedLevelsActive,
       remaps,
-      updateInterval
+      updateInterval,
+      names
     }, () => {
       this.forceUpdate()
     })
@@ -280,12 +299,12 @@ recievedSettings = (e) => {
                     </div>
                     <div className="pageSection">
                         <div className="sectionTitle">Normalize Brightness</div>
-                        <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent.</p>
+                        <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.</p>
                         <div className="monitorItem">
                             { this.getMinMaxMonitors() }
                         </div> 
                     </div>
-                    <div className="pageSection" style={{display:'none'}}>
+                    <div className="pageSection">
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
                         

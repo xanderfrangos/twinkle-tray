@@ -77,7 +77,8 @@ let settings = {
   userClosedIntro: false,
   theme: "default",
   updateInterval: 500,
-  openAtLogin: false
+  openAtLogin: false,
+  killWhenIdle: false
 }
 
 function readSettings() {
@@ -327,6 +328,41 @@ refreshMonitors = async () => {
 }
 
 
+function updateBrightness(index, level) {
+  const monitor = monitors[index]
+  const brightness = Math.round(level * 1)
+  try {
+    if (monitor.type == "ddcci") {
+      // Always use the latest monitors
+      const allMonitors = ddcci.getMonitorList()
+      ddcci.setBrightness(monitor.id, brightness)
+    } else if (monitor.type == "wmi") {
+      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
+    }
+    monitor.brightness = brightness
+  } catch (e) {
+    debug.error("Could not update brightness", e)
+  }
+}
+
+let currentTransition = null
+function transitionBrightness(level) {
+  if(currentTransition !== null) clearInterval(currentTransition);
+  currentTransition = setInterval(() => {
+    let numDone = 0
+    for (monitor of monitors) {
+      if(monitor.brightness < level + 3 && monitor.brightness > level - 3) {
+        updateBrightness(monitor.num, level)
+        numDone++
+      } else {
+        updateBrightness(monitor.num, ((monitor.brightness * 2) + level) / 3)
+      }
+      if(numDone === monitors.length) {
+        clearInterval(currentTransition);
+      }
+    }
+  }, settings.updateInterval * 1)
+}
 
 
 //
@@ -387,22 +423,8 @@ ipcMain.on('request-colors', () => {
   sendToAllWindows('update-colors', getAccentColors())
 })
 
-
 ipcMain.on('update-brightness', function (event, data) {
-  const monitor = monitors[data.index]
-
-  try {
-    if (monitor.type == "ddcci") {
-      // Always use the latest monitors
-      const allMonitors = ddcci.getMonitorList()
-      ddcci.setBrightness(monitor.id, data.level * 1)
-    } else if (monitor.type == "wmi") {
-      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${data.level})"`)
-    }
-  } catch (e) {
-    debug.error("Could not update brightness", e)
-  }
-
+  updateBrightness(data.index, data.level)
 })
 
 ipcMain.on('request-monitors', function (event, arg) {
@@ -423,6 +445,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   mainWindow.setAlwaysOnTop(false)
+  if(settings.killWhenIdle) mainWindow.close()
 })
 
 
@@ -433,7 +456,7 @@ ipcMain.on('panel-hidden', () => {
 //
 //
 
-function createPanel() {
+function createPanel(toggleOnLoad = false) {
 
   mainWindow = new BrowserWindow({
     width: panelSize.width,
@@ -469,6 +492,7 @@ function createPanel() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
+    if(toggleOnLoad) toggleTray();
   })
 
 }
@@ -542,7 +566,7 @@ app.on("ready", () => {
 })
 
 app.on("window-all-closed", () => {
-  app.quit();
+  //app.quit();
 });
 
 app.on("activate", () => {
@@ -565,6 +589,8 @@ app.on("activate", () => {
 //
 
 function createTray() {
+  if(tray != null) return false;
+
   tray = new Tray(path.join(__dirname, 'assets/icon.ico'))
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Settings', type: 'normal', click: createSettings },
@@ -580,6 +606,9 @@ function quitApp() {
 }
 
 function toggleTray() {
+  if(mainWindow == null) {
+    createPanel(true)
+  }
   refreshMonitors()
   getThemeRegistry()
   getSettings()
@@ -715,6 +744,7 @@ function createSettings() {
 //
 //
 
+let backgroundInterval = null
 function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
@@ -722,6 +752,8 @@ function addEventListeners() {
   electron.screen.on('display-added', handleMonitorChange)
   electron.screen.on('display-removed', handleMonitorChange)
   electron.screen.on('display-metrics-changed', handleMonitorChange)
+
+  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 1000 : 60000))
 }
 
 function handleAccentChange() {
@@ -732,4 +764,8 @@ function handleAccentChange() {
 function handleMonitorChange() {
   refreshMonitors()
   repositionPanel()
+}
+
+function handleBackgroundUpdate() {
+  
 }

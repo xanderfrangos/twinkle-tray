@@ -256,7 +256,14 @@ p {
     }
 }
 
-
+a {
+    text-decoration: underline;
+    cursor: pointer;
+    color: var(--page-text);
+    &:hover {
+        color: var(--page-text-mid);
+    }
+}
 
 
 .icon {

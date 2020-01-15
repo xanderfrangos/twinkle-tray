@@ -348,6 +348,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
         for (knownMonitor of monitors) {
           if (knownMonitor.device[1] == hwid[1]) {
             knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
+            knownMonitor.rawName = monitor.UserFriendlyName
             break;
           }
         }
@@ -361,10 +362,12 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
 }
 
 function parseWMIString(str) {
-  let hexed = str.replace('{', '').replace('}', '').replace(/;0;/g, ';00;').replace(/;/g, '')
+  let hexed = str.replace('{', '').replace('}', '').replace(/;0/g, ';32')
   var decoded = '';
-  for (var i = 0; (i < hexed.length && hexed.substr(i, 2) !== '00'); i += 2)
-      decoded += String.fromCharCode(parseInt(hexed.substr(i, 2), 10));
+  var split = hexed.split(';')
+  for (var i = 0; (i < split.length); i++)
+      decoded += String.fromCharCode(parseInt(split[i], 10));
+  decoded = decoded.trim()
   return decoded;
 }
 

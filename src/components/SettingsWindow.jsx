@@ -304,7 +304,7 @@ recievedSettings = (e) => {
                             { this.getMinMaxMonitors() }
                         </div> 
                     </div>
-                    <div className="pageSection" style={{ display: "none" }}>
+                    <div className="pageSection">
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
                         

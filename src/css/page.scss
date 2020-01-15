@@ -248,6 +248,24 @@ label {
     }
 }
 
+.adjustmentTimes {
+    padding-top: 5px;
+    .item {
+        padding-top: 20px;
+        margin-top: 20px;
+        border-top: 1px solid var(--page-text-mid);
+        
+        .monitor-item {
+            max-width: 320px;
+        }
+        & + .item {
+        }
+    }
+    select {
+        margin-right: 4px;
+    }
+}
+
 p {
     font-size: 14px;
     color: var(--page-text-mid);

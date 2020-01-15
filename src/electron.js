@@ -78,7 +78,10 @@ let settings = {
   theme: "default",
   updateInterval: 500,
   openAtLogin: false,
-  killWhenIdle: false
+  killWhenIdle: false,
+  remaps: [],
+  hotkeys: [],
+  adjustmentTimes: []
 }
 
 function readSettings() {
@@ -753,7 +756,7 @@ function addEventListeners() {
   electron.screen.on('display-removed', handleMonitorChange)
   electron.screen.on('display-metrics-changed', handleMonitorChange)
 
-  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 1000 : 60000))
+  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 5))
 }
 
 function handleAccentChange() {
@@ -766,6 +769,40 @@ function handleMonitorChange() {
   repositionPanel()
 }
 
+let lastTimeEvent = false
 function handleBackgroundUpdate() {
+
+  // Time of Day Adjustments 
+  if(settings.adjustmentTimes.length > 0) {
+    const date = new Date()
+    const hour = date.getHours()
+    const minute = date.getMinutes()
   
+    // Reset on new day
+    if(lastTimeEvent && lastTimeEvent.day != date.getDate()) {
+      lastTimeEvent = false
+    }
+  
+    // Find most recent event
+    let foundEvent = false
+    for(let event of settings.adjustmentTimes) {
+      const eventHour = (event.hour * 1) + (event.am == "PM" ? 12 : 0)
+      const eventMinute = event.minute * 1
+      // Check if event is not later than current time, last event time, or last found time
+      if(hour >= eventHour && minute >= eventMinute && (foundEvent === false || (foundEvent.hour >= (event.am == "PM" ? 12 : 0) && foundEvent.minute >= eventMinute))) {
+        foundEvent = Object.assign({}, event)
+        foundEvent.minute = foundEvent.minute * 1
+        foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" ? 12 : 0)
+      }
+    }
+    if(foundEvent) {
+      if(lastTimeEvent == false || lastTimeEvent.hour != foundEvent.hour || lastTimeEvent.minute != foundEvent.minute) {
+        console.log("Adjusting brightness automatically", foundEvent)
+        lastTimeEvent = foundEvent
+        lastTimeEvent.day = new Date().getDate()
+        transitionBrightness(foundEvent.brightness)
+      }
+    }
+  }
+
 }

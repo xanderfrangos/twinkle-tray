@@ -10,11 +10,13 @@ export default class SettingsWindow extends PureComponent {
     constructor(props) {
         super(props)
         this.state = {
+            activePage: 'general',
             theme: 'default',
             openAtLogin: false,
             monitors: [],
             remaps: {},
-            names: {},
+            names: [],
+            adjustmentTimes: [],
             linkedLevelsActive: false,
             updateInterval: (window.settings.updateInterval || 500)
         }
@@ -120,6 +122,12 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings({ openAtLogin })
     }
 
+    ramChanged = (event) => {
+        const killWhenIdle = (this.state.killWhenIdle ? false : true)
+        this.setState({ killWhenIdle })
+        window.sendSettings({ killWhenIdle })
+    }
+
     monitorNameChange = (e, f) => {
         const idx = e.currentTarget.dataset.key
         this.state.names[window.allMonitors[idx].id] = e.currentTarget.value
@@ -194,6 +202,63 @@ export default class SettingsWindow extends PureComponent {
           }
       }
 
+      getAdjustmentTimes = () => {
+        if(this.state.adjustmentTimes == undefined || this.state.adjustmentTimes.length == 0) {
+            return (<div></div>)
+        } else {
+            return this.state.adjustmentTimes.map((time, index) => (
+                <div className="item" key={index}>
+                    <div className="row">
+                        <select onChange={ (e) => {
+                            this.setAdjustmentTimeValue(index, e.target.value, "hour")
+                        }} value={time.hour}>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                            <option>10</option>
+                            <option>11</option>
+                            <option>12</option>
+                        </select>
+                        <select onChange={ (e) => {
+                            this.setAdjustmentTimeValue(index, e.target.value, "minute")
+                        }} value={time.minute}>
+                            <option value="0">00</option>
+                            <option>15</option>
+                            <option>30</option>
+                            <option>45</option>
+                        </select>
+                        <select onChange={ (e) => {
+                            this.setAdjustmentTimeValue(index, e.target.value, "am")
+                        }} value={time.am}>
+                            <option>AM</option>
+                            <option>PM</option>
+                        </select>
+                        <a className="button" onClick={ () => {
+                            this.state.adjustmentTimes.splice(index, 1)
+                            this.forceUpdate()
+                        }}>Remove time</a>
+                    </div>
+                    <div className="row">
+                        <Slider key={index + ".brightness"} name="Brightness" level={time.brightness} onChange={ (value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() } } scrolling={ false } />
+                    </div>
+                </div>
+            ))
+        }
+        
+      }
+
+
+      setAdjustmentTimeValue = (index, value, type) => {
+        this.state.adjustmentTimes[index][type] = value
+        this.forceUpdate()
+      }
+
 
 
 
@@ -257,30 +322,60 @@ recievedSettings = (e) => {
     const updateInterval = (settings.updateInterval || 500) * 1
     const remaps = (settings.remaps || {})
     const names = (settings.names || {})
+    const adjustmentTimes = (settings.adjustmentTimes || {})
+    const killWhenIdle = (settings.killWhenIdle || false)
     this.setState({
       linkedLevelsActive,
       remaps,
       updateInterval,
-      names
+      names,
+      adjustmentTimes,
+      killWhenIdle
     }, () => {
       this.forceUpdate()
     })
   }
 
 
+  isSection = (name) => {
+    if(this.state.activePage == name) {
+        return true
+    } else {
+        return false
+    }
+  }
 
+  addAdjustmentTime = () => {
+      this.state.adjustmentTimes.push({
+          brightness: 50,
+          hour: 12,
+          minute: 30,
+          am: "PM"
+      })
+      this.forceUpdate()
+      this.adjustmentTimesUpdated()
+  }
 
+  adjustmentTimesUpdated = () => {
+      window.sendSettings({adjustmentTimes: this.state.adjustmentTimes})
+  }
    
 
     render() {
         return (
             <div className="window-base" data-theme={window.settings.theme || "default"}>
                 <Titlebar title="Twinkle Tray Settings" />
+                <div id="sidebar">
+
+                </div>
                 <div id="page">
-                    <div className="pageSection">
+                    <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">General</div>
                         <label>Launch at startup</label>
-                        <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" id="theme" />
+                        <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
+                        <label>Minimize RAM usage</label>
+                        <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
+                        <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />
                         <label>App Theme</label>
                         <select value={window.settings.theme} onChange={this.themeChanged}>
                             <option value="default">System Preference (Default)</option>
@@ -297,21 +392,28 @@ recievedSettings = (e) => {
                             <option value="2000">Very Slow (2 seconds)</option>
                         </select>
                     </div>
-                    <div className="pageSection">
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
+                        <div className="sectionTitle">Time of Day Adjustments</div>
+                        <p>Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.</p>
+                        <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ Add a time</a></p>
+                        <div className="adjustmentTimes">
+                            { this.getAdjustmentTimes() }
+                        </div>
+                        <br />
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Normalize Brightness</div>
                         <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.</p>
                         <div className="monitorItem">
                             { this.getMinMaxMonitors() }
                         </div> 
                     </div>
-                    <div className="pageSection">
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
-                        
                         { this.getRenameMonitors() }
-
                     </div>
-                    <div className="pageSection">
+                    <div className="pageSection" data-active={this.isSection("updates")}>
                         <div className="sectionTitle">Updates</div>
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
                         { this.getUpdate() }

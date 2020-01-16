@@ -101,3 +101,37 @@ body {
 }
 
 
+//
+// Update bar
+//
+
+.updateBar {
+    display: flex;
+    justify-content: space-between;
+    background: var(--system-accent-color);
+    color: white;
+    padding: 15px;
+    width: 100%;
+    margin: 20px -15px -15px -15px;
+
+    .left {
+        font-size: 13px;
+    }
+    .right {
+        display: flex;
+        font-size: 13px;
+        align-items: center;
+        a {
+            cursor: pointer;
+            padding: 1px 5px;
+            margin: -1px 0;
+            opacity: 0.8;
+            &:hover {
+                opacity: 1;
+            }
+            & + a {
+                margin-left: 10px;
+            }
+        }
+    }
+}

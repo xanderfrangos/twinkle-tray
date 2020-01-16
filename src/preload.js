@@ -70,6 +70,15 @@ function turnOffDisplays() {
     exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
 }
 
+function installUpdate() {
+    ipc.send('get-update', window.latestVersion.downloadURL)
+    dismissUpdate()
+}
+
+function dismissUpdate() {
+    ipc.send('ignore-update', window.latestVersion.version)
+}
+
 // Tray icon clicked
 ipc.on('tray-clicked', () => {
     window.document.getElementById("root").dataset["sleep"] = false
@@ -119,6 +128,14 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+// New app update recieved
+ipc.on('latest-version', (event, version) => {
+    window.latestVersion = version
+    window.dispatchEvent(new CustomEvent('updateUpdated', {
+        detail: version
+    }))
+})
+
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {
@@ -154,6 +171,8 @@ window.requestMonitors = requestMonitors
 window.openSettings = openSettings
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.installUpdate = installUpdate
+window.dismissUpdate = dismissUpdate
 window.sendHeight = sendHeight
 window.panelAnimationDone = panelAnimationDone
 window.setPanelVisibility = setPanelVisibility

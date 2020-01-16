@@ -90,7 +90,9 @@ const defaultSettings = {
   hotkeys: [],
   adjustmentTimes: [],
   checkTimeAtStartup: false,
-  order: []
+  order: [],
+  checkForUpdates: !isDev,
+  dismissedUpdate: ''
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -473,6 +475,7 @@ ipcMain.on('open-settings', createSettings)
 ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)
 })
+
 ipcMain.on('get-update', (event, url) => {
   getLatestUpdate(url)
 })
@@ -654,6 +657,7 @@ function toggleTray() {
 
   // Send accent
   sendToAllWindows('update-colors', getAccentColors())
+  if(latestVersion) sendToAllWindows('latest-version', latestVersion);
 
   if(mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
@@ -779,6 +783,40 @@ function createSettings() {
 
 
 
+//
+//
+//    App Updates
+//
+//
+
+
+
+let latestVersion = false
+function checkForUpdates() {
+  //if(isDev) return false;
+  try {
+    const fetch = require('node-fetch');
+  if(isAppX === false) {
+    console.log("Checking for updates...")
+    fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
+        response.json().then((json) => {
+            latestVersion = {
+              releaseURL: (json[0].html_url),
+              version: json[0].tag_name,
+              downloadURL: json[0].assets[0]["browser_download_url"],
+              show: false
+          }
+          if("v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
+            latestVersion.show = true
+          }
+        })
+    });
+}
+  } catch(e) {
+    console.log(e)
+  }
+}
+
 
 function getLatestUpdate(url) {
   try {
@@ -792,13 +830,19 @@ function getLatestUpdate(url) {
         const dest = fs.createWriteStream(updatePath);
         dest.on('finish', function () {
           console.log("Saved! Running...")
-          const { spawn } = require('child_process');
-          let process = spawn(updatePath, {
-            detached: true,
-            stdio: 'ignore'
-          });
-          process.unref()
-          app.quit()
+          setTimeout(() => {
+            try {
+              const { spawn } = require('child_process');
+              let process = spawn(updatePath, {
+                detached: true,
+                stdio: 'ignore'
+              });
+              process.unref()
+              app.quit()
+            } catch(e) {
+              console.log(e)
+            }
+          }, 1250)
         });
         res.body.pipe(dest);
       });
@@ -808,6 +852,11 @@ function getLatestUpdate(url) {
   }
 }
 
+ipcMain.on('ignore-update', (event, dismissedUpdate) => {
+  writeSettings({dismissedUpdate})
+  latestVersion.show = false
+  sendToAllWindows('latest-version', latestVersion)
+})
 
 
 
@@ -830,7 +879,7 @@ function addEventListeners() {
     lastTimeEvent = false;
     setTimeout(handleBackgroundUpdate, 500)
   }
-  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 15000 : 60000 * 3))
 }
 
 function handleAccentChange() {
@@ -887,6 +936,7 @@ function handleBackgroundUpdate() {
   } catch(e) {
     console.error(e)
   }
-  
 
+  checkForUpdates()
+  
 }

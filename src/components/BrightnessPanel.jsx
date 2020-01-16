@@ -38,6 +38,14 @@ export default class BrightnessPanel extends PureComponent {
   }
 }
 
+getUpdateBar = () => {
+  if(this.state.update && this.state.update.show) {
+    return (<div className="updateBar">
+      <div className="left">An update is available ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>Install</a><a onClick={window.dismissUpdate}>Dismiss</a></div>
+    </div>)
+  }
+}
+
 
   // Enable/Disable linked levels
   toggleLinkedLevels = () => {
@@ -188,6 +196,13 @@ recievedSettings = (e) => {
   })
 }
 
+recievedUpdate = (e) => {
+  const update = e.detail
+  this.setState({
+    update
+  })
+}
+
 
 
 normalize(level, sending = false, min = 0, max = 100) {
@@ -237,7 +252,8 @@ syncBrightness = () => {
     this.state = {
       monitors: [],
       linkedLevelsActive: false,
-      names: {}
+      names: {},
+      update: false
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -250,6 +266,7 @@ syncBrightness = () => {
     window.addEventListener("monitorsUpdated", this.recievedMonitors)
     window.addEventListener("namesUpdated", this.recievedNames)
     window.addEventListener("settingsUpdated", this.recievedSettings)
+    window.addEventListener("updateUpdated", this.recievedUpdate)
 
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()
@@ -272,6 +289,7 @@ syncBrightness = () => {
         </div>
       </div>
         { this.getMonitors() }
+        { this.getUpdateBar() }
       </div>
     );
   }

@@ -33,6 +33,10 @@ function openURL(url) {
     ipc.send('open-url', url)
 }
 
+function getUpdate(url) {
+    ipc.send('get-update', url)
+}
+
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
     window.allMonitors = monitors
@@ -92,6 +96,7 @@ window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
 window.resetSettings = resetSettings
+window.getUpdate = getUpdate
 window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()

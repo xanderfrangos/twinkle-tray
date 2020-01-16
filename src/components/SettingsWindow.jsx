@@ -35,7 +35,8 @@ export default class SettingsWindow extends PureComponent {
             names: [],
             adjustmentTimes: [],
             linkedLevelsActive: false,
-            updateInterval: (window.settings.updateInterval || 500)
+            updateInterval: (window.settings.updateInterval || 500),
+            downloadingUpdate: false
         }
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -46,12 +47,18 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("namesUpdated", this.recievedNames)
         window.addEventListener("settingsUpdated", this.recievedSettings)
 
-        fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => { response.json().then( (json) => {
-            this.setState({
-                releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : json[0].html_url),
-                latest: json[0].tag_name
-            })
-        })});
+        if(window.isAppX === false) {
+            fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
+                response.json().then((json) => {
+                    this.setState({
+                        releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : json[0].html_url),
+                        latest: json[0].tag_name,
+                        downloadURL: json[0].assets[0]["browser_download_url"]
+                    })
+                })
+            });
+        }
+        
     }
 
 
@@ -246,7 +253,7 @@ export default class SettingsWindow extends PureComponent {
                     <div>
                         <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p><p>Click below to download <b>{this.state.latest || "not available"}</b>.</p>
                         <br />
-                        <a className="button" onClick={() => { window.openURL(this.state.releaseURL) }}>Get latest version</a>
+                        { this.getUpdateButton() }
                     </div>
                 )
             } else {
@@ -254,6 +261,14 @@ export default class SettingsWindow extends PureComponent {
                     <p>There are no updates available at this time.</p>
                 )
             }
+        }
+    }
+
+    getUpdateButton = () => {
+        if(this.state.downloadingUpdate) {
+            return (<p><b>Downloading update...</b></p>)
+        } else {
+            return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>Download &amp; install {this.state.latest}</a>)
         }
     }
 

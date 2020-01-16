@@ -12,10 +12,16 @@ const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
 
 // Logging
 const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "")}.log`)
+const updatePath = path.join(app.getPath("userData"), `\\update.exe`)
 
 // Remove old log
 if(fs.existsSync(logPath)) {
   fs.unlinkSync(logPath)
+}
+
+// Remove old update
+if (fs.existsSync(updatePath)) {
+  fs.unlinkSync(updatePath)
 }
 
 const log = async (...args) => {
@@ -467,6 +473,9 @@ ipcMain.on('open-settings', createSettings)
 ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)
 })
+ipcMain.on('get-update', (event, url) => {
+  getLatestUpdate(url)
+})
 
 ipcMain.on('panel-height', (event, height) => {
   panelSize.height = height
@@ -767,6 +776,38 @@ function createSettings() {
   })
 
 }
+
+
+
+
+function getLatestUpdate(url) {
+  try {
+    console.log("Downloading update from: " + url)
+    const fs = require('fs');
+    const fetch = require('node-fetch');
+
+    fetch(url)
+      .then(res => {
+        console.log("Downloaded!")
+        const dest = fs.createWriteStream(updatePath);
+        dest.on('finish', function () {
+          console.log("Saved! Running...")
+          const { spawn } = require('child_process');
+          let process = spawn(updatePath, {
+            detached: true,
+            stdio: 'ignore'
+          });
+          process.unref()
+          app.quit()
+        });
+        res.body.pipe(dest);
+      });
+
+  } catch(e) {
+    console.log(e)
+  }
+}
+
 
 
 

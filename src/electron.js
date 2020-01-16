@@ -383,17 +383,40 @@ function updateBrightness(index, level) {
   }
 }
 
+function normalizeBrightness(level, sending = false, min = 0, max = 100) {
+  if(min > 0 || max < 100) {
+    let out = level
+    if(sending) {
+      out = (min + ( ( level / 100) * (max - min) ) )
+    } else {
+      out = ((level - min) * (100 / (max - min)))
+    }
+    return Math.round(out)
+  } else {
+    return level
+  } 
+}
+
 let currentTransition = null
 function transitionBrightness(level) {
   if(currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
     for (monitor of monitors) {
-      if(monitor.brightness < level + 3 && monitor.brightness > level - 3) {
-        updateBrightness(monitor.num, level)
+      let normalized = level
+      if(settings.remaps) {
+        for(let remapName in settings.remaps) {
+          if(remapName == monitor.name) {
+            let remap = settings.remaps[remapName]
+            normalized = normalizeBrightness(level, true, remap.min, remap.max)
+          }
+        }
+      }
+      if(monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
+        updateBrightness(monitor.num, normalized)
         numDone++
       } else {
-        updateBrightness(monitor.num, ((monitor.brightness * 2) + level) / 3)
+        updateBrightness(monitor.num, ((monitor.brightness * 2) + normalized) / 3)
       }
       if(numDone === monitors.length) {
         clearInterval(currentTransition);
@@ -886,7 +909,7 @@ function addEventListeners() {
     lastTimeEvent = false;
     setTimeout(handleBackgroundUpdate, 500)
   }
-  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 15000 : 60000 * 3))
+  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
 }
 
 function handleAccentChange() {

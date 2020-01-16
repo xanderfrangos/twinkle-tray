@@ -110,7 +110,7 @@ export default class SettingsWindow extends PureComponent {
     minMaxChanged = (value, slider) => {
 
         const name = slider.props.monitorName
-        const remaps = Object.assign(this.state.remaps, {})
+        let remaps = Object.assign({}, this.state.remaps)
 
         if(remaps[name] === undefined) {
             remaps[name] = {
@@ -153,17 +153,11 @@ export default class SettingsWindow extends PureComponent {
             if(remaps[name].min > remaps[name].max - 10) {
                 remaps[name].max = remaps[name].min + 10
             }
-
         }
 
-
-        this.setState({
-            remaps
-        })
-
-        this.forceUpdate()
-        window.sendSettings({ remaps })
-        window.requestSettings()
+        
+        window.sendSettings({ remaps: remaps })
+        //window.requestSettings()
     }
 
     themeChanged = (event) => {

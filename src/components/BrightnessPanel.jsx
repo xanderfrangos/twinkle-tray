@@ -16,7 +16,7 @@ export default class BrightnessPanel extends PureComponent {
     } else {
       const sorted = this.state.monitors.slice(0).sort(monitorSort)
       return sorted.map((monitor, index) => (
-        <Slider name={ this.getMonitorName(monitor, this.state.names) } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } monitortype={monitor.type} key={ index } onChange={ this.handleChange } />
+        <Slider name={ this.getMonitorName(monitor, this.state.names) } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ monitor.num } monitortype={monitor.type} key={ monitor.num } onChange={ this.handleChange } />
       ))
     }
   }

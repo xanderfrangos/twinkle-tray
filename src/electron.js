@@ -123,6 +123,9 @@ function processSettings() {
   }
   updateStartupOption((settings.openAtLogin || false))
   applyOrder()
+  if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
+    mainWindow.close()
+  }
   sendToAllWindows('settings-updated', settings)
 }
 
@@ -196,7 +199,7 @@ ipcMain.on('request-settings', (event) => {
 ipcMain.on('reset-settings', () => {
   settings = Object.assign({}, defaultSettings)
   console.log("Resetting settings")
-  writeSettings()
+  writeSettings({ userClosedIntro: true })
 })
 
 // Get the user's Windows Personalization settings
@@ -519,7 +522,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
-    if(toggleOnLoad) toggleTray();
+    if (toggleOnLoad) setTimeout(() => { toggleTray() }, 100);
   })
 
 }

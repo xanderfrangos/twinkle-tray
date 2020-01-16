@@ -13,7 +13,7 @@ export default class Titlebar extends React.Component {
     return (
       <div className="window-titlebar">
         <div className="titlebar-drag-region"></div>
-        <div className="window-title">{this.props.title || ""}</div>
+        <div className="window-title"><div className="appIcon" style={{ display: 'none' }}></div><div>{this.props.title || ""}</div></div>
         <div className="window-controls-container">
           <div className="window-icon-bg" onClick={() => { window.thisWindow.minimize() }}>
             <div className="window-icon window-minimize"></div>

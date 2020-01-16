@@ -70,8 +70,19 @@ html, body {
     position: fixed;
     top: 1px;
     left: 1px;
-    background: var(--page-background);
     z-index: 100;
+
+    @media (max-width: 700px) {
+        background: var(--page-background);
+    }
+
+    .appIcon {
+        width: 16px;
+        height: 16px;
+        background: url('../../src/assets/logo.png') center center no-repeat;
+        background-size: contain;
+        margin-right: 10px;
+    }
 
     .titlebar-drag-region {
         top: 0;
@@ -87,6 +98,8 @@ html, body {
     .window-title {
         font-size: 12px;
         padding: 0 10px;
+        display: flex;
+        align-items: center;
     }
     
     .window-controls-container {
@@ -238,7 +251,7 @@ label {
 }
 
 .pageSection {
-    padding-bottom: 30px;
+    padding-bottom: 40px;
     max-width: 800px;
     &[data-active] {
         display: none;
@@ -330,24 +343,15 @@ a {
 // Sidebar
 #sidebar {
     position: fixed;
-    top: 31px;
+    top: 1px;
     left: 1px;
+    padding-top: 30px;
     width: $sidebarWidth;
     height: calc(100% - 2px);
     background: var(--tray-background);
     transition: width 0.2s;
     overflow: hidden;
-    @media (max-width: 700px) {
-        width: $sidebarWidthSmall;
-        .label {
-            opacity: 0;
-        }
-        .item {
-            &:before {
-                margin-right: -4px;
-            }
-        }
-    }
+    z-index: 3;
     .item {
         width: 100%;
         display: flex;
@@ -395,6 +399,17 @@ a {
         &[data-active='true'] {
             &:before {
                 transform: scaleX(1);
+            }
+        }
+    }
+    @media (max-width: 700px) {
+        width: $sidebarWidthSmall;
+        .item {
+            &:before {
+                margin-right: -4px;
+            }
+            .label {
+                opacity: 0;
             }
         }
     }

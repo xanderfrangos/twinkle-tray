@@ -503,16 +503,14 @@ recievedSettings = (e) => {
                         <div className="sectionTitle">General</div>
                         <label>Launch at startup</label>
                         <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("general")}>
+                        <br /><br />
                         <label>App Theme</label>
                         <select value={window.settings.theme} onChange={this.themeChanged}>
                             <option value="default">System Preference (Default)</option>
                             <option value="dark">Dark Mode</option>
                             <option value="light">Light Mode</option>
                         </select>
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("general")}>
+                        <br /><br />
                         <label>Minimize RAM usage</label>
                         <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
                         <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />

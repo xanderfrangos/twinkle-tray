@@ -736,7 +736,7 @@ function createSettings() {
   
   settingsWindow = new BrowserWindow({
     width: (width >= 1200 ? 1024 : 600),
-    height: (width >= 768 ? 720 : 500),
+    height: (height >= 768 ? 720 : 500),
     minHeight: 450,
     minWidth: 400,
     show: false,

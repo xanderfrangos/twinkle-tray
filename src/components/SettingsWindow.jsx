@@ -386,6 +386,7 @@ export default class SettingsWindow extends PureComponent {
                         <a className="button" onClick={ () => {
                             this.state.adjustmentTimes.splice(index, 1)
                             this.forceUpdate()
+                            this.adjustmentTimesUpdated()
                         }}>Remove time</a>
                     </div>
                     <div className="row">

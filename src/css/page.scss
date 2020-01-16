@@ -238,7 +238,7 @@ label {
 }
 
 .pageSection {
-    margin-bottom: 20px;
+    padding-bottom: 30px;
     max-width: 800px;
     &[data-active] {
         display: none;
@@ -311,6 +311,16 @@ a {
 
     &:hover {
         border-color: var(--input-border);
+    }
+}
+
+
+.reorderList {
+    max-width: 320px;
+    border: 1px solid var(--window-border);
+    .sectionSubtitle {
+        padding: 15px;
+        margin: 0;
     }
 }
 

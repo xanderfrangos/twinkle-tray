@@ -25,6 +25,10 @@ function requestSettings() {
     ipc.send('request-settings')
 }
 
+function resetSettings() {
+    ipc.send('reset-settings')
+}
+
 function openURL(url) {
     ipc.send('open-url', url)
 }
@@ -87,6 +91,7 @@ window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.resetSettings = resetSettings
 window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()

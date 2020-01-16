@@ -1,15 +1,21 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
 
-export default class BrightnessPanel extends PureComponent {
+const monitorSort = (a, b) => {
+  const aSort = (a.order === undefined ? 999 : a.order * 1)
+  const bSort = (b.order === undefined ? 999 : b.order * 1)
+  return aSort - bSort
+}
 
+export default class BrightnessPanel extends PureComponent {
 
   // Render <Slider> components
   getMonitors = () => {
     if(this.state.monitors.length == 0) {
       return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.</div>)
     } else {
-      return this.state.monitors.map((monitor, index) => (
+      const sorted = this.state.monitors.slice(0).sort(monitorSort)
+      return sorted.map((monitor, index) => (
         <Slider name={ this.getMonitorName(monitor, this.state.names) } level={ monitor.brightness } min={ monitor.min } max={ monitor.max } num={ index } monitortype={monitor.type} key={ index } onChange={ this.handleChange } />
       ))
     }

@@ -1,11 +1,29 @@
 import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
 import Slider from "./Slider";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
+};
+
+const getItemStyle = (isDragging, draggableStyle) => ({
+  userSelect: "none",
+  background: isDragging ? "rgba(122, 122, 122, 0.2)" : "none",
+  ...draggableStyle
+});
+
+const monitorSort = (a, b) => {
+    const aSort = (a.order === undefined ? 999 : a.order * 1)
+    const bSort = (b.order === undefined ? 999 : b.order * 1)
+    return aSort - bSort
+}
 
 export default class SettingsWindow extends PureComponent {
     
-
     constructor(props) {
         super(props)
         this.state = {
@@ -20,6 +38,7 @@ export default class SettingsWindow extends PureComponent {
             updateInterval: (window.settings.updateInterval || 500)
         }
         this.lastLevels = []
+        this.onDragEnd = this.onDragEnd.bind(this);
     }
 
     componentDidMount() {
@@ -34,6 +53,39 @@ export default class SettingsWindow extends PureComponent {
             })
         })});
     }
+
+
+    onDragEnd(result) {
+        // dropped outside the list
+        if (!result.destination) {
+          return;
+        }
+        const sorted = this.state.monitors.slice(0).sort(monitorSort)
+        const items = reorder(
+            sorted,
+            result.source.index,
+            result.destination.index
+          );
+
+          let order = []
+          let idx = 0
+          for(let monitor of items) {
+            this.state.monitors[monitor.num].order = idx
+            order.push({
+                id: monitor.id,
+                order: idx
+            })
+            idx++
+          }
+      
+          this.setState({
+            order
+          });
+
+          window.sendSettings({ order })
+      }
+
+
 
     getRemap = (name) => {
         if(this.state.remaps[name] === undefined) {
@@ -101,7 +153,7 @@ export default class SettingsWindow extends PureComponent {
         })
 
         this.forceUpdate()
-        window.sendSettings({ remaps: remaps })
+        window.sendSettings({ remaps })
         window.requestSettings()
     }
 
@@ -235,6 +287,47 @@ export default class SettingsWindow extends PureComponent {
             ))
           }
       }
+      
+
+      getReorderMonitors = () => {
+        if(this.state.monitors == undefined || this.state.monitors.length == 0) {
+            return (<div className="no-displays-message">No displays found.<br /><br /></div>)
+          } else {
+              const sorted = this.state.monitors.slice(0).sort(monitorSort)
+            return (
+                <DragDropContext onDragEnd={this.onDragEnd}>
+                            <Droppable droppableId="droppable">
+                            {(provided, snapshot) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                    >
+                      {sorted.map((monitor, index) => (
+                        <Draggable key={monitor.id} draggableId={monitor.id} index={index}>
+                        {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={getItemStyle(
+                            snapshot.isDragging,
+                            provided.draggableProps.style
+                          )}
+                        >
+                          <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ this.getMonitorName(monitor, this.state.names) }</div></div>
+                        </div>
+                      )}
+                    </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                            </Droppable>
+                        </DragDropContext>
+            )
+
+          }
+      }
 
       getAdjustmentTimes = () => {
         if(this.state.adjustmentTimes == undefined || this.state.adjustmentTimes.length == 0) {
@@ -359,13 +452,15 @@ recievedSettings = (e) => {
     const names = (settings.names || {})
     const adjustmentTimes = (settings.adjustmentTimes || {})
     const killWhenIdle = (settings.killWhenIdle || false)
+    const order = (settings.order || [])
     this.setState({
       linkedLevelsActive,
       remaps,
       updateInterval,
       names,
       adjustmentTimes,
-      killWhenIdle
+      killWhenIdle,
+      order
     }, () => {
       this.forceUpdate()
     })
@@ -452,6 +547,13 @@ recievedSettings = (e) => {
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
                         { this.getRenameMonitors() }
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
+                        <div className="sectionTitle">Reorder Monitors</div>
+                        <p>Change the order that monitors are displayed in the tray. Click and drag to make changes.</p>
+                        <div className="reorderList">
+                        { this.getReorderMonitors() }
+                        </div>
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Normalize Brightness</div>

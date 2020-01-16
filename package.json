@@ -28,6 +28,7 @@
     "electron-is-dev": "1.0.1",
     "electron-winstore-auto-launch": "^2.0.3",
     "react": "16.9.0",
+    "react-beautiful-dnd": "^12.2.0",
     "react-dom": "16.9.0",
     "regedit": "^3.0.3",
     "wmi-client": "^0.5.0"

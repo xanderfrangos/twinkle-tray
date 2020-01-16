@@ -73,7 +73,8 @@ if(!fs.existsSync(app.getPath("appData"))) {
 }
 
 const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
-let settings = {
+
+const defaultSettings = {
   userClosedIntro: false,
   theme: "default",
   updateInterval: 500,
@@ -81,8 +82,11 @@ let settings = {
   killWhenIdle: false,
   remaps: [],
   hotkeys: [],
-  adjustmentTimes: []
+  adjustmentTimes: [],
+  order: []
 }
+
+let settings = Object.assign({}, defaultSettings)
 
 function readSettings() {
   try {
@@ -117,7 +121,18 @@ function processSettings() {
     nativeTheme.themeSource = determineTheme(settings.theme)
   }
   updateStartupOption((settings.openAtLogin || false))
+  applyOrder()
   sendToAllWindows('settings-updated', settings)
+}
+
+function applyOrder() {
+  for(let monitor of monitors) {
+    for(let order of settings.order) {
+      if(monitor.id == order.id) {
+        monitor.order = order.order
+      }
+    }
+  }
 }
 
 function determineTheme(themeName) {
@@ -175,6 +190,12 @@ ipcMain.on('send-settings', (event, newSettings) => {
 ipcMain.on('request-settings', (event) => {
   getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of
   getSettings()
+})
+
+ipcMain.on('reset-settings', () => {
+  settings = Object.assign({}, defaultSettings)
+  console.log("Resetting settings")
+  writeSettings()
 })
 
 // Get the user's Windows Personalization settings
@@ -322,6 +343,7 @@ refreshMonitors = async () => {
   // Basic info acquired, send it off
 
   monitors = foundMonitors
+  applyOrder()
   sendToAllWindows('monitors-updated', monitors)
 
   // Get names

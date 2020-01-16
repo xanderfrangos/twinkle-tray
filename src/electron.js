@@ -794,7 +794,12 @@ function handleMonitorChange() {
   repositionPanel()
 }
 
-let lastTimeEvent = false
+let lastTimeEvent = {
+  hour: new Date().getHours(),
+  minute: new Date().getMinutes(),
+  day: new Date().getDate()
+}
+lastTimeEvent = false
 function handleBackgroundUpdate() {
 
   try {
@@ -806,23 +811,24 @@ function handleBackgroundUpdate() {
 
       // Reset on new day
       if (lastTimeEvent && lastTimeEvent.day != date.getDate()) {
+        console.log("New day, resettings lastTimeEvent")
         lastTimeEvent = false
       }
 
       // Find most recent event
       let foundEvent = false
       for (let event of settings.adjustmentTimes) {
-        const eventHour = (event.hour * 1) + (event.am == "PM" ? 12 : 0)
+        const eventHour = (event.hour * 1) + (event.am == "PM" && event.hour != 12 ? 12 : 0)
         const eventMinute = event.minute * 1
         // Check if event is not later than current time, last event time, or last found time
-        if (hour >= eventHour && minute >= eventMinute && (foundEvent === false || (foundEvent.hour >= (event.am == "PM" ? 12 : 0) && foundEvent.minute >= eventMinute))) {
+        if (hour >= eventHour && (hour > eventHour || minute >= eventMinute) && (foundEvent === false || (foundEvent.hour < eventHour && foundEvent.minute <= eventMinute))) {
           foundEvent = Object.assign({}, event)
           foundEvent.minute = foundEvent.minute * 1
-          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" ? 12 : 0)
+          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" && foundEvent.hour != 12 ? 12 : 0)
         }
       }
       if (foundEvent) {
-        if (lastTimeEvent == false || lastTimeEvent.hour != foundEvent.hour || lastTimeEvent.minute != foundEvent.minute) {
+        if (lastTimeEvent == false || lastTimeEvent.hour < foundEvent.hour || (lastTimeEvent.hour == foundEvent.hour && lastTimeEvent.minute < foundEvent.minute) ) {
           console.log("Adjusting brightness automatically", foundEvent)
           lastTimeEvent = foundEvent
           lastTimeEvent.day = new Date().getDate()
@@ -831,7 +837,7 @@ function handleBackgroundUpdate() {
       }
     }
   } catch(e) {
-
+    console.error(e)
   }
   
 

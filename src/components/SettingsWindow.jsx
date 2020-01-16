@@ -223,11 +223,11 @@ export default class SettingsWindow extends PureComponent {
             label: "Time Adjustments",
             icon: "&#xE823;"
         },
-        {
+        /*{
             id: "hotkeys",
             label: "Hotkeys",
             icon: "&#xF210;"
-        },
+        },*/
         {
             id: "updates",
             label: "Updates",
@@ -251,7 +251,7 @@ export default class SettingsWindow extends PureComponent {
             if(this.state.latest && this.state.latest != window.version) {
                 return (
                     <div>
-                        <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p><p>Click below to download <b>{this.state.latest || "not available"}</b>.</p>
+                        <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p>
                         <br />
                         { this.getUpdateButton() }
                     </div>
@@ -268,7 +268,7 @@ export default class SettingsWindow extends PureComponent {
         if(this.state.downloadingUpdate) {
             return (<p><b>Downloading update...</b></p>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>Download &amp; install {this.state.latest}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>Download &amp; Install {this.state.latest}</a>)
         }
     }
 

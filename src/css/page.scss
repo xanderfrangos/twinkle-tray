@@ -1,3 +1,6 @@
+$sidebarWidth: 300px;
+$sidebarWidthSmall: 44px;
+
 html, body {
     background: transparent;
 }
@@ -16,9 +19,6 @@ html, body {
     border: 1px solid var(--window-border);
     user-select: none;
     overflow: hidden;
-    //transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-
-    --tray-background: var(--page-background);
 }
 
 #page {
@@ -27,6 +27,10 @@ html, body {
     padding: 20px;
     box-sizing: border-box;
     height: 100%;
+    padding-left: $sidebarWidth + 20px;
+    @media (max-width: 700px) {
+        padding-left: $sidebarWidthSmall + 20px;
+    }
 }
 
 
@@ -161,7 +165,7 @@ select, input {
     font-family: 'Segoe UI';
     font-weight: 400;
     margin-top: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 
     &:hover {
         border-color: var(--input-border-hover);
@@ -236,6 +240,12 @@ label {
 .pageSection {
     margin-bottom: 20px;
     max-width: 800px;
+    &[data-active] {
+        display: none;
+    }
+    &[data-active="true"] {
+        display: block;
+    }
 }
 
 .monitorItem {
@@ -301,5 +311,81 @@ a {
 
     &:hover {
         border-color: var(--input-border);
+    }
+}
+
+
+
+
+// Sidebar
+#sidebar {
+    position: fixed;
+    top: 31px;
+    left: 1px;
+    width: $sidebarWidth;
+    height: calc(100% - 2px);
+    background: var(--tray-background);
+    transition: width 0.2s;
+    overflow: hidden;
+    @media (max-width: 700px) {
+        width: $sidebarWidthSmall;
+        .label {
+            opacity: 0;
+        }
+        .item {
+            &:before {
+                margin-right: -4px;
+            }
+        }
+    }
+    .item {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-items: end;
+        align-items: center;
+        padding: 13px;
+        box-sizing: border-box;
+        line-height: 1;
+        
+        .icon {
+            padding-right: 13px;
+            font-size: 18px;
+        }
+
+        .label {
+            margin-top: -2px;
+            font-size: 14px;
+            opacity: 1;
+            transition: opacity 0.2s;
+            white-space: pre;
+        }
+
+        &:hover {
+            background: var(--tray-border);
+        }
+        &:active {
+            
+        }
+
+        &:before {
+            content: ' ';
+            width: 4px;
+            min-width: 4px;
+            height: 23px;
+            display: block;
+            position: relative;
+            left: -13px;
+            transform-origin: 0 50%;
+            transform: scaleX(0);
+            background: var(--system-accent-color);
+            transition: transform 0.2s;
+        }
+
+        &[data-active='true'] {
+            &:before {
+                transform: scaleX(1);
+            }
+        }
     }
 }

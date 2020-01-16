@@ -1,7 +1,7 @@
 const electron = require("electron");
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app } = require('electron')
+const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
@@ -168,6 +168,7 @@ function sendToAllWindows(eventName, data) {
 }
 
 ipcMain.on('send-settings', (event, newSettings) => {
+  console.log("Recieved new settings", newSettings)
   writeSettings(newSettings)
 })
 
@@ -707,10 +708,12 @@ function createSettings() {
     settingsWindow.focus()
     return false;
   }
+
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
   
   settingsWindow = new BrowserWindow({
-    width: 600,
-    height: 490,
+    width: (width >= 1200 ? 1024 : 600),
+    height: (width >= 768 ? 720 : 500),
     minHeight: 450,
     minWidth: 400,
     show: false,

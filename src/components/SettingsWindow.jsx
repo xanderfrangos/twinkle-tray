@@ -1,6 +1,5 @@
-import React, { PureComponent, useState } from "react";
+import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
-import Monitor from './SettingsMonitor'
 import Slider from "./Slider";
 
 
@@ -143,6 +142,41 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getSidebar = () => {
+       const items = [
+        {
+            id: "general",
+            label: "General",
+            icon: "&#xE713;"
+        },
+        {
+            id: "monitors",
+            label: "Monitor Settings",
+            icon: "&#xE7F4;"
+        },
+        {
+            id: "time",
+            label: "Time Adjustments",
+            icon: "&#xE823;"
+        },
+        {
+            id: "hotkeys",
+            label: "Hotkeys",
+            icon: "&#xF210;"
+        },
+        {
+            id: "updates",
+            label: "Updates",
+            icon: "&#xE895;"
+        }
+       ]
+       return items.map((item, index) => {
+        return (<div key={item.id} className="item" data-active={this.isSection(item.id)} onClick={ () => { this.setState({activePage: item.id}) } }>
+            <div className="icon" dangerouslySetInnerHTML={ { __html: (item.icon || "&#xE770;") } }></div><div className="label">{ item.label || `Item ${index}` }</div>
+        </div>)
+       })
+    }
+
 
     getUpdate = () => {
         if(window.isAppX) {
@@ -257,6 +291,7 @@ export default class SettingsWindow extends PureComponent {
       setAdjustmentTimeValue = (index, value, type) => {
         this.state.adjustmentTimes[index][type] = value
         this.forceUpdate()
+        this.adjustmentTimesUpdated()
       }
 
 
@@ -348,8 +383,8 @@ recievedSettings = (e) => {
   addAdjustmentTime = () => {
       this.state.adjustmentTimes.push({
           brightness: 50,
-          hour: 12,
-          minute: 30,
+          hour: '12',
+          minute: '30',
           am: "PM"
       })
       this.forceUpdate()
@@ -366,22 +401,28 @@ recievedSettings = (e) => {
             <div className="window-base" data-theme={window.settings.theme || "default"}>
                 <Titlebar title="Twinkle Tray Settings" />
                 <div id="sidebar">
-
+                    { this.getSidebar() }
                 </div>
                 <div id="page">
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">General</div>
                         <label>Launch at startup</label>
                         <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
-                        <label>Minimize RAM usage</label>
-                        <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
-                        <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("general")}>
                         <label>App Theme</label>
                         <select value={window.settings.theme} onChange={this.themeChanged}>
                             <option value="default">System Preference (Default)</option>
                             <option value="dark">Dark Mode</option>
                             <option value="light">Light Mode</option>
                         </select>
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("general")}>
+                        <label>Minimize RAM usage</label>
+                        <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
+                        <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("general")}>
                         <label>Brightness update rate</label>
                         <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
                         <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
@@ -392,7 +433,7 @@ recievedSettings = (e) => {
                             <option value="2000">Very Slow (2 seconds)</option>
                         </select>
                     </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
+                    <div className="pageSection" data-active={this.isSection("time")}>
                         <div className="sectionTitle">Time of Day Adjustments</div>
                         <p>Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.</p>
                         <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ Add a time</a></p>
@@ -402,16 +443,16 @@ recievedSettings = (e) => {
                         <br />
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
+                        <div className="sectionTitle">Rename Monitors</div>
+                        <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
+                        { this.getRenameMonitors() }
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Normalize Brightness</div>
                         <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.</p>
                         <div className="monitorItem">
                             { this.getMinMaxMonitors() }
                         </div> 
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Rename Monitors</div>
-                        <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
-                        { this.getRenameMonitors() }
                     </div>
                     <div className="pageSection" data-active={this.isSection("updates")}>
                         <div className="sectionTitle">Updates</div>

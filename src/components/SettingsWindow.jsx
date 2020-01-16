@@ -422,8 +422,8 @@ recievedSettings = (e) => {
                         <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
                         <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />
                     </div>
-                    <div className="pageSection" data-active={this.isSection("general")}>
-                        <label>Brightness update rate</label>
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
+                        <div className="sectionTitle">Brightness update rate</div>
                         <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
                         <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
                             <option value="999">Ludicrous</option>
@@ -432,6 +432,12 @@ recievedSettings = (e) => {
                             <option value="1000">Slow (1 second)</option>
                             <option value="2000">Very Slow (2 seconds)</option>
                         </select>
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("general")}>
+                        <div className="sectionTitle">Reset Settings</div>
+                        <p>If for some reason you need to clear your settings, hit this button.</p>
+                        <br />
+                        <a className="button" onClick={window.resetSettings}>Reset settings</a>
                     </div>
                     <div className="pageSection" data-active={this.isSection("time")}>
                         <div className="sectionTitle">Time of Day Adjustments</div>

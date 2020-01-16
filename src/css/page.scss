@@ -337,7 +337,13 @@ a {
     }
 }
 
-
+.changelog {
+    white-space: pre-wrap;
+    padding: 10px 20px;
+    margin: 20px 0 5px;
+    border-top: 1px solid var(--page-text-mid);
+    border-bottom: 1px solid var(--page-text-mid);
+}
 
 
 // Sidebar

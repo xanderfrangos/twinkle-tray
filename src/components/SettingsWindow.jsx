@@ -2,6 +2,7 @@ import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
 import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { markdown } from 'markdown';
 
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
@@ -53,7 +54,8 @@ export default class SettingsWindow extends PureComponent {
                     this.setState({
                         releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : json[0].html_url),
                         latest: json[0].tag_name,
-                        downloadURL: json[0].assets[0]["browser_download_url"]
+                        downloadURL: json[0].assets[0]["browser_download_url"],
+                        changelog: json[0].body
                     })
                 })
             });
@@ -252,6 +254,7 @@ export default class SettingsWindow extends PureComponent {
                 return (
                     <div>
                         <p><b style={{color: window.accent}}>An update is available for Twinkle Tray!</b></p>
+                        <div className="changelog" dangerouslySetInnerHTML={ { __html: markdown.toHTML(this.state.changelog) } }></div>
                         <br />
                         { this.getUpdateButton() }
                     </div>

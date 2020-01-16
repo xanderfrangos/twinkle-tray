@@ -792,8 +792,10 @@ function createSettings() {
 
 
 let latestVersion = false
+let lastCheck = false
 function checkForUpdates() {
-  //if(isDev) return false;
+  if(lastCheck && lastCheck == new Date().getDate()) return false;
+  lastCheck = new Date().getDate()
   try {
     const fetch = require('node-fetch');
   if(isAppX === false) {
@@ -854,6 +856,11 @@ function getLatestUpdate(url) {
 
 ipcMain.on('ignore-update', (event, dismissedUpdate) => {
   writeSettings({dismissedUpdate})
+  latestVersion.show = false
+  sendToAllWindows('latest-version', latestVersion)
+})
+
+ipcMain.on('clear-update', (event, dismissedUpdate) => {
   latestVersion.show = false
   sendToAllWindows('latest-version', latestVersion)
 })

@@ -253,9 +253,12 @@ export default class SettingsWindow extends PureComponent {
                         { this.getUpdateButton() }
                     </div>
                 )
-            } else {
+            } else if(this.state.latest) {
                 return (
-                    <p>There are no updates available at this time.</p>
+                    <div>
+                        <p>There are no updates available at this time. This version of Twinkle tray includes the following changes:</p>
+                        <div className="changelog" dangerouslySetInnerHTML={ { __html: markdown.toHTML(this.state.changelog) } }></div>
+                    </div>
                 )
             }
         }

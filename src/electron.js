@@ -91,7 +91,7 @@ let settings = Object.assign({}, defaultSettings)
 function readSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
-      settings = JSON.parse(fs.readFileSync(settingsPath))      
+      settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))      
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
@@ -334,7 +334,7 @@ refreshMonitors = async () => {
 
   if (wmiMonitors && wmiMonitors.length > 0) {
     for (mon of wmiMonitors) {
-      mon.num = local
+      //mon.num = local
       foundMonitors.push(mon)
       local++
     }
@@ -797,37 +797,42 @@ function handleMonitorChange() {
 let lastTimeEvent = false
 function handleBackgroundUpdate() {
 
-  // Time of Day Adjustments 
-  if(settings.adjustmentTimes.length > 0) {
-    const date = new Date()
-    const hour = date.getHours()
-    const minute = date.getMinutes()
-  
-    // Reset on new day
-    if(lastTimeEvent && lastTimeEvent.day != date.getDate()) {
-      lastTimeEvent = false
-    }
-  
-    // Find most recent event
-    let foundEvent = false
-    for(let event of settings.adjustmentTimes) {
-      const eventHour = (event.hour * 1) + (event.am == "PM" ? 12 : 0)
-      const eventMinute = event.minute * 1
-      // Check if event is not later than current time, last event time, or last found time
-      if(hour >= eventHour && minute >= eventMinute && (foundEvent === false || (foundEvent.hour >= (event.am == "PM" ? 12 : 0) && foundEvent.minute >= eventMinute))) {
-        foundEvent = Object.assign({}, event)
-        foundEvent.minute = foundEvent.minute * 1
-        foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" ? 12 : 0)
+  try {
+    // Time of Day Adjustments 
+    if (settings.adjustmentTimes.length > 0) {
+      const date = new Date()
+      const hour = date.getHours()
+      const minute = date.getMinutes()
+
+      // Reset on new day
+      if (lastTimeEvent && lastTimeEvent.day != date.getDate()) {
+        lastTimeEvent = false
+      }
+
+      // Find most recent event
+      let foundEvent = false
+      for (let event of settings.adjustmentTimes) {
+        const eventHour = (event.hour * 1) + (event.am == "PM" ? 12 : 0)
+        const eventMinute = event.minute * 1
+        // Check if event is not later than current time, last event time, or last found time
+        if (hour >= eventHour && minute >= eventMinute && (foundEvent === false || (foundEvent.hour >= (event.am == "PM" ? 12 : 0) && foundEvent.minute >= eventMinute))) {
+          foundEvent = Object.assign({}, event)
+          foundEvent.minute = foundEvent.minute * 1
+          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" ? 12 : 0)
+        }
+      }
+      if (foundEvent) {
+        if (lastTimeEvent == false || lastTimeEvent.hour != foundEvent.hour || lastTimeEvent.minute != foundEvent.minute) {
+          console.log("Adjusting brightness automatically", foundEvent)
+          lastTimeEvent = foundEvent
+          lastTimeEvent.day = new Date().getDate()
+          transitionBrightness(foundEvent.brightness)
+        }
       }
     }
-    if(foundEvent) {
-      if(lastTimeEvent == false || lastTimeEvent.hour != foundEvent.hour || lastTimeEvent.minute != foundEvent.minute) {
-        console.log("Adjusting brightness automatically", foundEvent)
-        lastTimeEvent = foundEvent
-        lastTimeEvent.day = new Date().getDate()
-        transitionBrightness(foundEvent.brightness)
-      }
-    }
+  } catch(e) {
+
   }
+  
 
 }

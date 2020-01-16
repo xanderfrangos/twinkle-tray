@@ -178,6 +178,11 @@ export default class SettingsWindow extends PureComponent {
         this.setState({ killWhenIdle })
         window.sendSettings({ killWhenIdle })
     }
+    checkTimeAtStartupChanged = (event) => {
+        const checkTimeAtStartup = (this.state.checkTimeAtStartup ? false : true)
+        this.setState({ checkTimeAtStartup })
+        window.sendSettings({ checkTimeAtStartup })
+    }
 
     monitorNameChange = (e, f) => {
         const idx = e.currentTarget.dataset.key
@@ -453,6 +458,7 @@ recievedSettings = (e) => {
     const adjustmentTimes = (settings.adjustmentTimes || {})
     const killWhenIdle = (settings.killWhenIdle || false)
     const order = (settings.order || [])
+    const checkTimeAtStartup = (settings.checkTimeAtStartup || false)
     this.setState({
       linkedLevelsActive,
       remaps,
@@ -460,7 +466,8 @@ recievedSettings = (e) => {
       names,
       adjustmentTimes,
       killWhenIdle,
-      order
+      order,
+      checkTimeAtStartup
     }, () => {
       this.forceUpdate()
     })
@@ -537,9 +544,13 @@ recievedSettings = (e) => {
                         <p>Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.</p>
                         <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ Add a time</a></p>
                         <div className="adjustmentTimes">
-                            { this.getAdjustmentTimes() }
+                            {this.getAdjustmentTimes()}
                         </div>
-                        <br />
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("time")}>
+                        <label>Check at app startup</label>
+                        <p>Adjust the brightness to match the most relevant time when Twinkle Tray starts.</p>
+                        <input onChange={this.checkTimeAtStartupChanged} checked={window.settings.checkTimeAtStartup || false} data-checked={window.settings.checkTimeAtStartup || false} type="checkbox" />
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Rename Monitors</div>

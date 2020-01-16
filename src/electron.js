@@ -83,6 +83,7 @@ const defaultSettings = {
   remaps: [],
   hotkeys: [],
   adjustmentTimes: [],
+  checkTimeAtStartup: false,
   order: []
 }
 
@@ -781,7 +782,11 @@ function addEventListeners() {
   electron.screen.on('display-removed', handleMonitorChange)
   electron.screen.on('display-metrics-changed', handleMonitorChange)
 
-  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 5))
+  if (settings.checkTimeAtStartup) {
+    lastTimeEvent = false;
+    setTimeout(handleBackgroundUpdate, 500)
+  }
+  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
 }
 
 function handleAccentChange() {
@@ -799,7 +804,6 @@ let lastTimeEvent = {
   minute: new Date().getMinutes(),
   day: new Date().getDate()
 }
-lastTimeEvent = false
 function handleBackgroundUpdate() {
 
   try {

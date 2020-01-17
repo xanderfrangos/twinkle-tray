@@ -111,6 +111,7 @@ recievedMonitors = (e) => {
 
     for(let monitor of this.state.monitors) {
       if(idx < newMonitors.length) {
+        // Use old data at same indexes until new names are recieved
         newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
       }
       idx++

@@ -9,8 +9,14 @@ function setPanelVisibility(visible) {
     // Update browser var to avoid Electron bugs
     browser = remote.getCurrentWindow()
 
+    if(visible)
+    window.dispatchEvent(new CustomEvent('sleepUpdated', {
+        detail: false
+    }))
+
     // Update #root value
     window.document.getElementById("root").dataset["visible"] = window.showPanel
+    window.sleep = !visible
 
     // Blur all inputs to fix visual bugs
     if ("activeElement" in document)
@@ -35,6 +41,7 @@ function requestAccent() {
 
 // Send brightness update request. Params are the monitor's index in the array and requested brightness level.
 function updateBrightness(index, level) {
+    if(!window.showPanel) return false;
     ipc.send('update-brightness', {
         index,
         level
@@ -61,7 +68,11 @@ function sendHeight(height) {
 function panelAnimationDone() {
     if(showPanel === false) {
         ipc.send('panel-hidden')
+        window.sleep = true
         window.document.getElementById("root").dataset["sleep"] = true
+        window.dispatchEvent(new CustomEvent('sleepUpdated', {
+            detail: true
+        }))
     }
 }
 

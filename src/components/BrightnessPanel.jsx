@@ -11,7 +11,7 @@ export default class BrightnessPanel extends PureComponent {
 
   // Render <Slider> components
   getMonitors = () => {
-    if(this.state.monitors.length == 0) {
+    if(!this.state.monitors || this.state.monitors.length == 0) {
       return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.</div>)
     } else {
       const sorted = this.state.monitors.slice(0).sort(monitorSort)
@@ -100,7 +100,9 @@ getUpdateBar = () => {
 
 // Update monitor info
 recievedMonitors = (e) => {
+  console.log(e)
   if(this.state.monitors.length > 0 || e.detail.length > 0) {
+    
 
     let idx = 0
     let newMonitors = Object.assign(e.detail, {})
@@ -108,16 +110,20 @@ recievedMonitors = (e) => {
     this.lastLevels.length = e.detail.length
 
     for(let monitor of this.state.monitors) {
-      newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
+      if(idx < newMonitors.length) {
+        newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
+      }
       idx++
     }
 
     this.setState({
       monitors: newMonitors
+    }, () => {
+      //this.doBackgroundEvent = true
     })
   }
   
-  this.forceUpdate()
+  
 }
 
 
@@ -203,6 +209,12 @@ recievedUpdate = (e) => {
   })
 }
 
+recievedSleep = (e) => {
+  this.setState({
+    sleeping: e.detail
+  })
+}
+
 
 
 normalize(level, sending = false, min = 0, max = 100) {
@@ -253,7 +265,8 @@ syncBrightness = () => {
       monitors: [],
       linkedLevelsActive: false,
       names: {},
-      update: false
+      update: false,
+      sleeping: false
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -267,6 +280,7 @@ syncBrightness = () => {
     window.addEventListener("namesUpdated", this.recievedNames)
     window.addEventListener("settingsUpdated", this.recievedSettings)
     window.addEventListener("updateUpdated", this.recievedUpdate)
+    window.addEventListener("sleepUpdated", this.recievedSleep)
 
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()
@@ -278,20 +292,25 @@ syncBrightness = () => {
   }
 
   render() {
-    return (
-      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
-        <div className="titlebar">
-        <div className="title">Adjust Brightness</div>
-        <div className="icons">
-          { this.getLinkIcon() }
-          <div title="Turn off displays" className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
-          <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
+    if(this.state.sleeping) {
+      return (<div className="window-base" data-theme={window.settings.theme || "default"} id="panel"></div>)
+    } else {
+      return (
+        <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
+          <div className="titlebar">
+          <div className="title">Adjust Brightness</div>
+          <div className="icons">
+            { this.getLinkIcon() }
+            <div title="Turn off displays" className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
+            <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
+          </div>
         </div>
-      </div>
-        { this.getMonitors() }
-        { this.getUpdateBar() }
-      </div>
-    );
+          { this.getMonitors() }
+          { this.getUpdateBar() }
+        </div>
+      );
+    }
+
   }
 
 

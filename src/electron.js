@@ -367,6 +367,10 @@ refreshMonitors = async () => {
 
 
 function updateBrightness(index, level) {
+  if(index >= monitors.length) {
+    console.log("updateBrightness: Invalid monitor")
+    return false;
+  }
   const monitor = monitors[index]
   const brightness = Math.round(level * 1)
   try {
@@ -959,7 +963,9 @@ function handleBackgroundUpdate() {
           console.log("Adjusting brightness automatically", foundEvent)
           lastTimeEvent = foundEvent
           lastTimeEvent.day = new Date().getDate()
-          transitionBrightness(foundEvent.brightness)
+          refreshMonitors().then(() => {
+            transitionBrightness(foundEvent.brightness)
+          })
         }
       }
     }

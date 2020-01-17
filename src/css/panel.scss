@@ -58,10 +58,6 @@ body {
     &[data-position="RIGHT"] > .window-base {
         transform: translateX(100%);
     }
-    
-    &[data-sleep="true"] {
-        display: none;
-    }
 
 }
 

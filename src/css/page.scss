@@ -343,6 +343,10 @@ a {
     margin: 20px 0 5px;
     border-top: 1px solid var(--page-text-mid);
     border-bottom: 1px solid var(--page-text-mid);
+    line-height: 0;
+    p {
+        line-height: 1.4;
+    }
 }
 
 

@@ -109,6 +109,7 @@ ipc.on("panelBlur", (e) => {
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
+    if(JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
     window.dispatchEvent(new CustomEvent('monitorsUpdated', {
@@ -119,9 +120,10 @@ ipc.on("monitors-updated", (e, monitors) => {
 // Monitor names updated
 // This takes longer, so we update it after the panel pops up
 ipc.on("names-updated", (e, monitors) => {
+    if(JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
-    window.dispatchEvent(new CustomEvent('namesUpdated', {
+    window.dispatchEvent(new CustomEvent('monitorsUpdated', {
         detail: monitors
     }))
 })

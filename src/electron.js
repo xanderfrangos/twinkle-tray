@@ -45,6 +45,7 @@ if(isDev) {
 
 
 let monitors = []
+let monitorNames = []
 let mainWindow;
 let tray = null
 let lastTheme = false
@@ -285,12 +286,13 @@ refreshMonitors = async () => {
   ddcci._refresh()
   const ddcciMonitors = ddcci.getMonitorList()
 
-  for (monitor of ddcciMonitors) {
+  for (let monitor of ddcciMonitors) {
     try {
+      const deviceID = monitor.substr(0, monitor.indexOf("\\\\.\\DISPLAY"))
       foundMonitors.push({
-        name: `Display ${local + 1}`,
+        name: makeName(deviceID, `Display ${local + 1}`),
         id: monitor,
-        device: monitor.substr(0, monitor.indexOf("\\\\.\\DISPLAY")),
+        device: deviceID,
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
@@ -316,9 +318,9 @@ refreshMonitors = async () => {
           resolve([])
         } else if (result) {
           let local = 0
-          for (monitor of result) {
+          for (let monitor of result) {
             out.push({
-              name: `Display ${local + 1}`,
+              name: makeName(monitor.InstanceName, `Display ${local + 1}`),
               id: monitor.InstanceName,
               device: monitor.InstanceName,
               num: local,
@@ -346,7 +348,6 @@ refreshMonitors = async () => {
 
   if (wmiMonitors && wmiMonitors.length > 0) {
     for (mon of wmiMonitors) {
-      //mon.num = local
       foundMonitors.push(mon)
       local++
     }
@@ -365,6 +366,13 @@ refreshMonitors = async () => {
   })
 }
 
+function makeName(monitorDevice, fallback) {
+  if(monitorNames[monitorDevice] !== undefined) {
+    return monitorNames[monitorDevice]
+  } else {
+    return fallback;
+  }
+}
 
 function updateBrightness(index, level) {
   if(index >= monitors.length) {
@@ -443,14 +451,27 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
     if (err != null) {
       callback([])
     } else if (result) {
+      // Apply names
       for (let monitor of result) {
         let hwid = readInstanceName(monitor.InstanceName)
         if (monitor.UserFriendlyName !== null)
         for (let knownMonitor of monitors) {
           if (knownMonitor.id.split("#")[1] == hwid[1]) {
             knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
-            knownMonitor.rawName = monitor.UserFriendlyName
+            monitorNames[knownMonitor.device] = knownMonitor.name
             break;
+          }
+        }
+      }
+      // Apply remaps
+      for (let monitor of monitors) {
+        if(settings.remaps) {
+          for(let remapName in settings.remaps) {
+            if(remapName == monitor.name) {
+              let remap = settings.remaps[remapName]
+              monitor.min = remap.min
+              monitor.max = remap.max
+            }
           }
         }
       }
@@ -571,7 +592,7 @@ function createPanel(toggleOnLoad = false) {
 }
 
 function repositionPanel() {
-  let displays = electron.screen.getAllDisplays()
+  let displays = screen.getAllDisplays()
   let primaryDisplay = displays.find((display) => {
     return display.bounds.x == 0 || display.bounds.y == 0
   })
@@ -607,7 +628,7 @@ function repositionPanel() {
 
 
 function taskbarPosition() {
-  let displays = electron.screen.getAllDisplays()
+  let displays = screen.getAllDisplays()
   let primaryDisplay = displays.find((display) => {
     return display.bounds.x == 0 || display.bounds.y == 0
   })
@@ -909,9 +930,9 @@ function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
   
-  electron.screen.on('display-added', handleMonitorChange)
-  electron.screen.on('display-removed', handleMonitorChange)
-  electron.screen.on('display-metrics-changed', handleMonitorChange)
+  screen.on('display-added', handleMonitorChange)
+  screen.on('display-removed', handleMonitorChange)
+  screen.on('display-metrics-changed', repositionPanel)
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
@@ -925,9 +946,8 @@ function handleAccentChange() {
   getThemeRegistry()
 }
 
-function handleMonitorChange() {
+function handleMonitorChange(e) {
   refreshMonitors()
-  repositionPanel()
 }
 
 let lastTimeEvent = {

@@ -45,7 +45,6 @@ export default class SettingsWindow extends PureComponent {
 
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
-        window.addEventListener("namesUpdated", this.recievedNames)
         window.addEventListener("settingsUpdated", this.recievedSettings)
 
         if(window.isAppX === false) {
@@ -231,7 +230,7 @@ export default class SettingsWindow extends PureComponent {
         }
        ]
        return items.map((item, index) => {
-        return (<div key={item.id} className="item" data-active={this.isSection(item.id)} onClick={ () => { this.setState({activePage: item.id}) } }>
+        return (<div key={item.id} className="item" data-active={this.isSection(item.id)} onClick={ () => { this.setState({activePage: item.id}); window.requestMonitors(); } }>
             <div className="icon" dangerouslySetInnerHTML={ { __html: (item.icon || "&#xE770;") } }></div><div className="label">{ item.label || `Item ${index}` }</div>
         </div>)
        })
@@ -418,47 +417,8 @@ export default class SettingsWindow extends PureComponent {
 recievedMonitors = (e) => {
     if(this.state.monitors.length > 0 || e.detail.length > 0) {
   
-      let idx = 0
-      let newMonitors = Object.assign(e.detail, {})
-  
-      this.lastLevels.length = e.detail.length
-  
-      for(let monitor of this.state.monitors) {
-        newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
-        idx++
-      }
-  
       this.setState({
-        monitors: newMonitors
-      })
-    }
-    
-    this.forceUpdate()
-  }
-  
-  // Update monitor names
-  recievedNames = (e) => {
-      console.log(e)
-    if(this.state.monitors.length > 0) {
-  
-      let idx = 0
-      let newMonitors = Object.assign(this.state.monitors, {})
-      
-      for(let monitor of e.detail) {
-        newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name })
-  
-        for(let remap in this.state.remaps) {
-          if(monitor.name == remap) {
-            newMonitors[idx].min = this.state.remaps[remap].min
-            newMonitors[idx].max = this.state.remaps[remap].max
-          }
-        }
-  
-        idx++
-      }
-  
-      this.setState({
-        monitors: newMonitors
+        monitors: e.detail
       })
     }
     

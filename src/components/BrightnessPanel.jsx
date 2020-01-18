@@ -103,24 +103,12 @@ recievedMonitors = (e) => {
   console.log(e)
   if(this.state.monitors.length > 0 || e.detail.length > 0) {
     
-
-    let idx = 0
     let newMonitors = Object.assign(e.detail, {})
 
     this.lastLevels.length = e.detail.length
 
-    for(let monitor of this.state.monitors) {
-      if(idx < newMonitors.length) {
-        // Use old data at same indexes until new names are recieved
-        newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name, min: monitor.min, max: monitor.max })
-      }
-      idx++
-    }
-
     this.setState({
       monitors: newMonitors
-    }, () => {
-      //this.doBackgroundEvent = true
     })
   }
   
@@ -150,36 +138,6 @@ updateMinMax = () => {
       this.doBackgroundEvent = true
     })
   }
-}
-
-// Update monitor names
-recievedNames = (e) => {
-  if(this.state.monitors.length > 0) {
-
-    let idx = 0
-    let newMonitors = Object.assign(this.state.monitors, {})
-    
-    for(let monitor of e.detail) {
-      if(this.state.monitors[idx]) {
-        newMonitors[idx].name = monitor.name
-        for(let remap in this.state.remaps) {
-          if(monitor.name == remap) {
-            newMonitors[idx].min = this.state.remaps[remap].min
-            newMonitors[idx].max = this.state.remaps[remap].max
-          }
-        }
-      }
-      idx++
-    }
-
-    this.setState({
-      monitors: newMonitors
-    }, () => {
-      this.doBackgroundEvent = true
-    })
-  }
-  
-  this.forceUpdate()
 }
 
 // Update settings
@@ -278,7 +236,6 @@ syncBrightness = () => {
   componentDidMount() {
 
     window.addEventListener("monitorsUpdated", this.recievedMonitors)
-    window.addEventListener("namesUpdated", this.recievedNames)
     window.addEventListener("settingsUpdated", this.recievedSettings)
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)

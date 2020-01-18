@@ -406,7 +406,7 @@ function transitionBrightness(level) {
   if(currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
-    for (monitor of monitors) {
+    for (let monitor of monitors) {
       let normalized = level
       if(settings.remaps) {
         for(let remapName in settings.remaps) {
@@ -949,13 +949,13 @@ function handleBackgroundUpdate() {
       // Find most recent event
       let foundEvent = false
       for (let event of settings.adjustmentTimes) {
-        const eventHour = (event.hour * 1) + (event.am == "PM" && event.hour != 12 ? 12 : 0)
+        const eventHour = (event.hour * 1) + (event.am == "PM" && event.hour != 12 ? 12 : (event.am == "AM" && event.hour != 12 ? -12 : 0))
         const eventMinute = event.minute * 1
         // Check if event is not later than current time, last event time, or last found time
         if (hour >= eventHour && (hour > eventHour || minute >= eventMinute) && (foundEvent === false || (foundEvent.hour < eventHour && foundEvent.minute <= eventMinute))) {
           foundEvent = Object.assign({}, event)
           foundEvent.minute = foundEvent.minute * 1
-          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" && foundEvent.hour != 12 ? 12 : 0)
+          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" && foundEvent.hour != 12 ? 12 : (foundEvent.am == "AM" && foundEvent.hour != 12 ? -12 : 0))
         }
       }
       if (foundEvent) {

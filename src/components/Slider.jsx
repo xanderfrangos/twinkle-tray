@@ -1,5 +1,5 @@
 import React from "react";
-import {useEffect, Component} from "react"
+import { useEffect, Component } from "react"
 import PropTypes from 'prop-types';
 
 export default class Slider extends Component {
@@ -10,7 +10,7 @@ export default class Slider extends Component {
     }
 
     handleWheel = (event) => {
-        if(this.props.scrolling === false) return false;
+        if (this.props.scrolling === false) return false;
         this.setState({ level: this.cap((this.state.level * 1) + Math.round(event.deltaY * -1 * 0.01)) }, this.fireChange)
     }
 
@@ -61,7 +61,7 @@ export default class Slider extends Component {
     }
 
     componentDidUpdate(oldProps) {
-        if(oldProps.max != this.props.max || oldProps.min != this.props.min) {
+        if (oldProps.max != this.props.max || oldProps.min != this.props.min) {
             this.setState({
                 level: this.cap(this.props.level)
             }, this.fireChange())

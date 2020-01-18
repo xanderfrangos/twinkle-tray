@@ -81,7 +81,7 @@ export default class SettingsWindow extends PureComponent {
           for(let monitor of items) {
             this.state.monitors[monitor.num].order = idx
             order.push({
-                id: monitor.id,
+                id: monitor.device,
                 order: idx
             })
             idx++
@@ -189,14 +189,14 @@ export default class SettingsWindow extends PureComponent {
 
     monitorNameChange = (e, f) => {
         const idx = e.currentTarget.dataset.key
-        this.state.names[window.allMonitors[idx].id] = e.currentTarget.value
+        this.state.names[window.allMonitors[idx].device] = e.currentTarget.value
         this.forceUpdate()
         window.sendSettings({ names: this.state.names })
     }
 
     getMonitorName = (monitor, renames) => {
-        if(Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
-            return renames[monitor.id] + ` (${monitor.name})`
+        if(Object.keys(renames).indexOf(monitor.device) >= 0 && renames[monitor.device] != "") {
+            return renames[monitor.device] + ` (${monitor.name})`
         } else {
             return monitor.name
         }
@@ -301,7 +301,7 @@ export default class SettingsWindow extends PureComponent {
                 <div key={index}>
                     <br />
                     <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ monitor.name }</div></div>
-                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
+                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.device] ? this.state.names[monitor.device] : "")}></input>
                 </div>
               
             ))
@@ -438,6 +438,7 @@ recievedMonitors = (e) => {
   
   // Update monitor names
   recievedNames = (e) => {
+      console.log(e)
     if(this.state.monitors.length > 0) {
   
       let idx = 0

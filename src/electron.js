@@ -140,7 +140,7 @@ function processSettings() {
 function applyOrder() {
   for(let monitor of monitors) {
     for(let order of settings.order) {
-      if(monitor.id == order.id) {
+      if(monitor.device == order.id) {
         monitor.order = order.order
       }
     }
@@ -290,7 +290,7 @@ refreshMonitors = async () => {
       foundMonitors.push({
         name: `Display ${local + 1}`,
         id: monitor,
-        device: monitor.split("#"),
+        device: monitor.substr(0, monitor.indexOf("\\\\.\\DISPLAY")),
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
@@ -447,7 +447,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
         let hwid = readInstanceName(monitor.InstanceName)
         if (monitor.UserFriendlyName !== null)
         for (let knownMonitor of monitors) {
-          if (knownMonitor.device[1] == hwid[1]) {
+          if (knownMonitor.id.split("#")[1] == hwid[1]) {
             knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
             knownMonitor.rawName = monitor.UserFriendlyName
             break;

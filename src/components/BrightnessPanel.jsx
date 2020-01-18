@@ -31,8 +31,8 @@ export default class BrightnessPanel extends PureComponent {
   }
 
   getMonitorName = (monitor, renames) => {
-    if(Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
-      return renames[monitor.id]
+    if(Object.keys(renames).indexOf(monitor.device) >= 0 && renames[monitor.device] != "") {
+      return renames[monitor.device]
   } else {
       return monitor.name
   }

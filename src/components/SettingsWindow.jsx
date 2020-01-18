@@ -32,7 +32,7 @@ export default class SettingsWindow extends PureComponent {
             theme: 'default',
             openAtLogin: false,
             monitors: [],
-            remaps: {},
+            remaps: [],
             names: [],
             adjustmentTimes: [],
             linkedLevelsActive: false,

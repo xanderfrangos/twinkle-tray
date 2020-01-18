@@ -81,7 +81,7 @@ getUpdateBar = () => {
       })
     } else if(monitors.length > 0) {
       // Update single monitor
-      monitors[slider.props.num].brightness = level
+      if(monitors[slider.props.num]) monitors[slider.props.num].brightness = level;
       this.setState({
         monitors
       }, () => {
@@ -160,15 +160,15 @@ recievedNames = (e) => {
     let newMonitors = Object.assign(this.state.monitors, {})
     
     for(let monitor of e.detail) {
-      newMonitors[idx] = Object.assign(newMonitors[idx], { name: monitor.name })
-
-      for(let remap in this.state.remaps) {
-        if(monitor.name == remap) {
-          newMonitors[idx].min = this.state.remaps[remap].min
-          newMonitors[idx].max = this.state.remaps[remap].max
+      if(this.state.monitors[idx]) {
+        newMonitors[idx].name = monitor.name
+        for(let remap in this.state.remaps) {
+          if(monitor.name == remap) {
+            newMonitors[idx].min = this.state.remaps[remap].min
+            newMonitors[idx].max = this.state.remaps[remap].max
+          }
         }
       }
-
       idx++
     }
 

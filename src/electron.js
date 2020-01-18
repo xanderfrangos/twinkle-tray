@@ -443,10 +443,10 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
     if (err != null) {
       callback([])
     } else if (result) {
-      for (monitor of result) {
+      for (let monitor of result) {
         let hwid = readInstanceName(monitor.InstanceName)
         if (monitor.UserFriendlyName !== null)
-        for (knownMonitor of monitors) {
+        for (let knownMonitor of monitors) {
           if (knownMonitor.device[1] == hwid[1]) {
             knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
             knownMonitor.rawName = monitor.UserFriendlyName
@@ -562,6 +562,10 @@ function createPanel(toggleOnLoad = false) {
     mainWindow.show()
     repositionPanel()
     if (toggleOnLoad) setTimeout(() => { toggleTray() }, 100);
+  })
+
+  mainWindow.on("blur", () => {
+    sendToAllWindows("panelBlur")
   })
 
 }

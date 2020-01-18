@@ -96,6 +96,17 @@ ipc.on('tray-clicked', () => {
     setPanelVisibility(true)
 })
 
+ipc.on("panelBlur", (e) => {
+    // Update browser var to avoid Electron bugs
+    browser = remote.getCurrentWindow()
+    if (!browser.webContents.isDevToolsOpened()) {
+        setPanelVisibility(false)
+    } else {
+        // Keep interactive if devTools open
+        browser.moveTop()
+    }
+})
+
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
     window.allMonitors = monitors
@@ -165,15 +176,6 @@ browser.webContents.once('dom-ready', () => {
     requestMonitors()
     requestAccent()
     requestSettings()
-})
-
-browser.on('blur', () => {
-    if (!browser.webContents.isDevToolsOpened()) {
-        setPanelVisibility(false)
-    } else {
-        // Keep interactive if devTools open
-        browser.moveTop()
-    }
 })
 
 

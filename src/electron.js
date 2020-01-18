@@ -667,6 +667,7 @@ app.on("ready", () => {
   showIntro()
   createPanel()
   addEventListeners()
+  checkForUpdates()
 })
 
 app.on("window-all-closed", () => {

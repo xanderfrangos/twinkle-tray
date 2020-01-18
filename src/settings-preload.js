@@ -88,9 +88,9 @@ ipc.on('theme-settings', (event, theme) => {
 
 // Request startup data
 browser.webContents.once('dom-ready', () => {
+    requestSettings()
     requestMonitors()
     requestAccent()
-    requestSettings()
 })
 
 window.updateBrightness = updateBrightness

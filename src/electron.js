@@ -112,16 +112,22 @@ function readSettings() {
   processSettings()
 }
 
-
+let writeSettingsTimeout = false
 function writeSettings(newSettings = {}, processAfter = true) {
   settings = Object.assign(settings, newSettings)
 
-  // Save new settings
-  try {
-    fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) debug.error(e)})
-  } catch(e) {
-    debug.error("Couldn't save settings.", settingsPath, e)
+  if(!writeSettingsTimeout) {
+    writeSettingsTimeout = setTimeout(() => {
+      // Save new settings
+      try {
+        fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) debug.error(e)})
+      } catch(e) {
+        debug.error("Couldn't save settings.", settingsPath, e)
+      }
+      writeSettingsTimeout = false
+    }, 333)
   }
+
   if (processAfter) processSettings();
 }
 
@@ -132,6 +138,7 @@ function processSettings() {
   }
   updateStartupOption((settings.openAtLogin || false))
   applyOrder()
+  applyRemaps()
   if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
     mainWindow.close()
   }
@@ -143,6 +150,20 @@ function applyOrder() {
     for(let order of settings.order) {
       if(monitor.device == order.id) {
         monitor.order = order.order
+      }
+    }
+  }
+}
+
+function applyRemaps() {
+  for (let monitor of monitors) {
+    if(settings.remaps) {
+      for(let remapName in settings.remaps) {
+        if(remapName == monitor.name) {
+          let remap = settings.remaps[remapName]
+          monitor.min = remap.min
+          monitor.max = remap.max
+        }
       }
     }
   }
@@ -463,18 +484,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
           }
         }
       }
-      // Apply remaps
-      for (let monitor of monitors) {
-        if(settings.remaps) {
-          for(let remapName in settings.remaps) {
-            if(remapName == monitor.name) {
-              let remap = settings.remaps[remapName]
-              monitor.min = remap.min
-              monitor.max = remap.max
-            }
-          }
-        }
-      }
+      applyRemaps()
       callback(out)
     } else {
       callback([])

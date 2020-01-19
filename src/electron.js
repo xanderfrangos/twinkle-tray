@@ -1042,17 +1042,18 @@ function handleBackgroundUpdate() {
         // Check if event is not later than current time, last event time, or last found time
         if (hour >= eventHour || (hour == eventHour && minute >= eventMinute)) {
           // Check if found event is greater than last found event
-          if(foundEvent === false || foundEvent.hour < eventHour || !(foundEvent.hour == eventHour && foundEvent.minute > eventMinute)) {
-            foundEvent = Object.assign(event, {})
+          if(foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
+            foundEvent = Object.assign({}, event)
             foundEvent.minute = eventMinute
             foundEvent.hour = eventHour
+            console.log(foundEvent)
           }
         }
       }
       if (foundEvent) {
         if (lastTimeEvent == false || lastTimeEvent.hour < foundEvent.hour || (lastTimeEvent.hour == foundEvent.hour && lastTimeEvent.minute < foundEvent.minute) ) {
           console.log("Adjusting brightness automatically", foundEvent)
-          lastTimeEvent = foundEvent
+          lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
           refreshMonitors().then(() => {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))

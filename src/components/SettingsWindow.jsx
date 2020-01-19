@@ -410,7 +410,7 @@ export default class SettingsWindow extends PureComponent {
                 if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.device]) {
                     level = this.state.adjustmentTimes[index].monitors[monitor.device]
                 } 
-                return (<Slider key={monitor.device + ".brightness"} name={monitor.name} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
+                return (<Slider key={monitor.device + ".brightness"} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
             })
         } else {
             return (<Slider key={index + ".brightness"} name="All Displays" level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)

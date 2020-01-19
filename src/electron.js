@@ -1004,9 +1004,9 @@ function restartBackgroundUpdate() {
     restartBackgroundUpdateThrottle = setTimeout(() => {
       restartBackgroundUpdateThrottle = false
       clearInterval(backgroundInterval)
-      backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+      backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 8000 : 60000 * 1))
       handleBackgroundUpdate()
-    }, 1000)
+    }, 3000)
   } else {
     clearTimeout(restartBackgroundUpdateThrottle)
     restartBackgroundUpdateThrottle = false
@@ -1037,13 +1037,16 @@ function handleBackgroundUpdate() {
       // Find most recent event
       let foundEvent = false
       for (let event of settings.adjustmentTimes) {
-        const eventHour = (event.hour * 1) + (event.am == "PM" && event.hour != 12 ? 12 : (event.am == "AM" && event.hour != 12 ? -12 : 0))
+        const eventHour = (event.hour * 1) + (event.am == "PM" && (event.hour * 1) != 12 ? 12 : (event.am == "AM" && (event.hour * 1) == 12 ? -12 : 0))
         const eventMinute = event.minute * 1
         // Check if event is not later than current time, last event time, or last found time
-        if (hour >= eventHour && (hour > eventHour || minute >= eventMinute) && (foundEvent === false || (foundEvent.hour < eventHour && foundEvent.minute <= eventMinute))) {
-          foundEvent = Object.assign({}, event)
-          foundEvent.minute = foundEvent.minute * 1
-          foundEvent.hour = (foundEvent.hour * 1) + (foundEvent.am == "PM" && foundEvent.hour != 12 ? 12 : (foundEvent.am == "AM" && foundEvent.hour != 12 ? -12 : 0))
+        if (hour >= eventHour || (hour == eventHour && minute >= eventMinute)) {
+          // Check if found event is greater than last found event
+          if(foundEvent === false || foundEvent.hour < eventHour || !(foundEvent.hour == eventHour && foundEvent.minute > eventMinute)) {
+            foundEvent = Object.assign(event, {})
+            foundEvent.minute = eventMinute
+            foundEvent.hour = eventHour
+          }
         }
       }
       if (foundEvent) {

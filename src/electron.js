@@ -458,7 +458,6 @@ function transitionBrightness(level, eventMonitors = []) {
       let normalized = level
       if(settings.adjustmentTimeIndividualDisplays) {
         // If using individual monitor settings
-        console.log("individual displays",eventMonitors)
         normalized = (eventMonitors[monitor.device] ? eventMonitors[monitor.device] : level)
       }
 

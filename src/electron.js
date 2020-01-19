@@ -89,7 +89,7 @@ const defaultSettings = {
   remaps: [],
   hotkeys: [],
   adjustmentTimes: [],
-  checkTimeAtStartup: false,
+  checkTimeAtStartup: true,
   order: [],
   checkForUpdates: !isDev,
   dismissedUpdate: ''
@@ -997,11 +997,13 @@ function restartBackgroundUpdate() {
     setTimeout(() => {
       restartBackgroundUpdateThrottle = false
       backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+      handleBackgroundUpdate()
     }, 1000)
   } else {
     clearTimeout(restartBackgroundUpdateThrottle)
     restartBackgroundUpdateThrottle = false
     backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+    handleBackgroundUpdate()
   }
 }
 

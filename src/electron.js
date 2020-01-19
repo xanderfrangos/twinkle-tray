@@ -89,6 +89,7 @@ const defaultSettings = {
   remaps: [],
   hotkeys: [],
   adjustmentTimes: [],
+  adjustmentTimeIndividualDisplays: false,
   checkTimeAtStartup: true,
   order: [],
   checkForUpdates: !isDev,
@@ -448,17 +449,24 @@ function normalizeBrightness(level, sending = false, min = 0, max = 100) {
 }
 
 let currentTransition = null
-function transitionBrightness(level) {
+function transitionBrightness(level, eventMonitors = []) {
   if(currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
     for (let monitor of monitors) {
+
       let normalized = level
+      if(settings.adjustmentTimeIndividualDisplays) {
+        // If using individual monitor settings
+        console.log("individual displays",eventMonitors)
+        normalized = (eventMonitors[monitor.device] ? eventMonitors[monitor.device] : level)
+      }
+
       if(settings.remaps) {
         for(let remapName in settings.remaps) {
           if(remapName == monitor.name) {
             let remap = settings.remaps[remapName]
-            normalized = normalizeBrightness(level, true, remap.min, remap.max)
+            normalized = normalizeBrightness(normalized, true, remap.min, remap.max)
           }
         }
       }
@@ -994,16 +1002,16 @@ function handleMonitorChange(e) {
 let restartBackgroundUpdateThrottle = false
 function restartBackgroundUpdate() {
   if(!restartBackgroundUpdateThrottle) {
-    setTimeout(() => {
+    restartBackgroundUpdateThrottle = setTimeout(() => {
       restartBackgroundUpdateThrottle = false
+      clearInterval(backgroundInterval)
       backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
       handleBackgroundUpdate()
     }, 1000)
   } else {
     clearTimeout(restartBackgroundUpdateThrottle)
     restartBackgroundUpdateThrottle = false
-    backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
-    handleBackgroundUpdate()
+    restartBackgroundUpdate()
   }
 }
 
@@ -1045,7 +1053,7 @@ function handleBackgroundUpdate() {
           lastTimeEvent = foundEvent
           lastTimeEvent.day = new Date().getDate()
           refreshMonitors().then(() => {
-            transitionBrightness(foundEvent.brightness)
+            transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           })
         }
       }

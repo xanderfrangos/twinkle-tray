@@ -38,7 +38,8 @@ export default class SettingsWindow extends PureComponent {
             linkedLevelsActive: false,
             updateInterval: (window.settings.updateInterval || 500),
             downloadingUpdate: false,
-            checkForUpdates: false
+            checkForUpdates: false,
+            adjustmentTimeIndividualDisplays: false
         }
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -393,12 +394,37 @@ export default class SettingsWindow extends PureComponent {
                         }}>Remove time</a>
                     </div>
                     <div className="row">
-                        <Slider key={index + ".brightness"} name="Brightness" level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />
+                        { this.getAdjustmentTimesMonitors(time, index) }
+                        
                     </div>
                 </div>
             ))
         }
 
+    }
+
+    getAdjustmentTimesMonitors = (time, index) => {
+        if(this.state.adjustmentTimeIndividualDisplays) {
+            return this.state.monitors.map((monitor, idx) => {
+                let level = time.brightness
+                if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.device]) {
+                    level = this.state.adjustmentTimes[index].monitors[monitor.device]
+                } 
+                return (<Slider key={monitor.device + ".brightness"} name={monitor.name} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
+            })
+        } else {
+            return (<Slider key={index + ".brightness"} name="All Displays" level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
+        }
+    }
+
+    getAdjustmentTimesMonitorsChanged = (index, monitor, value) => {
+        if(this.state.adjustmentTimes[index].monitors === undefined) {
+            this.state.adjustmentTimes[index].monitors = {}
+        }
+        this.state.adjustmentTimes[index].monitors[monitor.device] = value
+        console.log(this.state.adjustmentTimes[index].monitors)
+        this.forceUpdate();
+        this.adjustmentTimesUpdated()
     }
 
 
@@ -436,6 +462,7 @@ export default class SettingsWindow extends PureComponent {
         const order = (settings.order || [])
         const checkTimeAtStartup = (settings.checkTimeAtStartup || false)
         const checkForUpdates = (settings.checkForUpdates || false)
+        const adjustmentTimeIndividualDisplays = (settings.adjustmentTimeIndividualDisplays || false)
         this.setState({
             linkedLevelsActive,
             remaps,
@@ -445,7 +472,8 @@ export default class SettingsWindow extends PureComponent {
             killWhenIdle,
             order,
             checkTimeAtStartup,
-            checkForUpdates
+            checkForUpdates,
+            adjustmentTimeIndividualDisplays
         }, () => {
             this.forceUpdate()
         })
@@ -465,7 +493,8 @@ export default class SettingsWindow extends PureComponent {
             brightness: 50,
             hour: '12',
             minute: '30',
-            am: "PM"
+            am: "PM",
+            monitors: {}
         })
         this.forceUpdate()
         this.adjustmentTimesUpdated()
@@ -524,6 +553,15 @@ export default class SettingsWindow extends PureComponent {
                         <div className="adjustmentTimes">
                             {this.getAdjustmentTimes()}
                         </div>
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("time")}>
+                        <label>Set brightness for individual displays</label>
+                        <p>Configure the brightness per display instead of for all displays at once</p>
+                        <input onChange={() => {
+                            const adjustmentTimeIndividualDisplays = (this.state.adjustmentTimeIndividualDisplays ? false : true)
+                            this.setState({ adjustmentTimeIndividualDisplays })
+                            window.sendSettings({ adjustmentTimeIndividualDisplays })
+                        }} checked={window.settings.adjustmentTimeIndividualDisplays || false} data-checked={window.settings.adjustmentTimeIndividualDisplays || false} type="checkbox" />
                     </div>
                     <div className="pageSection" data-active={this.isSection("time")}>
                         <label>Check at app startup</label>

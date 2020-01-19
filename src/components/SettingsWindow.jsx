@@ -37,7 +37,8 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimes: [],
             linkedLevelsActive: false,
             updateInterval: (window.settings.updateInterval || 500),
-            downloadingUpdate: false
+            downloadingUpdate: false,
+            checkForUpdates: false
         }
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -434,6 +435,7 @@ export default class SettingsWindow extends PureComponent {
         const killWhenIdle = (settings.killWhenIdle || false)
         const order = (settings.order || [])
         const checkTimeAtStartup = (settings.checkTimeAtStartup || false)
+        const checkForUpdates = (settings.checkForUpdates || false)
         this.setState({
             linkedLevelsActive,
             remaps,
@@ -442,7 +444,8 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimes,
             killWhenIdle,
             order,
-            checkTimeAtStartup
+            checkTimeAtStartup,
+            checkForUpdates
         }, () => {
             this.forceUpdate()
         })
@@ -550,6 +553,15 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionTitle">Updates</div>
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
                         {this.getUpdate()}
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("updates")}>
+                        <label>Automatically check for updates</label>
+                        <p>Twinkle Tray will occasionally check for updates automatically and notify you in the brightness panel.</p>
+                        <input onChange={() => {
+                            const checkForUpdates = (this.state.checkForUpdates ? false : true)
+                            this.setState({ checkForUpdates })
+                            window.sendSettings({ checkForUpdates })
+                        }} checked={window.settings.checkForUpdates || false} data-checked={window.settings.checkForUpdates || false} type="checkbox" />
                     </div>
                 </div>
             </div>

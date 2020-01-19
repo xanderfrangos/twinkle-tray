@@ -592,7 +592,7 @@ export default class SettingsWindow extends PureComponent {
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
                         {this.getUpdate()}
                     </div>
-                    <div className="pageSection" data-active={this.isSection("updates")}>
+                    <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
                         <label>Automatically check for updates</label>
                         <p>Twinkle Tray will occasionally check for updates automatically and notify you in the brightness panel.</p>
                         <input onChange={() => {

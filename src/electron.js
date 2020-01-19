@@ -109,7 +109,7 @@ function readSettings() {
   } catch(e) {
     debug.error("Couldn't load settings", e)
   }
-  processSettings()
+  processSettings({})
 }
 
 let writeSettingsTimeout = false
@@ -128,11 +128,11 @@ function writeSettings(newSettings = {}, processAfter = true) {
     }, 333)
   }
 
-  if (processAfter) processSettings();
+  if (processAfter) processSettings(newSettings);
 }
 
 
-function processSettings() {
+function processSettings(newSettings = {}) {
   if (settings.theme) {
     nativeTheme.themeSource = determineTheme(settings.theme)
   }
@@ -141,6 +141,10 @@ function processSettings() {
   applyRemaps()
   if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
     mainWindow.close()
+  }
+  if(newSettings.adjustmentTimes !== undefined) {
+    lastTimeEvent = false
+    restartBackgroundUpdate()
   }
   sendToAllWindows('settings-updated', settings)
 }
@@ -199,7 +203,7 @@ async function updateStartupOption(openAtLogin) {
 }
 
 function getSettings() {
-  processSettings()
+  processSettings({})
   sendToAllWindows('settings-updated', settings)
 }
 
@@ -949,7 +953,7 @@ function addEventListeners() {
     lastTimeEvent = false;
     setTimeout(handleBackgroundUpdate, 500)
   }
-  backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+  restartBackgroundUpdate()
 }
 
 function handleAccentChange() {
@@ -959,6 +963,20 @@ function handleAccentChange() {
 
 function handleMonitorChange(e) {
   refreshMonitors()
+}
+
+let restartBackgroundUpdateThrottle = false
+function restartBackgroundUpdate() {
+  if(!restartBackgroundUpdateThrottle) {
+    setTimeout(() => {
+      restartBackgroundUpdateThrottle = false
+      backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+    }, 1000)
+  } else {
+    clearTimeout(restartBackgroundUpdateThrottle)
+    restartBackgroundUpdateThrottle = false
+    backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 5000 : 60000 * 1))
+  }
 }
 
 let lastTimeEvent = {

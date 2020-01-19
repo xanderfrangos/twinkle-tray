@@ -16,12 +16,11 @@ const updatePath = path.join(app.getPath("userData"), `\\update.exe`)
 
 // Remove old log
 if(fs.existsSync(logPath)) {
-  fs.unlinkSync(logPath)
-}
-
-// Remove old update
-if (fs.existsSync(updatePath)) {
-  fs.unlinkSync(updatePath)
+  try {
+    fs.unlinkSync(logPath)
+  } catch(e) {
+    console.log("Couldn't delete log file")
+  }
 }
 
 const log = async (...args) => {
@@ -133,18 +132,32 @@ function writeSettings(newSettings = {}, processAfter = true) {
 
 
 function processSettings(newSettings = {}) {
+
   if (settings.theme) {
     nativeTheme.themeSource = determineTheme(settings.theme)
   }
+
   updateStartupOption((settings.openAtLogin || false))
   applyOrder()
   applyRemaps()
+
   if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
     mainWindow.close()
   }
+
   if(newSettings.adjustmentTimes !== undefined) {
     lastTimeEvent = false
     restartBackgroundUpdate()
+  }
+
+  if(newSettings.checkForUpdates !== undefined) {
+    if(newSettings.checkForUpdates === false) {
+      latestVersion = false
+      sendToAllWindows('latest-version', latestVersion);
+    } else {
+      lastCheck = false
+    }
+
   }
   sendToAllWindows('settings-updated', settings)
 }
@@ -861,6 +874,7 @@ function createSettings() {
 let latestVersion = false
 let lastCheck = false
 function checkForUpdates() {
+  if(!settings.checkForUpdates) return false;
   if(lastCheck && lastCheck == new Date().getDate()) return false;
   lastCheck = new Date().getDate()
   try {
@@ -893,29 +907,41 @@ function getLatestUpdate(url) {
     const fs = require('fs');
     const fetch = require('node-fetch');
 
+    // Remove old update
+    if (fs.existsSync(updatePath)) {
+      try {
+        fs.unlink(updatePath)
+      } catch(e) {
+        console.log("Couldn't delete update file")
+      }
+    }
+
     fetch(url)
       .then(res => {
         console.log("Downloaded!")
-        const dest = fs.createWriteStream(updatePath);
-        dest.on('finish', function () {
-          console.log("Saved! Running...")
-          setTimeout(() => {
-            try {
-              const { spawn } = require('child_process');
-              let process = spawn(updatePath, {
-                detached: true,
-                stdio: 'ignore'
-              });
-              process.unref()
-              app.quit()
-            } catch(e) {
-              console.log(e)
-            }
-          }, 1250)
-        });
-        res.body.pipe(dest);
+        try {
+          const dest = fs.createWriteStream(updatePath);
+          dest.on('finish', function () {
+            console.log("Saved! Running...")
+            setTimeout(() => {
+              try {
+                const { spawn } = require('child_process');
+                let process = spawn(updatePath, {
+                  detached: true,
+                  stdio: 'ignore'
+                });
+                process.unref()
+                app.quit()
+              } catch(e) {
+                console.log(e)
+              }
+            }, 1250)
+          });
+          res.body.pipe(dest);
+        } catch(e) {
+          console.log("Couldn't write update file")
+        }
       });
-
   } catch(e) {
     console.log(e)
   }

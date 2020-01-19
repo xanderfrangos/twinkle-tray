@@ -1046,7 +1046,6 @@ function handleBackgroundUpdate() {
             foundEvent = Object.assign({}, event)
             foundEvent.minute = eventMinute
             foundEvent.hour = eventHour
-            console.log(foundEvent)
           }
         }
       }

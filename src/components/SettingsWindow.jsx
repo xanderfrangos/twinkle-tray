@@ -156,8 +156,8 @@ export default class SettingsWindow extends PureComponent {
             }
         }
 
-
-        window.sendSettings({ remaps: remaps })
+        this.setState({ remaps })
+        window.sendSettings({ remaps })
         //window.requestSettings()
     }
 

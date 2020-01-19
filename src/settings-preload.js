@@ -17,8 +17,28 @@ function updateBrightness(index, level) {
     })
 }
 
-function sendSettings(newSettings) {
-    ipc.send('send-settings', newSettings)
+//
+// Send Settings
+// - Send immediately if no recent changes. Throttle if frequent changes.
+//
+//
+
+let sendSettingsThrottle = false
+let sendSettingsObj = {}
+function sendSettings(newSettings = {}) {
+    sendSettingsObj = Object.assign(sendSettingsObj, newSettings)
+    if(!sendSettingsThrottle) {
+        actuallySendSettings()
+        sendSettingsThrottle = setTimeout(() => {
+            actuallySendSettings()
+            sendSettingsThrottle = false
+        }, 333)
+    }
+}
+
+function actuallySendSettings() {
+    ipc.send('send-settings', sendSettingsObj)
+    sendSettingsObj = {}
 }
 
 function requestSettings() {

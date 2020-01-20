@@ -594,6 +594,7 @@ function createPanel(toggleOnLoad = false) {
     transparent: true,
     skipTaskbar: true,
     resizable: false,
+    type: "toolbar",
     maximizable: false,
     minimizable: false,
     webPreferences: {

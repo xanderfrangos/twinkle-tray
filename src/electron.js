@@ -142,7 +142,7 @@ function processSettings(newSettings = {}) {
   applyOrder()
   applyRemaps()
 
-  if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
+  if (false && settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
     mainWindow.close()
   }
 
@@ -569,7 +569,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   mainWindow.setAlwaysOnTop(false)
-  if(settings.killWhenIdle) mainWindow.close()
+  if(false && settings.killWhenIdle) mainWindow.close()
 })
 
 

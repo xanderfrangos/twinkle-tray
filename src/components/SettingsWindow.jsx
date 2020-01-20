@@ -524,10 +524,6 @@ export default class SettingsWindow extends PureComponent {
                             <option value="dark">Dark Mode</option>
                             <option value="light">Light Mode</option>
                         </select>
-                        <br /><br />
-                        <label>Minimize RAM usage</label>
-                        <p>Reduces idle RAM usage as much as possible (20-40MB) at the cost of responsiveness. (Not recommended)</p>
-                        <input onChange={this.ramChanged} checked={window.settings.killWhenIdle || false} data-checked={window.settings.killWhenIdle || false} type="checkbox" />
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Brightness update rate</div>

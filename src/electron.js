@@ -753,6 +753,8 @@ function toggleTray() {
     mainWindow.setAlwaysOnTop(true)
     mainWindow.webContents.send("tray-clicked")
     mainWindow.focus()
+    mainWindow.setSkipTaskbar(false)
+    mainWindow.setSkipTaskbar(true)
   }
 }
 

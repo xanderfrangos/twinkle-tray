@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
+import Translate from "../Translate"
 
 const monitorSort = (a, b) => {
   const aSort = (a.order === undefined ? 999 : a.order * 1)
@@ -7,12 +8,14 @@ const monitorSort = (a, b) => {
   return aSort - bSort
 }
 
+let T = new Translate({}, {})
+
 export default class BrightnessPanel extends PureComponent {
 
   // Render <Slider> components
   getMonitors = () => {
     if (!this.state.monitors || this.state.monitors.length == 0) {
-      return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.</div>)
+      return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }</div>)
     } else {
       const sorted = this.state.monitors.slice(0).sort(monitorSort)
       return sorted.map((monitor, index) => (
@@ -41,7 +44,7 @@ export default class BrightnessPanel extends PureComponent {
   getUpdateBar = () => {
     if (this.state.update && this.state.update.show) {
       return (<div className="updateBar">
-        <div className="left">An update is available ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>Install</a><a onClick={window.dismissUpdate}>Dismiss</a></div>
+        <div className="left">{ T.t("PANEL_UPDATE_AVAILABLE") } ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>{ T.t("GENERIC_INSTALL") }</a><a onClick={window.dismissUpdate}>{ T.t("GENERIC_DISMISS") }</a></div>
       </div>)
     }
   }
@@ -233,6 +236,7 @@ export default class BrightnessPanel extends PureComponent {
 
     window.addEventListener("monitorsUpdated", this.recievedMonitors)
     window.addEventListener("settingsUpdated", this.recievedSettings)
+    window.addEventListener("languageUpdated", (e) => { T.setLanguageData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
 
@@ -252,11 +256,11 @@ export default class BrightnessPanel extends PureComponent {
       return (
         <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
           <div className="titlebar">
-            <div className="title">Adjust Brightness</div>
+            <div className="title">{ T.t("PANEL_TITLE") }</div>
             <div className="icons">
               {this.getLinkIcon()}
-              <div title="Turn off displays" className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
-              <div title="Settings" className="settings" onClick={window.openSettings}>&#xE713;</div>
+              <div title={ T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS") } className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
+              <div title={ T.t("GENERIC_SETTINGS") } className="settings" onClick={window.openSettings}>&#xE713;</div>
             </div>
           </div>
           {this.getMonitors()}

@@ -45,11 +45,14 @@
     "files": [
       "src/electron.js",
       "src/preload.js",
+      "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",
       "src/assets/*",
+      "src/language/*",
       "src/assets/light-theme/*",
-      "build/**/*"
+      "build/**/*",
+      "src/**/*"
     ],
     "extraResources": [
       "node_modules\\regedit\\vbs\\*"
@@ -80,7 +83,6 @@
     "cross-env": "5.2.0",
     "electron": "7.1.8",
     "electron-builder": "21.2.0",
-    "electron-rebuild": "^1.8.8",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.24.4",
     "wait-on": "3.2.0"

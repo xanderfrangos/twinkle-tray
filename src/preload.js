@@ -152,6 +152,13 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+// Language recieved
+ipc.on('language-updated', (event, language) => {
+    window.dispatchEvent(new CustomEvent('languageUpdated', {
+        detail: language
+    }))
+})
+
 // New app update recieved
 ipc.on('latest-version', (event, version) => {
     window.latestVersion = version
@@ -178,6 +185,7 @@ browser.webContents.once('dom-ready', () => {
     requestMonitors()
     requestAccent()
     requestSettings()
+    ipc.send('request-language')
 })
 
 

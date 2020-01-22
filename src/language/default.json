@@ -1,0 +1,16 @@
+{
+    "GENERIC_OK": "OK",
+    "GENERIC_CANCEL": "Cancel",
+    "GENERIC_SAVE": "Save",
+    "GENERIC_QUIT": "Quit",
+    "GENERIC_SETTINGS": "Settings",
+    "GENERIC_INSTALL": "Install",
+    "GENERIC_DISMISS": "Dismiss",
+    "GENERIC_NO_DISPLAYS": "No displays detected. Please connect a display to your PC.",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "No compatible displays found. Please check that \"DDC/CI\" is enabled for your monitors.",
+
+    "PANEL_TITLE": "Adjust Brightness",
+    "PANEL_UPDATE_AVAILABLE": "An update is available",
+    "PANEL_BUTTON_LINK_LEVELS": "Link levels",
+    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays"
+}

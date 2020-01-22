@@ -7,6 +7,7 @@ const isDev = require("electron-is-dev");
 const regedit = require('regedit')
 const Color = require('color')
 const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
+const Translate = require('./Translate')
 
 const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
 
@@ -15,18 +16,18 @@ const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "
 const updatePath = path.join(app.getPath("userData"), `\\update.exe`)
 
 // Remove old log
-if(fs.existsSync(logPath)) {
+if (fs.existsSync(logPath)) {
   try {
     fs.unlinkSync(logPath)
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't delete log file")
   }
 }
 
 const log = async (...args) => {
-  for(let arg of args) {
+  for (let arg of args) {
     console.log(arg, "\r\n")
-    fs.appendFile(logPath, arg, () => {})
+    fs.appendFile(logPath, arg, () => { })
   }
 }
 
@@ -36,7 +37,7 @@ const debug = {
 }
 
 const ddcci = require("@hensm/ddcci");
-if(isDev) {
+if (isDev) {
   var WmiClient = require('wmi-client');
 } else {
   var WmiClient = require(path.join(app.getAppPath(), '../app.asar.unpacked/node_modules/wmi-client'));
@@ -61,7 +62,7 @@ var wmi = new WmiClient({
 });
 
 // Fix regedit tool path in production
-if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
+if (!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
 
 
 
@@ -71,9 +72,9 @@ if(!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('ex
 //
 //
 
-if(!fs.existsSync(app.getPath("appData"))) {
+if (!fs.existsSync(app.getPath("appData"))) {
   try {
-    fs.mkdirSync(app.getPath("appData"), {recursive: true})
+    fs.mkdirSync(app.getPath("appData"), { recursive: true })
   } catch (e) {
     debug.error(e)
   }
@@ -114,12 +115,12 @@ let settings = Object.assign({}, defaultSettings)
 function readSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
-      settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))      
+      settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
     debug.log('Settings loaded:', settings)
-  } catch(e) {
+  } catch (e) {
     debug.error("Couldn't load settings", e)
   }
   processSettings()
@@ -129,12 +130,12 @@ let writeSettingsTimeout = false
 function writeSettings(newSettings = {}, processAfter = true) {
   settings = Object.assign(settings, newSettings)
 
-  if(!writeSettingsTimeout) {
+  if (!writeSettingsTimeout) {
     writeSettingsTimeout = setTimeout(() => {
       // Save new settings
       try {
-        fs.writeFile(settingsPath, JSON.stringify(settings), (e) => {if(e) debug.error(e)})
-      } catch(e) {
+        fs.writeFile(settingsPath, JSON.stringify(settings), (e) => { if (e) debug.error(e) })
+      } catch (e) {
         debug.error("Couldn't save settings.", settingsPath, e)
       }
       writeSettingsTimeout = false
@@ -159,17 +160,17 @@ function processSettings(newSettings = {}) {
     mainWindow.close()
   }
 
-  if(newSettings.adjustmentTimes !== undefined) {
+  if (newSettings.adjustmentTimes !== undefined) {
     lastTimeEvent = false
     restartBackgroundUpdate()
   }
 
-  if(newSettings.hotkeys !== undefined && newSettings.hotkeys.length > 0) {
+  if (newSettings.hotkeys !== undefined && newSettings.hotkeys.length > 0) {
     applyHotkeys()
   }
 
-  if(newSettings.checkForUpdates !== undefined) {
-    if(newSettings.checkForUpdates === false) {
+  if (newSettings.checkForUpdates !== undefined) {
+    if (newSettings.checkForUpdates === false) {
       latestVersion = false
       sendToAllWindows('latest-version', latestVersion);
     } else {
@@ -182,13 +183,13 @@ function processSettings(newSettings = {}) {
 
 
 function applyHotkeys() {
-  if(settings.hotkeys !== undefined && settings.hotkeys.length > 0) {
+  if (settings.hotkeys !== undefined && settings.hotkeys.length > 0) {
     globalShortcut.unregisterAll()
-    for(let hotkey of settings.hotkeys) {
+    for (let hotkey of settings.hotkeys) {
       console.log("Adding hotkey ", hotkey)
       globalShortcut.register(hotkey.accelerator, () => {
-        if(hotkey.monitor === "all") {
-          for(let monitor of monitors) {
+        if (hotkey.monitor === "all") {
+          for (let monitor of monitors) {
             let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
             updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
           }
@@ -203,9 +204,9 @@ function applyHotkeys() {
 }
 
 function applyOrder() {
-  for(let monitor of monitors) {
-    for(let order of settings.order) {
-      if(monitor.id == order.id) {
+  for (let monitor of monitors) {
+    for (let order of settings.order) {
+      if (monitor.id == order.id) {
         monitor.order = order.order
       }
     }
@@ -214,9 +215,9 @@ function applyOrder() {
 
 function applyRemaps() {
   for (let monitor of monitors) {
-    if(settings.remaps) {
-      for(let remapName in settings.remaps) {
-        if(remapName == monitor.name) {
+    if (settings.remaps) {
+      for (let remapName in settings.remaps) {
+        if (remapName == monitor.name) {
           let remap = settings.remaps[remapName]
           monitor.min = remap.min
           monitor.max = remap.max
@@ -228,8 +229,8 @@ function applyRemaps() {
 
 function determineTheme(themeName) {
   theme = themeName.toLowerCase()
-  if(theme === "dark" || theme === "light") return theme;
-  if(lastTheme && lastTheme.SystemUsesLightTheme) {
+  if (theme === "dark" || theme === "light") return theme;
+  if (lastTheme && lastTheme.SystemUsesLightTheme) {
     return "light"
   } else {
     return "dark"
@@ -238,22 +239,68 @@ function determineTheme(themeName) {
 
 
 async function updateStartupOption(openAtLogin) {
-  if(!isDev)
-  app.setLoginItemSettings({ openAtLogin })
+  if (!isDev)
+    app.setLoginItemSettings({ openAtLogin })
 
   // Set autolaunch for AppX
   try {
-    if(isAppX) {
-      if(openAtLogin) {
+    if (isAppX) {
+      if (openAtLogin) {
         WindowsStoreAutoLaunch.enable()
       } else {
         WindowsStoreAutoLaunch.disable()
       }
-    } 
+    }
   } catch (e) {
     debug.error(e)
   }
 }
+
+
+
+//
+//
+//    Language
+//
+//
+
+
+
+const language = {
+  detected: "en",
+  default: {},
+  desired: {},
+}
+let T = new Translate(language.desired, language.default)
+function getLanguage() {
+  language.detected = app.getLocale().split("-")[0]
+
+  // Get default language file
+  fs.readFile(path.join(__dirname, `/language/default.json`), (err, data) => {
+
+    if (!err) {
+      language.default = JSON.parse(data)
+    } else {
+      console.error(err)
+    }
+
+    // Get user's local language file, if available
+    fs.readFile(path.join(__dirname, `/language/${language.detected}.json`), (err, data) => {
+
+      if (!err) {
+        language.desired = JSON.parse(data)
+      } else {
+        console.error(err)
+      }
+      T = new Translate(language.desired, language.default)
+      sendToAllWindows("language-updated", language)
+    })
+
+  }) 
+  
+}
+
+ipcMain.on('request-language', getLanguage)
 
 function getSettings() {
   processSettings({})
@@ -262,13 +309,13 @@ function getSettings() {
 
 
 function sendToAllWindows(eventName, data) {
-  if(mainWindow) {
+  if (mainWindow) {
     mainWindow.webContents.send(eventName, data)
   }
-  if(settingsWindow) {
+  if (settingsWindow) {
     settingsWindow.webContents.send(eventName, data)
   }
-  if(introWindow) {
+  if (introWindow) {
     introWindow.webContents.send(eventName, data)
   }
 }
@@ -290,41 +337,41 @@ ipcMain.on('reset-settings', () => {
 })
 
 // Get the user's Windows Personalization settings
-function getThemeRegistry() { 
+function getThemeRegistry() {
 
-  if(lastTheme) sendToAllWindows('theme-settings', lastTheme)
+  if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
 
-  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function(err, results) {
+  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function (err, results) {
     try {
-      if(err) {
+      if (err) {
         debug.error("Couldn\'t find theme key.", err)
       } else {
 
         // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
-        if(results)
-        for(let result in results) {
-          let themeSettings = Object.assign(results[result].values, {})
+        if (results)
+          for (let result in results) {
+            let themeSettings = Object.assign(results[result].values, {})
 
-          // We don't need the type, so dump it
-          for(let value in themeSettings) {
-            themeSettings[value] = themeSettings[value].value
-          }
+            // We don't need the type, so dump it
+            for (let value in themeSettings) {
+              themeSettings[value] = themeSettings[value].value
+            }
 
-          // Send it off!
-          sendToAllWindows('theme-settings', themeSettings)
-          lastTheme = themeSettings
-          if(tray) {
-            tray.setImage((themeSettings.SystemUsesLightTheme ? path.join(__dirname, 'assets/light-theme/icon.ico') : path.join(__dirname, 'assets/icon.ico')))
+            // Send it off!
+            sendToAllWindows('theme-settings', themeSettings)
+            lastTheme = themeSettings
+            if (tray) {
+              tray.setImage((themeSettings.SystemUsesLightTheme ? path.join(__dirname, 'assets/light-theme/icon.ico') : path.join(__dirname, 'assets/icon.ico')))
+            }
+            break; // Only the first one is needed
           }
-          break; // Only the first one is needed
-        }
 
       }
-    } catch(e) {
+    } catch (e) {
       debug.error("Couldn\'t get theme info.", e)
     }
-    
-})
+
+  })
 }
 
 function getAccentColors() {
@@ -335,7 +382,7 @@ function getAccentColors() {
     return adjusted
   }
   let adjustedAccent = accent
-  if(accent.hsl().color[2] > 60) adjustedAccent = matchLumi(accent, 0.6);
+  if (accent.hsl().color[2] > 60) adjustedAccent = matchLumi(accent, 0.6);
   if (accent.hsl().color[2] < 40) adjustedAccent = matchLumi(accent, 0.4);
   return {
     accent: adjustedAccent.hex(),
@@ -442,7 +489,7 @@ refreshMonitors = async () => {
 }
 
 function makeName(monitorDevice, fallback) {
-  if(monitorNames[monitorDevice] !== undefined) {
+  if (monitorNames[monitorDevice] !== undefined) {
     return monitorNames[monitorDevice]
   } else {
     return fallback;
@@ -461,27 +508,27 @@ function makeName(monitorDevice, fallback) {
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 function updateBrightnessThrottle(index, level, useCap = false) {
-    updateBrightnessQueue[index] = {
-      index,
-      level,
-      useCap
-    }
-    if(!updateBrightnessTimeout) {
-        updateBrightnessTimeout = setTimeout(() => {
-            const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
-            for(let bUpdate of updateBrightnessQueueCopy) {
-              updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
-            }
-            updateBrightnessTimeout = false
-            sendToAllWindows('monitors-updated', monitors)
-        }, settings.updateInterval)
-    }
+  updateBrightnessQueue[index] = {
+    index,
+    level,
+    useCap
+  }
+  if (!updateBrightnessTimeout) {
+    updateBrightnessTimeout = setTimeout(() => {
+      const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
+      for (let bUpdate of updateBrightnessQueueCopy) {
+        updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
+      }
+      updateBrightnessTimeout = false
+      sendToAllWindows('monitors-updated', monitors)
+    }, settings.updateInterval)
+  }
 }
 
 
 
 function updateBrightness(index, level, useCap = false) {
-  if(index >= monitors.length) {
+  if (index >= monitors.length) {
     console.log("updateBrightness: Invalid monitor")
     return false;
   }
@@ -501,52 +548,52 @@ function updateBrightness(index, level, useCap = false) {
 
 function normalizeBrightness(brightness, sending = false, min = 0, max = 100) {
   let level = brightness
-  if(level > 100) level = 100;
-  if(level < 0) level = 0;
-  if(min > 0 || max < 100) {
+  if (level > 100) level = 100;
+  if (level < 0) level = 0;
+  if (min > 0 || max < 100) {
     let out = level
-    if(sending) {
-      out = (min + ( ( level / 100) * (max - min) ) )
+    if (sending) {
+      out = (min + ((level / 100) * (max - min)))
     } else {
       out = ((level - min) * (100 / (max - min)))
     }
-    if(out > 100) out = 100;
-    if(out < 0) out = 0;
-    
+    if (out > 100) out = 100;
+    if (out < 0) out = 0;
+
     return Math.round(out)
   } else {
     return level
-  } 
+  }
 }
 
 let currentTransition = null
 function transitionBrightness(level, eventMonitors = []) {
-  if(currentTransition !== null) clearInterval(currentTransition);
+  if (currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
     for (let monitor of monitors) {
 
       let normalized = level
-      if(settings.adjustmentTimeIndividualDisplays) {
+      if (settings.adjustmentTimeIndividualDisplays) {
         // If using individual monitor settings
         normalized = (eventMonitors[monitor.id] ? eventMonitors[monitor.id] : level)
       }
 
-      if(settings.remaps) {
-        for(let remapName in settings.remaps) {
-          if(remapName == monitor.name) {
+      if (settings.remaps) {
+        for (let remapName in settings.remaps) {
+          if (remapName == monitor.name) {
             let remap = settings.remaps[remapName]
             normalized = normalizeBrightness(normalized, true, remap.min, remap.max)
           }
         }
       }
-      if(monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
+      if (monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
         updateBrightness(monitor.num, normalized)
         numDone++
       } else {
         updateBrightness(monitor.num, ((monitor.brightness * 2) + normalized) / 3)
       }
-      if(numDone === monitors.length) {
+      if (numDone === monitors.length) {
         clearInterval(currentTransition);
       }
     }
@@ -571,13 +618,13 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
       for (let monitor of result) {
         let hwid = readInstanceName(monitor.InstanceName)
         if (monitor.UserFriendlyName !== null)
-        for (let knownMonitor of monitors) {
-          if (knownMonitor.id.split("#")[1] == hwid[1]) {
-            knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
-            monitorNames[knownMonitor.id] = knownMonitor.name
-            break;
+          for (let knownMonitor of monitors) {
+            if (knownMonitor.id.split("#")[1] == hwid[1]) {
+              knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
+              monitorNames[knownMonitor.id] = knownMonitor.name
+              break;
+            }
           }
-        }
       }
       applyRemaps()
       callback(out)
@@ -593,7 +640,7 @@ function parseWMIString(str) {
   var decoded = '';
   var split = hexed.split(';')
   for (var i = 0; (i < split.length); i++)
-      decoded += String.fromCharCode(parseInt(split[i], 10));
+    decoded += String.fromCharCode(parseInt(split[i], 10));
   decoded = decoded.trim()
   return decoded;
 }
@@ -640,7 +687,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   mainWindow.setAlwaysOnTop(false)
-  if(false && settings.killWhenIdle) mainWindow.close()
+  if (false && settings.killWhenIdle) mainWindow.close()
 })
 
 
@@ -707,14 +754,14 @@ function repositionPanel() {
   sendToAllWindows('taskbar', taskbar)
 
   if (mainWindow) {
-    if(taskbar.position == "LEFT") {
+    if (taskbar.position == "LEFT") {
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
         x: taskbar.gap,
         y: primaryDisplay.workArea.height - panelSize.height
       })
-    } else if(taskbar.position == "TOP") {
+    } else if (taskbar.position == "TOP") {
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
@@ -742,13 +789,13 @@ function taskbarPosition() {
   const workArea = primaryDisplay.workArea
   let gap = 0
   let position = "BOTTOM"
-  if(bounds.x < workArea.x) {
+  if (bounds.x < workArea.x) {
     position = "LEFT"
     gap = bounds.width - workArea.width
-  } else if( bounds.y < workArea.y) {
+  } else if (bounds.y < workArea.y) {
     position = "TOP"
     gap = bounds.height - workArea.height
-  } else if(bounds.width > workArea.width) {
+  } else if (bounds.width > workArea.width) {
     position = "RIGHT"
     gap = bounds.width - workArea.width
   } else {
@@ -760,6 +807,7 @@ function taskbarPosition() {
 
 app.on("ready", () => {
   readSettings()
+  getLanguage()
   applyHotkeys()
   showIntro()
   createPanel()
@@ -791,12 +839,12 @@ app.on("activate", () => {
 //
 
 function createTray() {
-  if(tray != null) return false;
+  if (tray != null) return false;
 
   tray = new Tray(path.join(__dirname, 'assets/icon.ico'))
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Settings', type: 'normal', click: createSettings },
-    { label: 'Quit', type: 'normal', click: quitApp }
+    { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   tray.setContextMenu(contextMenu)
@@ -808,7 +856,7 @@ function quitApp() {
 }
 
 function toggleTray() {
-  if(mainWindow == null) {
+  if (mainWindow == null) {
     createPanel(true)
   }
   refreshMonitors()
@@ -817,9 +865,9 @@ function toggleTray() {
 
   // Send accent
   sendToAllWindows('update-colors', getAccentColors())
-  if(latestVersion) sendToAllWindows('latest-version', latestVersion);
+  if (latestVersion) sendToAllWindows('latest-version', latestVersion);
 
-  if(mainWindow) {
+  if (mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
     repositionPanel()
     mainWindow.setAlwaysOnTop(true)
@@ -844,16 +892,16 @@ let introWindow
 function showIntro() {
 
   // Check if user has already seen the intro
-  if(settings.userClosedIntro) {
+  if (settings.userClosedIntro) {
     return false;
   }
 
-  if(introWindow != null) {
+  if (introWindow != null) {
     // Don't make window if already open
     introWindow.focus()
     return false;
   }
-  
+
   introWindow = new BrowserWindow({
     width: 500,
     height: 650,
@@ -884,9 +932,9 @@ function showIntro() {
 }
 
 ipcMain.on('close-intro', (event, newSettings) => {
-  if(introWindow) {
+  if (introWindow) {
     introWindow.close()
-    writeSettings({userClosedIntro: true})
+    writeSettings({ userClosedIntro: true })
   }
 })
 
@@ -904,14 +952,14 @@ ipcMain.on('close-intro', (event, newSettings) => {
 let settingsWindow
 function createSettings() {
 
-  if(settingsWindow != null) {
+  if (settingsWindow != null) {
     // Don't make window if already open
     settingsWindow.focus()
     return false;
   }
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
-  
+
   settingsWindow = new BrowserWindow({
     width: (width >= 1200 ? 1024 : 600),
     height: (height >= 768 ? 720 : 500),
@@ -956,28 +1004,28 @@ function createSettings() {
 let latestVersion = false
 let lastCheck = false
 function checkForUpdates() {
-  if(!settings.checkForUpdates) return false;
-  if(lastCheck && lastCheck == new Date().getDate()) return false;
+  if (!settings.checkForUpdates) return false;
+  if (lastCheck && lastCheck == new Date().getDate()) return false;
   lastCheck = new Date().getDate()
   try {
     const fetch = require('node-fetch');
-  if(isAppX === false) {
-    console.log("Checking for updates...")
-    fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
+    if (isAppX === false) {
+      console.log("Checking for updates...")
+      fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
         response.json().then((json) => {
-            latestVersion = {
-              releaseURL: (json[0].html_url),
-              version: json[0].tag_name,
-              downloadURL: json[0].assets[0]["browser_download_url"],
-              show: false
+          latestVersion = {
+            releaseURL: (json[0].html_url),
+            version: json[0].tag_name,
+            downloadURL: json[0].assets[0]["browser_download_url"],
+            show: false
           }
-          if("v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
+          if ("v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
             latestVersion.show = true
           }
         })
-    });
-}
-  } catch(e) {
+      });
+    }
+  } catch (e) {
     console.log(e)
   }
 }
@@ -993,7 +1041,7 @@ function getLatestUpdate(url) {
     if (fs.existsSync(updatePath)) {
       try {
         fs.unlink(updatePath)
-      } catch(e) {
+      } catch (e) {
         console.log("Couldn't delete update file")
       }
     }
@@ -1014,23 +1062,23 @@ function getLatestUpdate(url) {
                 });
                 process.unref()
                 app.quit()
-              } catch(e) {
+              } catch (e) {
                 console.log(e)
               }
             }, 1250)
           });
           res.body.pipe(dest);
-        } catch(e) {
+        } catch (e) {
           console.log("Couldn't write update file")
         }
       });
-  } catch(e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
 ipcMain.on('ignore-update', (event, dismissedUpdate) => {
-  writeSettings({dismissedUpdate})
+  writeSettings({ dismissedUpdate })
   latestVersion.show = false
   sendToAllWindows('latest-version', latestVersion)
 })
@@ -1052,7 +1100,7 @@ let backgroundInterval = null
 function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
-  
+
   screen.on('display-added', handleMonitorChange)
   screen.on('display-removed', handleMonitorChange)
   screen.on('display-metrics-changed', repositionPanel)
@@ -1075,7 +1123,7 @@ function handleMonitorChange(e) {
 
 let restartBackgroundUpdateThrottle = false
 function restartBackgroundUpdate() {
-  if(!restartBackgroundUpdateThrottle) {
+  if (!restartBackgroundUpdateThrottle) {
     restartBackgroundUpdateThrottle = setTimeout(() => {
       restartBackgroundUpdateThrottle = false
       clearInterval(backgroundInterval)
@@ -1117,7 +1165,7 @@ function handleBackgroundUpdate() {
         // Check if event is not later than current time, last event time, or last found time
         if (hour >= eventHour || (hour == eventHour && minute >= eventMinute)) {
           // Check if found event is greater than last found event
-          if(foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
+          if (foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
             foundEvent = Object.assign({}, event)
             foundEvent.minute = eventMinute
             foundEvent.hour = eventHour
@@ -1125,7 +1173,7 @@ function handleBackgroundUpdate() {
         }
       }
       if (foundEvent) {
-        if (lastTimeEvent == false || lastTimeEvent.hour < foundEvent.hour || (lastTimeEvent.hour == foundEvent.hour && lastTimeEvent.minute < foundEvent.minute) ) {
+        if (lastTimeEvent == false || lastTimeEvent.hour < foundEvent.hour || (lastTimeEvent.hour == foundEvent.hour && lastTimeEvent.minute < foundEvent.minute)) {
           console.log("Adjusting brightness automatically", foundEvent)
           lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
@@ -1135,10 +1183,10 @@ function handleBackgroundUpdate() {
         }
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.error(e)
   }
 
   checkForUpdates()
-  
+
 }

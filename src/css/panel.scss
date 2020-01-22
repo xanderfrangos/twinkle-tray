@@ -29,7 +29,7 @@ body {
         font-family: 'Segoe UI';
         width: 100vw;
         box-sizing: border-box;
-        padding: 15px;
+        padding: 15px 15px 0 15px;
         position: absolute;
         bottom: 0;
         left: 0;
@@ -133,5 +133,15 @@ body {
                 margin-left: 10px;
             }
         }
+    }
+}
+
+
+
+.monitor-item {
+    margin: 0 !important;
+    height: 73px;
+    .input--range {
+        padding-bottom: 15px;
     }
 }

@@ -44,12 +44,13 @@
       "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",
-      "src/assets/*",
       "src/language/*",
-      "src/assets/light-theme/*",
+      "src/assets/icon.ico",
       "build/**/*",
-      "src/**/*",
-      "!node_modules/wmi-client/bin"
+      "!node_modules/wmi-client/bin",
+      "!node_modules/@hensm/ddcci/build",
+      "node_modules/@hensm/ddcci/build/Release/ddcci.node",
+      "!node_modules/node-addon-api/doc"
     ],
     "extraResources": [
       "node_modules\\regedit\\vbs\\*",

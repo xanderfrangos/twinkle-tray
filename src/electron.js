@@ -1,4 +1,3 @@
-const electron = require("electron");
 const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')

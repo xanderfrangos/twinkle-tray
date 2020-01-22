@@ -22,3 +22,4 @@ yarn-error.log*
 logs/
 *.pfx
 .env
+cache/

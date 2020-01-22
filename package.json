@@ -71,7 +71,7 @@
       "displayName": "Twinkle Tray",
       "identityName": "38002AlexanderFrangos.TwinkleTray",
       "publisher": "CN=B8E9A58B-32A7-4C6C-A474-D4BE2A3CEAD8",
-      "showNameOnTiles": true,
+      "showNameOnTiles": false,
       "backgroundColor": "#6b479c"
     }
   },

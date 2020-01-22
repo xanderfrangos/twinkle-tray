@@ -4,8 +4,8 @@
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
-    "parcel": "parcel *.html --port 3000 --out-dir build",
-    "parcel-build": "parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting",
+    "parcel": "parcel *.html --port 3000 --out-dir cache",
+    "parcel-build": "del build && parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
     "electron-build": "electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",

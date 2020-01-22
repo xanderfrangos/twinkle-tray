@@ -3,7 +3,10 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
 const { exec } = require('child_process');
-const isDev = require("electron-is-dev");
+let isDev = false
+try {
+  isDev = require("electron-is-dev");
+} catch (e) { }
 const regedit = require('regedit')
 const Color = require('color')
 const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');

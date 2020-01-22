@@ -49,10 +49,13 @@
       "src/language/*",
       "src/assets/light-theme/*",
       "build/**/*",
-      "src/**/*"
+      "src/**/*",
+      "!node_modules/wmi-client/bin"
     ],
     "extraResources": [
-      "node_modules\\regedit\\vbs\\*"
+      "node_modules\\regedit\\vbs\\*",
+      "node_modules\\wmi-client\\**\\*",
+      "!node_modules\\wmi-client\\bin"
     ],
     "win": {
       "target": [

@@ -40,7 +40,7 @@ const ddcci = require("@hensm/ddcci");
 if (isDev) {
   var WmiClient = require('wmi-client');
 } else {
-  var WmiClient = require(path.join(app.getAppPath(), '../app.asar.unpacked/node_modules/wmi-client'));
+  var WmiClient = require(path.join(app.getAppPath(), '../node_modules/wmi-client'));
 }
 
 

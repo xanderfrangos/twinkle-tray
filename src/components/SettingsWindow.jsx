@@ -220,11 +220,11 @@ export default class SettingsWindow extends PureComponent {
                 label: "Time Adjustments",
                 icon: "&#xE823;"
             },
-            /*{
+            {
                 id: "hotkeys",
                 label: "Hotkeys",
                 icon: "&#xF210;"
-            },*/
+            },
             {
                 id: "updates",
                 label: "Updates",
@@ -525,23 +525,16 @@ export default class SettingsWindow extends PureComponent {
                             <option value="light">Light Mode</option>
                         </select>
                     </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Brightness update rate</div>
-                        <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
-                        <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
-                            <option value="999">Ludicrous</option>
-                            <option value="250">Fast (250 ms)</option>
-                            <option value="500">Normal (500 ms)</option>
-                            <option value="1000">Slow (1 second)</option>
-                            <option value="2000">Very Slow (2 seconds)</option>
-                        </select>
-                    </div>
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">Reset Settings</div>
                         <p>If for some reason you need to clear your settings, hit this button.</p>
                         <br />
                         <a className="button" onClick={window.resetSettings}>Reset settings</a>
                     </div>
+
+
+
+
                     <div className="pageSection" data-active={this.isSection("time")}>
                         <div className="sectionTitle">Time of Day Adjustments</div>
                         <p>Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.</p>
@@ -564,6 +557,21 @@ export default class SettingsWindow extends PureComponent {
                         <p>Adjust the brightness to match the most relevant time when Twinkle Tray starts.</p>
                         <input onChange={this.checkTimeAtStartupChanged} checked={window.settings.checkTimeAtStartup || false} data-checked={window.settings.checkTimeAtStartup || false} type="checkbox" />
                     </div>
+
+
+
+
+                    <div className="pageSection" data-active={this.isSection("monitors")}>
+                        <div className="sectionTitle">Brightness update rate</div>
+                        <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
+                        <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
+                            <option value="999">Ludicrous</option>
+                            <option value="250">Fast (250 ms)</option>
+                            <option value="500">Normal (500 ms)</option>
+                            <option value="1000">Slow (1 second)</option>
+                            <option value="2000">Very Slow (2 seconds)</option>
+                        </select>
+                    </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
                         <div className="sectionTitle">Rename Monitors</div>
                         <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
@@ -583,6 +591,26 @@ export default class SettingsWindow extends PureComponent {
                             {this.getMinMaxMonitors()}
                         </div>
                     </div>
+
+
+
+
+                    <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                        <div className="sectionTitle">Brightness level adjustment</div>
+                        <p>How much the brightness should be adjusted when using hotkeys.</p>
+                        <select value={this.state.hotkeyPercent} onChange={ (e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) } }>
+                            <option value="5">5%</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="25">25%</option>
+                            <option value="30">30%</option>
+                        </select>
+                    </div>
+
+
+
+
                     <div className="pageSection" data-active={this.isSection("updates")}>
                         <div className="sectionTitle">Updates</div>
                         <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>

@@ -1,7 +1,7 @@
 const electron = require("electron");
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen } = require('electron')
+const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
 const { exec } = require('child_process');
 const isDev = require("electron-is-dev");
 const regedit = require('regedit')
@@ -88,7 +88,19 @@ const defaultSettings = {
   openAtLogin: false,
   killWhenIdle: false,
   remaps: [],
-  hotkeys: [],
+  hotkeys: [
+    {
+      monitor: "all",
+      accelerator: "Control+Y",
+      direction: -1
+    },
+    {
+      monitor: "all",
+      accelerator: "Control+U",
+      direction: 1
+    }
+  ],
+  hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
   checkTimeAtStartup: true,
@@ -110,7 +122,7 @@ function readSettings() {
   } catch(e) {
     debug.error("Couldn't load settings", e)
   }
-  processSettings({})
+  processSettings()
 }
 
 let writeSettingsTimeout = false
@@ -152,6 +164,10 @@ function processSettings(newSettings = {}) {
     restartBackgroundUpdate()
   }
 
+  if(newSettings.hotkeys !== undefined && newSettings.hotkeys.length > 0) {
+    applyHotkeys()
+  }
+
   if(newSettings.checkForUpdates !== undefined) {
     if(newSettings.checkForUpdates === false) {
       latestVersion = false
@@ -162,6 +178,28 @@ function processSettings(newSettings = {}) {
 
   }
   sendToAllWindows('settings-updated', settings)
+}
+
+
+function applyHotkeys() {
+  if(settings.hotkeys !== undefined && settings.hotkeys.length > 0) {
+    globalShortcut.unregisterAll()
+    for(let hotkey of settings.hotkeys) {
+      console.log("Adding hotkey ", hotkey)
+      globalShortcut.register(hotkey.accelerator, () => {
+        if(hotkey.monitor === "all") {
+          for(let monitor of monitors) {
+            let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+            updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+          }
+        } else {
+          const monitor = monitors[hotkey.monitor]
+          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+          updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+        }
+      })
+    }
+  }
 }
 
 function applyOrder() {
@@ -411,27 +449,60 @@ function makeName(monitorDevice, fallback) {
   }
 }
 
-function updateBrightness(index, level) {
+
+
+//
+//
+//    Brightness updates
+//
+//
+
+
+let updateBrightnessTimeout = false
+let updateBrightnessQueue = []
+function updateBrightnessThrottle(index, level, useCap = false) {
+    updateBrightnessQueue[index] = {
+      index,
+      level,
+      useCap
+    }
+    if(!updateBrightnessTimeout) {
+        updateBrightnessTimeout = setTimeout(() => {
+            const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
+            for(let bUpdate of updateBrightnessQueueCopy) {
+              updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
+            }
+            updateBrightnessTimeout = false
+            sendToAllWindows('monitors-updated', monitors)
+        }, settings.updateInterval)
+    }
+}
+
+
+
+function updateBrightness(index, level, useCap = false) {
   if(index >= monitors.length) {
     console.log("updateBrightness: Invalid monitor")
     return false;
   }
   const monitor = monitors[index]
-  const brightness = Math.round(level * 1)
+  const brightness = normalizeBrightness(level, true, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
+    monitor.brightness = brightness
     if (monitor.type == "ddcci") {
-      // Always use the latest monitors
       ddcci.setBrightness(monitor.id, brightness)
     } else if (monitor.type == "wmi") {
       exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
     }
-    monitor.brightness = brightness
   } catch (e) {
     debug.error("Could not update brightness", e)
   }
 }
 
-function normalizeBrightness(level, sending = false, min = 0, max = 100) {
+function normalizeBrightness(brightness, sending = false, min = 0, max = 100) {
+  let level = brightness
+  if(level > 100) level = 100;
+  if(level < 0) level = 0;
   if(min > 0 || max < 100) {
     let out = level
     if(sending) {
@@ -439,6 +510,9 @@ function normalizeBrightness(level, sending = false, min = 0, max = 100) {
     } else {
       out = ((level - min) * (100 / (max - min)))
     }
+    if(out > 100) out = 100;
+    if(out < 0) out = 0;
+    
     return Math.round(out)
   } else {
     return level
@@ -686,6 +760,7 @@ function taskbarPosition() {
 
 app.on("ready", () => {
   readSettings()
+  applyHotkeys()
   showIntro()
   createPanel()
   addEventListeners()

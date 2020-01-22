@@ -82,7 +82,7 @@ export default class SettingsWindow extends PureComponent {
         for (let monitor of items) {
             this.state.monitors[monitor.num].order = idx
             order.push({
-                id: monitor.device,
+                id: monitor.id,
                 order: idx
             })
             idx++
@@ -190,14 +190,14 @@ export default class SettingsWindow extends PureComponent {
 
     monitorNameChange = (e, f) => {
         const idx = e.currentTarget.dataset.key
-        this.state.names[window.allMonitors[idx].device] = e.currentTarget.value
+        this.state.names[window.allMonitors[idx].id] = e.currentTarget.value
         this.forceUpdate()
         window.sendSettings({ names: this.state.names })
     }
 
     getMonitorName = (monitor, renames) => {
-        if (Object.keys(renames).indexOf(monitor.device) >= 0 && renames[monitor.device] != "") {
-            return renames[monitor.device] + ` (${monitor.name})`
+        if (Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
+            return renames[monitor.id] + ` (${monitor.name})`
         } else {
             return monitor.name
         }
@@ -302,7 +302,7 @@ export default class SettingsWindow extends PureComponent {
                 <div key={index}>
                     <br />
                     <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.device] ? this.state.names[monitor.device] : "")}></input>
+                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
                 </div>
 
             ))
@@ -407,10 +407,10 @@ export default class SettingsWindow extends PureComponent {
         if(this.state.adjustmentTimeIndividualDisplays) {
             return this.state.monitors.map((monitor, idx) => {
                 let level = time.brightness
-                if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.device]) {
-                    level = this.state.adjustmentTimes[index].monitors[monitor.device]
+                if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.id]) {
+                    level = this.state.adjustmentTimes[index].monitors[monitor.id]
                 } 
-                return (<Slider key={monitor.device + ".brightness"} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
+                return (<Slider key={monitor.id + ".brightness"} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
             })
         } else {
             return (<Slider key={index + ".brightness"} name="All Displays" level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
@@ -421,7 +421,7 @@ export default class SettingsWindow extends PureComponent {
         if(this.state.adjustmentTimes[index].monitors === undefined) {
             this.state.adjustmentTimes[index].monitors = {}
         }
-        this.state.adjustmentTimes[index].monitors[monitor.device] = value
+        this.state.adjustmentTimes[index].monitors[monitor.id] = value
         console.log(this.state.adjustmentTimes[index].monitors)
         this.forceUpdate();
         this.adjustmentTimesUpdated()

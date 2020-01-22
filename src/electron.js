@@ -44,6 +44,7 @@ if(isDev) {
 
 
 let monitors = []
+let connectedMonitors = []
 let monitorNames = []
 let mainWindow;
 let tray = null
@@ -166,7 +167,7 @@ function processSettings(newSettings = {}) {
 function applyOrder() {
   for(let monitor of monitors) {
     for(let order of settings.order) {
-      if(monitor.device == order.id) {
+      if(monitor.id == order.id) {
         monitor.order = order.order
       }
     }
@@ -327,11 +328,9 @@ refreshMonitors = async () => {
 
   for (let monitor of ddcciMonitors) {
     try {
-      const deviceID = monitor.substr(0, monitor.indexOf("\\\\.\\DISPLAY"))
       foundMonitors.push({
-        name: makeName(deviceID, `Display ${local + 1}`),
+        name: makeName(monitor, `Display ${local + 1}`),
         id: monitor,
-        device: deviceID,
         num: local,
         localID: local,
         brightness: ddcci.getBrightness(monitor),
@@ -339,8 +338,8 @@ refreshMonitors = async () => {
         min: 0,
         max: 100
       })
-    } catch {
-
+    } catch (e) {
+      // Probably failed to get VCP code, which means the display is not compatible
     }
     local++
   }
@@ -361,7 +360,6 @@ refreshMonitors = async () => {
             out.push({
               name: makeName(monitor.InstanceName, `Display ${local + 1}`),
               id: monitor.InstanceName,
-              device: monitor.InstanceName,
               num: local,
               localID: local,
               brightness: monitor.CurrentBrightness,
@@ -423,7 +421,6 @@ function updateBrightness(index, level) {
   try {
     if (monitor.type == "ddcci") {
       // Always use the latest monitors
-      const allMonitors = ddcci.getMonitorList()
       ddcci.setBrightness(monitor.id, brightness)
     } else if (monitor.type == "wmi") {
       exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
@@ -458,7 +455,7 @@ function transitionBrightness(level, eventMonitors = []) {
       let normalized = level
       if(settings.adjustmentTimeIndividualDisplays) {
         // If using individual monitor settings
-        normalized = (eventMonitors[monitor.device] ? eventMonitors[monitor.device] : level)
+        normalized = (eventMonitors[monitor.id] ? eventMonitors[monitor.id] : level)
       }
 
       if(settings.remaps) {
@@ -503,7 +500,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
         for (let knownMonitor of monitors) {
           if (knownMonitor.id.split("#")[1] == hwid[1]) {
             knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
-            monitorNames[knownMonitor.device] = knownMonitor.name
+            monitorNames[knownMonitor.id] = knownMonitor.name
             break;
           }
         }

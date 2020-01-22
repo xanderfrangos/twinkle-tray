@@ -3,6 +3,7 @@
     "GENERIC_CANCEL": "Cancel",
     "GENERIC_SAVE": "Save",
     "GENERIC_QUIT": "Quit",
+    "GENERIC_CLOSE": "Close",
     "GENERIC_SETTINGS": "Settings",
     "GENERIC_INSTALL": "Install",
     "GENERIC_DISMISS": "Dismiss",
@@ -12,5 +13,8 @@
     "PANEL_TITLE": "Adjust Brightness",
     "PANEL_UPDATE_AVAILABLE": "An update is available",
     "PANEL_BUTTON_LINK_LEVELS": "Link levels",
-    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays"
+    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays",
+
+    "INTRO_TITLE": "Welcome to Twinkle Tray!",
+    "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions."
 }

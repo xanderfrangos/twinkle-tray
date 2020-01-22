@@ -8,11 +8,13 @@ window.closeIntro = () => {
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestAccent()
+    ipc.send('request-language')
 })
 browser.webContents.once('did-finish-load', () => {
     setTimeout(() => {
         document.getElementById("video").play()
     }, 2400)
+    ipc.send('request-language')
 })
 
 // User personalization settings recieved
@@ -27,3 +29,10 @@ ipc.on('theme-settings', (event, theme) => {
 function requestAccent() {
     ipc.send('request-colors')
 }
+
+// Language recieved
+ipc.on('language-updated', (event, language) => {
+    window.dispatchEvent(new CustomEvent('languageUpdated', {
+        detail: language
+    }))
+})

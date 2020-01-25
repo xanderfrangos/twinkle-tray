@@ -90,18 +90,7 @@ const defaultSettings = {
   openAtLogin: false,
   killWhenIdle: false,
   remaps: [],
-  hotkeys: [
-    {
-      monitor: "all",
-      accelerator: "Control+Y",
-      direction: -1
-    },
-    {
-      monitor: "all",
-      accelerator: "Control+U",
-      direction: 1
-    }
-  ],
+  hotkeys: [],
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,

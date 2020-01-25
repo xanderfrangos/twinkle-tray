@@ -1,9 +1,9 @@
 import React, { PureComponent } from "react";
-import Translate from "../Translate"
+import TranslateReact from "../TranslateReact"
 import AppLogo from "../assets/logo.png"
 import IntroVideo from "../assets/intro-video.mp4"
 
-let T = new Translate({}, {})
+let T = new TranslateReact({}, {})
 
 export default class IntroWindow extends PureComponent {
 

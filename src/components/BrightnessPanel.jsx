@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
-import Translate from "../Translate"
+import TranslateReact from "../TranslateReact"
 
 const monitorSort = (a, b) => {
   const aSort = (a.order === undefined ? 999 : a.order * 1)
@@ -8,7 +8,7 @@ const monitorSort = (a, b) => {
   return aSort - bSort
 }
 
-let T = new Translate({}, {})
+let T = new TranslateReact({}, {})
 
 export default class BrightnessPanel extends PureComponent {
 

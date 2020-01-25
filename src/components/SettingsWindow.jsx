@@ -3,7 +3,7 @@ import Titlebar from './Titlebar'
 import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { markdown } from 'markdown';
-import Translate from "../Translate"
+import TranslateReact from "../TranslateReact"
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -24,7 +24,7 @@ const monitorSort = (a, b) => {
     return aSort - bSort
 }
 
-let T = new Translate({}, {})
+let T = new TranslateReact({}, {})
 
 export default class SettingsWindow extends PureComponent {
 

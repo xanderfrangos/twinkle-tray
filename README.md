@@ -30,7 +30,7 @@ This app was built with [Electron](https://electronjs.org/), [Node.js](https://n
 - Download or clone.
 - Run *npm install*.
 - Run *npm run build* to build the native modules.
-- Run *npm run parcel* and *npm start*.
+- Run *npm run parcel* and *npm start* (both must run at the same time).
 
 ## License
 

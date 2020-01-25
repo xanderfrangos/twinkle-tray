@@ -270,37 +270,30 @@ const localization = {
 }
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
+  // Detect language
   localization.detected = (settings.language == "system" ? app.getLocale().split("-")[0] : settings.language)
 
   // Get default localization file
-  fs.readFile(path.join(__dirname, `/localization/default.json`), (err, data) => {
+  try {
+    const defaultFile = fs.readFileSync(path.join(__dirname, `/localization/default.json`))
+    localization.default = JSON.parse(defaultFile)
+  } catch(e) {
+    console.error("Couldn't read default langauge file!")
+  }
 
-    if (!err) {
-      localization.default = JSON.parse(data)
-    } else {
-      console.error(err)
+  // Get user's local localization file, if available
+  const langPath = path.join(__dirname, `/localization/${localization.detected}.json`)
+  if(fs.existsSync(langPath)) {
+    try {
+      const desiredFile = fs.readFileSync(langPath)
+      localization.desired = JSON.parse(desiredFile)
+    } catch(e) {
+      console.error(`Couldn't read language file: ${localization.detected}.json`)
     }
+  }
 
-    // Get user's local localization file, if available
-    const langPath = path.join(__dirname, `/localization/${localization.detected}.json`)
-    if(fs.existsSync(langPath)) {
-      fs.readFile(langPath, (err, data) => {
-
-        if (!err) {
-          localization.desired = JSON.parse(data)
-        } else {
-          console.error(err)
-        }
-        T = new Translate(localization.desired, localization.default)
-        sendToAllWindows("localization-updated", localization)
-      })
-    } else {
-      localization.desired = {}
-      sendToAllWindows("localization-updated", localization)
-    }
-
-  }) 
-
+  T = new Translate(localization.desired, localization.default)
+  sendToAllWindows("localization-updated", localization)
   getAllLanguages()
   
 }

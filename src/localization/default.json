@@ -1,4 +1,6 @@
 {
+    "LANGUAGE": "English",
+
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "Cancel",
     "GENERIC_SAVE": "Save",
@@ -45,6 +47,8 @@
     "SETTINGS_GENERAL_THEME_SYSTEM": "System Preferences (Default)",
     "SETTINGS_GENERAL_THEME_DARK": "Dark Mode",
     "SETTINGS_GENERAL_THEME_LIGHT": "Light Mode",
+    "SETTINGS_GENERAL_LANGUAGE_TITLE": "Language",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "System Language (Default)",
     "SETTINGS_GENERAL_RESET_TITLE": "Reset Settings",
     "SETTINGS_GENERAL_RESET_DESC": "If for some reason you need to clear your settings, hit this button.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Reset settings",

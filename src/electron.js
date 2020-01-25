@@ -268,7 +268,7 @@ const localization = {
 }
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
-  localization.detected = (settings.language != "system" ? app.getLocale().split("-")[0] : settings.language)
+  localization.detected = (settings.language == "system" ? app.getLocale().split("-")[0] : settings.language)
 
   // Get default localization file
   fs.readFile(path.join(__dirname, `/localization/default.json`), (err, data) => {
@@ -280,16 +280,22 @@ function getLocalization() {
     }
 
     // Get user's local localization file, if available
-    fs.readFile(path.join(__dirname, `/localization/${localization.detected}.json`), (err, data) => {
+    const langPath = path.join(__dirname, `/localization/${localization.detected}.json`)
+    if(fs.existsSync(langPath)) {
+      fs.readFile(langPath, (err, data) => {
 
-      if (!err) {
-        localization.desired = JSON.parse(data)
-      } else {
-        console.error(err)
-      }
-      T = new Translate(localization.desired, localization.default)
+        if (!err) {
+          localization.desired = JSON.parse(data)
+        } else {
+          console.error(err)
+        }
+        T = new Translate(localization.desired, localization.default)
+        sendToAllWindows("localization-updated", localization)
+      })
+    } else {
+      localization.desired = {}
       sendToAllWindows("localization-updated", localization)
-    })
+    }
 
   }) 
   

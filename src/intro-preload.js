@@ -8,13 +8,12 @@ window.closeIntro = () => {
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestAccent()
-    ipc.send('request-localization')
 })
 browser.webContents.once('did-finish-load', () => {
+    ipc.send('request-localization')
     setTimeout(() => {
         document.getElementById("video").play()
     }, 2400)
-    ipc.send('request-localization')
 })
 
 // User personalization settings recieved
@@ -36,3 +35,5 @@ ipc.on('localization-updated', (event, localization) => {
         detail: localization
     }))
 })
+
+window.ipc = ipc

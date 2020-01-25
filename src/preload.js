@@ -182,13 +182,12 @@ ipc.on('theme-settings', (event, theme) => {
 
 // Request startup data
 browser.webContents.once('dom-ready', () => {
+    requestSettings()
     requestMonitors()
     requestAccent()
-    requestSettings()
-    ipc.send('request-localization')
 })
 
-
+window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.openSettings = openSettings

@@ -4,6 +4,8 @@ import BrightnessPanel from "./components/BrightnessPanel";
 
 if (window.settings == undefined) window.settings = {}
 
+window.ipc.send('request-localization')
+
 ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
 
 

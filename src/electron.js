@@ -97,7 +97,8 @@ const defaultSettings = {
   checkTimeAtStartup: true,
   order: [],
   checkForUpdates: !isDev,
-  dismissedUpdate: ''
+  dismissedUpdate: '',
+  language: "system"
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -157,6 +158,10 @@ function processSettings(newSettings = {}) {
 
   if (newSettings.hotkeys !== undefined && newSettings.hotkeys.length > 0) {
     applyHotkeys()
+  }
+
+  if(newSettings.language !== undefined) {
+    getLocalization()
   }
 
   if (newSettings.checkForUpdates !== undefined) {
@@ -263,7 +268,7 @@ const localization = {
 }
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
-  localization.detected = app.getLocale().split("-")[0]
+  localization.detected = (settings.language != "system" ? app.getLocale().split("-")[0] : settings.language)
 
   // Get default localization file
   fs.readFile(path.join(__dirname, `/localization/default.json`), (err, data) => {
@@ -290,7 +295,7 @@ function getLocalization() {
   
 }
 
-ipcMain.on('request-localization', getLocalization)
+ipcMain.on('request-localization', () => { sendToAllWindows("localization-updated", localization) })
 
 function getSettings() {
   processSettings({})

@@ -118,9 +118,9 @@ browser.webContents.once('dom-ready', () => {
     requestSettings()
     requestMonitors()
     requestAccent()
-    ipc.send('request-localization')
 })
 
+window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings

@@ -22,7 +22,7 @@
     "windows"
   ],
   "author": "Xander Frangos",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@hensm/ddcci": "file:modules/node-ddcci",
     "color": "^3.1.2",

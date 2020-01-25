@@ -42,7 +42,8 @@ export default class SettingsWindow extends PureComponent {
             updateInterval: (window.settings.updateInterval || 500),
             downloadingUpdate: false,
             checkForUpdates: false,
-            adjustmentTimeIndividualDisplays: false
+            adjustmentTimeIndividualDisplays: false,
+            languages: []
         }
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -51,7 +52,7 @@ export default class SettingsWindow extends PureComponent {
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
-        window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
+        window.addEventListener("localizationUpdated", (e) => { this.setState({languages: e.detail.languages }); console.log(e.detail); T.setLocalizationData(e.detail.desired, e.detail.default) })
 
         if (window.isAppX === false) {
             fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
@@ -240,6 +241,15 @@ export default class SettingsWindow extends PureComponent {
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })
+    }
+
+
+    getLanguages = () => {
+        if(this.state.languages && this.state.languages.length > 0) {
+            return this.state.languages.map((value, index) => {
+                return (<option key={ value.id } value={ value.id }>{ value.name }</option>)
+            } )
+        }
     }
 
 
@@ -467,6 +477,7 @@ export default class SettingsWindow extends PureComponent {
         const checkTimeAtStartup = (settings.checkTimeAtStartup || false)
         const checkForUpdates = (settings.checkForUpdates || false)
         const adjustmentTimeIndividualDisplays = (settings.adjustmentTimeIndividualDisplays || false)
+        const language = (settings.language || "system")
         this.setState({
             linkedLevelsActive,
             remaps,
@@ -477,7 +488,8 @@ export default class SettingsWindow extends PureComponent {
             order,
             checkTimeAtStartup,
             checkForUpdates,
-            adjustmentTimeIndividualDisplays
+            adjustmentTimeIndividualDisplays,
+            language
         }, () => {
             this.forceUpdate()
         })
@@ -526,6 +538,16 @@ export default class SettingsWindow extends PureComponent {
                             <option value="default">{ T.t("SETTINGS_GENERAL_THEME_SYSTEM") }</option>
                             <option value="dark">{ T.t("SETTINGS_GENERAL_THEME_DARK") }</option>
                             <option value="light">{ T.t("SETTINGS_GENERAL_THEME_LIGHT") }</option>
+                        </select>
+                        <br />
+                        <br />
+                        <label>{ T.t("SETTINGS_GENERAL_LANGUAGE_TITLE") }</label>
+                        <select value={window.settings.language} onChange={ (e) => {
+                            this.setState({ language: e.target.value })
+                            window.sendSettings({ language: e.target.value })
+                        } }>
+                            <option value="system">{ T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM") }</option>
+                            { this.getLanguages() }
                         </select>
                     </div>
                     <div className="pageSection" data-active={this.isSection("general")}>

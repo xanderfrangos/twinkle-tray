@@ -9,8 +9,8 @@ function makeTranslation(string, args = []) {
 }
 
 class Translate {
-    constructor(languageData = {}, fallbackData = {}) {
-        this.languageData = languageData
+    constructor(localizationData = {}, fallbackData = {}) {
+        this.localizationData = localizationData
         this.fallbackData = fallbackData
 
         // getString shorthand
@@ -18,14 +18,14 @@ class Translate {
         this.h = this.getHTML
     }
 
-    setLanguageData(data = {}, fallback = {}) {
-        this.languageData = data
+    setLocalizationData(data = {}, fallback = {}) {
+        this.localizationData = data
         this.fallbackData = fallback
     }
 
     getString(key, ...args) {
-        if(this.languageData[key] !== undefined) {
-            return makeTranslation(this.languageData[key], args)
+        if(this.localizationData[key] !== undefined) {
+            return makeTranslation(this.localizationData[key], args)
         } else if(this.fallbackData[key] !== undefined) {
             return makeTranslation(this.fallbackData[key], args)
         } else {
@@ -33,9 +33,9 @@ class Translate {
         }
     }
     getHTML(key, ...args) {
-        if(this.languageData[key] !== undefined) {
+        if(this.localizationData[key] !== undefined) {
             return (<span dangerouslySetInnerHTML={{
-                __html: makeTranslation(this.languageData[key], args)
+                __html: makeTranslation(this.localizationData[key], args)
             }}></span>) 
         } else if(this.fallbackData[key] !== undefined) {
             return (<span dangerouslySetInnerHTML={{

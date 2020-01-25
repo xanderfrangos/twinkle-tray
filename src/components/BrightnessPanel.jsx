@@ -236,7 +236,7 @@ export default class BrightnessPanel extends PureComponent {
 
     window.addEventListener("monitorsUpdated", this.recievedMonitors)
     window.addEventListener("settingsUpdated", this.recievedSettings)
-    window.addEventListener("languageUpdated", (e) => { T.setLanguageData(e.detail.desired, e.detail.default) })
+    window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
 

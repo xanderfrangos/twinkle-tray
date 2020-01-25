@@ -261,47 +261,47 @@ async function updateStartupOption(openAtLogin) {
 
 //
 //
-//    Language
+//    Localization
 //
 //
 
 
 
-const language = {
+const localization = {
   detected: "en",
   default: {},
   desired: {},
 }
-let T = new Translate(language.desired, language.default)
-function getLanguage() {
-  language.detected = app.getLocale().split("-")[0]
+let T = new Translate(localization.desired, localization.default)
+function getLocalization() {
+  localization.detected = app.getLocale().split("-")[0]
 
-  // Get default language file
-  fs.readFile(path.join(__dirname, `/language/default.json`), (err, data) => {
+  // Get default localization file
+  fs.readFile(path.join(__dirname, `/localization/default.json`), (err, data) => {
 
     if (!err) {
-      language.default = JSON.parse(data)
+      localization.default = JSON.parse(data)
     } else {
       console.error(err)
     }
 
-    // Get user's local language file, if available
-    fs.readFile(path.join(__dirname, `/language/${language.detected}.json`), (err, data) => {
+    // Get user's local localization file, if available
+    fs.readFile(path.join(__dirname, `/localization/${localization.detected}.json`), (err, data) => {
 
       if (!err) {
-        language.desired = JSON.parse(data)
+        localization.desired = JSON.parse(data)
       } else {
         console.error(err)
       }
-      T = new Translate(language.desired, language.default)
-      sendToAllWindows("language-updated", language)
+      T = new Translate(localization.desired, localization.default)
+      sendToAllWindows("localization-updated", localization)
     })
 
   }) 
   
 }
 
-ipcMain.on('request-language', getLanguage)
+ipcMain.on('request-localization', getLocalization)
 
 function getSettings() {
   processSettings({})
@@ -808,7 +808,7 @@ function taskbarPosition() {
 
 app.on("ready", () => {
   readSettings()
-  getLanguage()
+  getLocalization()
   applyHotkeys()
   showIntro()
   createPanel()

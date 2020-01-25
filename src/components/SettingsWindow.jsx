@@ -51,7 +51,7 @@ export default class SettingsWindow extends PureComponent {
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
-        window.addEventListener("languageUpdated", (e) => { T.setLanguageData(e.detail.desired, e.detail.default) })
+        window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
 
         if (window.isAppX === false) {
             fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {

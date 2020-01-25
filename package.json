@@ -44,7 +44,7 @@
       "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",
-      "src/language/*",
+      "src/localization/*",
       "src/assets/icon.ico",
       "build/**/*",
       "!node_modules/wmi-client/bin",

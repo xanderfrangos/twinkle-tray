@@ -12,7 +12,7 @@ export default class IntroWindow extends PureComponent {
     }
 
     componentDidMount() {
-        window.addEventListener("languageUpdated", (e) => { T.setLanguageData(e.detail.desired, e.detail.default); this.forceUpdate() })
+        window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default); this.forceUpdate() })
     }
 
     render() {

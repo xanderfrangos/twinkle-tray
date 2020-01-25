@@ -3,6 +3,7 @@ import Titlebar from './Titlebar'
 import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { markdown } from 'markdown';
+import Translate from "../Translate"
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -22,6 +23,8 @@ const monitorSort = (a, b) => {
     const bSort = (b.order === undefined ? 999 : b.order * 1)
     return aSort - bSort
 }
+
+let T = new Translate({}, {})
 
 export default class SettingsWindow extends PureComponent {
 
@@ -48,6 +51,7 @@ export default class SettingsWindow extends PureComponent {
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
+        window.addEventListener("languageUpdated", (e) => { T.setLanguageData(e.detail.desired, e.detail.default) })
 
         if (window.isAppX === false) {
             fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
@@ -207,27 +211,27 @@ export default class SettingsWindow extends PureComponent {
         const items = [
             {
                 id: "general",
-                label: "General",
+                label: T.t("SETTINGS_SIDEBAR_GENERAL"),
                 icon: "&#xE713;"
             },
             {
                 id: "monitors",
-                label: "Monitor Settings",
+                label: T.t("SETTINGS_SIDEBAR_MONITORS"),
                 icon: "&#xE7F4;"
             },
             {
                 id: "time",
-                label: "Time Adjustments",
+                label: T.t("SETTINGS_SIDEBAR_TIME"),
                 icon: "&#xE823;"
             },
             {
                 id: "hotkeys",
-                label: "Hotkeys",
+                label: T.t("SETTINGS_SIDEBAR_HOTKEYS"),
                 icon: "&#xF210;"
             },
             {
                 id: "updates",
-                label: "Updates",
+                label: T.t("SETTINGS_SIDEBAR_UPDATES"),
                 icon: "&#xE895;"
             }
         ]
@@ -242,13 +246,13 @@ export default class SettingsWindow extends PureComponent {
     getUpdate = () => {
         if (window.isAppX) {
             return (
-                <p>To check for updates, visit the <a onClick={() => { window.openURL("ms-windows-store://pdp/?productid=9PLJWWSV01LK") }}>Microsoft Store app</a>.</p>
+                <p><a onClick={() => { window.openURL("ms-windows-store://pdp/?productid=9PLJWWSV01LK") }}>{ T.t("SETTINGS_UPDATES_MS_STORE") }</a></p>
             )
         } else {
             if (this.state.latest && this.state.latest != window.version) {
                 return (
                     <div>
-                        <p><b style={{ color: window.accent }}>An update is available for Twinkle Tray!</b></p>
+                        <p><b style={{ color: window.accent }}>{ T.t("SETTINGS_UPDATES_AVAILABLE") }</b></p>
                         <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
                         <br />
                         {this.getUpdateButton()}
@@ -257,7 +261,7 @@ export default class SettingsWindow extends PureComponent {
             } else if (this.state.latest) {
                 return (
                     <div>
-                        <p>There are no updates available at this time. This version of Twinkle tray includes the following changes:</p>
+                        <p>{ T.t("SETTINGS_UPDATES_NONE_AVAILABLE") }</p>
                         <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
                     </div>
                 )
@@ -267,15 +271,15 @@ export default class SettingsWindow extends PureComponent {
 
     getUpdateButton = () => {
         if (this.state.downloadingUpdate) {
-            return (<p><b>Downloading update...</b></p>)
+            return (<p><b>{ T.t("SETTINGS_UPDATES_DOWNLOADING") }</b></p>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>Download &amp; Install {this.state.latest}</a>)
+        return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>{ T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest) }</a>)
         }
     }
 
     getMinMaxMonitors = () => {
         if (this.state.monitors == undefined || this.state.monitors.length == 0) {
-            return (<div className="no-displays-message">No compatible displays found. Please check that "DDC/CI" is enabled for your monitors.<br /><br /></div>)
+            return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }<br /><br /></div>)
         } else {
             return this.state.monitors.map((monitor, index) => {
                 const remap = this.getRemap(monitor.name)
@@ -283,9 +287,9 @@ export default class SettingsWindow extends PureComponent {
                     <div key={monitor.name}>
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{this.getMonitorName(monitor, this.state.names)}</div></div>
-                        <label>Min</label>
+                        <label>{ T.t("GENERIC_MINIMUM") }</label>
                         <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
-                        <label>Max</label>
+                        <label>{ T.t("GENERIC_MAXIMUM") }</label>
                         <Slider key={monitor.name + ".max"} type="max" level={remap.max} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
                     </div>
 
@@ -296,7 +300,7 @@ export default class SettingsWindow extends PureComponent {
 
     getRenameMonitors = () => {
         if (this.state.monitors == undefined || this.state.monitors.length == 0) {
-            return (<div className="no-displays-message">No displays found.<br /><br /></div>)
+            return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }<br /><br /></div>)
         } else {
             return this.state.monitors.map((monitor, index) => (
                 <div key={index}>
@@ -312,7 +316,7 @@ export default class SettingsWindow extends PureComponent {
 
     getReorderMonitors = () => {
         if (this.state.monitors == undefined || this.state.monitors.length == 0) {
-            return (<div className="no-displays-message">No displays found.<br /><br /></div>)
+            return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }<br /><br /></div>)
         } else {
             const sorted = this.state.monitors.slice(0).sort(monitorSort)
             return (
@@ -391,7 +395,7 @@ export default class SettingsWindow extends PureComponent {
                             this.state.adjustmentTimes.splice(index, 1)
                             this.forceUpdate()
                             this.adjustmentTimesUpdated()
-                        }}>Remove time</a>
+                        }}>{ T.t("SETTINGS_TIME_REMOVE") }</a>
                     </div>
                     <div className="row">
                         { this.getAdjustmentTimesMonitors(time, index) }
@@ -413,7 +417,7 @@ export default class SettingsWindow extends PureComponent {
                 return (<Slider key={monitor.id + ".brightness"} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
             })
         } else {
-            return (<Slider key={index + ".brightness"} name="All Displays" level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
+            return (<Slider key={index + ".brightness"} name={ T.t("GENERIC_ALL_DISPLAYS") } level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
         }
     }
 
@@ -504,48 +508,47 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings({ adjustmentTimes: this.state.adjustmentTimes })
     }
 
-
     render() {
         return (
             <div className="window-base" data-theme={window.settings.theme || "default"}>
-                <Titlebar title="Twinkle Tray Settings" />
+                <Titlebar title={ T.t("SETTINGS_TITLE") } />
                 <div id="sidebar">
                     {this.getSidebar()}
                 </div>
                 <div id="page">
                     <div className="pageSection" data-active={this.isSection("general")}>
-                        <div className="sectionTitle">General</div>
-                        <label>Launch at startup</label>
+                        <div className="sectionTitle">{ T.t("SETTINGS_GENERAL_TITLE") }</div>
+                        <label>{ T.t("SETTINGS_GENERAL_STARTUP") }</label>
                         <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
                         <br /><br />
-                        <label>App Theme</label>
+                        <label>{ T.t("SETTINGS_GENERAL_THEME_TITLE") }</label>
                         <select value={window.settings.theme} onChange={this.themeChanged}>
-                            <option value="default">System Preference (Default)</option>
-                            <option value="dark">Dark Mode</option>
-                            <option value="light">Light Mode</option>
+                            <option value="default">{ T.t("SETTINGS_GENERAL_THEME_SYSTEM") }</option>
+                            <option value="dark">{ T.t("SETTINGS_GENERAL_THEME_DARK") }</option>
+                            <option value="light">{ T.t("SETTINGS_GENERAL_THEME_LIGHT") }</option>
                         </select>
                     </div>
                     <div className="pageSection" data-active={this.isSection("general")}>
-                        <div className="sectionTitle">Reset Settings</div>
-                        <p>If for some reason you need to clear your settings, hit this button.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_GENERAL_RESET_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_GENERAL_RESET_DESC") }</p>
                         <br />
-                        <a className="button" onClick={window.resetSettings}>Reset settings</a>
+                        <a className="button" onClick={window.resetSettings}>{ T.t("SETTINGS_GENERAL_RESET_BUTTON") }</a>
                     </div>
 
 
 
 
                     <div className="pageSection" data-active={this.isSection("time")}>
-                        <div className="sectionTitle">Time of Day Adjustments</div>
-                        <p>Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.</p>
-                        <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ Add a time</a></p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_TIME_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_TIME_DESC") }</p>
+                        <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ { T.t("SETTINGS_TIME_ADD") }</a></p>
                         <div className="adjustmentTimes">
                             {this.getAdjustmentTimes()}
                         </div>
                     </div>
                     <div className="pageSection" data-active={this.isSection("time")}>
-                        <label>Set brightness for individual displays</label>
-                        <p>Configure the brightness per display instead of for all displays at once</p>
+                        <label>{ T.t("SETTINGS_TIME_INDIVIDUAL_TITLE") }</label>
+                        <p>{ T.t("SETTINGS_TIME_INDIVIDUAL_DESC") }</p>
                         <input onChange={() => {
                             const adjustmentTimeIndividualDisplays = (this.state.adjustmentTimeIndividualDisplays ? false : true)
                             this.setState({ adjustmentTimeIndividualDisplays })
@@ -553,8 +556,8 @@ export default class SettingsWindow extends PureComponent {
                         }} checked={window.settings.adjustmentTimeIndividualDisplays || false} data-checked={window.settings.adjustmentTimeIndividualDisplays || false} type="checkbox" />
                     </div>
                     <div className="pageSection" data-active={this.isSection("time")}>
-                        <label>Check at app startup</label>
-                        <p>Adjust the brightness to match the most relevant time when Twinkle Tray starts.</p>
+                        <label>{ T.t("SETTINGS_TIME_STARTUP_TITLE") }</label>
+                        <p>{ T.t("SETTINGS_TIME_STARTUP_DESC") }</p>
                         <input onChange={this.checkTimeAtStartupChanged} checked={window.settings.checkTimeAtStartup || false} data-checked={window.settings.checkTimeAtStartup || false} type="checkbox" />
                     </div>
 
@@ -562,31 +565,31 @@ export default class SettingsWindow extends PureComponent {
 
 
                     <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Brightness update rate</div>
-                        <p>How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_MONITORS_RATE_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_MONITORS_RATE_DESC") }</p>
                         <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
-                            <option value="999">Ludicrous</option>
-                            <option value="250">Fast (250 ms)</option>
-                            <option value="500">Normal (500 ms)</option>
-                            <option value="1000">Slow (1 second)</option>
-                            <option value="2000">Very Slow (2 seconds)</option>
+                            <option value="999">{ T.t("SETTINGS_MONITORS_RATE_0") }</option>
+                            <option value="250">{ T.t("SETTINGS_MONITORS_RATE_1") }</option>
+                            <option value="500">{ T.t("SETTINGS_MONITORS_RATE_2") }</option>
+                            <option value="1000">{ T.t("SETTINGS_MONITORS_RATE_3") }</option>
+                            <option value="2000">{ T.t("SETTINGS_MONITORS_RATE_4") }</option>
                         </select>
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Rename Monitors</div>
-                        <p>If you'd prefer a different name for each monitor (ex "Left Monitor", "Middle Monitor"), you can enter it below. Leaving the field empty will restore the original name.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_MONITORS_RENAME_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_MONITORS_RENAME_DESC") }</p>
                         {this.getRenameMonitors()}
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Reorder Monitors</div>
-                        <p>Change the order that monitors are displayed in the tray. Click and drag to make changes.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_MONITORS_REORDER_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_MONITORS_REORDER_DESC") }</p>
                         <div className="reorderList">
                             {this.getReorderMonitors()}
                         </div>
                     </div>
                     <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">Normalize Brightness</div>
-                        <p>Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_MONITORS_NORMALIZE_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_MONITORS_NORMALIZE_DESC") }</p>
                         <div className="monitorItem">
                             {this.getMinMaxMonitors()}
                         </div>
@@ -594,10 +597,13 @@ export default class SettingsWindow extends PureComponent {
 
 
 
-
                     <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                        <div className="sectionTitle">Brightness level adjustment</div>
-                        <p>How much the brightness should be adjusted when using hotkeys.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_HOTKEYS_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_HOTKEYS_DESC") }</p>
+                    </div>
+                    <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                        <div className="sectionTitle">{ T.t("SETTINGS_HOTKEYS_LEVEL_TITLE") }</div>
+                        <p>{ T.t("SETTINGS_HOTKEYS_LEVEL_DESC") }</p>
                         <select value={this.state.hotkeyPercent} onChange={ (e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) } }>
                             <option value="5">5%</option>
                             <option value="10">10%</option>
@@ -612,13 +618,13 @@ export default class SettingsWindow extends PureComponent {
 
 
                     <div className="pageSection" data-active={this.isSection("updates")}>
-                        <div className="sectionTitle">Updates</div>
-                        <p>Your version of Twinkle Tray is <b>{window.version || "not available"}</b>.</p>
+                        <div className="sectionTitle">{ T.t("SETTINGS_UPDATES_TITLE") }</div>
+                        <p>{ T.h("SETTINGS_UPDATES_VERSION", '<b>' + (window.version || "not available") + '</b>') }</p>
                         {this.getUpdate()}
                     </div>
                     <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
-                        <label>Automatically check for updates</label>
-                        <p>Twinkle Tray will occasionally check for updates automatically and notify you in the brightness panel.</p>
+                        <label>{ T.t("SETTINGS_UPDATES_AUTOMATIC_TITLE") }</label>
+                        <p>{ T.t("SETTINGS_UPDATES_AUTOMATIC_DESC") }</p>
                         <input onChange={() => {
                             const checkForUpdates = (this.state.checkForUpdates ? false : true)
                             this.setState({ checkForUpdates })

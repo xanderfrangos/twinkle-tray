@@ -97,6 +97,13 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+// Language recieved
+ipc.on('language-updated', (event, language) => {
+    window.dispatchEvent(new CustomEvent('languageUpdated', {
+        detail: language
+    }))
+})
+
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {
@@ -111,6 +118,7 @@ browser.webContents.once('dom-ready', () => {
     requestSettings()
     requestMonitors()
     requestAccent()
+    ipc.send('request-language')
 })
 
 window.updateBrightness = updateBrightness

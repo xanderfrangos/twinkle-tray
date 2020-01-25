@@ -2,19 +2,95 @@
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "Cancel",
     "GENERIC_SAVE": "Save",
+    "GENERIC_CLEAR": "Clear",
+    "GENERIC_OFF": "Off",
+    "GENERIC_ON": "On",
     "GENERIC_QUIT": "Quit",
     "GENERIC_CLOSE": "Close",
     "GENERIC_SETTINGS": "Settings",
     "GENERIC_INSTALL": "Install",
     "GENERIC_DISMISS": "Dismiss",
+    "GENERIC_DISPLAY_SINGLE": "Display", 
+    "GENERIC_ALL_DISPLAYS": "All Displays",
+    "GENERIC_MINIMUM": "Min",
+    "GENERIC_MAXIMUM": "Max",
     "GENERIC_NO_DISPLAYS": "No displays detected. Please connect a display to your PC.",
-    "GENERIC_NO_COMPATIBLE_DISPLAYS": "No compatible displays found. Please check that \"DDC/CI\" is enabled for your monitors.",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "No compatible displays found. Please check that \"DDC/CI\" is enabled for your displays.",
+    "GENERIC_NO_DISPLAYS_SHORT": "No compatible displays detected.",
+
 
     "PANEL_TITLE": "Adjust Brightness",
     "PANEL_UPDATE_AVAILABLE": "An update is available",
     "PANEL_BUTTON_LINK_LEVELS": "Link levels",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays",
 
+
     "INTRO_TITLE": "Welcome to Twinkle Tray!",
-    "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions."
+    "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions.",
+
+
+    "SETTINGS_TITLE": "Twinkle Tray Settings",
+
+
+    "SETTINGS_SIDEBAR_GENERAL": "General",
+    "SETTINGS_SIDEBAR_MONITORS": "Monitor Settings",
+    "SETTINGS_SIDEBAR_TIME": "Time Adjustments",
+    "SETTINGS_SIDEBAR_HOTKEYS": "Hotkeys",
+    "SETTINGS_SIDEBAR_UPDATES": "Updates",
+
+
+    "SETTINGS_GENERAL_TITLE": "General",
+    "SETTINGS_GENERAL_STARTUP": "Launch at startup",
+    "SETTINGS_GENERAL_THEME_TITLE": "App Theme",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "System Preferences (Default)",
+    "SETTINGS_GENERAL_THEME_DARK": "Dark Mode",
+    "SETTINGS_GENERAL_THEME_LIGHT": "Light Mode",
+    "SETTINGS_GENERAL_RESET_TITLE": "Reset Settings",
+    "SETTINGS_GENERAL_RESET_DESC": "If for some reason you need to clear your settings, hit this button.",
+    "SETTINGS_GENERAL_RESET_BUTTON": "Reset settings",
+
+
+    "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",
+    "SETTINGS_MONITORS_RATE_DESC": "How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.",
+    "SETTINGS_MONITORS_RATE_0": "Ludicrous",
+    "SETTINGS_MONITORS_RATE_1": "Fast (250 ms)",
+    "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
+    "SETTINGS_MONITORS_RATE_3": "Slow (1 second)",
+    "SETTINGS_MONITORS_RATE_4": "Very Slow (2 seconds)",
+    "SETTINGS_MONITORS_RENAME_TITLE": "Rename Monitors",
+    "SETTINGS_MONITORS_RENAME_DESC": "If you'd prefer a different name for each monitor (ex \"Left Monitor\", \"Middle Monitor\"), you can enter it below. Leaving the field empty will restore the original name.",
+    "SETTINGS_MONITORS_REORDER_TITLE": "Reorder Monitors",
+    "SETTINGS_MONITORS_REORDER_DESC": "Change the order that monitors are displayed in the tray. Click and drag to make changes.",
+    "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalize Brightness",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.",
+
+
+    "SETTINGS_TIME_TITLE": "Time of Day Adjustments",
+    "SETTINGS_TIME_DESC": "Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.",
+    "SETTINGS_TIME_ADD": "Add a time",
+    "SETTINGS_TIME_REMOVE": "Remove time",
+    "SETTINGS_TIME_INDIVIDUAL_TITLE": "Set brightness for individual displays",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure the brightness per display instead of for all displays at once",
+    "SETTINGS_TIME_STARTUP_TITLE": "Check at app startup",
+    "SETTINGS_TIME_STARTUP_DESC": "Adjust the brightness to match the most relevant time when Twinkle Tray starts.",
+
+
+    "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
+    "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all monitors.",
+    "SETTINGS_HOTKEYS_ADD": "Add hotkey",
+    "SETTINGS_HOTKEYS_REMOVE": "Remove hotkey",
+    "SETTINGS_HOTKEYS_LEVEL_TITLE": "Brightness level adjustment",
+    "SETTINGS_HOTKEYS_LEVEL_DESC": "How much the brightness should be adjusted when using hotkeys.",
+
+
+    "SETTINGS_UPDATES_TITLE": "Updates",
+    "SETTINGS_UPDATES_VERSION": "Your version of Twinkle Tray is {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Automatically check for updates",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray will occasionally check for updates automatically and notify you in the brightness panel.",
+    "SETTINGS_UPDATES_MS_STORE": "To check for updates, visit the Microsoft Store app.",
+    "SETTINGS_UPDATES_AVAILABLE": "An update is available for Twinkle Tray!",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "There are no updates available at this time. This version of Twinkle tray includes the following changes:",
+    "SETTINGS_UPDATES_DOWNLOADING": "Downloading update...",
+    "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}"
+    
 }

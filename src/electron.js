@@ -265,6 +265,8 @@ const localization = {
   detected: "en",
   default: {},
   desired: {},
+  all: [],
+  languages: []
 }
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
@@ -298,7 +300,31 @@ function getLocalization() {
     }
 
   }) 
+
+  getAllLanguages()
   
+}
+
+function getAllLanguages() {
+  fs.readdir(path.join(__dirname, `/localization/`), (err, files) => {
+    if(!err) {
+      let languages = []
+      for(let file of files) {
+        try {
+          const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
+          const langName = JSON.parse(langText)["LANGUAGE"]
+          languages.push({
+            id: file.split(".")[0],
+            name: langName
+          })
+        } catch(e) {
+          console.error(`Error reading language from ${file}`)
+        }
+      }
+      localization.languages = languages
+      sendToAllWindows("localization-updated", localization)
+    }
+  })
 }
 
 ipcMain.on('request-localization', () => { sendToAllWindows("localization-updated", localization) })

@@ -350,6 +350,51 @@ a {
 }
 
 
+
+.hotkey-monitors {
+    
+    .hotkey-item {
+        margin-top: 30px;
+        & + .hotkey-item {
+            
+        }
+    }
+    .name {
+
+    }
+
+    .row {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        line-height: 1;
+
+        & > * {
+            margin-right: 5px;
+        }
+
+    }
+
+    .title {
+
+    }
+
+    input[type="text"] {
+        padding: 6px;
+        font-size: 14px;
+        height: auto;
+        box-sizing: border-box;
+        line-height: 1;
+    }
+
+    input[type="button"] {
+        @extend .button;
+        padding: 8px;
+        line-height: 1;
+    }
+}
+
+
 // Sidebar
 #sidebar {
     position: fixed;

@@ -448,6 +448,23 @@ export default class SettingsWindow extends PureComponent {
         this.adjustmentTimesUpdated()
     }
 
+    getHotkeyMonitor = (displayName, id) => {
+        return (
+            <div className="hotkey-item">
+                <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ displayName }</div></div>
+                <div className="title">Increase Brightness</div>
+                <div className="row"><input placeholder="Press keys here" type="text" readOnly={true} /><input type="button" value="Save" /><input type="button" value="Clear" /></div>
+                <div className="title">Decrease Brightness</div>
+                <div className="row"><input placeholder="Press keys here" type="text" readOnly={true} /><input type="button" value="Save" /><input type="button" value="Clear" /></div>
+            </div>
+        )
+    }
+
+    getHotkeyMonitors = () => {
+        return this.state.monitors.map((monitor, idx) => {
+            return this.getHotkeyMonitor(this.getMonitorName(monitor, this.state.names), monitor.id)
+        })
+    }
 
 
 
@@ -622,6 +639,11 @@ export default class SettingsWindow extends PureComponent {
                     <div className="pageSection" data-active={this.isSection("hotkeys")}>
                         <div className="sectionTitle">{ T.t("SETTINGS_HOTKEYS_TITLE") }</div>
                         <p>{ T.t("SETTINGS_HOTKEYS_DESC") }</p>
+                        <div className="hotkey-monitors">
+                            {this.getHotkeyMonitor("All Monitors", "all")}
+                            {this.getHotkeyMonitors()}
+                        </div>
+                        
                     </div>
                     <div className="pageSection" data-active={this.isSection("hotkeys")}>
                         <div className="sectionTitle">{ T.t("SETTINGS_HOTKEYS_LEVEL_TITLE") }</div>

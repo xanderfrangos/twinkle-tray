@@ -27,7 +27,7 @@ class Translate {
         } else if(this.fallbackData[key] !== undefined) {
             return this.makeTranslation(this.fallbackData[key], args)
         } else {
-            return key
+            return ""
         }
     }
     getHTML(key, ...args) {

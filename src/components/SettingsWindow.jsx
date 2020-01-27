@@ -762,7 +762,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionTitle">{ T.t("SETTINGS_HOTKEYS_TITLE") }</div>
                         <p>{ T.t("SETTINGS_HOTKEYS_DESC") }</p>
                         <div className="hotkey-monitors">
-                            {this.getHotkeyMonitor("All Monitors", "all")}
+                            {this.getHotkeyMonitor(T.t("GENERIC_ALL_DISPLAYS"), "all")}
                             {this.getHotkeyMonitors()}
                         </div>
                         

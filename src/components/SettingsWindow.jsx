@@ -199,9 +199,10 @@ export default class SettingsWindow extends PureComponent {
             }
         }
 
+        const hasChanged = (JSON.stringify(this.state.remaps) == JSON.stringify(remaps) ? false : true);
+        if(!hasChanged) return false;
         this.setState({ remaps })
         window.sendSettings({ remaps })
-        //window.requestSettings()
     }
 
     themeChanged = (event) => {
@@ -508,6 +509,7 @@ export default class SettingsWindow extends PureComponent {
                         window.sendSettings({hotkeys: this.state.hotkeys})
                         this.forceUpdate()
                     }} />
+                    { this.getHotkeyStatusIcon(id, 1) }
                     </div>
                 <div className="title">{ T.t("SETTINGS_HOTKEYS_DECREASE") }</div>
                 <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
@@ -527,9 +529,21 @@ export default class SettingsWindow extends PureComponent {
                         window.sendSettings({hotkeys: this.state.hotkeys})
                         this.forceUpdate()
                     }} />
+                    { this.getHotkeyStatusIcon(id, -1) }
                     </div>
             </div>
         )
+    }
+
+    getHotkeyStatusIcon = (id, direction) => {
+        if(this.state.hotkeys && this.state.hotkeys[id + "__dir" + direction]) {
+            const status = this.state.hotkeys[id + "__dir" + direction].active
+            if(status) {
+                return (<div className="status icon active">&#xE73E;</div>)
+            } else {
+                return (<div className="status icon inactive"></div>)
+            }
+        }
     }
 
     getHotkeyMonitors = () => {
@@ -551,7 +565,8 @@ export default class SettingsWindow extends PureComponent {
         const hotkey = {
             monitor: id,
             accelerator: Object.keys(keys).join('+'),
-            direction
+            direction,
+            active: false
         }
 
         const key = id + "__dir" + direction

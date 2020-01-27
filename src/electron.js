@@ -182,7 +182,7 @@ function applyHotkeys() {
     globalShortcut.unregisterAll()
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
-        globalShortcut.register(hotkey.accelerator, () => {
+        hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
           if (hotkey.monitor === "all") {
             for (let monitor of monitors) {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
@@ -201,6 +201,7 @@ function applyHotkeys() {
       }
       
     }
+    sendToAllWindows('settings-updated', settings)
   }
 }
 

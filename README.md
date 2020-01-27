@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/master/src/assets/logo.png" width="128px" height="128px">
+  <img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/master/src/assets/logo.png" width="128px" height="128px" alt="Twinkle Tray brightness slider logo">
 </p>
 <h1 align="center">Twinkle Tray</h1>
 
 Twinkle Tray lets you easily manage the brightness levels of multiple monitors. Even though Windows 10 is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows 10 also lacks any ability to manage the brightness of multiple monitors. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible monitors. 
 
-<img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/twinkle-tray-screenshot.jpg" />
+<img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/twinkle-tray-screenshot.jpg" alt="Win 10 brightness slider" />
 
 **Features:**
 - Adds brightness sliders to the system tray, similar to the built-in Windows 10 volume panel.
@@ -20,7 +20,7 @@ This app was built with [Electron](https://electronjs.org/), [Node.js](https://n
 
 **Download the lastest version from [twinkletray.com](https://twinkletray.com/) or the [Releases page](https://github.com/xanderfrangos/twinkle-tray/releases).**
 
-<a href="https://www.microsoft.com/store/apps/9PLJWWSV01LK" target="_blank"><img width="156" src="https://crushee.app/assets/img/ms-store.svg" alt="Get Twinkle Tray from the Microsoft Store"></a>
+<a href="https://www.microsoft.com/store/apps/9PLJWWSV01LK" target="_blank"><img width="156" src="https://crushee.app/assets/img/ms-store.svg" alt="Get Twinkle Tray brightness slider from the Microsoft Store"></a>
 
 ## Usage
 

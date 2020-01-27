@@ -355,9 +355,6 @@ a {
     
     .hotkey-item {
         margin-top: 30px;
-        & + .hotkey-item {
-            
-        }
     }
     .name {
 
@@ -385,6 +382,9 @@ a {
         height: auto;
         box-sizing: border-box;
         line-height: 1;
+        &:focus {
+            border-color: var(--system-accent-color);
+        }
     }
 
     input[type="button"] {

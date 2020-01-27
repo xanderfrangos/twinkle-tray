@@ -85,7 +85,7 @@
     "SETTINGS_HOTKEYS_REMOVE": "ホットキーの削除",
     "SETTINGS_HOTKEYS_INCREASE": "明るさを上げる",
     "SETTINGS_HOTKEYS_DECREASE": "明るを下げる",
-    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ホットキーを押す",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを押してください",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "明るさ調整の程度",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "ホットキー使用時にどのくらい明るさを調整するか。",
 

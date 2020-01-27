@@ -83,6 +83,9 @@
     "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all monitors.",
     "SETTINGS_HOTKEYS_ADD": "Add hotkey",
     "SETTINGS_HOTKEYS_REMOVE": "Remove hotkey",
+    "SETTINGS_HOTKEYS_INCREASE": "Increase Brightness",
+    "SETTINGS_HOTKEYS_DECREASE": "Decrease Brightness",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Press keys here",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Brightness level adjustment",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "How much the brightness should be adjusted when using hotkeys.",
 

@@ -453,8 +453,8 @@ export default class SettingsWindow extends PureComponent {
         return (
             <div key={id} className="hotkey-item">
                 <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ displayName }</div></div>
-                <div className="title">Increase Brightness</div>
-                <div className="row"><input placeholder="Press keys here" value={ this.findHotkey(id, 1) } type="text" readOnly={true} onKeyDown={
+                <div className="title">{ T.t("SETTINGS_HOTKEYS_INCREASE") }</div>
+                <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, 1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
                         let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
                         if(this.downKeys[key] === undefined) { 
@@ -469,8 +469,8 @@ export default class SettingsWindow extends PureComponent {
                         this.forceUpdate()
                     }} />
                     </div>
-                <div className="title">Decrease Brightness</div>
-                <div className="row"><input placeholder="Press keys here" value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
+                <div className="title">{ T.t("SETTINGS_HOTKEYS_DECREASE") }</div>
+                <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
                         let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
                         if(this.downKeys[key] === undefined) { 

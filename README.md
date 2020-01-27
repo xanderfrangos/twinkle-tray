@@ -7,7 +7,12 @@ Twinkle Tray lets you easily manage the brightness levels of multiple monitors. 
 
 <img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/twinkle-tray-screenshot.jpg" />
 
-Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Make sure you have the appropriate option(s) enabled on your monitor so that it can work with Twinkle Tray.
+**Features:**
+- Adds brightness sliders to the system tray, similar to the built-in Windows 10 volume panel.
+- Normalize backlight across different monitors.
+- Can automatically change monitor brightness depending on the time of day.
+- Seamlessly blends in with Windows 10. Uses your Personalization settings to match your taskbar.
+- Starts up with Windows.
 
 This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [electron-react-parcel-boilerplate](<https://github.com/kumarryogeshh/electron-react-parcel-boilerplate>).
 
@@ -25,7 +30,16 @@ This app was built with [Electron](https://electronjs.org/), [Node.js](https://n
 - Click away to hide the panel.
 - Right-click the system tray icon to quit.
 
+## Compatibility
+Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitors offer DDC/CI compatibility, but it may be off by default. Make sure you have the appropriate option(s) enabled on your monitor so that it can work with Twinkle Tray. Refer to your monitor's user manual for more information.
+
+**Known issues:**
+- The AMD Radeon Control Panel can interfere with Twinkle Tray. Ensure "Custom Colors" is not enabled.
+- DVI and VGA may not be compatible.
+- USB/Thunderbolt/Surface docks with HDMI or DisplayPort may not be compatible. 
+
 ## Build
+If you wish to run a development build of Twinkly Tray:
 
 - Download or clone.
 - Run *npm install*.

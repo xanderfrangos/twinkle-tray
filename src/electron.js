@@ -90,7 +90,7 @@ const defaultSettings = {
   openAtLogin: false,
   killWhenIdle: false,
   remaps: [],
-  hotkeys: [],
+  hotkeys: {},
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
@@ -156,7 +156,7 @@ function processSettings(newSettings = {}) {
     restartBackgroundUpdate()
   }
 
-  if (newSettings.hotkeys !== undefined && newSettings.hotkeys.length > 0) {
+  if (newSettings.hotkeys !== undefined) {
     applyHotkeys()
   }
 
@@ -178,22 +178,28 @@ function processSettings(newSettings = {}) {
 
 
 function applyHotkeys() {
-  if (settings.hotkeys !== undefined && settings.hotkeys.length > 0) {
+  if (settings.hotkeys !== undefined) {
     globalShortcut.unregisterAll()
-    for (let hotkey of settings.hotkeys) {
-      console.log("Adding hotkey ", hotkey)
-      globalShortcut.register(hotkey.accelerator, () => {
-        if (hotkey.monitor === "all") {
-          for (let monitor of monitors) {
-            let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-            updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+    for (let hotkey of Object.values(settings.hotkeys)) {
+      try {
+        globalShortcut.register(hotkey.accelerator, () => {
+          if (hotkey.monitor === "all") {
+            for (let monitor of monitors) {
+              let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+              updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+            }
+          } else {
+            const monitor = monitors.find((m) => m.id == hotkey.monitor)
+            if(monitor) {
+              let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+              updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+            }
           }
-        } else {
-          const monitor = monitors[hotkey.monitor]
-          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-          updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
-        }
-      })
+        })
+      } catch(e) {
+        
+      }
+      
     }
   }
 }
@@ -537,7 +543,14 @@ function updateBrightnessThrottle(index, level, useCap = false) {
     updateBrightnessTimeout = setTimeout(() => {
       const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
       for (let bUpdate of updateBrightnessQueueCopy) {
-        updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
+        if(bUpdate) {
+          try {
+            updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
+          } catch(e) {
+            console.error(e)
+            console.error(bUpdate)
+          }
+        }
       }
       updateBrightnessTimeout = false
       sendToAllWindows('monitors-updated', monitors)

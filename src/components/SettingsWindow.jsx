@@ -45,6 +45,7 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimeIndividualDisplays: false,
             languages: []
         }
+        this.downKeys = {}
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
     }
@@ -450,12 +451,40 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyMonitor = (displayName, id) => {
         return (
-            <div className="hotkey-item">
+            <div key={id} className="hotkey-item">
                 <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{ displayName }</div></div>
                 <div className="title">Increase Brightness</div>
-                <div className="row"><input placeholder="Press keys here" type="text" readOnly={true} /><input type="button" value="Save" /><input type="button" value="Clear" /></div>
+                <div className="row"><input placeholder="Press keys here" value={ this.findHotkey(id, 1) } type="text" readOnly={true} onKeyDown={
+                    (e) => { 
+                        let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
+                        if(this.downKeys[key] === undefined) { 
+                            this.downKeys[key] = true;
+                            this.updateHotkey(id, this.downKeys, 1); 
+                        } }
+                    } onKeyUp={ (e) => { delete this.downKeys[(e.key.length === 1 ? e.key.toUpperCase() : e.key)] } } />
+                    <input type="button" value="Clear" onClick={() => {
+                        this.downKeys = {}
+                        delete this.state.hotkeys[id + "__dir" + 1]
+                        window.sendSettings({hotkeys: this.state.hotkeys})
+                        this.forceUpdate()
+                    }} />
+                    </div>
                 <div className="title">Decrease Brightness</div>
-                <div className="row"><input placeholder="Press keys here" type="text" readOnly={true} /><input type="button" value="Save" /><input type="button" value="Clear" /></div>
+                <div className="row"><input placeholder="Press keys here" value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
+                    (e) => { 
+                        let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
+                        if(this.downKeys[key] === undefined) { 
+                            this.downKeys[key] = true;
+                            this.updateHotkey(id, this.downKeys, -1); 
+                        } }
+                    } onKeyUp={ (e) => { delete this.downKeys[(e.key.length === 1 ? e.key.toUpperCase() : e.key)] } } />
+                    <input type="button" value="Clear" onClick={() => {
+                        this.downKeys = {}
+                        delete this.state.hotkeys[id + "__dir" + -1]
+                        window.sendSettings({hotkeys: this.state.hotkeys})
+                        this.forceUpdate()
+                    }} />
+                    </div>
             </div>
         )
     }
@@ -466,8 +495,28 @@ export default class SettingsWindow extends PureComponent {
         })
     }
 
+    findHotkey = (id, direction) => {
+        if(this.state.hotkeys && this.state.hotkeys[id + "__dir" + direction]) {
+            return this.state.hotkeys[id + "__dir" + direction].accelerator
+        }
+        return ""
+    }
 
 
+
+    updateHotkey(id, keys, direction) {
+        const hotkey = {
+            monitor: id,
+            accelerator: Object.keys(keys).join('+'),
+            direction
+        }
+
+        const key = id + "__dir" + direction
+        this.state.hotkeys[key] = hotkey
+        window.sendSettings({hotkeys: { ...this.state.hotkeys }})      
+        this.forceUpdate()
+        
+    }
 
 
 
@@ -495,6 +544,8 @@ export default class SettingsWindow extends PureComponent {
         const checkForUpdates = (settings.checkForUpdates || false)
         const adjustmentTimeIndividualDisplays = (settings.adjustmentTimeIndividualDisplays || false)
         const language = (settings.language || "system")
+        const hotkeys = (settings.hotkeys || {})
+        const hotkeyPercent = (settings.hotkeyPercent || 10)
         this.setState({
             linkedLevelsActive,
             remaps,
@@ -506,7 +557,9 @@ export default class SettingsWindow extends PureComponent {
             checkTimeAtStartup,
             checkForUpdates,
             adjustmentTimeIndividualDisplays,
-            language
+            language,
+            hotkeys,
+            hotkeyPercent
         }, () => {
             this.forceUpdate()
         })

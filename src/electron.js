@@ -288,6 +288,7 @@ function getLocalization() {
   }
 
   // Get user's local localization file, if available
+  localization.desired = {}
   const langPath = path.join(__dirname, `/localization/${localization.detected}.json`)
   if(fs.existsSync(langPath)) {
     try {

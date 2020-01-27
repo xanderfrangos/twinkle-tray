@@ -24,8 +24,9 @@ const monitorSort = (a, b) => {
     return aSort - bSort
 }
 
-const cleanUpKeyboardKeys = (inKey) => {
+const cleanUpKeyboardKeys = (inKey, inCode = false) => {
     let key = inKey
+    let code = inCode
 
     if(key.length == 1) {
         key = key.toUpperCase()
@@ -56,6 +57,16 @@ const cleanUpKeyboardKeys = (inKey) => {
         case "-":
             key = "Minus";
             break;
+    }
+
+    if(code >= 96 && code <= 105) key = "num" + code;
+
+    switch(code) {
+        case 106: key = "nummult"; break;
+        case 107: key = "numadd"; break;
+        case 109: key = "numsub"; break;
+        case 110: key = "numdec"; break;
+        case 111: key = "numdiv"; break;
     }
 
     return key;
@@ -495,14 +506,14 @@ export default class SettingsWindow extends PureComponent {
                 <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, 1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
                         e.preventDefault()
-                        let key = cleanUpKeyboardKeys(e.key)
+                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
                         if(this.downKeys[key] === undefined) { 
                             this.downKeys[key] = true;
                             this.updateHotkey(id, this.downKeys, 1); 
                         }
                         return false
                     }
-                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key)] } } />
+                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] } } />
                     <input type="button" value="Clear" onClick={() => {
                         this.downKeys = {}
                         delete this.state.hotkeys[id + "__dir" + 1]
@@ -515,14 +526,14 @@ export default class SettingsWindow extends PureComponent {
                 <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
                         e.preventDefault()
-                        let key = cleanUpKeyboardKeys(e.key)
+                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
                         if(this.downKeys[key] === undefined) { 
                             this.downKeys[key] = true;
                             this.updateHotkey(id, this.downKeys, -1); 
                         } 
                         return false
                     }
-                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key)] } } />
+                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] } } />
                     <input type="button" value="Clear" onClick={() => {
                         this.downKeys = {}
                         delete this.state.hotkeys[id + "__dir" + -1]

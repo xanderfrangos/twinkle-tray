@@ -1022,6 +1022,12 @@ function createSettings() {
 
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.show()
+    
+    // Prevent links from opening in Electron
+    settingsWindow.webContents.on('will-navigate', (e, url) => {
+      e.preventDefault()
+      require('electron').shell.openExternal(url)
+    })
   })
 
 }

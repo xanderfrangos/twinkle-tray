@@ -24,6 +24,43 @@ const monitorSort = (a, b) => {
     return aSort - bSort
 }
 
+const cleanUpKeyboardKeys = (inKey) => {
+    let key = inKey
+
+    if(key.length == 1) {
+        key = key.toUpperCase()
+    }
+
+    switch(key) {
+        case "Meta":
+            key = "Super";
+            break;
+        case " ":
+            key = "Space";
+            break;
+        case "ArrowUp":
+            key = "Up";
+            break;
+        case "ArrowDown":
+            key = "Down";
+            break;
+        case "ArrowLeft":
+            key = "Left";
+            break;
+        case "ArrowRight":
+            key = "Right";
+            break;
+        case "+":
+            key = "Plus";
+            break;
+        case "-":
+            key = "Minus";
+            break;
+    }
+
+    return key;
+}
+
 let T = new TranslateReact({}, {})
 
 export default class SettingsWindow extends PureComponent {
@@ -456,12 +493,15 @@ export default class SettingsWindow extends PureComponent {
                 <div className="title">{ T.t("SETTINGS_HOTKEYS_INCREASE") }</div>
                 <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, 1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
-                        let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
+                        e.preventDefault()
+                        let key = cleanUpKeyboardKeys(e.key)
                         if(this.downKeys[key] === undefined) { 
                             this.downKeys[key] = true;
                             this.updateHotkey(id, this.downKeys, 1); 
-                        } }
-                    } onKeyUp={ (e) => { delete this.downKeys[(e.key.length === 1 ? e.key.toUpperCase() : e.key)] } } />
+                        }
+                        return false
+                    }
+                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key)] } } />
                     <input type="button" value="Clear" onClick={() => {
                         this.downKeys = {}
                         delete this.state.hotkeys[id + "__dir" + 1]
@@ -472,12 +512,15 @@ export default class SettingsWindow extends PureComponent {
                 <div className="title">{ T.t("SETTINGS_HOTKEYS_DECREASE") }</div>
                 <div className="row"><input placeholder={ T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT") } value={ this.findHotkey(id, -1) } type="text" readOnly={true} onKeyDown={
                     (e) => { 
-                        let key = (e.key.length === 1 ? e.key.toUpperCase() : e.key)
+                        e.preventDefault()
+                        let key = cleanUpKeyboardKeys(e.key)
                         if(this.downKeys[key] === undefined) { 
                             this.downKeys[key] = true;
                             this.updateHotkey(id, this.downKeys, -1); 
-                        } }
-                    } onKeyUp={ (e) => { delete this.downKeys[(e.key.length === 1 ? e.key.toUpperCase() : e.key)] } } />
+                        } 
+                        return false
+                    }
+                    } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key)] } } />
                     <input type="button" value="Clear" onClick={() => {
                         this.downKeys = {}
                         delete this.state.hotkeys[id + "__dir" + -1]
@@ -490,7 +533,7 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getHotkeyMonitors = () => {
-        return this.state.monitors.map((monitor, idx) => {
+        return this.state.monitors.slice(0).sort(monitorSort).map((monitor, idx) => {
             return this.getHotkeyMonitor(this.getMonitorName(monitor, this.state.names), monitor.id)
         })
     }

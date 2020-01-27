@@ -80,7 +80,7 @@
 
 
     "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
-    "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all monitors.",
+    "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all displays.",
     "SETTINGS_HOTKEYS_ADD": "Add hotkey",
     "SETTINGS_HOTKEYS_REMOVE": "Remove hotkey",
     "SETTINGS_HOTKEYS_INCREASE": "Increase Brightness",

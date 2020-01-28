@@ -117,7 +117,8 @@ body {
     line-height: 1;
 
     .left {
-        font-size: 12px;
+        font-size: 13px;
+            opacity: 0.8;
     }
     .right {
         display: flex;
@@ -127,9 +128,10 @@ body {
             cursor: pointer;
             padding: 1px 5px;
             margin: 0px 0;
-            opacity: 0.8;
+            font-weight: 500;
+            opacity: 1;
             &:hover {
-                opacity: 1;
+                opacity: 0.8;
             }
             & + a {
                 margin-left: 6px;

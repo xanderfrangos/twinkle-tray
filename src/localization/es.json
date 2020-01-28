@@ -1,3 +1,103 @@
 {
-    "LANGUAGE": "Spanish (Placeholder)"
+    "LANGUAGE": "Spanish",
+
+    "GENERIC_OK": "Aceptar",
+    "GENERIC_CANCEL": "Cancelar",
+    "GENERIC_SAVE": "Guardar",
+    "GENERIC_CLEAR": "Limpiar",
+    "GENERIC_OFF": "Encendido",
+    "GENERIC_ON": "Apagado",
+    "GENERIC_QUIT": "Salir",
+    "GENERIC_CLOSE": "Cerrar",
+    "GENERIC_SETTINGS": "Ajustes",
+    "GENERIC_INSTALL": "Instalar",
+    "GENERIC_DISMISS": "Descartar",
+    "GENERIC_DISPLAY_SINGLE": "Pantalla", 
+    "GENERIC_ALL_DISPLAYS": "Todas las pantallas",
+    "GENERIC_MINIMUM": "Min",
+    "GENERIC_MAXIMUM": "Max",
+    "GENERIC_NO_DISPLAYS": "No se han detectado pantallas. Por favor, conecte una pantalla a su PC.",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "No se han encontrado pantallas compatibles. Por favor, compruebe que \"DDC/CI\" esté activado en su pantalla.",
+    "GENERIC_NO_DISPLAYS_SHORT": "No se han detectado pantallas compatibles.",
+
+
+    "PANEL_TITLE": "Ajuste de brillo",
+    "PANEL_UPDATE_AVAILABLE": "Hay una actualización disponible",
+    "PANEL_BUTTON_LINK_LEVELS": "Enlazar niveles",
+    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Apagar pantallas",
+
+
+    "INTRO_TITLE": "¡Bienvenido a Twinkle Tray!",
+    "INTRO_INSTRUCTIONS": "El icono de Twinkle Tray en la bandeja del sistema está probablemente escondido, debería moverlo a un lugar fácilmente accesible. Mire debajo las instrucciones.",
+
+
+    "SETTINGS_TITLE": "Ajustes de Twinkle Tray",
+
+
+    "SETTINGS_SIDEBAR_GENERAL": "General",
+    "SETTINGS_SIDEBAR_MONITORS": "Ajustes de pantalla",
+    "SETTINGS_SIDEBAR_TIME": "Ajustes de horario",
+    "SETTINGS_SIDEBAR_HOTKEYS": "Atajos de teclado",
+    "SETTINGS_SIDEBAR_UPDATES": "Actualizaciones",
+
+
+    "SETTINGS_GENERAL_TITLE": "General",
+    "SETTINGS_GENERAL_STARTUP": "Iniciar con Windows",
+    "SETTINGS_GENERAL_THEME_TITLE": "Tema de la aplicación",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "Preferencia del sistema (Predeterminado)",
+    "SETTINGS_GENERAL_THEME_DARK": "Modo oscuro",
+    "SETTINGS_GENERAL_THEME_LIGHT": "Modo claro",
+    "SETTINGS_GENERAL_LANGUAGE_TITLE": "Idioma",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "Idioma del sistema (Predeterminado)",
+    "SETTINGS_GENERAL_RESET_TITLE": "Restablecer ajustes",
+    "SETTINGS_GENERAL_RESET_DESC": "Si por alguna razón necesita borrar sus ajustes, pulse este botón.",
+    "SETTINGS_GENERAL_RESET_BUTTON": "Restablecer ajustes",
+
+
+    "SETTINGS_MONITORS_RATE_TITLE": "Frecuencia de actualización del brillo",
+    "SETTINGS_MONITORS_RATE_DESC": "Cómo de rápido el brillo será actualizado en sus pantallas a medida que ajusta sus valores. Aumente el tiempo si sus pantallas parpadean.",
+    "SETTINGS_MONITORS_RATE_0": "Rapidísimo",
+    "SETTINGS_MONITORS_RATE_1": "Rápido (250 ms)",
+    "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
+    "SETTINGS_MONITORS_RATE_3": "Lento (1 segundos)",
+    "SETTINGS_MONITORS_RATE_4": "Muy lento (2 segundos)",
+    "SETTINGS_MONITORS_RENAME_TITLE": "Renombrar pantallas",
+    "SETTINGS_MONITORS_RENAME_DESC": "Si prefiere un nombre diferente para sus pantallas (ej \"Pantalla derecha\", \"Pantalla central\"), puede modificarlo debajo. Vaciar el campo restaurará su nombre original.",
+    "SETTINGS_MONITORS_REORDER_TITLE": "Reordenar pantallas",
+    "SETTINGS_MONITORS_REORDER_DESC": "Cambie el orden en el que sus pantallas serán mostradas en la bandeja del sistema. Pulse y arrastre para hacer cambios.",
+    "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalizar brillo",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Diferentes pantallas suelen tener rangos de brillo distintos. Limitar el brillo máximo/mínimo por pantalla conseguirá más consistencia. Monitores similares usarán los mismos valores.",
+
+
+    "SETTINGS_TIME_TITLE": "Ajustes de horario",
+    "SETTINGS_TIME_DESC": "Establezca automáticamente sus pantallas a un nivel de brillo específico a la hora deseada. Todas las pantallas se estabecerán al mismo nivel normalizado.",
+    "SETTINGS_TIME_ADD": "Añadir horario",
+    "SETTINGS_TIME_REMOVE": "Borrar horario",
+    "SETTINGS_TIME_INDIVIDUAL_TITLE": "Ajustar brillo individualmente",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure el brillo por pantalla en vez de manera conjunta",
+    "SETTINGS_TIME_STARTUP_TITLE": "Comprobar al iniciar la aplicación",
+    "SETTINGS_TIME_STARTUP_DESC": "Ajusta el brillo al valor del horario más relevante cuándo Twinkle Tray se inicia.",
+
+
+    "SETTINGS_HOTKEYS_TITLE": "Atajos de teclado",
+    "SETTINGS_HOTKEYS_DESC": "Configure combinaciones de teclas para ajustar el brillo de sus pantallas, individualmente o de manera conjunta.",
+    "SETTINGS_HOTKEYS_ADD": "Añadir atajo de teclado",
+    "SETTINGS_HOTKEYS_REMOVE": "Borrar atajo de teclado",
+    "SETTINGS_HOTKEYS_INCREASE": "Aumentar brillo",
+    "SETTINGS_HOTKEYS_DECREASE": "Reducir brillo",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Pulse la combinación de teclas aquí",
+    "SETTINGS_HOTKEYS_LEVEL_TITLE": "Ajuste del nivel de brillo",
+    "SETTINGS_HOTKEYS_LEVEL_DESC": "Cómo deberá ser ajustado el brillo al usar atajos de teclado.",
+
+
+    "SETTINGS_UPDATES_TITLE": "Actualizaciones",
+    "SETTINGS_UPDATES_VERSION": "Su versión de Twinkle Tray es {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Comprobar actualizaciones automáticamente",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray comprobará si hay actualizaciones ocasionalmente y le avisará en el panel de brillo.",
+    "SETTINGS_UPDATES_MS_STORE": "Para comprobar si hay actualizaciones, visite la aplicación Microsoft Store.",
+    "SETTINGS_UPDATES_AVAILABLE": "¡Hay una actualización disponible para Twinkle Tray!",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "No hay actualizaciones disponibles en este momento. Esta versión de Twinkle Tray incluye los cambios siguientes:",
+    "SETTINGS_UPDATES_DOWNLOADING": "Descargando actualización...",
+    "SETTINGS_UPDATES_DOWNLOAD": "Descargar e instalar {{1}}"
+    
 }

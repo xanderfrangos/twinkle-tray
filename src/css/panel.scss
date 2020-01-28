@@ -108,14 +108,16 @@ body {
 .updateBar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     background: var(--system-accent-color);
     color: white;
     padding: 15px;
     width: 100%;
     margin: 0px -15px 0px;
+    line-height: 1;
 
     .left {
-        font-size: 13px;
+        font-size: 12px;
     }
     .right {
         display: flex;
@@ -124,19 +126,24 @@ body {
         a {
             cursor: pointer;
             padding: 1px 5px;
-            margin: -1px 0;
+            margin: 0px 0;
             opacity: 0.8;
             &:hover {
                 opacity: 1;
             }
             & + a {
-                margin-left: 10px;
+                margin-left: 6px;
             }
+        }
+        .icon {
+            margin-bottom: -1px;
         }
     }
 }
 
-
+.icon {
+    font-family: "Segoe MDL2 Assets";
+}
 
 .monitor-item {
     margin: 0 !important;

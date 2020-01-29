@@ -98,7 +98,8 @@ const defaultSettings = {
   order: [],
   checkForUpdates: !isDev,
   dismissedUpdate: '',
-  language: "system"
+  language: "system",
+  settingsVer: "v" + app.getVersion()
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -138,6 +139,8 @@ function writeSettings(newSettings = {}, processAfter = true) {
 
 
 function processSettings(newSettings = {}) {
+
+  settings.settingsVer = "v" + app.getVersion()
 
   if (settings.theme) {
     nativeTheme.themeSource = determineTheme(settings.theme)

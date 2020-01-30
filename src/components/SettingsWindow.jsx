@@ -534,7 +534,7 @@ export default class SettingsWindow extends PureComponent {
                         return false
                     }
                     } onKeyUp={ (e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] } } />
-                    <input type="button" value="Clear" onClick={() => {
+                    <input type="button" value={ T.t("GENERIC_CLEAR") } onClick={() => {
                         this.downKeys = {}
                         delete this.state.hotkeys[id + "__dir" + -1]
                         window.sendSettings({hotkeys: this.state.hotkeys})

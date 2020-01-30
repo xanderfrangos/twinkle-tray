@@ -28,7 +28,7 @@ export default class BrightnessPanel extends PureComponent {
   getLinkIcon = () => {
     if (this.state.monitors.length > 1) {
       return (
-        <div title="Link levels" data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
+        <div title={ T.t("PANEL_BUTTON_LINK_LEVELS") } data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
       )
     }
   }

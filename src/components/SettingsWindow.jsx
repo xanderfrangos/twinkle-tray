@@ -366,7 +366,7 @@ export default class SettingsWindow extends PureComponent {
                 <div key={index}>
                     <br />
                     <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                    <input type="text" placeholder="Enter name" data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
+                    <input type="text" placeholder={ T.t("SETTINGS_MONITORS_ENTER_NAME") } data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
                 </div>
 
             ))

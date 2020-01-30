@@ -63,6 +63,7 @@
     "SETTINGS_MONITORS_RATE_4": "Muy lento (2 segundos)",
     "SETTINGS_MONITORS_RENAME_TITLE": "Renombrar pantallas",
     "SETTINGS_MONITORS_RENAME_DESC": "Si prefiere un nombre diferente para sus pantallas (ej \"Pantalla derecha\", \"Pantalla central\"), puede modificarlo debajo. Vaciar el campo restaurará su nombre original.",
+    "SETTINGS_MONITORS_ENTER_NAME": "",
     "SETTINGS_MONITORS_REORDER_TITLE": "Reordenar pantallas",
     "SETTINGS_MONITORS_REORDER_DESC": "Cambie el orden en el que sus pantallas serán mostradas en la bandeja del sistema. Pulse y arrastre para hacer cambios.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalizar brillo",

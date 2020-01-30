@@ -63,6 +63,7 @@
     "SETTINGS_MONITORS_RATE_4": "非常に遅い (2 秒)",
     "SETTINGS_MONITORS_RENAME_TITLE": "ディスプレイの名前の変更",
     "SETTINGS_MONITORS_RENAME_DESC": "それぞれのディスプレイを違う名前にしたい場合 (例 「右のモニタ」と「中央のモニタ」)、以下に入力します。空にすると元の名前に戻ります。",
+    "SETTINGS_MONITORS_ENTER_NAME": "",
     "SETTINGS_MONITORS_REORDER_TITLE": "ディスプレイの順序",
     "SETTINGS_MONITORS_REORDER_DESC": "トレイにディスプレイが表示される順番を並び替えます。変更するにはドラッグします。",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "明るさの標準化",

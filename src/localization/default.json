@@ -63,6 +63,7 @@
     "SETTINGS_MONITORS_RATE_4": "Very Slow (2 seconds)",
     "SETTINGS_MONITORS_RENAME_TITLE": "Rename Monitors",
     "SETTINGS_MONITORS_RENAME_DESC": "If you'd prefer a different name for each monitor (ex \"Left Monitor\", \"Middle Monitor\"), you can enter it below. Leaving the field empty will restore the original name.",
+    "SETTINGS_MONITORS_ENTER_NAME": "Enter name",
     "SETTINGS_MONITORS_REORDER_TITLE": "Reorder Monitors",
     "SETTINGS_MONITORS_REORDER_DESC": "Change the order that monitors are displayed in the tray. Click and drag to make changes.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalize Brightness",

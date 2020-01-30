@@ -17,7 +17,7 @@
     "GENERIC_MINIMUM": "最小",
     "GENERIC_MAXIMUM": "最大",
     "GENERIC_NO_DISPLAYS": "ディスプレイを検出できません。パソコンにディスプレイを接続してください。",
-    "GENERIC_NO_COMPATIBLE_DISPLAYS": "対応するディスプレイが見つかりません。お使いのディスプレイの「DDC/CI」が有効か確認してください。",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "対応するディスプレイが見つかりません。お使いのディスプレイの DDC/CI が有効か確認してください。",
     "GENERIC_NO_DISPLAYS_SHORT": "対応するディスプレイは検出されませんでした。",
 
 
@@ -55,7 +55,7 @@
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "明るさの更新間隔",
-    "SETTINGS_MONITORS_RATE_DESC": "明るさの値の調整時に、ディスプレイの明るさが更新される間隔です。画面がちらつく場合には増やしてください",
+    "SETTINGS_MONITORS_RATE_DESC": "明るさの値の調整時に、ディスプレイの明るさが更新される間隔です。画面がちらつく場合には増やしてください。",
     "SETTINGS_MONITORS_RATE_0": "非常に速い",
     "SETTINGS_MONITORS_RATE_1": "速い (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "通常 (500 ms)",
@@ -70,13 +70,13 @@
 
 
     "SETTINGS_TIME_TITLE": "時刻による調整",
-    "SETTINGS_TIME_DESC": "ご希望の時刻に、モニタを指定した明るさへと自動的に設定します。すべてのモニターを同じ標準化の程度に設定されます。",
+    "SETTINGS_TIME_DESC": "ご希望の時刻に、モニタを指定した明るさへと自動的に設定します。すべてのモニターを同じ標準化の程度に設定します。",
     "SETTINGS_TIME_ADD": "時刻の追加",
     "SETTINGS_TIME_REMOVE": "時間の削除",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "ディスプレイごとに明るさを設定",
     "SETTINGS_TIME_INDIVIDUAL_DESC": "すべてのディスプレイではなく、ディスプレイごとに明るさを設定します。",
     "SETTINGS_TIME_STARTUP_TITLE": "起動時に確認",
-    "SETTINGS_TIME_STARTUP_DESC": "Twinkle Tray の開始時に。一番近い時刻にあわせ明るさを調整します。",
+    "SETTINGS_TIME_STARTUP_DESC": "Twinkle Tray の開始時に、一番近い時刻にあわせ明るさを調整します。",
 
 
     "SETTINGS_HOTKEYS_TITLE": "ホットキー",
@@ -85,7 +85,7 @@
     "SETTINGS_HOTKEYS_REMOVE": "ホットキーの削除",
     "SETTINGS_HOTKEYS_INCREASE": "明るさを上げる",
     "SETTINGS_HOTKEYS_DECREASE": "明るを下げる",
-    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを押してください",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを押します",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "明るさ調整の程度",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "ホットキー使用時にどのくらい明るさを調整するか。",
 
@@ -96,7 +96,7 @@
     "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray は定期的に自動で更新確認を行い、明るさパネルにて通知します。",
     "SETTINGS_UPDATES_MS_STORE": "更新を確認するには Microsoft Store のアプリをご覧ください。",
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray の最新版が利用できます！",
-    "SETTINGS_UPDATES_NONE_AVAILABLE": "更新はありません。現在お使いのバージョンの変更履歴は以下です:",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "更新はありません。以下は現在お使いのバージョンの更新履歴です。",
     "SETTINGS_UPDATES_DOWNLOADING": "更新をダウンロード中...",
     "SETTINGS_UPDATES_DOWNLOAD": "ダウンロード & インストール {{1}}"
     

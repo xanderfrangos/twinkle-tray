@@ -188,6 +188,10 @@ select, input {
     }
 }
 
+input[type="text"] {
+    min-width: 235px;
+}
+
 input[type="checkbox"] {
     width: 50px;
     padding: 3px;

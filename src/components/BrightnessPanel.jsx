@@ -19,7 +19,7 @@ export default class BrightnessPanel extends PureComponent {
     } else {
       const sorted = this.state.monitors.slice(0).sort(monitorSort)
       return sorted.map((monitor, index) => (
-        <Slider name={this.getMonitorName(monitor, this.state.names)} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} key={monitor.num} onChange={this.handleChange} />
+        <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} key={monitor.num} onChange={this.handleChange} />
       ))
     }
   }
@@ -65,6 +65,7 @@ export default class BrightnessPanel extends PureComponent {
   handleChange = (level, slider) => {
     const monitors = Object.assign(this.state.monitors, {})
     const activeMon = monitors[slider.props.num]
+    const monitor = monitors.find((mon) => mon.id == slider.props.id)
 
     if (monitors.length > 0 && this.state.linkedLevelsActive) {
       // Update all monitors (linked)
@@ -84,7 +85,7 @@ export default class BrightnessPanel extends PureComponent {
       })
     } else if (monitors.length > 0) {
       // Update single monitor
-      if (monitors[slider.props.num]) monitors[slider.props.num].brightness = level;
+      if (monitor) monitor.brightness = level;
       this.setState({
         monitors
       }, () => {

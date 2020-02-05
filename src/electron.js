@@ -1037,6 +1037,7 @@ function createSettings() {
     
     // Prevent links from opening in Electron
     settingsWindow.webContents.on('will-navigate', (e, url) => {
+      if(url.indexOf("http://localhost:3000") !== 0 || url.indexOf("file://") !== 0) return false;
       e.preventDefault()
       require('electron').shell.openExternal(url)
     })

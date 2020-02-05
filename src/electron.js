@@ -189,13 +189,13 @@ function applyHotkeys() {
           if (hotkey.monitor === "all") {
             for (let monitor of monitors) {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-              updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+              updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
             }
           } else {
             const monitor = monitors.find((m) => m.id == hotkey.monitor)
             if(monitor) {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-              updateBrightnessThrottle(monitor.localID, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+              updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
             }
           }
         })
@@ -538,9 +538,11 @@ function makeName(monitorDevice, fallback) {
 
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
-function updateBrightnessThrottle(index, level, useCap = false) {
-  updateBrightnessQueue[index] = {
-    index,
+function updateBrightnessThrottle(id, level, useCap = false) {
+  const idx = updateBrightnessQueue.find(item => item.id === id) || updateBrightnessQueue.length
+  console.log(idx, id)
+  updateBrightnessQueue[idx] = {
+    id,
     level,
     useCap
   }
@@ -550,7 +552,8 @@ function updateBrightnessThrottle(index, level, useCap = false) {
       for (let bUpdate of updateBrightnessQueueCopy) {
         if(bUpdate) {
           try {
-            updateBrightness(bUpdate.index, bUpdate.level, bUpdate.useCap)
+            console.log(bUpdate)
+            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap)
           } catch(e) {
             console.error(e)
             console.error(bUpdate)

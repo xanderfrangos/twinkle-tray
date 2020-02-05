@@ -163,9 +163,10 @@ export default class SettingsWindow extends PureComponent {
 
 
     minMaxChanged = (value, slider) => {
+        console.log(value, slider, this.state.remaps)
 
         const name = slider.props.monitorName
-        let remaps = Object.assign({}, this.state.remaps)
+        let remaps = JSON.parse(JSON.stringify(this.state.remaps))
 
         if (remaps[name] === undefined) {
             remaps[name] = {
@@ -176,7 +177,6 @@ export default class SettingsWindow extends PureComponent {
 
         if (slider.props.type == "min") {
             remaps[name].min = value
-
 
             // Keep within 10%, cap
 
@@ -210,7 +210,9 @@ export default class SettingsWindow extends PureComponent {
             }
         }
 
-        const hasChanged = (JSON.stringify(this.state.remaps) == JSON.stringify(remaps) ? false : true);
+        const oldData = JSON.stringify(this.state.remaps);
+        const newData = JSON.stringify(remaps);
+        const hasChanged = (oldData == newData ? false : true);
         if(!hasChanged) return false;
         this.setState({ remaps })
         window.sendSettings({ remaps })

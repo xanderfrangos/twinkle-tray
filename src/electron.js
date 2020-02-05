@@ -566,11 +566,20 @@ function updateBrightnessThrottle(index, level, useCap = false) {
 
 
 function updateBrightness(index, level, useCap = false) {
-  if (index >= monitors.length) {
-    console.log("updateBrightness: Invalid monitor")
-    return false;
+
+  let monitor = false
+  if(typeof index == "string" && index * 1 != index) {
+    monitor = monitors.find((display) => {
+      return display.id.indexOf(index) === 0
+    })
+  } else {
+    if (index >= monitors.length) {
+      console.log("updateBrightness: Invalid monitor")
+      return false;
+    }
+    monitor = monitors[index]
   }
-  const monitor = monitors[index]
+  
   const brightness = normalizeBrightness(level, true, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
     monitor.brightness = brightness

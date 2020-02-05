@@ -207,7 +207,7 @@ export default class BrightnessPanel extends PureComponent {
       try {
         for (let idx = 0; idx < monitors.length; idx++) {
           if (monitors[idx].brightness != this.lastLevels[idx]) {
-            window.updateBrightness(idx, monitors[idx].brightness)
+            window.updateBrightness(monitors[idx].id, monitors[idx].brightness)
           }
         }
       } catch (e) {

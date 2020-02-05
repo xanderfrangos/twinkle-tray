@@ -89,7 +89,7 @@ const defaultSettings = {
   updateInterval: 500,
   openAtLogin: false,
   killWhenIdle: false,
-  remaps: [],
+  remaps: {},
   hotkeys: {},
   hotkeyPercent: 10,
   adjustmentTimes: [],

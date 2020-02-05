@@ -166,7 +166,7 @@ export default class SettingsWindow extends PureComponent {
         console.log(value, slider, this.state.remaps)
 
         const name = slider.props.monitorName
-        let remaps = JSON.parse(JSON.stringify(this.state.remaps))
+        let remaps = Object.assign({}, this.state.remaps)
 
         if (remaps[name] === undefined) {
             remaps[name] = {
@@ -213,7 +213,7 @@ export default class SettingsWindow extends PureComponent {
         const oldData = JSON.stringify(this.state.remaps);
         const newData = JSON.stringify(remaps);
         const hasChanged = (oldData == newData ? false : true);
-        if(!hasChanged) return false;
+        //if(!hasChanged) return false;
         this.setState({ remaps })
         window.sendSettings({ remaps })
     }

@@ -59,7 +59,7 @@ const cleanUpKeyboardKeys = (inKey, inCode = false) => {
             break;
     }
 
-    if(code >= 96 && code <= 105) key = "num" + code;
+    if(code >= 96 && code <= 105) key = "num" + (code - 96);
 
     switch(code) {
         case 106: key = "nummult"; break;

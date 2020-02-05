@@ -473,13 +473,13 @@ export default class SettingsWindow extends PureComponent {
         if(this.state.adjustmentTimeIndividualDisplays) {
             return this.state.monitors.map((monitor, idx) => {
                 let level = time.brightness
-                if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.id]) {
+                if(this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.id] >= 0) {
                     level = this.state.adjustmentTimes[index].monitors[monitor.id]
                 } 
-                return (<Slider key={monitor.id + ".brightness"} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
+                return (<Slider key={monitor.id + ".brightness"} min={ monitor.min } max={monitor.max} name={this.getMonitorName(monitor, this.state.names)} onChange= { (value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
             })
         } else {
-            return (<Slider key={index + ".brightness"} name={ T.t("GENERIC_ALL_DISPLAYS") } level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
+            return (<Slider key={index + ".brightness"} name={ T.t("GENERIC_ALL_DISPLAYS") } min={0} max={100} level={time.brightness} onChange={(value, slider) => { this.state.adjustmentTimes[index].brightness = value; this.forceUpdate(); this.adjustmentTimesUpdated() }} scrolling={false} />)
         }
     }
 

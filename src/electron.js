@@ -635,10 +635,10 @@ function transitionBrightness(level, eventMonitors = []) {
         }
       }
       if (monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
-        updateBrightness(monitor.num, normalized)
+        updateBrightness(monitor.id, normalized)
         numDone++
       } else {
-        updateBrightness(monitor.num, ((monitor.brightness * 2) + normalized) / 3)
+        updateBrightness(monitor.id, ((monitor.brightness * 2) + normalized) / 3)
       }
       if (numDone === monitors.length) {
         clearInterval(currentTransition);

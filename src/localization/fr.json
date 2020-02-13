@@ -1,0 +1,104 @@
+{
+    "LANGUAGE": "Français",
+
+    "GENERIC_OK": "OK",
+    "GENERIC_CANCEL": "Annuler",
+    "GENERIC_SAVE": "Enregistrer",
+    "GENERIC_CLEAR": "Effacer",
+    "GENERIC_OFF": "Non",
+    "GENERIC_ON": "Oui",
+    "GENERIC_QUIT": "Quitter",
+    "GENERIC_CLOSE": "Fermer",
+    "GENERIC_SETTINGS": "Paramètres",
+    "GENERIC_INSTALL": "Installer",
+    "GENERIC_DISMISS": "Annuler",
+    "GENERIC_DISPLAY_SINGLE": "Écran", 
+    "GENERIC_ALL_DISPLAYS": "Tous les écrans",
+    "GENERIC_MINIMUM": "Min",
+    "GENERIC_MAXIMUM": "Max",
+    "GENERIC_NO_DISPLAYS": "Aucun écran détecté. Veuillez connecter un écran à votre ordinateur.",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "Aucun écran compatible détecté. Veuillez vérifier que \"DDC/CI\" est activé pour votre écran.",
+    "GENERIC_NO_DISPLAYS_SHORT": "Aucun écran compatible détecté.",
+
+
+    "PANEL_TITLE": "Ajustement Luminosité",
+    "PANEL_UPDATE_AVAILABLE": "Une mise à jour est disponible",
+    "PANEL_BUTTON_LINK_LEVELS": "Niveaux de lien",
+    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Éteindres les écrans",
+
+
+    "INTRO_TITLE": "Bienvenue sur Twinkle Tray !",
+    "INTRO_INSTRUCTIONS": "L'icône de la zone de notification pour Twinkle Tray est probablement cachée. Vous devrez surement la déplacer du menu pour y avoir accès plus facilement. Vous pouvez retrouver les instructions ci-dessous.",
+
+
+    "SETTINGS_TITLE": "Paramètres Twinkle Tray",
+
+
+    "SETTINGS_SIDEBAR_GENERAL": "Général",
+    "SETTINGS_SIDEBAR_MONITORS": "Paramètre du moniteur",
+    "SETTINGS_SIDEBAR_TIME": "Réglage du temps",
+    "SETTINGS_SIDEBAR_HOTKEYS": "Raccourcis",
+    "SETTINGS_SIDEBAR_UPDATES": "Mises à jour",
+
+
+    "SETTINGS_GENERAL_TITLE": "Général",
+    "SETTINGS_GENERAL_STARTUP": "Lancement au démarrage",
+    "SETTINGS_GENERAL_THEME_TITLE": "Thème de l'application",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "Préférences du système (par défaut)",
+    "SETTINGS_GENERAL_THEME_DARK": "Mode nuit",
+    "SETTINGS_GENERAL_THEME_LIGHT": "Mode jour",
+    "SETTINGS_GENERAL_LANGUAGE_TITLE": "Langue",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "Préférences du système (par défaut)",
+    "SETTINGS_GENERAL_RESET_TITLE": "Réinitialisation",
+    "SETTINGS_GENERAL_RESET_DESC": "Si pour une raison quelconque vous devez réinitialiser vos paramètres, cliquez sur ce bouton.",
+    "SETTINGS_GENERAL_RESET_BUTTON": "Réinitialiser les paramètres",
+
+
+    "SETTINGS_MONITORS_RATE_TITLE": "Taux de mise à jour de la luminosité",
+    "SETTINGS_MONITORS_RATE_DESC": "La fréquence à laquelle la luminosité sera mise à jour sur vos écrans au fur et à mesure que vous ajustez leurs valeurs. Augmentez la durée si vos écrans clignotent.",
+    "SETTINGS_MONITORS_RATE_0": "Vitesse de la lumière !",
+    "SETTINGS_MONITORS_RATE_1": "Rapide (250 ms)",
+    "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
+    "SETTINGS_MONITORS_RATE_3": "Lent (1 seconde)",
+    "SETTINGS_MONITORS_RATE_4": "Très lent (2 secondes)",
+    "SETTINGS_MONITORS_RENAME_TITLE": "Renommer les écrans",
+    "SETTINGS_MONITORS_RENAME_DESC": "Si vous préférez un nom différent pour chaque écran (ex : \"écran gauche\", \"écran central\"), vous pouvez le saisir ci-dessous. Si vous laissez le champ vide, le nom d'origine sera rétabli.",
+    "SETTINGS_MONITORS_ENTER_NAME": "Choisir un nom",
+    "SETTINGS_MONITORS_REORDER_TITLE": "Réorganiser les écrans",
+    "SETTINGS_MONITORS_REORDER_DESC": "Modifier l'ordre d'affichage des moniteurs dans le menu. Cliquez et faites glisser pour effectuer les modifications.",
+    "SETTINGS_MONITORS_NORMALIZE_TITLE": "Régulariser la luminosité",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Les écrans ont souvent des plages de luminosité différentes. En limitant la luminosité minimum/maximum par écran, les niveaux de luminosité entre les écrans sont beaucoup plus cohérents. Des écrans similaires utiliseront les mêmes réglages.",
+
+
+    "SETTINGS_TIME_TITLE": "Adaptation de l'heure de la journée",
+    "SETTINGS_TIME_DESC": "Réglez automatiquement vos écrans à un niveau de luminosité spécifique à un moment donné. Tous les écrans seront réglés sur les mêmes niveaux normalisés.",
+    "SETTINGS_TIME_ADD": "Ajouter une période",
+    "SETTINGS_TIME_REMOVE": "Supprimer la période",
+    "SETTINGS_TIME_INDIVIDUAL_TITLE": "Régler la luminosité des écrans individuellement",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configurer la luminosité par écran plutôt que pour tous les écrans en même temps",
+    "SETTINGS_TIME_STARTUP_TITLE": "Vérifier au démarrage de l'application",
+    "SETTINGS_TIME_STARTUP_DESC": "Réglez la luminosité pour qu'elle corresponde au moment le plus pertinent du démarrage de Twinkle Tray.",
+
+
+    "SETTINGS_HOTKEYS_TITLE": "Raccourcis",
+    "SETTINGS_HOTKEYS_DESC": "Configurez les touches de raccourci pour régler la luminosité d'un ou de tous les écrans.",
+    "SETTINGS_HOTKEYS_ADD": "Ajouter un raccourci",
+    "SETTINGS_HOTKEYS_REMOVE": "Supprimer le raccourci",
+    "SETTINGS_HOTKEYS_INCREASE": "Augmenter la luminosité",
+    "SETTINGS_HOTKEYS_DECREASE": "Réduire la luminosité",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Appuyer sur une touche",
+    "SETTINGS_HOTKEYS_LEVEL_TITLE": "Réglage du niveau de luminosité",
+    "SETTINGS_HOTKEYS_LEVEL_DESC": "De combien la luminosité doit-elle être ajustée lors de l'utilisation des touches de raccourcis.",
+
+
+    "SETTINGS_UPDATES_TITLE": "Mises à jour",
+    "SETTINGS_UPDATES_VERSION": "La version de votre Twinkle Tray est {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Vérifier automatiquement les mises à jour",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray vérifiera occasionnellement les mises à jour automatiquement et vous en informera dans le panneau de luminosité.",
+    "SETTINGS_UPDATES_MS_STORE": "Pour vérifier les mises à jour, consultez l'application Microsoft Store.",
+    "SETTINGS_UPDATES_AVAILABLE": "Une mise à jour est disponible pour Twinkle Tray !",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "Aucune mise à jour n'est disponible pour le moment. Cette version de Twinkle Tray comprend les changements suivants :",
+    "SETTINGS_UPDATES_DOWNLOADING": "Téléchargement de la mise à jour...",
+    "SETTINGS_UPDATES_DOWNLOAD": "Télécharger & Installer {{1}}"
+    
+}

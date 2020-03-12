@@ -18,12 +18,12 @@
     "GENERIC_MAXIMUM": "Max",
     "GENERIC_NO_DISPLAYS": "Keine Monitore gefunden. Bitte verbinden Sie einen Monitor mit Ihrem PC.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "Keine kompatiblen Monitore gefunden. Bitte stellen Sie sicher, dass \"DDC/CI\" für Ihre Monitore aktiviert ist.",
-    "GENERIC_NO_DISPLAYS_SHORT": "No compatible displays detected.",
+    "GENERIC_NO_DISPLAYS_SHORT": "Keine kompatiblen Monitore gefunden.",
 
 
     "PANEL_TITLE": "Helligkeit anpassen",
     "PANEL_UPDATE_AVAILABLE": "Ein Update ist verfügbar",
-    "PANEL_BUTTON_LINK_LEVELS": "Link levels",
+    "PANEL_BUTTON_LINK_LEVELS": "Verbindungsebenen",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Monitore ausschalten",
 
 
@@ -43,7 +43,7 @@
 
     "SETTINGS_GENERAL_TITLE": "Allgemein",
     "SETTINGS_GENERAL_STARTUP": "Beim PC-Start öffnen",
-    "SETTINGS_GENERAL_THEME_TITLE": "App Theme",
+    "SETTINGS_GENERAL_THEME_TITLE": "App aussehen",
     "SETTINGS_GENERAL_THEME_SYSTEM": "System Einstellungen (Standard)",
     "SETTINGS_GENERAL_THEME_DARK": "Dunkel",
     "SETTINGS_GENERAL_THEME_LIGHT": "Hell",

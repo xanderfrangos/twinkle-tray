@@ -76,19 +76,19 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.7.7",
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/preset-react": "^7.7.4",
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-react": "^7.9.4",
     "concurrently": "4.1.0",
     "cross-env": "5.2.0",
     "electron": "7.1.8",
-    "electron-is-dev": "1.0.1",
     "electron-builder": "21.2.0",
+    "electron-is-dev": "1.0.1",
     "parcel-bundler": "^1.12.4",
     "react": "16.9.0",
     "react-beautiful-dnd": "^12.2.0",
     "react-dom": "16.9.0",
-    "sass": "^1.24.4",
+    "sass": "^1.26.3",
     "wait-on": "3.2.0"
   }
 }

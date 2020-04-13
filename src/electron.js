@@ -12,9 +12,11 @@ try {
 } catch (e) { }
 const regedit = require('regedit')
 const Color = require('color')
-const isAppX = (app.getName() == "twinkle-tray-appx" ? true : false)
+const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate')
+
+app.allowRendererProcessReuse = true
 
 // Logging
 const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "")}.log`)

@@ -136,4 +136,4 @@ window.thisWindow = browser
 window.accent = "cyan"
 
 window.version = 'v' + remote.app.getVersion()
-window.isAppX = (remote.app.getName() == "twinkle-tray-appx" ? true : false)
+window.isAppX = (remote.app.name == "twinkle-tray-appx" ? true : false)

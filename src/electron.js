@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
 const { exec } = require('child_process');
+const getSystemTimeFormat = require('./dot-net.js');
 const os = require("os")
 const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
@@ -63,9 +64,9 @@ function analyticsResetUsage() {
 }
 analyticsResetUsage()
 
-function analyticsData(data = { }) {
-  if(analytics) {
-    if(!analyticsQueue) {
+function analyticsData(data = {}) {
+  if (analytics) {
+    if (!analyticsQueue) {
       analyticsQueue = analytics
     }
     analyticsQueue.event(data)
@@ -88,44 +89,44 @@ function getSettingsAnalytics() {
   }
 
   // Check if renames are used
-  if(settings.names && Object.values(settings.names).length > 0) {
-    for(let key in settings.names) {
-      if(settings.names[key] != "") data.usingRenames = true;
+  if (settings.names && Object.values(settings.names).length > 0) {
+    for (let key in settings.names) {
+      if (settings.names[key] != "") data.usingRenames = true;
     }
-  } 
+  }
 
   // Check if reorders are used
-  for(let idx in monitors) {
-    if(monitors[idx].order && monitors[idx].order != idx) {
+  for (let idx in monitors) {
+    if (monitors[idx].order && monitors[idx].order != idx) {
       data.usingReorder = true
     }
   }
 
   // Check if normalization is used
-  if(settings.remaps && Object.values(settings.remaps).length > 0) {
-    for(let key in settings.remaps) {
-      if(settings.remaps[key].max != 100 || settings.remaps[key].min != 0) data.usingNormalize = true;
+  if (settings.remaps && Object.values(settings.remaps).length > 0) {
+    for (let key in settings.remaps) {
+      if (settings.remaps[key].max != 100 || settings.remaps[key].min != 0) data.usingNormalize = true;
     }
-  } 
+  }
 
   // Queue settings
-  for(let key in data) {
+  for (let key in data) {
     analyticsData({
-          ec: "User Settings",
-          ea: key,
-          el: data[key]
+      ec: "User Settings",
+      ea: key,
+      el: data[key]
     })
   }
 
   // Queue usage
-  for(let key in analyticsUsage) {
-    if(analyticsUsage[key] > 0) {
+  for (let key in analyticsUsage) {
+    if (analyticsUsage[key] > 0) {
       analyticsData({
         ec: "User Activity",
         ea: key,
         el: analyticsUsage[key],
         ev: analyticsUsage[key]
-  })
+      })
     }
   }
 
@@ -135,6 +136,7 @@ function getSettingsAnalytics() {
   analyticsResetUsage()
 
 }
+
 
 
 const ddcci = require("@hensm/ddcci");
@@ -202,7 +204,8 @@ const defaultSettings = {
   settingsVer: "v" + app.getVersion(),
   names: {},
   analytics: !isDev,
-  uuid: uuid()
+  uuid: uuid(),
+  use24HClock: false
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -244,93 +247,101 @@ function writeSettings(newSettings = {}, processAfter = true) {
 function processSettings(newSettings = {}) {
 
   try {
-
     settings.settingsVer = "v" + app.getVersion()
+    
+    // Check for 12/24H clock
+    getSystemTimeFormat(null, function (err, result) {
+      if (err) {
+        console.log(err)
+      } else {
+        settings.use24HClock = (result == "HH:mm" || result == "H:mm" ? true : false)
+      }
+    });
 
-  if (settings.theme) {
-    nativeTheme.themeSource = determineTheme(settings.theme)
-  }
-
-  updateStartupOption((settings.openAtLogin || false))
-  applyOrder()
-  applyRemaps()
-
-  if (false && settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
-    mainWindow.close()
-  }
-
-  if (newSettings.adjustmentTimes !== undefined) {
-    lastTimeEvent = false
-    restartBackgroundUpdate()
-  }
-
-  if (newSettings.hotkeys !== undefined) {
-    applyHotkeys()
-  }
-
-  if(newSettings.language !== undefined) {
-    getLocalization()
-  }
-
-  if (newSettings.checkForUpdates !== undefined) {
-    if (newSettings.checkForUpdates === false) {
-      latestVersion = false
-      sendToAllWindows('latest-version', latestVersion);
-    } else {
-      lastCheck = false
+    if (settings.theme) {
+      nativeTheme.themeSource = determineTheme(settings.theme)
     }
 
-  }
+    updateStartupOption((settings.openAtLogin || false))
+    applyOrder()
+    applyRemaps()
 
-  if(settings.analytics) {
-    if(!analytics) {
-      console.log("\x1b[34mAnalytics:\x1b[0m starting with UUID " + settings.uuid)
-      analytics = ua('UA-146439005-2', settings.uuid)
-      analytics.set("ds", "app")
-      analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
-      analytics.event({
-        ec: "Session Information",
-        ea: "Version",
-        el: "v" + app.getVersion()
-      }).event({
-        ec: "Session Information",
-        ea: "App Name",
-        el: app.name
-      }).event({
-        ec: "Session Information",
-        ea: "Platform",
-        el: os.platform()
-      }).event({
-        ec: "Session Information",
-        ea: "OS Version",
-        el: os.release()
-      }).event({
-        ec: "Session Information",
-        ea: "CPU Model",
-        el: os.cpus()[0].model
-      }).send()
+    if (false && settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
+      mainWindow.close()
+    }
 
-      analyticsResetUsage()
+    if (newSettings.adjustmentTimes !== undefined) {
+      lastTimeEvent = false
+      restartBackgroundUpdate()
+    }
 
-      analyticsInterval = setInterval(() => {
-        try {
-          getSettingsAnalytics()
-          if(analytics && analyticsQueue) {
-            console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
-            analyticsQueue.send()
-            analyticsQueue = false
+    if (newSettings.hotkeys !== undefined) {
+      applyHotkeys()
+    }
+
+    if (newSettings.language !== undefined) {
+      getLocalization()
+    }
+
+    if (newSettings.checkForUpdates !== undefined) {
+      if (newSettings.checkForUpdates === false) {
+        latestVersion = false
+        sendToAllWindows('latest-version', latestVersion);
+      } else {
+        lastCheck = false
+      }
+
+    }
+
+    if (settings.analytics) {
+      if (!analytics) {
+        console.log("\x1b[34mAnalytics:\x1b[0m starting with UUID " + settings.uuid)
+        analytics = ua('UA-146439005-2', settings.uuid)
+        analytics.set("ds", "app")
+        analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
+        analytics.event({
+          ec: "Session Information",
+          ea: "Version",
+          el: "v" + app.getVersion()
+        }).event({
+          ec: "Session Information",
+          ea: "App Name",
+          el: app.name
+        }).event({
+          ec: "Session Information",
+          ea: "Platform",
+          el: os.platform()
+        }).event({
+          ec: "Session Information",
+          ea: "OS Version",
+          el: os.release()
+        }).event({
+          ec: "Session Information",
+          ea: "CPU Model",
+          el: os.cpus()[0].model
+        }).send()
+
+        analyticsResetUsage()
+
+        analyticsInterval = setInterval(() => {
+          try {
+            getSettingsAnalytics()
+            if (analytics && analyticsQueue) {
+              console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
+              analyticsQueue.send()
+              analyticsQueue = false
+            }
+          } catch (e) {
+            console.log("\x1b[34mAnalytics:\x1b[0m Couldn't complete anaytics sync!", e)
           }
-        } catch (e) {
-          console.log("\x1b[34mAnalytics:\x1b[0m Couldn't complete anaytics sync!", e)
-        }
-      }, analyticsFrequency)
+        }, analyticsFrequency)
+      }
+    } else {
+      analytics = false
+      if (analyticsInterval) {
+        clearInterval(analyticsInterval)
+      }
     }
-  } else {
-    analytics = false
-    if(analyticsInterval) {
-      clearInterval(analyticsInterval)
-    }
-  }
 
   } catch (e) {
     console.log("Couldn't process settings!", e)
@@ -354,16 +365,16 @@ function applyHotkeys() {
             }
           } else {
             const monitor = monitors.find((m) => m.id == hotkey.monitor)
-            if(monitor) {
+            if (monitor) {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
               updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
             }
           }
         })
-      } catch(e) {
-        
+      } catch (e) {
+
       }
-      
+
     }
     sendToAllWindows('settings-updated', settings)
   }
@@ -448,18 +459,18 @@ function getLocalization() {
   try {
     const defaultFile = fs.readFileSync(path.join(__dirname, `/localization/default.json`))
     localization.default = JSON.parse(defaultFile)
-  } catch(e) {
+  } catch (e) {
     console.error("Couldn't read default langauge file!")
   }
 
   // Get user's local localization file, if available
   localization.desired = {}
   const langPath = path.join(__dirname, `/localization/${localization.detected}.json`)
-  if(fs.existsSync(langPath)) {
+  if (fs.existsSync(langPath)) {
     try {
       const desiredFile = fs.readFileSync(langPath)
       localization.desired = JSON.parse(desiredFile)
-    } catch(e) {
+    } catch (e) {
       console.error(`Couldn't read language file: ${localization.detected}.json`)
     }
   }
@@ -467,14 +478,14 @@ function getLocalization() {
   T = new Translate(localization.desired, localization.default)
   sendToAllWindows("localization-updated", localization)
   getAllLanguages()
-  
+
 }
 
 function getAllLanguages() {
   fs.readdir(path.join(__dirname, `/localization/`), (err, files) => {
-    if(!err) {
+    if (!err) {
       let languages = []
-      for(let file of files) {
+      for (let file of files) {
         try {
           const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
           const langName = JSON.parse(langText)["LANGUAGE"]
@@ -482,7 +493,7 @@ function getAllLanguages() {
             id: file.split(".")[0],
             name: langName
           })
-        } catch(e) {
+        } catch (e) {
           console.error(`Error reading language from ${file}`)
         }
       }
@@ -711,11 +722,11 @@ function updateBrightnessThrottle(id, level, useCap = false) {
     updateBrightnessTimeout = setTimeout(() => {
       const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
       for (let bUpdate of updateBrightnessQueueCopy) {
-        if(bUpdate) {
+        if (bUpdate) {
           try {
             console.log(bUpdate)
             updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap)
-          } catch(e) {
+          } catch (e) {
             console.error(e)
             console.error(bUpdate)
           }
@@ -732,7 +743,7 @@ function updateBrightnessThrottle(id, level, useCap = false) {
 function updateBrightness(index, level, useCap = false) {
 
   let monitor = false
-  if(typeof index == "string" && index * 1 != index) {
+  if (typeof index == "string" && index * 1 != index) {
     monitor = monitors.find((display) => {
       return display.id.indexOf(index) === 0
     })
@@ -743,7 +754,7 @@ function updateBrightness(index, level, useCap = false) {
     }
     monitor = monitors[index]
   }
-  
+
   const brightness = normalizeBrightness(level, true, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
     monitor.brightness = brightness
@@ -1201,10 +1212,10 @@ function createSettings() {
 
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.show()
-    
+
     // Prevent links from opening in Electron
     settingsWindow.webContents.on('will-navigate', (e, url) => {
-      if(url.indexOf("http://localhost:3000") !== 0 || url.indexOf("file://") !== 0) return false;
+      if (url.indexOf("http://localhost:3000") !== 0 || url.indexOf("file://") !== 0) return false;
       e.preventDefault()
       require('electron').shell.openExternal(url)
     })

@@ -7,9 +7,9 @@
     "GENERIC_CLEAR": "クリア",
     "GENERIC_OFF": "オフ",
     "GENERIC_ON": "オン",
-    "GENERIC_QUIT": "終了",
+    "GENERIC_QUIT": "終了(&X)",
     "GENERIC_CLOSE": "閉じる",
-    "GENERIC_SETTINGS": "設定",
+    "GENERIC_SETTINGS": "設定(&S)",
     "GENERIC_INSTALL": "インストール",
     "GENERIC_DISMISS": "非表示",
     "GENERIC_DISPLAY_SINGLE": "ディスプレイ", 
@@ -52,9 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "設定の初期化",
     "SETTINGS_GENERAL_RESET_DESC": "設定を初期化したい場合このボタンを押してください。",
     "SETTINGS_GENERAL_RESET_BUTTON": "設定の初期化",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
-    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "使用統計を送信",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "使用データを送信し Twinkle Tray の改良に協力します。個人情報は送信されません。{{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "より詳しく",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "明るさの更新間隔",
@@ -89,7 +89,7 @@
     "SETTINGS_HOTKEYS_REMOVE": "ホットキーの削除",
     "SETTINGS_HOTKEYS_INCREASE": "明るさを上げる",
     "SETTINGS_HOTKEYS_DECREASE": "明るを下げる",
-    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを押します",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを入力",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "明るさ調整の程度",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "ホットキー使用時にどのくらい明るさを調整するか。",
 

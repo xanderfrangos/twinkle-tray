@@ -427,51 +427,36 @@ export default class SettingsWindow extends PureComponent {
         if (this.state.adjustmentTimes == undefined || this.state.adjustmentTimes.length == 0) {
             return (<div></div>)
         } else {
-            return this.state.adjustmentTimes.map((time, index) => (
-                <div className="item" key={index}>
-                    <div className="row">
-                        <select onChange={(e) => {
-                            this.setAdjustmentTimeValue(index, e.target.value, "hour")
-                        }} value={time.hour}>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                            <option>10</option>
-                            <option>11</option>
-                            <option>12</option>
-                        </select>
-                        <select onChange={(e) => {
-                            this.setAdjustmentTimeValue(index, e.target.value, "minute")
-                        }} value={time.minute}>
-                            <option value="0">00</option>
-                            <option>15</option>
-                            <option>30</option>
-                            <option>45</option>
-                        </select>
-                        <select onChange={(e) => {
-                            this.setAdjustmentTimeValue(index, e.target.value, "am")
-                        }} value={time.am}>
-                            <option>AM</option>
-                            <option>PM</option>
-                        </select>
-                        <a className="button" onClick={() => {
-                            this.state.adjustmentTimes.splice(index, 1)
-                            this.forceUpdate()
-                            this.adjustmentTimesUpdated()
-                        }}>{ T.t("SETTINGS_TIME_REMOVE") }</a>
+            return this.state.adjustmentTimes.map((time, index) => {
+                const hourInt = parseInt(time.hour)
+                const fixedHour = hourInt + (hourInt == 12 ? (time.am.toLowerCase() == "pm" ? 0 : -12) : (time.am.toLowerCase() == "pm" ? 12 : 0))
+                const calcTime = (fixedHour < 10 ? "0" + fixedHour : fixedHour) + ":" + (time.minute < 10 ? "0" + time.minute : time.minute)
+                console.log("INVAL", calcTime)
+                return (
+                    <div className="item" key={index}>
+                        <div className="row">
+                            <input type="time" min="00:00" max="23:59" onChange={(e) => {
+                                console.log("OUTVAL", e.target.value)
+                                let timeOut = e.target.value.split(":")
+                                timeOut[2] = (timeOut[0] >= 12 ? "PM" : "AM")
+                                timeOut[0] = (timeOut[0] == 0 ? 12 : timeOut[0] * 1)
+                                timeOut[0] = (timeOut[0] > 12 ? (timeOut[0] - 12) : timeOut[0])
+                                timeOut[1] = timeOut[1] * 1
+                                this.setAdjustmentTimeValue(index, timeOut)
+                            }} value={calcTime}></input>
+                            <a className="button" onClick={() => {
+                                this.state.adjustmentTimes.splice(index, 1)
+                                this.forceUpdate()
+                                this.adjustmentTimesUpdated()
+                            }}>{T.t("SETTINGS_TIME_REMOVE")}</a>
+                        </div>
+                        <div className="row">
+                            {this.getAdjustmentTimesMonitors(time, index)}
+
+                        </div>
                     </div>
-                    <div className="row">
-                        { this.getAdjustmentTimesMonitors(time, index) }
-                        
-                    </div>
-                </div>
-            ))
+                )
+            })
         }
 
     }
@@ -501,9 +486,17 @@ export default class SettingsWindow extends PureComponent {
     }
 
 
-    setAdjustmentTimeValue = (index, value, type) => {
-        this.state.adjustmentTimes[index][type] = value
-        this.forceUpdate()
+    setAdjustmentTimeValue = (index, arr) => {
+        for(let i in arr) {
+            console.log(arr[i])
+            if(i < 2 && isNaN(arr[i])) return false;
+        }
+        this.state.adjustmentTimes[index] = {
+            hour: arr[0],
+            minute: arr[1],
+            am: arr[2]
+        }
+        //this.forceUpdate()
         this.adjustmentTimesUpdated()
     }
 

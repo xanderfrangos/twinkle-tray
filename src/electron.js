@@ -2,6 +2,10 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
 const { exec } = require('child_process');
+const os = require("os")
+const ua = require('universal-analytics');
+const uuid = require('uuid/v4');
+
 let isDev = false
 try {
   isDev = require("electron-is-dev");
@@ -36,6 +40,100 @@ const debug = {
   log,
   error: log
 }
+
+
+
+// Analytics
+
+let analytics = false
+let analyticsQueue = false
+let analyticsInterval = false
+let analyticsFrequency = 1000 * 60 * 10 // 10 minutes
+let analyticsUsage = {}
+
+function analyticsResetUsage() {
+  analyticsUsage = {
+    OpenedPanel: 0,
+    OpenedSettings: 0,
+    UsedSleep: 0,
+    UsedHotkeys: 0
+  }
+}
+analyticsResetUsage()
+
+function analyticsData(data = { }) {
+  if(analytics) {
+    if(!analyticsQueue) {
+      analyticsQueue = analytics
+    }
+    analyticsQueue.event(data)
+  }
+}
+
+function getSettingsAnalytics() {
+
+  let data = {
+    updateRate: settings.updateInterval,
+    usingRunAtLogin: settings.openAtLogin,
+    usingRenames: false,
+    usingReorder: false,
+    usingNormalize: false,
+    usingTimeAdjust: (settings.adjustmentTimes.length > 0 ? true : false),
+    usingTimeAdjustIndividualDisplays: settings.adjustmentTimeIndividualDisplays,
+    usingHotkeys: (Object.keys(settings.hotkeys).length > 0 ? true : false),
+    usingLinkedLevels: settings.linkedLevelsActive,
+    usingAutomaticUpdates: settings.checkForUpdates,
+  }
+
+  // Check if renames are used
+  if(settings.names && Object.values(settings.names).length > 0) {
+    for(let key in settings.names) {
+      if(settings.names[key] != "") data.usingRenames = true;
+    }
+  } 
+
+  // Check if reorders are used
+  for(let idx in monitors) {
+    if(monitors[idx].order && monitors[idx].order != idx) {
+      data.usingReorder = true
+    }
+  }
+
+  // Check if normalization is used
+  if(settings.remaps && Object.values(settings.remaps).length > 0) {
+    for(let key in settings.remaps) {
+      if(settings.remaps[key].max != 100 || settings.remaps[key].min != 0) data.usingNormalize = true;
+    }
+  } 
+
+  // Queue settings
+  for(let key in data) {
+    analyticsData({
+          ec: "User Settings",
+          ea: key,
+          el: data[key]
+    })
+  }
+
+  // Queue usage
+  for(let key in analyticsUsage) {
+    if(analyticsUsage[key] > 0) {
+      analyticsData({
+        ec: "User Activity",
+        ea: key,
+        el: analyticsUsage[key],
+        ev: analyticsUsage[key]
+  })
+    }
+  }
+
+  console.log("\x1b[34mAnalytics:\x1b[0m ", data)
+  console.log("\x1b[34mAnalytics:\x1b[0m ", analyticsUsage)
+
+  analyticsResetUsage()
+
+}
+
 
 const ddcci = require("@hensm/ddcci");
 if (isDev) {
@@ -99,7 +197,10 @@ const defaultSettings = {
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
-  settingsVer: "v" + app.getVersion()
+  settingsVer: "v" + app.getVersion(),
+  names: {},
+  analytics: !isDev,
+  uuid: uuid()
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -140,7 +241,9 @@ function writeSettings(newSettings = {}, processAfter = true) {
 
 function processSettings(newSettings = {}) {
 
-  settings.settingsVer = "v" + app.getVersion()
+  try {
+
+    settings.settingsVer = "v" + app.getVersion()
 
   if (settings.theme) {
     nativeTheme.themeSource = determineTheme(settings.theme)
@@ -176,6 +279,61 @@ function processSettings(newSettings = {}) {
     }
 
   }
+
+  if(settings.analytics) {
+    if(!analytics) {
+      console.log("\x1b[34mAnalytics:\x1b[0m starting with UUID " + settings.uuid)
+      analytics = ua('UA-146439005-2', settings.uuid)
+      analytics.set("ds", "app")
+      analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
+      analytics.event({
+        ec: "Session Information",
+        ea: "Version",
+        el: "v" + app.getVersion()
+      }).event({
+        ec: "Session Information",
+        ea: "App Name",
+        el: app.name
+      }).event({
+        ec: "Session Information",
+        ea: "Platform",
+        el: os.platform()
+      }).event({
+        ec: "Session Information",
+        ea: "OS Version",
+        el: os.release()
+      }).event({
+        ec: "Session Information",
+        ea: "CPU Model",
+        el: os.cpus()[0].model
+      }).send()
+
+      analyticsResetUsage()
+
+      analyticsInterval = setInterval(() => {
+        try {
+          getSettingsAnalytics()
+          if(analytics && analyticsQueue) {
+            console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
+            analyticsQueue.send()
+            analyticsQueue = false
+          }
+        } catch (e) {
+          console.log("\x1b[34mAnalytics:\x1b[0m Couldn't complete anaytics sync!", e)
+        }
+      }, analyticsFrequency)
+    }
+  } else {
+    analytics = false
+    if(analyticsInterval) {
+      clearInterval(analyticsInterval)
+    }
+  }
+
+  } catch (e) {
+    console.log("Couldn't process settings!", e)
+  }
+
   sendToAllWindows('settings-updated', settings)
 }
 
@@ -186,6 +344,7 @@ function applyHotkeys() {
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
         hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
+          analyticsUsage.UsedHotkeys++
           if (hotkey.monitor === "all") {
             for (let monitor of monitors) {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
@@ -740,6 +899,8 @@ ipcMain.on('panel-hidden', () => {
   if (false && settings.killWhenIdle) mainWindow.close()
 })
 
+ipcMain.on('sleep-displays', () => { analyticsUsage.UsedSleep++ })
+
 
 
 //
@@ -925,6 +1086,7 @@ function toggleTray() {
     mainWindow.focus()
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)
+    analyticsUsage.OpenedPanel++
   }
 }
 
@@ -1045,6 +1207,8 @@ function createSettings() {
       require('electron').shell.openExternal(url)
     })
   })
+
+  analyticsUsage.OpenedSettings++
 
 }
 

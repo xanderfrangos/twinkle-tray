@@ -52,6 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Reset Settings",
     "SETTINGS_GENERAL_RESET_DESC": "If for some reason you need to clear your settings, hit this button.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Reset settings",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",

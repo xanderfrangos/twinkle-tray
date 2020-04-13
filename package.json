@@ -30,6 +30,7 @@
     "markdown": "^0.5.0",
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",
+    "universal-analytics": "^0.4.20",
     "wmi-client": "^0.5.0"
   },
   "build": {

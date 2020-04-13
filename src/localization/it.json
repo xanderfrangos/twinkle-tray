@@ -52,6 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Ripristino delle impostazioni",
     "SETTINGS_GENERAL_RESET_DESC": "Se per qualche motivo vuoi cancellare le tue impostazioni, premi questo pulsante.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Ripristina impostazioni",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Velocità di aggiornamento della luminosità",

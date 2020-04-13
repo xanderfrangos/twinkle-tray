@@ -91,7 +91,8 @@ export default class SettingsWindow extends PureComponent {
             downloadingUpdate: false,
             checkForUpdates: false,
             adjustmentTimeIndividualDisplays: false,
-            languages: []
+            languages: [],
+            analytics: false
         }
         this.downKeys = {}
         this.lastLevels = []
@@ -232,6 +233,12 @@ export default class SettingsWindow extends PureComponent {
         const openAtLogin = (this.state.openAtLogin ? false : true)
         this.setState({ openAtLogin })
         window.sendSettings({ openAtLogin })
+    }
+
+    analyticsChanged = (event) => {
+        const analytics = (this.state.analytics ? false : true)
+        this.setState({ analytics })
+        window.sendSettings({ analytics })
     }
 
     ramChanged = (event) => {
@@ -617,6 +624,7 @@ export default class SettingsWindow extends PureComponent {
         const language = (settings.language || "system")
         const hotkeys = (settings.hotkeys || {})
         const hotkeyPercent = (settings.hotkeyPercent || 10)
+        const analytics = settings.analytics
         this.setState({
             linkedLevelsActive,
             remaps,
@@ -630,7 +638,8 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimeIndividualDisplays,
             language,
             hotkeys,
-            hotkeyPercent
+            hotkeyPercent,
+            analytics
         }, () => {
             this.forceUpdate()
         })
@@ -682,6 +691,10 @@ export default class SettingsWindow extends PureComponent {
                         </select>
                         <br />
                         <br />
+                        <label>{ T.t("SETTINGS_GENERAL_ANALYTICS_TITLE") }</label>
+                        <p>{ T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'https://twinkletray.com/privacy-policy.html\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>') }</p>
+                        <input onChange={this.analyticsChanged} checked={window.settings.analytics || false} data-checked={window.settings.analytics || false} type="checkbox" />
+                        <br /><br />
                         <label>{ T.t("SETTINGS_GENERAL_LANGUAGE_TITLE") }</label>
                         <select value={window.settings.language} onChange={ (e) => {
                             this.setState({ language: e.target.value })

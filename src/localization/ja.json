@@ -52,6 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "設定の初期化",
     "SETTINGS_GENERAL_RESET_DESC": "設定を初期化したい場合このボタンを押してください。",
     "SETTINGS_GENERAL_RESET_BUTTON": "設定の初期化",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "明るさの更新間隔",

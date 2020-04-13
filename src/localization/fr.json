@@ -52,6 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Réinitialisation",
     "SETTINGS_GENERAL_RESET_DESC": "Si pour une raison quelconque vous devez réinitialiser vos paramètres, cliquez sur ce bouton.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Réinitialiser les paramètres",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Fréquene de mise à jour de la luminosité",

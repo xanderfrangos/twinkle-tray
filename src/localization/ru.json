@@ -31,7 +31,7 @@
     "INTRO_INSTRUCTIONS": "Значок Twinkle Tray в панели задач вероятно скрыт, поэтому вы должны переместить его в то место, где можно легко получить к нему доступ. Инструкции см. ниже.",
 
 
-    "SETTINGS_TITLE": "Twinkle Tray Настройки",
+    "SETTINGS_TITLE": "Настройки Twinkle Tray",
 
 
     "SETTINGS_SIDEBAR_GENERAL": "Общие",
@@ -55,7 +55,7 @@
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Частота обновления яркости",
-    "SETTINGS_MONITORS_RATE_DESC": "Как часто яркость будет обновляться на ваших дисплеях, когда вы регулируете их значения. Увеличьте время, если ваши дисплеи мигают.",
+    "SETTINGS_MONITORS_RATE_DESC": "Как часто яркость будет обновляться на ваших дисплеях, когда вы регулируете их значения. Увеличьте время, если ваши дисплеи мерцают.",
     "SETTINGS_MONITORS_RATE_0": "Ludicrous",
     "SETTINGS_MONITORS_RATE_1": "Быстро (250 мс)",
     "SETTINGS_MONITORS_RATE_2": "Нормально (500 мс)",

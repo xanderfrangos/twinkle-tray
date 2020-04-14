@@ -491,11 +491,10 @@ export default class SettingsWindow extends PureComponent {
             console.log(arr[i])
             if(i < 2 && isNaN(arr[i])) return false;
         }
-        this.state.adjustmentTimes[index] = {
-            hour: arr[0],
-            minute: arr[1],
-            am: arr[2]
-        }
+        this.state.adjustmentTimes[index].hour = arr[0]
+        this.state.adjustmentTimes[index].minute = arr[1]
+        this.state.adjustmentTimes[index].am = arr[2]
+
         //this.forceUpdate()
         this.adjustmentTimesUpdated()
     }

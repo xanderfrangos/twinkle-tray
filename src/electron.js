@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
 const { exec } = require('child_process');
-const getSystemTimeFormat = require('./dot-net.js');
 const os = require("os")
 const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
@@ -204,8 +203,7 @@ const defaultSettings = {
   settingsVer: "v" + app.getVersion(),
   names: {},
   analytics: !isDev,
-  uuid: uuid(),
-  use24HClock: false
+  uuid: uuid()
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -248,15 +246,6 @@ function processSettings(newSettings = {}) {
 
   try {
     settings.settingsVer = "v" + app.getVersion()
-    
-    // Check for 12/24H clock
-    getSystemTimeFormat(null, function (err, result) {
-      if (err) {
-        console.log(err)
-      } else {
-        settings.use24HClock = (result == "HH:mm" || result == "H:mm" ? true : false)
-      }
-    });
 
     if (settings.theme) {
       nativeTheme.themeSource = determineTheme(settings.theme)

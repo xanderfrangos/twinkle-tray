@@ -26,7 +26,6 @@
   "dependencies": {
     "@hensm/ddcci": "file:modules/node-ddcci",
     "color": "^3.1.2",
-    "electron-edge-js": "^12.13.0",
     "electron-winstore-auto-launch": "^2.0.3",
     "markdown": "^0.5.0",
     "node-fetch": "^2.6.0",

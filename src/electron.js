@@ -631,6 +631,7 @@ refreshMonitors = async () => {
           serial: false
         }
       } else {
+        if (connectedMonitors[hwid[2]].name)
         ddcciInfo.name = connectedMonitors[hwid[2]].name
       }
 
@@ -685,6 +686,7 @@ refreshMonitors = async () => {
                 serial: false
               }
             } else {
+              if (connectedMonitors[hwid[2]].name)
               wmiInfo.name = connectedMonitors[hwid[2]].name
             }
     
@@ -890,7 +892,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
             min: 0,
             max: 100,
             hwid: false,
-            name: "Unknown Display",
+            name: false,
             serial: false
           }
         }
@@ -916,6 +918,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
 }
 
 function parseWMIString(str) {
+  if(str === null) return str;
   let hexed = str.replace('{', '').replace('}', '').replace(/;0/g, ';32')
   var decoded = '';
   var split = hexed.split(';')

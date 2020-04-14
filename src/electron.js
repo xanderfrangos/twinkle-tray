@@ -605,7 +605,7 @@ refreshMonitors = async () => {
 
   for (let monitor of ddcciMonitors) {
     try {
-      foundMonitors.push({
+      const ddcciInfo = {
         name: makeName(monitor, `Display ${local + 1}`),
         id: monitor,
         num: local,
@@ -614,7 +614,29 @@ refreshMonitors = async () => {
         type: 'ddcci',
         min: 0,
         max: 100
-      })
+      }
+      foundMonitors.push(ddcciInfo)
+
+      const hwid = monitor.split("#")
+      if(connectedMonitors[hwid[2]] == undefined) {
+        connectedMonitors[hwid[2]] = {
+          id: false,
+          num: false,
+          brightness: 50,
+          type: 'none',
+          min: 0,
+          max: 100,
+          hwid: false,
+          name: "Unknown Display",
+          serial: false
+        }
+      } else {
+        ddcciInfo.name = connectedMonitors[hwid[2]].name
+      }
+
+      Object.assign(connectedMonitors[hwid[2]], ddcciInfo)
+
+
     } catch (e) {
       // Probably failed to get VCP code, which means the display is not compatible
     }
@@ -634,7 +656,8 @@ refreshMonitors = async () => {
         } else if (result) {
           let local = 0
           for (let monitor of result) {
-            out.push({
+
+            const wmiInfo = {
               name: makeName(monitor.InstanceName, `Display ${local + 1}`),
               id: monitor.InstanceName,
               num: local,
@@ -643,8 +666,30 @@ refreshMonitors = async () => {
               type: 'wmi',
               min: 0,
               max: 100
-            })
+            }
+            out.push(wmiInfo)
             local++
+
+            let hwid = readInstanceName(monitor.InstanceName)
+            hwid[2] = hwid[2].split("_")[0]
+            if(connectedMonitors[hwid[2]] == undefined) {
+              connectedMonitors[hwid[2]] = {
+                id: false,
+                num: false,
+                brightness: 50,
+                type: 'none',
+                min: 0,
+                max: 100,
+                hwid: false,
+                name: "Unknown Display",
+                serial: false
+              }
+            } else {
+              wmiInfo.name = connectedMonitors[hwid[2]].name
+            }
+    
+            Object.assign(connectedMonitors[hwid[2]], wmiInfo)
+
           }
           resolve(out)
         } else {
@@ -670,6 +715,7 @@ refreshMonitors = async () => {
   // Basic info acquired, send it off
 
   monitors = foundMonitors
+  console.log("MONITORS------------------------", monitors)
   applyOrder()
   sendToAllWindows('monitors-updated', monitors)
 
@@ -828,6 +874,29 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
       // Apply names
       for (let monitor of result) {
         let hwid = readInstanceName(monitor.InstanceName)
+        hwid[2] = hwid[2].split("_")[0]
+        const wmiInfo = {
+          hwid: hwid,
+          name: parseWMIString(monitor.UserFriendlyName),
+          serial: parseWMIString(monitor.SerialNumberID)
+        }
+
+        if(connectedMonitors[hwid[2]] == undefined) {
+          connectedMonitors[hwid[2]] = {
+            id: false,
+            num: false,
+            brightness: 50,
+            type: 'none',
+            min: 0,
+            max: 100,
+            hwid: false,
+            name: "Unknown Display",
+            serial: false
+          }
+        }
+
+        Object.assign(connectedMonitors[hwid[2]], wmiInfo)
+        
         if (monitor.UserFriendlyName !== null)
           for (let knownMonitor of monitors) {
             if (knownMonitor.id.split("#")[1] == hwid[1]) {
@@ -1089,6 +1158,7 @@ function toggleTray() {
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)
     analyticsUsage.OpenedPanel++
+    console.log("ALL MONITORS---------------------", connectedMonitors)
   }
 }
 

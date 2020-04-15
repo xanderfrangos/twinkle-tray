@@ -15,11 +15,11 @@ export default class BrightnessPanel extends PureComponent {
   // Render <Slider> components
   getMonitors = () => {
     if (!this.state.monitors || this.numMonitors == 0) {
-      return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }</div>)
+      return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {
       const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
       return sorted.map((monitor, index) => {
-        if(monitor.type == "none") {
+        if (monitor.type == "none") {
           return (<div key={monitor.key}></div>)
         } else {
           return (
@@ -34,7 +34,7 @@ export default class BrightnessPanel extends PureComponent {
   getLinkIcon = () => {
     if (this.numMonitors > 1) {
       return (
-        <div title={ T.t("PANEL_BUTTON_LINK_LEVELS") } data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
+        <div title={T.t("PANEL_BUTTON_LINK_LEVELS")} data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
       )
     }
   }
@@ -117,8 +117,8 @@ export default class BrightnessPanel extends PureComponent {
       let newMonitors = Object.assign(e.detail, {})
       this.lastLevels = []
       let numMonitors = 0
-      for(let key in newMonitors) {
-        if(newMonitors[key].type != "none") numMonitors++;
+      for (let key in newMonitors) {
+        if (newMonitors[key].type != "none") numMonitors++;
       }
       this.numMonitors = numMonitors
       // Reset panel height so it's recalculated
@@ -127,8 +127,6 @@ export default class BrightnessPanel extends PureComponent {
         monitors: newMonitors
       })
     }
-
-
   }
 
 
@@ -266,11 +264,11 @@ export default class BrightnessPanel extends PureComponent {
 
   componentDidUpdate() {
     const height = window.document.getElementById("panel").offsetHeight
-    if(this.panelHeight != height) {
+    if (this.panelHeight != height) {
       this.panelHeight = height
       window.sendHeight(height)
     }
-    
+
   }
 
   render() {
@@ -280,11 +278,11 @@ export default class BrightnessPanel extends PureComponent {
       return (
         <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
           <div className="titlebar">
-            <div className="title">{ T.t("PANEL_TITLE") }</div>
+            <div className="title">{T.t("PANEL_TITLE")}</div>
             <div className="icons">
               {this.getLinkIcon()}
-              <div title={ T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS") } className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
-              <div title={ T.t("GENERIC_SETTINGS") } className="settings" onClick={window.openSettings}>&#xE713;</div>
+              <div title={T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")} className="off" onClick={window.turnOffDisplays}>&#xEC46;</div>
+              <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
             </div>
           </div>
           {this.getMonitors()}

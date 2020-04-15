@@ -703,7 +703,7 @@ refreshWMI = async () => {
           for (let monitor of result) {
 
             const wmiInfo = {
-              name: makeName(monitor.InstanceName, `Display ${local + 1}`),
+              name: makeName(monitor.InstanceName, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
               id: monitor.InstanceName,
               num: local,
               localID: local,

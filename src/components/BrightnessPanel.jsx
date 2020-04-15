@@ -14,19 +14,26 @@ export default class BrightnessPanel extends PureComponent {
 
   // Render <Slider> components
   getMonitors = () => {
-    if (!this.state.monitors || this.state.monitors.length == 0) {
+    if (!this.state.monitors || this.numMonitors == 0) {
       return (<div className="no-displays-message">{ T.t("GENERIC_NO_COMPATIBLE_DISPLAYS") }</div>)
     } else {
-      const sorted = this.state.monitors.slice(0).sort(monitorSort)
-      return sorted.map((monitor, index) => (
-        <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} key={monitor.num} onChange={this.handleChange} />
-      ))
+      const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+      return sorted.map((monitor, index) => {
+        if(monitor.type == "none") {
+          return (<div></div>)
+        } else {
+          console.log(monitor.key)
+          return (
+            <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+          )
+        }
+      })
     }
   }
 
   // Render link icon, if available
   getLinkIcon = () => {
-    if (this.state.monitors.length > 1) {
+    if (this.numMonitors > 1) {
       return (
         <div title={ T.t("PANEL_BUTTON_LINK_LEVELS") } data-active={this.state.linkedLevelsActive} onClick={this.toggleLinkedLevels} className="link">&#xE71B;</div>
       )
@@ -64,11 +71,14 @@ export default class BrightnessPanel extends PureComponent {
   // Handle <Slider> changes
   handleChange = (level, slider) => {
     const monitors = Object.assign(this.state.monitors, {})
-    const sliderMonitor = monitors.find((mon) => mon.id == slider.props.id)
+    const sliderMonitor = monitors[slider.props.hwid]
 
-    if (monitors.length > 0 && this.state.linkedLevelsActive) {
+    console.log(sliderMonitor)
+    console.log(level)
+
+    if (this.numMonitors && this.state.linkedLevelsActive) {
       // Update all monitors (linked)
-      for (let monitor of monitors) {
+      for (let monitor in monitors) {
         monitor.brightness = level
         if (slider.props.id != monitor.id) {
           monitor.brightness = this.normalize(this.normalize(level, false, sliderMonitor.min, sliderMonitor.max), true, monitor.min, monitor.max)
@@ -82,7 +92,7 @@ export default class BrightnessPanel extends PureComponent {
         this.levelsChanged = true
         if (this.state.updateInterval === 999) this.syncBrightness()
       })
-    } else if (monitors.length > 0) {
+    } else if (this.numMonitors > 0) {
       // Update single monitor
       if (sliderMonitor) sliderMonitor.brightness = level;
       this.setState({
@@ -103,9 +113,14 @@ export default class BrightnessPanel extends PureComponent {
 
   // Update monitor info
   recievedMonitors = (e) => {
-    if (this.state.monitors.length > 0 || e.detail.length > 0) {
+    if (Object.keys(this.state.monitors).length > 0 || Object.keys(e.detail).length > 0) {
       let newMonitors = Object.assign(e.detail, {})
-      this.lastLevels.length = e.detail.length
+      this.lastLevels = []
+      let numMonitors = 0
+      for(let key in newMonitors) {
+        if(newMonitors[key].type != "none") numMonitors++;
+      }
+      this.numMonitors = numMonitors
       this.setState({
         monitors: newMonitors
       })
@@ -116,7 +131,7 @@ export default class BrightnessPanel extends PureComponent {
 
 
   updateMinMax = () => {
-    if (this.state.monitors.length > 0) {
+    if (this.numMonitors > 0) {
 
       let newMonitors = Object.assign(this.state.monitors, {})
 
@@ -200,13 +215,13 @@ export default class BrightnessPanel extends PureComponent {
   // Send new brightness to monitors, if changed
   syncBrightness = () => {
     const monitors = this.state.monitors
-    if (this.levelsChanged && (window.showPanel || this.doBackgroundEvent) && monitors.length) {
+    if (this.levelsChanged && (window.showPanel || this.doBackgroundEvent) && this.numMonitors) {
       this.doBackgroundEvent = false
       this.levelsChanged = false
 
       try {
-        for (let idx = 0; idx < monitors.length; idx++) {
-          if (monitors[idx].brightness != this.lastLevels[idx]) {
+        for (let idx in monitors) {
+          if (monitors[idx].type != "none" && monitors[idx].brightness != this.lastLevels[idx]) {
             window.updateBrightness(monitors[idx].id, monitors[idx].brightness)
           }
         }
@@ -230,6 +245,7 @@ export default class BrightnessPanel extends PureComponent {
     this.updateInterval = null
     this.doBackgroundEvent = false
     this.levelsChanged = false
+    this.numMonitors = 0
     this.panelHeight = -1
   }
 

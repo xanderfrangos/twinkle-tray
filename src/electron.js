@@ -146,8 +146,7 @@ if (isDev) {
 }
 
 
-let monitors = []
-let connectedMonitors = []
+let monitors = {}
 let monitorNames = []
 let mainWindow;
 let tray = null
@@ -348,7 +347,8 @@ function applyHotkeys() {
         hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
           analyticsUsage.UsedHotkeys++
           if (hotkey.monitor === "all") {
-            for (let monitor of monitors) {
+            for (let key in monitors) {
+              const monitor = monitors[key]
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
               updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
             }
@@ -370,7 +370,8 @@ function applyHotkeys() {
 }
 
 function applyOrder() {
-  for (let monitor of monitors) {
+  for (let key in monitors) {
+    const monitor = monitors[key]
     for (let order of settings.order) {
       if (monitor.id == order.id) {
         monitor.order = order.order
@@ -380,7 +381,8 @@ function applyOrder() {
 }
 
 function applyRemaps() {
-  for (let monitor of monitors) {
+  for (let key in monitors) {
+    const monitor = monitors[key]
     if (settings.remaps) {
       for (let remapName in settings.remaps) {
         if (remapName == monitor.name) {
@@ -595,8 +597,14 @@ function getAccentColors() {
 //
 
 refreshMonitors = async () => {
+  refreshMeta()
+  refreshWMI()
+  refreshDDCCI()
+}
 
-  let foundMonitors = []
+
+
+refreshDDCCI = async () => {
   let local = 0
 
   // First, let's get DDC/CI monitors. They're easy.
@@ -606,7 +614,7 @@ refreshMonitors = async () => {
   for (let monitor of ddcciMonitors) {
     try {
       const ddcciInfo = {
-        name: makeName(monitor, `Display ${local + 1}`),
+        name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
         id: monitor,
         num: local,
         localID: local,
@@ -615,12 +623,12 @@ refreshMonitors = async () => {
         min: 0,
         max: 100
       }
-      foundMonitors.push(ddcciInfo)
 
       const hwid = monitor.split("#")
-      if(connectedMonitors[hwid[2]] == undefined) {
-        connectedMonitors[hwid[2]] = {
+      if(monitors[hwid[2]] == undefined) {
+        monitors[hwid[2]] = {
           id: false,
+          key: hwid[2],
           num: false,
           brightness: 50,
           type: 'none',
@@ -631,11 +639,11 @@ refreshMonitors = async () => {
           serial: false
         }
       } else {
-        if (connectedMonitors[hwid[2]].name)
-        ddcciInfo.name = connectedMonitors[hwid[2]].name
+        if (monitors[hwid[2]].name)
+        ddcciInfo.name = monitors[hwid[2]].name
       }
 
-      Object.assign(connectedMonitors[hwid[2]], ddcciInfo)
+      Object.assign(monitors[hwid[2]], ddcciInfo)
 
 
     } catch (e) {
@@ -644,14 +652,19 @@ refreshMonitors = async () => {
     local++
   }
 
-  // Next, let's request WMI monitors.
+  applyOrder()
+  sendToAllWindows('monitors-updated', monitors)
+
+}
+
+refreshWMI = async () => {
+  // Request WMI monitors.
   // This part is a pain in the ass because of how finicky WMI queries/clients are.
   // We just return an empty array if anything goes wrong.
 
   let wmiMonitors = await new Promise((resolve, reject) => {
     try {
       wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
-        let out = []
         if (err != null) {
           resolve([])
         } else if (result) {
@@ -668,14 +681,14 @@ refreshMonitors = async () => {
               min: 0,
               max: 100
             }
-            out.push(wmiInfo)
             local++
 
             let hwid = readInstanceName(monitor.InstanceName)
             hwid[2] = hwid[2].split("_")[0]
-            if(connectedMonitors[hwid[2]] == undefined) {
-              connectedMonitors[hwid[2]] = {
+            if(monitors[hwid[2]] == undefined) {
+              monitors[hwid[2]] = {
                 id: false,
+                key: hwid[2],
                 num: false,
                 brightness: 50,
                 type: 'none',
@@ -686,11 +699,11 @@ refreshMonitors = async () => {
                 serial: false
               }
             } else {
-              if (connectedMonitors[hwid[2]].name)
-              wmiInfo.name = connectedMonitors[hwid[2]].name
+              if (monitors[hwid[2]].name)
+              wmiInfo.name = monitors[hwid[2]].name
             }
     
-            Object.assign(connectedMonitors[hwid[2]], wmiInfo)
+            Object.assign(monitors[hwid[2]], wmiInfo)
 
           }
           resolve(out)
@@ -705,28 +718,20 @@ refreshMonitors = async () => {
     }
   })
 
-  // Add WMI monitors, if available
-
-  if (wmiMonitors && wmiMonitors.length > 0) {
-    for (mon of wmiMonitors) {
-      foundMonitors.push(mon)
-      local++
-    }
-  }
-
-  // Basic info acquired, send it off
-
-  monitors = foundMonitors
-  console.log("MONITORS------------------------", monitors)
   applyOrder()
   sendToAllWindows('monitors-updated', monitors)
 
-  // Get names
+}
 
+refreshMeta = async () => {
   refreshNames(() => {
+    applyOrder()
     sendToAllWindows('names-updated', monitors)
   })
 }
+
+
+
 
 function makeName(monitorDevice, fallback) {
   if (monitorNames[monitorDevice] !== undefined) {
@@ -781,11 +786,11 @@ function updateBrightness(index, level, useCap = false) {
 
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
-    monitor = monitors.find((display) => {
+    monitor = Object.values(monitors).find((display) => {
       return display.id.indexOf(index) === 0
     })
   } else {
-    if (index >= monitors.length) {
+    if (index >= Object.keys(monitors).length) {
       console.log("updateBrightness: Invalid monitor")
       return false;
     }
@@ -830,7 +835,8 @@ function transitionBrightness(level, eventMonitors = []) {
   if (currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
-    for (let monitor of monitors) {
+    for (let key in monitors) {
+      const monitor = monitors[key]
 
       let normalized = level
       if (settings.adjustmentTimeIndividualDisplays) {
@@ -852,7 +858,7 @@ function transitionBrightness(level, eventMonitors = []) {
       } else {
         updateBrightness(monitor.id, ((monitor.brightness * 2) + normalized) / 3)
       }
-      if (numDone === monitors.length) {
+      if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);
       }
     }
@@ -874,6 +880,7 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
       callback([])
     } else if (result) {
       // Apply names
+      let foundMonitors = []
       for (let monitor of result) {
         let hwid = readInstanceName(monitor.InstanceName)
         hwid[2] = hwid[2].split("_")[0]
@@ -883,9 +890,12 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
           serial: parseWMIString(monitor.SerialNumberID)
         }
 
-        if(connectedMonitors[hwid[2]] == undefined) {
-          connectedMonitors[hwid[2]] = {
+        foundMonitors.push(hwid[2])
+
+        if(monitors[hwid[2]] == undefined) {
+          monitors[hwid[2]] = {
             id: false,
+            key: hwid[2],
             num: false,
             brightness: 50,
             type: 'none',
@@ -897,17 +907,23 @@ refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
           }
         }
 
-        Object.assign(connectedMonitors[hwid[2]], wmiInfo)
+        Object.assign(monitors[hwid[2]], wmiInfo)
         
         if (monitor.UserFriendlyName !== null)
-          for (let knownMonitor of monitors) {
-            if (knownMonitor.id.split("#")[1] == hwid[1]) {
-              knownMonitor.name = parseWMIString(monitor.UserFriendlyName)
-              monitorNames[knownMonitor.id] = knownMonitor.name
+          for (let key in monitors) {
+            if (monitors[key].id && monitors[key].id.split("#")[1] == hwid[1]) {
+              monitors[key].name = parseWMIString(monitor.UserFriendlyName)
+              monitorNames[monitors[key].id] = monitors[key].name
               break;
             }
           }
       }
+
+      // Delete disconnected displays
+      for(let key in monitors) {
+        if(!foundMonitors.includes(key)) delete monitors[key];
+      }
+
       applyRemaps()
       callback(out)
     } else {
@@ -1025,6 +1041,10 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.on("blur", () => {
     sendToAllWindows("panelBlur")
+  })
+
+  mainWindow.hookWindowMessage(Number.parseInt('0x7E'), (e) => {
+    console.log("WM_DISPLAYCHANGE", e)
   })
 
 }
@@ -1161,7 +1181,6 @@ function toggleTray() {
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)
     analyticsUsage.OpenedPanel++
-    console.log("ALL MONITORS---------------------", connectedMonitors)
   }
 }
 
@@ -1413,7 +1432,9 @@ function handleAccentChange() {
   getThemeRegistry()
 }
 
-function handleMonitorChange(e) {
+function handleMonitorChange(e, d) {
+  // Reset all known displays
+  monitors = {}
   refreshMonitors()
 }
 

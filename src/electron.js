@@ -631,54 +631,59 @@ refreshMonitors = async (fullRefresh = false) => {
 refreshDDCCI = async () => {
 
   return new Promise((resolve, reject) => {
-    let local = 0
+  let local = 0
+  let ddcciList = []
 
-  ddcci._refresh()
-  const ddcciMonitors = ddcci.getMonitorList()
-
-  for (let monitor of ddcciMonitors) {
-    let ddcciList = []
     try {
-      const ddcciInfo = {
-        name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
-        id: monitor,
-        num: local,
-        localID: local,
-        brightness: ddcci.getBrightness(monitor),
-        type: 'ddcci',
-        min: 0,
-        max: 100
-      }
-      
-      const hwid = monitor.split("#")
-      if(monitors[hwid[2]] == undefined) {
-        monitors[hwid[2]] = {
-          id: monitor,
-          key: hwid[2],
-          num: false,
-          brightness: 50,
-          type: 'none',
-          min: 0,
-          max: 100,
-          hwid: false,
-          name: "Unknown Display",
-          serial: false
-        }
-      } else {
-        if (monitors[hwid[2]].name)
-        ddcciInfo.name = monitors[hwid[2]].name
-      }
 
-      ddcciList.push(ddcciInfo)
-      Object.assign(monitors[hwid[2]], ddcciInfo)
-      resolve(ddcciInfo)
+      ddcci._refresh()
+      const ddcciMonitors = ddcci.getMonitorList()
+
+      for (let monitor of ddcciMonitors) {
+
+        const ddcciInfo = {
+          name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
+          id: monitor,
+          num: local,
+          localID: local,
+          brightness: ddcci.getBrightness(monitor),
+          type: 'ddcci',
+          min: 0,
+          max: 100
+        }
+
+        const hwid = monitor.split("#")
+        if (monitors[hwid[2]] == undefined) {
+          monitors[hwid[2]] = {
+            id: monitor,
+            key: hwid[2],
+            num: false,
+            brightness: 50,
+            type: 'none',
+            min: 0,
+            max: 100,
+            hwid: false,
+            name: "Unknown Display",
+            serial: false
+          }
+        } else {
+          if (monitors[hwid[2]].name)
+            ddcciInfo.name = monitors[hwid[2]].name
+        }
+
+        ddcciList.push(ddcciInfo)
+        Object.assign(monitors[hwid[2]], ddcciInfo)
+        resolve(ddcciList)
+
+        local++
+      }
+    
 
     } catch (e) {
       // Probably failed to get VCP code, which means the display is not compatible
-      reject(ddcciInfo)
+      resolve(ddcciList)
     }
-    local++
-  }
+
   })
 
 }

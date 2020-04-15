@@ -318,6 +318,17 @@ a {
 
 .icon {
     font-family: "Segoe MDL2 Assets";
+    &.red {
+        color: red;
+    }
+    &.green {
+        color: green;
+    }
+    &.vfix {
+        display: inline-block;
+        position: relative;
+        top: 2px;
+    }
 }
 
 

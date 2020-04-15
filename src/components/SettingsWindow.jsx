@@ -632,11 +632,10 @@ export default class SettingsWindow extends PureComponent {
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
-                        <br />Communication Method: <b>{monitor.type}</b>
+                        <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
                         <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
                         <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
-                        <br />Order: <b>{(monitor.order ? monitor.order : "None")}</b>
-                        <br />Communication Method: <b>{monitor.type}</b>
+                        <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                         <br />HWID: <b>{"\\\\?\\" + monitor.hwid.join("\\")}</b>
                         <br />Internal name: <b>{monitor.hwid[1]}</b>
                         <br />Serial Number: <b>{monitor.serial}</b></p>
@@ -644,6 +643,18 @@ export default class SettingsWindow extends PureComponent {
                 )
 
             })
+        }
+    }
+
+    getDebugMonitorType = (type) => {
+        if(type == "none") {
+            return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
+        } else if(type == "ddcci") {
+            return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
+        } else if(type == "wmi") {
+            return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
+        } else {
+            return (<><b>Unknown ({type})</b> <span className="icon red vfix">&#xEB90;</span></>)
         }
     }
 
@@ -890,7 +901,7 @@ export default class SettingsWindow extends PureComponent {
                     <div className="pageSection" data-active={this.isSection("debug")}>
                         <div className="sectionTitle">Settings</div>
                         <label>These are your raw user settings.</label>
-                        <p style={{"white-space":"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
+                        <p style={{whiteSpace:"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
                     </div>
 
 

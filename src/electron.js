@@ -597,21 +597,42 @@ function getAccentColors() {
 //
 
 refreshMonitors = async () => {
-  refreshMeta()
-  refreshWMI()
-  refreshDDCCI()
+  console.log("\x1b[34m-------------- Refresh Monitors -------------- \x1b[0m")
+
+  const startTime = process.hrtime()
+  const namesPromise = refreshNames()
+  const wmiPromise = refreshWMI()
+  const ddcciPromise = refreshDDCCI()
+
+  namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+  wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+  ddcciPromise.then(() => { console.log(`DDC/CI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+
+  await namesPromise
+  await wmiPromise
+  await ddcciPromise
+
+  applyRemaps()
+  sendToAllWindows('monitors-updated', monitors)
+
+  console.log(`Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+
+  console.log("\x1b[34m---------------------------------------------- \x1b[0m")
+  return monitors;
 }
 
 
 
 refreshDDCCI = async () => {
-  let local = 0
 
-  // First, let's get DDC/CI monitors. They're easy.
+  return new Promise((resolve, reject) => {
+    let local = 0
+
   ddcci._refresh()
   const ddcciMonitors = ddcci.getMonitorList()
 
   for (let monitor of ddcciMonitors) {
+    let ddcciList = []
     try {
       const ddcciInfo = {
         name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
@@ -623,11 +644,11 @@ refreshDDCCI = async () => {
         min: 0,
         max: 100
       }
-
+      
       const hwid = monitor.split("#")
       if(monitors[hwid[2]] == undefined) {
         monitors[hwid[2]] = {
-          id: false,
+          id: monitor,
           key: hwid[2],
           num: false,
           brightness: 50,
@@ -643,32 +664,32 @@ refreshDDCCI = async () => {
         ddcciInfo.name = monitors[hwid[2]].name
       }
 
+      ddcciList.push(ddcciInfo)
       Object.assign(monitors[hwid[2]], ddcciInfo)
-
+      resolve(ddcciInfo)
 
     } catch (e) {
       // Probably failed to get VCP code, which means the display is not compatible
+      reject(ddcciInfo)
     }
     local++
   }
-
-  applyOrder()
-  sendToAllWindows('monitors-updated', monitors)
+  })
 
 }
 
 refreshWMI = async () => {
   // Request WMI monitors.
-  // This part is a pain in the ass because of how finicky WMI queries/clients are.
-  // We just return an empty array if anything goes wrong.
 
-  let wmiMonitors = await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    let local = 0
+    let wmiList = []
     try {
       wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
         if (err != null) {
           resolve([])
         } else if (result) {
-          let local = 0
+          
           for (let monitor of result) {
 
             const wmiInfo = {
@@ -687,7 +708,7 @@ refreshWMI = async () => {
             hwid[2] = hwid[2].split("_")[0]
             if(monitors[hwid[2]] == undefined) {
               monitors[hwid[2]] = {
-                id: false,
+                id: monitor.InstanceName,
                 key: hwid[2],
                 num: false,
                 brightness: 50,
@@ -703,12 +724,13 @@ refreshWMI = async () => {
               wmiInfo.name = monitors[hwid[2]].name
             }
     
+            wmiList.push(wmiInfo)
             Object.assign(monitors[hwid[2]], wmiInfo)
 
           }
-          resolve(out)
+          resolve(wmiList)
         } else {
-          resolve([])
+          reject(wmiList)
         }
       });
 
@@ -718,19 +740,7 @@ refreshWMI = async () => {
     }
   })
 
-  applyOrder()
-  sendToAllWindows('monitors-updated', monitors)
-
 }
-
-refreshMeta = async () => {
-  refreshNames(() => {
-    applyOrder()
-    sendToAllWindows('names-updated', monitors)
-  })
-}
-
-
 
 
 function makeName(monitorDevice, fallback) {
@@ -872,64 +882,67 @@ function transitionBrightness(level, eventMonitors = []) {
 //
 //
 
-refreshNames = (callback = () => { debug.log("Done refreshing names") }) => {
+refreshNames = () => {
 
-  wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
-    let out = []
-    if (err != null) {
-      callback([])
-    } else if (result) {
-      // Apply names
+  return new Promise((resolve, reject) => {
+    wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
       let foundMonitors = []
-      for (let monitor of result) {
-        let hwid = readInstanceName(monitor.InstanceName)
-        hwid[2] = hwid[2].split("_")[0]
-        const wmiInfo = {
-          hwid: hwid,
-          name: parseWMIString(monitor.UserFriendlyName),
-          serial: parseWMIString(monitor.SerialNumberID)
-        }
-
-        foundMonitors.push(hwid[2])
-
-        if(monitors[hwid[2]] == undefined) {
-          monitors[hwid[2]] = {
-            id: false,
-            key: hwid[2],
-            num: false,
-            brightness: 50,
-            type: 'none',
-            min: 0,
-            max: 100,
-            hwid: false,
-            name: false,
-            serial: false
-          }
-        }
-
-        Object.assign(monitors[hwid[2]], wmiInfo)
+      if (err != null) {
+        callback([])
+      } else if (result) {
+        // Apply names
         
-        if (monitor.UserFriendlyName !== null)
-          for (let key in monitors) {
-            if (monitors[key].id && monitors[key].id.split("#")[1] == hwid[1]) {
-              monitors[key].name = parseWMIString(monitor.UserFriendlyName)
-              monitorNames[monitors[key].id] = monitors[key].name
-              break;
+        for (let monitor of result) {
+          let hwid = readInstanceName(monitor.InstanceName)
+          hwid[2] = hwid[2].split("_")[0]
+          const wmiInfo = {
+            hwid: hwid,
+            name: parseWMIString(monitor.UserFriendlyName),
+            serial: parseWMIString(monitor.SerialNumberID)
+          }
+  
+          foundMonitors.push(hwid[2])
+  
+          if(monitors[hwid[2]] == undefined) {
+            monitors[hwid[2]] = {
+              id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+              key: hwid[2],
+              num: false,
+              brightness: 50,
+              type: 'none',
+              min: 0,
+              max: 100,
+              hwid: false,
+              name: false,
+              serial: false
             }
           }
+  
+          Object.assign(monitors[hwid[2]], wmiInfo)
+          
+          if (monitor.UserFriendlyName !== null)
+            for (let key in monitors) {
+              if (monitors[key].id && monitors[key].id.split("#")[1] == hwid[1]) {
+                monitors[key].name = parseWMIString(monitor.UserFriendlyName)
+                monitorNames[monitors[key].id] = monitors[key].name
+                break;
+              }
+            }
+        }
+  
+        // Delete disconnected displays
+        for(let key in monitors) {
+          if(!foundMonitors.includes(key)) delete monitors[key];
+        }
+  
+        resolve(foundMonitors)
+      } else {
+        reject(foundMonitors)
       }
+    });
+  })
 
-      // Delete disconnected displays
-      for(let key in monitors) {
-        if(!foundMonitors.includes(key)) delete monitors[key];
-      }
-
-      applyRemaps()
-      callback(out)
-    } else {
-      callback([])
-    }
-  });
+  
 
 }
 
@@ -1160,10 +1173,12 @@ function quitApp() {
   app.quit()
 }
 
-function toggleTray() {
+const toggleTray = async () => {
   if (mainWindow == null) {
     createPanel(true)
   }
+  
+  
   refreshMonitors()
   getThemeRegistry()
   getSettings()

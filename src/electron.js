@@ -596,7 +596,11 @@ function getAccentColors() {
 //
 //
 
-refreshMonitors = async () => {
+refreshMonitors = async (fullRefresh = false) => {
+
+  // Reset all known displays
+  if(fullRefresh) monitors = {};
+
   console.log("\x1b[34m-------------- Refresh Monitors -------------- \x1b[0m")
 
   const startTime = process.hrtime()
@@ -612,6 +616,7 @@ refreshMonitors = async () => {
   await wmiPromise
   await ddcciPromise
 
+  applyOrder()
   applyRemaps()
   sendToAllWindows('monitors-updated', monitors)
 
@@ -978,7 +983,11 @@ ipcMain.on('update-brightness', function (event, data) {
 })
 
 ipcMain.on('request-monitors', function (event, arg) {
-  refreshMonitors()
+  refreshMonitors(false)
+})
+
+ipcMain.on('full-refresh', function (event, arg) {
+  refreshMonitors(true)
 })
 
 ipcMain.on('open-settings', createSettings)
@@ -1049,16 +1058,12 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
-    mainWindow.webContents.openDevTools()
-    if (toggleOnLoad) setTimeout(() => { toggleTray() }, 100);
+    //mainWindow.webContents.openDevTools()
+    if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
 
   mainWindow.on("blur", () => {
     sendToAllWindows("panelBlur")
-  })
-
-  mainWindow.hookWindowMessage(Number.parseInt('0x7E'), (e) => {
-    console.log("WM_DISPLAYCHANGE", e)
   })
 
 }
@@ -1140,7 +1145,7 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
   if (mainWindow === null) {
-    createPanel();
+    //createPanel(true);
   }
 
   app.on('quit', () => {
@@ -1174,20 +1179,22 @@ function quitApp() {
   app.quit()
 }
 
-const toggleTray = async () => {
+const toggleTray = async (doRefresh = true) => {
   if (mainWindow == null) {
     createPanel(true)
+    return false
   }
   
+  if(doRefresh) {
+    refreshMonitors()
+    getThemeRegistry()
+    getSettings()
   
-  refreshMonitors()
-  getThemeRegistry()
-  getSettings()
-
-  // Send accent
-  sendToAllWindows('update-colors', getAccentColors())
-  if (latestVersion) sendToAllWindows('latest-version', latestVersion);
-
+    // Send accent
+    sendToAllWindows('update-colors', getAccentColors())
+    if (latestVersion) sendToAllWindows('latest-version', latestVersion);
+  }
+  
   if (mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
     repositionPanel()
@@ -1450,8 +1457,7 @@ function handleAccentChange() {
 
 function handleMonitorChange(e, d) {
   // Reset all known displays
-  monitors = {}
-  refreshMonitors()
+  refreshMonitors(true)
 }
 
 let restartBackgroundUpdateThrottle = false

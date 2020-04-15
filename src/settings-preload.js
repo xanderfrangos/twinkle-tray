@@ -1,8 +1,12 @@
 const { ipcRenderer: ipc, remote } = require('electron');
 let browser = remote.getCurrentWindow()
 
-function requestMonitors() {
-    ipc.send('request-monitors')
+function requestMonitors(fullRefresh = false) {
+    if(fullRefresh) {
+        ipc.send('full-refresh')
+    } else {
+        ipc.send('request-monitors')
+    }
 }
 
 function requestAccent() {
@@ -91,15 +95,6 @@ ipc.on('localization-updated', (event, localization) => {
     window.dispatchEvent(new CustomEvent('localizationUpdated', {
         detail: localization
     }))
-})
-
-// User personalization settings recieved
-ipc.on('theme-settings', (event, theme) => {
-    try {
-        window.document.body.dataset["systemTheme"] = (parseInt(theme.SystemUsesLightTheme) == 1 ? "light" : "dark")
-    } catch (e) {
-        window.document.body.dataset["systemTheme"] = "default"
-    }
 })
 
 // Request startup data

@@ -79,6 +79,7 @@ export default class SettingsWindow extends PureComponent {
     constructor(props) {
         super(props)
         this.state = {
+            rawSettings: {},
             activePage: 'general',
             theme: 'default',
             openAtLogin: false,
@@ -136,7 +137,7 @@ export default class SettingsWindow extends PureComponent {
         let order = []
         let idx = 0
         for (let monitor of items) {
-            this.state.monitors[monitor.num].order = idx
+            this.state.monitors[monitor.key].order = idx
             order.push({
                 id: monitor.id,
                 order: idx
@@ -294,10 +295,16 @@ export default class SettingsWindow extends PureComponent {
                 id: "updates",
                 label: T.t("SETTINGS_SIDEBAR_UPDATES"),
                 icon: "&#xE895;"
+            },
+            {
+                id: "debug",
+                label: " ",
+                icon: "&#xEBE8;",
+                type: "debug"
             }
         ]
         return items.map((item, index) => {
-            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} onClick={() => { this.setState({ activePage: item.id }); window.requestMonitors(); }}>
+            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.requestMonitors(); }}>
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })
@@ -378,13 +385,13 @@ export default class SettingsWindow extends PureComponent {
         } else {
             return Object.values(this.state.monitors).map((monitor, index) => {
                 if (monitor.type == "none") {
-                    return (<div key={index}></div>)
+                    return (<div key={monitor.id}></div>)
                 } else {
                     return (
-                        <div key={index}>
+                        <div key={monitor.id}>
                             <br />
                             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                            <input type="text" placeholder={T.t("SETTINGS_MONITORS_ENTER_NAME")} data-key={index} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
+                            <input type="text" placeholder={T.t("SETTINGS_MONITORS_ENTER_NAME")} data-key={monitor.key} onChange={this.monitorNameChange} value={(this.state.names[monitor.id] ? this.state.names[monitor.id] : "")}></input>
                         </div>
                     )
                 }
@@ -394,7 +401,7 @@ export default class SettingsWindow extends PureComponent {
 
 
     getReorderMonitors = () => {
-        if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+        if (this.state.monitors == undefined || this.numMonitors == 0) {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
         } else {
             const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
@@ -614,6 +621,37 @@ export default class SettingsWindow extends PureComponent {
 
 
 
+    getDebugMonitors = () => {
+        if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+            return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+        } else {
+            return Object.values(this.state.monitors).map((monitor, index) => {
+                
+                return (
+                    <div key={monitor.key}>
+                        <br />
+                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
+                        <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
+                        <br />Communication Method: <b>{monitor.type}</b>
+                        <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
+                        <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
+                        <br />Order: <b>{(monitor.order ? monitor.order : "None")}</b>
+                        <br />Communication Method: <b>{monitor.type}</b>
+                        <br />HWID: <b>{"\\\\?\\" + monitor.hwid.join("\\")}</b>
+                        <br />Internal name: <b>{monitor.hwid[1]}</b>
+                        <br />Serial Number: <b>{monitor.serial}</b></p>
+                    </div>
+                )
+
+            })
+        }
+    }
+
+
+
+
+
+
     // Update monitor info
     recievedMonitors = (e) => {
         if (Object.keys(this.state.monitors).length > 0 || Object.keys(e.detail).length > 0) {
@@ -648,6 +686,7 @@ export default class SettingsWindow extends PureComponent {
         const hotkeyPercent = (settings.hotkeyPercent || 10)
         const analytics = settings.analytics
         this.setState({
+            rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
             linkedLevelsActive,
             remaps,
             updateInterval,
@@ -834,6 +873,28 @@ export default class SettingsWindow extends PureComponent {
                             window.sendSettings({ checkForUpdates })
                         }} checked={window.settings.checkForUpdates || false} data-checked={window.settings.checkForUpdates || false} type="checkbox" />
                     </div>
+
+
+
+
+                    <div className="pageSection" data-active={this.isSection("debug")}>
+                        <div className="sectionTitle">All Displays</div>
+                        <label>Every detected display (including those not compatible) is listed below.</label>
+                        <br/>
+                        <p>
+                            <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
+                        </p>
+                        {this.getDebugMonitors()}
+                    </div>
+
+                    <div className="pageSection" data-active={this.isSection("debug")}>
+                        <div className="sectionTitle">Settings</div>
+                        <label>These are your raw user settings.</label>
+                        <p style={{"white-space":"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
+                    </div>
+
+
+
                 </div>
             </div>
 

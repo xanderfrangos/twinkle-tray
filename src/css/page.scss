@@ -411,11 +411,15 @@ a {
     left: 1px;
     padding-top: 30px;
     width: $sidebarWidth;
-    height: calc(100% - 2px);
+    height: calc(100% - 2px - 30px);
     background: var(--tray-background);
     transition: width 0.2s;
     overflow: hidden;
     z-index: 3;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+
     .item {
         width: 100%;
         display: flex;
@@ -425,6 +429,10 @@ a {
         padding: 13px;
         box-sizing: border-box;
         line-height: 1;
+
+        &[data-type="debug"] {
+            margin-top: auto;
+        }
         
         .icon {
             padding-right: 13px;

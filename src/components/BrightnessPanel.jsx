@@ -230,6 +230,7 @@ export default class BrightnessPanel extends PureComponent {
     this.updateInterval = null
     this.doBackgroundEvent = false
     this.levelsChanged = false
+    this.panelHeight = -1
   }
 
   componentDidMount() {
@@ -246,7 +247,12 @@ export default class BrightnessPanel extends PureComponent {
   }
 
   componentDidUpdate() {
-    window.sendHeight(window.document.getElementById("panel").offsetHeight)
+    const height = window.document.getElementById("panel").offsetHeight
+    if(this.panelHeight != height) {
+      this.panelHeight = height
+      window.sendHeight(height)
+    }
+    
   }
 
   render() {

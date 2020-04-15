@@ -20,9 +20,8 @@ export default class BrightnessPanel extends PureComponent {
       const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
       return sorted.map((monitor, index) => {
         if(monitor.type == "none") {
-          return (<div></div>)
+          return (<div key={monitor.key}></div>)
         } else {
-          console.log(monitor.key)
           return (
             <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
           )
@@ -78,7 +77,8 @@ export default class BrightnessPanel extends PureComponent {
 
     if (this.numMonitors && this.state.linkedLevelsActive) {
       // Update all monitors (linked)
-      for (let monitor in monitors) {
+      for (let key in monitors) {
+        const monitor = monitors[key]
         monitor.brightness = level
         if (slider.props.id != monitor.id) {
           monitor.brightness = this.normalize(this.normalize(level, false, sliderMonitor.min, sliderMonitor.max), true, monitor.min, monitor.max)
@@ -121,6 +121,8 @@ export default class BrightnessPanel extends PureComponent {
         if(newMonitors[key].type != "none") numMonitors++;
       }
       this.numMonitors = numMonitors
+      // Reset panel height so it's recalculated
+      this.panelHeight = -1
       this.setState({
         monitors: newMonitors
       })
@@ -135,11 +137,11 @@ export default class BrightnessPanel extends PureComponent {
 
       let newMonitors = Object.assign(this.state.monitors, {})
 
-      for (let monitor of newMonitors) {
+      for (let key in newMonitors) {
         for (let remap in this.state.remaps) {
-          if (monitor.name == remap) {
-            monitor.min = this.state.remaps[remap].min
-            monitor.max = this.state.remaps[remap].max
+          if (newMonitors[key].name == remap) {
+            newMonitors[key].min = this.state.remaps[remap].min
+            newMonitors[key].max = this.state.remaps[remap].max
           }
         }
       }

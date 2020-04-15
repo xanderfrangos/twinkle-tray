@@ -1049,6 +1049,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
+    mainWindow.webContents.openDevTools()
     if (toggleOnLoad) setTimeout(() => { toggleTray() }, 100);
   })
 

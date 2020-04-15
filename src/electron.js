@@ -907,7 +907,7 @@ refreshNames = () => {
           hwid[2] = hwid[2].split("_")[0]
           const wmiInfo = {
             hwid: hwid,
-            name: parseWMIString(monitor.UserFriendlyName),
+            //name: parseWMIString(monitor.UserFriendlyName),
             serial: parseWMIString(monitor.SerialNumberID)
           }
   
@@ -927,18 +927,15 @@ refreshNames = () => {
               serial: false
             }
           }
-  
-          Object.assign(monitors[hwid[2]], wmiInfo)
           
           if (monitor.UserFriendlyName !== null)
-            for (let key in monitors) {
-              if (monitors[key].id && monitors[key].id.split("#")[1] == hwid[1]) {
-                monitors[key].name = parseWMIString(monitor.UserFriendlyName)
-                monitorNames[monitors[key].id] = monitors[key].name
-                break;
-              }
-            }
+            wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
+
+          Object.assign(monitors[hwid[2]], wmiInfo)
+
         }
+
+        
   
         // Delete disconnected displays
         for(let key in monitors) {

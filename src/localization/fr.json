@@ -21,7 +21,7 @@
     "GENERIC_NO_DISPLAYS_SHORT": "Aucun écran compatible détecté.",
 
 
-    "PANEL_TITLE": "Ajuster la uminosité",
+    "PANEL_TITLE": "Ajuster la luminosité",
     "PANEL_UPDATE_AVAILABLE": "Une mise à jour est disponible",
     "PANEL_BUTTON_LINK_LEVELS": "Niveaux de lien",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Éteindre les écrans",
@@ -52,9 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Réinitialisation",
     "SETTINGS_GENERAL_RESET_DESC": "Si pour une raison quelconque vous devez réinitialiser vos paramètres, cliquez sur ce bouton.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Réinitialiser les paramètres",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
-    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Activer les données d'analyse",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Envoyer des données d'utilisation pour m'aider à améliorer Twinkle Tray. Aucune information personnelle n'est envoyée. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "En savoir plus",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Fréquene de mise à jour de la luminosité",

@@ -999,8 +999,8 @@ ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)
 })
 
-ipcMain.on('get-update', (event, url) => {
-  getLatestUpdate(url)
+ipcMain.on('get-update', (event, version) => {
+  getLatestUpdate(version)
 })
 
 ipcMain.on('panel-height', (event, height) => {
@@ -1357,11 +1357,14 @@ function checkForUpdates() {
             releaseURL: (json[0].html_url),
             version: json[0].tag_name,
             downloadURL: json[0].assets[0]["browser_download_url"],
+            filesize: json[0].assets[0]["size"],
+            changelog: json[0].body,
             show: false
           }
           if ("v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
             latestVersion.show = true
           }
+          sendToAllWindows('latest-version', latestVersion)
         })
       });
     }
@@ -1371,9 +1374,9 @@ function checkForUpdates() {
 }
 
 
-function getLatestUpdate(url) {
+function getLatestUpdate(version) {
   try {
-    console.log("Downloading update from: " + url)
+    console.log("Downloading update from: " + version.downloadURL)
     const fs = require('fs');
     const fetch = require('node-fetch');
 
@@ -1386,7 +1389,7 @@ function getLatestUpdate(url) {
       }
     }
 
-    fetch(url)
+    fetch(version.downloadURL)
       .then(res => {
         console.log("Downloaded!")
         try {
@@ -1394,17 +1397,7 @@ function getLatestUpdate(url) {
           dest.on('finish', function () {
             console.log("Saved! Running...")
             setTimeout(() => {
-              try {
-                const { spawn } = require('child_process');
-                let process = spawn(updatePath, {
-                  detached: true,
-                  stdio: 'ignore'
-                });
-                process.unref()
-                app.quit()
-              } catch (e) {
-                console.log(e)
-              }
+              runUpdate(version.filesize)
             }, 1250)
           });
           res.body.pipe(dest);
@@ -1416,6 +1409,46 @@ function getLatestUpdate(url) {
     console.log(e)
   }
 }
+
+function runUpdate(expectedSize = false) {
+  
+  if(!fs.existsSync(updatePath)) {
+    console.log("Update file doesn't exist!")
+    latestVersion.show = false
+    sendToAllWindows('latest-version', latestVersion)
+    return false;
+  }
+  console.log("Expected size: " + expectedSize)
+  if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
+    console.log("Update is wrong file size!")
+    try {
+      fs.unlink(updatePath)
+      latestVersion.show = false
+      sendToAllWindows('latest-version', latestVersion)
+    } catch (e) {
+      console.log("Couldn't delete update file")
+    }
+    return false;
+  }
+
+  try {
+    const { spawn } = require('child_process');
+    let process = spawn(updatePath, {
+      detached: true,
+      stdio: 'ignore'
+    });
+    process.unref()
+    app.quit()
+  } catch (e) {
+    console.log(e)
+  }
+
+}
+
+ipcMain.on('check-for-updates', () => {
+  sendToAllWindows('latest-version', latestVersion)
+  checkForUpdates()
+})
 
 ipcMain.on('ignore-update', (event, dismissedUpdate) => {
   writeSettings({ dismissedUpdate })

@@ -105,18 +105,18 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages }); console.log(e.detail); T.setLocalizationData(e.detail.desired, e.detail.default) })
-
+        
         if (window.isAppX === false) {
-            fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
-                response.json().then((json) => {
-                    this.setState({
-                        releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : json[0].html_url),
-                        latest: json[0].tag_name,
-                        downloadURL: json[0].assets[0]["browser_download_url"],
-                        changelog: json[0].body
-                    })
+            window.addEventListener("updateUpdated", (e) => {
+                const version = e.detail
+                this.setState({
+                    releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : version.releaseURL),
+                    latest: version.version,
+                    downloadURL: version.downloadURL,
+                    changelog: version.changelog
                 })
-            });
+            })
+            window.checkForUpdates()
         }
 
     }
@@ -350,7 +350,7 @@ export default class SettingsWindow extends PureComponent {
         if (this.state.downloadingUpdate) {
             return (<p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(this.state.downloadURL); this.setState({ downloadingUpdate: true }) }}>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
         }
     }
 

@@ -57,9 +57,22 @@ function openURL(url) {
     ipc.send('open-url', url)
 }
 
-function getUpdate(url) {
-    ipc.send('get-update', url)
+function getUpdate() {
+    ipc.send('get-update', window.latestVersion)
+    ipc.send('clear-update', window.latestVersion.version)
 }
+
+function checkForUpdates() {
+    ipc.send('check-for-updates')
+}
+
+// New app update recieved
+ipc.on('latest-version', (event, version) => {
+    window.latestVersion = version
+    window.dispatchEvent(new CustomEvent('updateUpdated', {
+        detail: version
+    }))
+})
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
@@ -111,6 +124,7 @@ window.sendSettings = sendSettings
 window.requestSettings = requestSettings
 window.resetSettings = resetSettings
 window.getUpdate = getUpdate
+window.checkForUpdates = checkForUpdates
 window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()

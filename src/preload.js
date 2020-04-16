@@ -83,7 +83,7 @@ function turnOffDisplays() {
 }
 
 function installUpdate() {
-    ipc.send('get-update', window.latestVersion.downloadURL)
+    ipc.send('get-update', window.latestVersion)
     ipc.send('clear-update', window.latestVersion.version)
 }
 

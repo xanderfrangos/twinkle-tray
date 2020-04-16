@@ -641,46 +641,51 @@ refreshDDCCI = async () => {
 
       for (let monitor of ddcciMonitors) {
 
-        const ddcciInfo = {
-          name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
-          id: monitor,
-          num: local,
-          localID: local,
-          brightness: ddcci.getBrightness(monitor),
-          type: 'ddcci',
-          min: 0,
-          max: 100
-        }
-
-        const hwid = monitor.split("#")
-        if (monitors[hwid[2]] == undefined) {
-          monitors[hwid[2]] = {
+        try {
+          const ddcciInfo = {
+            name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
             id: monitor,
-            key: hwid[2],
-            num: false,
-            brightness: 50,
-            type: 'none',
+            num: local,
+            localID: local,
+            brightness: ddcci.getBrightness(monitor),
+            type: 'ddcci',
             min: 0,
-            max: 100,
-            hwid: false,
-            name: "Unknown Display",
-            serial: false
+            max: 100
           }
-        } else {
-          if (monitors[hwid[2]].name)
-            ddcciInfo.name = monitors[hwid[2]].name
+  
+          const hwid = monitor.split("#")
+          if (monitors[hwid[2]] == undefined) {
+            monitors[hwid[2]] = {
+              id: monitor,
+              key: hwid[2],
+              num: false,
+              brightness: 50,
+              type: 'none',
+              min: 0,
+              max: 100,
+              hwid: false,
+              name: "Unknown Display",
+              serial: false
+            }
+          } else {
+            if (monitors[hwid[2]].name)
+              ddcciInfo.name = monitors[hwid[2]].name
+          }
+  
+          ddcciList.push(ddcciInfo)
+          Object.assign(monitors[hwid[2]], ddcciInfo)
+  
+          local++
+        } catch (e) {
+          // Probably failed to get VCP code, which means the display is not compatible
+          // No need to yell about it...
         }
-
-        ddcciList.push(ddcciInfo)
-        Object.assign(monitors[hwid[2]], ddcciInfo)
-        resolve(ddcciList)
-
-        local++
       }
-    
+      resolve(ddcciList)
 
     } catch (e) {
-      // Probably failed to get VCP code, which means the display is not compatible
+      // ...but we should yell about this.
+      console.log(e)
       resolve(ddcciList)
     }
 

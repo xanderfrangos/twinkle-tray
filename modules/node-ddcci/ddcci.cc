@@ -94,7 +94,7 @@ void populateMonitorMap() {
                         if (monitorName == deviceName) {
                             monitorMap.insert({
                                 static_cast<std::string>(displayMonitor.DeviceID)
-                              , physicalMonitors[0].hPhysicalMonitor
+                              , physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)].hPhysicalMonitor
                             });
                         }
                     }

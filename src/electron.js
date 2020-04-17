@@ -352,6 +352,8 @@ function applyHotkeys() {
               let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
               updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
             }
+          } else if(hotkey.monitor == "turn_off_displays") {
+            sleepDisplays()
           } else {
             const monitor = monitors.find((m) => m.id == hotkey.monitor)
             if (monitor) {
@@ -890,6 +892,12 @@ function transitionBrightness(level, eventMonitors = []) {
   }, settings.updateInterval * 1)
 }
 
+function sleepDisplays() {
+  analyticsUsage.UsedSleep++
+  exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+ }
+
+
 
 //
 //
@@ -1018,7 +1026,7 @@ ipcMain.on('panel-hidden', () => {
   if (false && settings.killWhenIdle) mainWindow.close()
 })
 
-ipcMain.on('sleep-displays', () => { analyticsUsage.UsedSleep++ })
+ipcMain.on('sleep-displays', sleepDisplays)
 
 
 

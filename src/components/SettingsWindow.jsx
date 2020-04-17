@@ -570,8 +570,38 @@ export default class SettingsWindow extends PureComponent {
                     }} />
                     {this.getHotkeyStatusIcon(id, -1)}
                 </div>
+                { this.getSleepHotkey(id) }
             </div>
         )
+    }
+
+    getSleepHotkey = (id) => {
+        if(id == "all") {
+            return (<>
+                    <div className="title">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</div>
+                    <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey("turn_off_displays", 1)} type="text" readOnly={true} onKeyDown={
+                        (e) => {
+                            e.preventDefault()
+                            let key = cleanUpKeyboardKeys(e.key, e.keyCode)
+                            if (this.downKeys[key] === undefined) {
+                                this.downKeys[key] = true;
+                                this.updateHotkey("turn_off_displays", this.downKeys, 1);
+                            }
+                            return false
+                        }
+                    } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
+                        <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
+                            this.downKeys = {}
+                            delete this.state.hotkeys["turn_off_displays" + "__dir" + 1]
+                            window.sendSettings({ hotkeys: this.state.hotkeys })
+                            this.forceUpdate()
+                        }} />
+                        {this.getHotkeyStatusIcon("turn_off_displays", 1)}
+                    </div>
+            </>)
+        } else {
+            return (<></>)
+        }
     }
 
     getHotkeyStatusIcon = (id, direction) => {
@@ -632,12 +662,13 @@ export default class SettingsWindow extends PureComponent {
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
+                        <br />Internal name: <b>{monitor.hwid[1]}</b>
                         <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
                         <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
                         <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
                         <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
-                        <br />HWID: <b>{"\\\\?\\" + monitor.hwid.join("\\")}</b>
-                        <br />Internal name: <b>{monitor.hwid[1]}</b>
+                        <br />Key: <b>{monitor.key}</b>
+                        <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
                         <br />Serial Number: <b>{monitor.serial}</b></p>
                     </div>
                 )

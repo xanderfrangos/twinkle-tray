@@ -219,7 +219,11 @@ function readSettings() {
   } catch (e) {
     debug.error("Couldn't load settings", e)
   }
+
+  // Overrides
   settings.isDev = isDev
+  settings.killWhenIdle = false
+
   processSettings()
 }
 
@@ -256,7 +260,7 @@ function processSettings(newSettings = {}) {
     applyOrder()
     applyRemaps()
 
-    if (false && settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
+    if (settings.killWhenIdle && mainWindow && mainWindow.isAlwaysOnTop() === false) {
       mainWindow.close()
     }
 
@@ -1042,7 +1046,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   mainWindow.setAlwaysOnTop(false)
-  if (false && settings.killWhenIdle) mainWindow.close()
+  if (settings.killWhenIdle) mainWindow.close()
 })
 
 ipcMain.on('sleep-displays', sleepDisplays)
@@ -1189,7 +1193,7 @@ app.on('quit', () => {
   try {
     tray.destroy()
   } catch (e) {
-    
+
   }
 })
 

@@ -345,29 +345,39 @@ function applyHotkeys() {
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
         hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
-          analyticsUsage.UsedHotkeys++
-          if (hotkey.monitor === "all") {
-            for (let key in monitors) {
-              const monitor = monitors[key]
-              let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-              updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
-            }
-          } else if(hotkey.monitor == "turn_off_displays") {
-            sleepDisplays()
-          } else {
-            const monitor = monitors.find((m) => m.id == hotkey.monitor)
-            if (monitor) {
-              let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-              updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
-            }
-          }
+          doHotkey(hotkey)
         })
       } catch (e) {
-
+        // Couldn't register hotkey
       }
 
     }
     sendToAllWindows('settings-updated', settings)
+  }
+}
+
+const doHotkey = (hotkey) => {
+  try {
+    analyticsUsage.UsedHotkeys++
+    if (hotkey.monitor === "all") {
+      for (let key in monitors) {
+        const monitor = monitors[key]
+        let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+        updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+      }
+    } else if(hotkey.monitor == "turn_off_displays") {
+      sleepDisplays()
+    } else {
+      if(Object.keys(monitors).length) {
+        const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
+        if (monitor) {
+          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+          updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+        }
+      }
+    }
+  } catch (e) {
+    console.log("HOTKEY ERROR:", e)
   }
 }
 

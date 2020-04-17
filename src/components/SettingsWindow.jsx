@@ -298,7 +298,7 @@ export default class SettingsWindow extends PureComponent {
             },
             {
                 id: "debug",
-                label: " ",
+                label: "Debug",
                 icon: "&#xEBE8;",
                 type: "debug"
             }
@@ -919,7 +919,7 @@ export default class SettingsWindow extends PureComponent {
 
 
 
-                    <div className="pageSection" data-active={this.isSection("debug")}>
+                    <div className="pageSection debug" data-active={this.isSection("debug")}>
                         <div className="sectionTitle">All Displays</div>
                         <label>Every detected display (including those not compatible) is listed below.</label>
                         <br/>
@@ -929,7 +929,7 @@ export default class SettingsWindow extends PureComponent {
                         {this.getDebugMonitors()}
                     </div>
 
-                    <div className="pageSection" data-active={this.isSection("debug")}>
+                    <div className="pageSection debug" data-active={this.isSection("debug")}>
                         <div className="sectionTitle">Settings</div>
                         <label>These are your raw user settings.</label>
                         <p style={{whiteSpace:"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>

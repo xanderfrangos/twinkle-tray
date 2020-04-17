@@ -268,6 +268,9 @@ label {
     &[data-active="true"] {
         display: block;
     }
+    &.debug {
+        user-select: text;
+    }
 }
 
 .monitorItem {
@@ -443,11 +446,24 @@ a {
 
         &[data-type="debug"] {
             margin-top: auto;
+            .icon {
+                opacity: 0.1;
+            }
+            .label {
+                opacity: 0;
+            }
+            &[data-active="true"] {
+                .icon, .label {
+                    opacity: 1;
+                }
+            }
         }
         
         .icon {
             padding-right: 13px;
             font-size: 18px;
+            opacity: 1;
+            transition: opacity 0.2s;
         }
 
         .label {

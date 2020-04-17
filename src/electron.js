@@ -1401,7 +1401,7 @@ function checkForUpdates() {
 }
 
 
-function getLatestUpdate(version) {
+getLatestUpdate = async (version) => {
   try {
     console.log("Downloading update from: " + version.downloadURL)
     const fs = require('fs');
@@ -1416,49 +1416,52 @@ function getLatestUpdate(version) {
       }
     }
 
-    fetch(version.downloadURL)
-      .then(res => {
-        console.log("Downloaded!")
-        try {
-          const dest = fs.createWriteStream(updatePath);
-          dest.on('finish', function () {
-            console.log("Saved! Running...")
-            setTimeout(() => {
-              runUpdate(version.filesize)
-            }, 1250)
-          });
-          res.body.pipe(dest);
-        } catch (e) {
-          console.log("Couldn't write update file")
-        }
+    const update = await fetch(version.downloadURL)
+    await new Promise((resolve, reject) => {
+      console.log("Downloaded!")
+      const dest = fs.createWriteStream(updatePath);
+      update.body.pipe(dest);
+      update.body.on('error', (err) => {
+        reject(err)
+      })
+      update.body.on('finish', function () {
+        console.log("Saved! Running...")
+        setTimeout(() => {
+          runUpdate(version.filesize)
+        }, 1250)
+        resolve(true)
       });
+    })
+
   } catch (e) {
-    console.log(e)
+    console.log("Couldn't download update!", e)
+    latestVersion.show = true
+    sendToAllWindows('latest-version', latestVersion)
   }
 }
 
 function runUpdate(expectedSize = false) {
-  
-  if(!fs.existsSync(updatePath)) {
-    console.log("Update file doesn't exist!")
-    latestVersion.show = false
-    sendToAllWindows('latest-version', latestVersion)
-    return false;
-  }
-  console.log("Expected size: " + expectedSize)
-  if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
-    console.log("Update is wrong file size!")
-    try {
-      fs.unlink(updatePath)
-      latestVersion.show = false
-      sendToAllWindows('latest-version', latestVersion)
-    } catch (e) {
-      console.log("Couldn't delete update file")
-    }
-    return false;
-  }
-
   try {
+
+    if(!fs.existsSync(updatePath)) {
+      console.log("Update file doesn't exist!")
+      latestVersion.show = true
+      sendToAllWindows('latest-version', latestVersion)
+      return false;
+    }
+    console.log("Expected size: " + expectedSize)
+    if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
+      console.log("Update is wrong file size!")
+      try {
+        fs.unlink(updatePath)
+        latestVersion.show = true
+        sendToAllWindows('latest-version', latestVersion)
+      } catch (e) {
+        console.log("Couldn't delete update file")
+      }
+      return false;
+    }
+
     const { spawn } = require('child_process');
     let process = spawn(updatePath, {
       detached: true,

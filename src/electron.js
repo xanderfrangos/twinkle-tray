@@ -1036,6 +1036,7 @@ ipcMain.on('open-url', (event, url) => {
 })
 
 ipcMain.on('get-update', (event, version) => {
+  latestVersion.error = false
   getLatestUpdate(version)
 })
 
@@ -1466,7 +1467,7 @@ function runUpdate(expectedSize = false) {
       throw("Update file doesn't exist!")
     }
     console.log("Expected size: " + expectedSize)
-    if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
+    if(expectedSize && fs.statSync(updatePath).size != expectedSize - 1) {
       console.log("Update is wrong file size!")
       try {
         fs.unlinkSync(updatePath)
@@ -1493,6 +1494,7 @@ function runUpdate(expectedSize = false) {
 }
 
 ipcMain.on('check-for-updates', () => {
+  latestVersion.error = false
   sendToAllWindows('latest-version', latestVersion)
   checkForUpdates()
 })

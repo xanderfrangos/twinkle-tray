@@ -356,7 +356,7 @@ export default class SettingsWindow extends PureComponent {
         if (this.state.downloadingUpdate) {
             return (<p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span class="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
         }
     }
 

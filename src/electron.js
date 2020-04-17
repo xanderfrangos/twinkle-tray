@@ -1467,7 +1467,7 @@ function runUpdate(expectedSize = false) {
       throw("Update file doesn't exist!")
     }
     console.log("Expected size: " + expectedSize)
-    if(expectedSize && fs.statSync(updatePath).size != expectedSize - 1) {
+    if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
       console.log("Update is wrong file size!")
       try {
         fs.unlinkSync(updatePath)

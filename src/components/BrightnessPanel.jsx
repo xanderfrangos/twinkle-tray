@@ -125,6 +125,9 @@ export default class BrightnessPanel extends PureComponent {
     this.setState({
       monitors: this.updateMinMax(newMonitors)
     })
+
+    // Delay initial adjustments
+    if(!this.init) setTimeout( () => { this.init = true }, 333)
   }
 
 
@@ -218,7 +221,7 @@ export default class BrightnessPanel extends PureComponent {
   // Send new brightness to monitors, if changed
   syncBrightness = () => {
     const monitors = this.state.monitors
-    if (this.levelsChanged && (window.showPanel || this.doBackgroundEvent) && this.numMonitors) {
+    if (this.init && this.levelsChanged && (window.showPanel || this.doBackgroundEvent) && this.numMonitors) {
       this.doBackgroundEvent = false
       this.levelsChanged = false
 
@@ -250,6 +253,7 @@ export default class BrightnessPanel extends PureComponent {
     this.levelsChanged = false
     this.numMonitors = 0
     this.panelHeight = -1
+    this.init = false
   }
 
   componentDidMount() {

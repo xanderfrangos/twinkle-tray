@@ -187,7 +187,7 @@ const defaultSettings = {
   userClosedIntro: false,
   theme: "default",
   updateInterval: 500,
-  openAtLogin: false,
+  openAtLogin: true,
   killWhenIdle: false,
   remaps: {},
   hotkeys: {},

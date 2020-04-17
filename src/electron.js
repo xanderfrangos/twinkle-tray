@@ -1183,11 +1183,15 @@ app.on("activate", () => {
     //createPanel(true);
   }
 
-  app.on('quit', () => {
-    tray.destroy()
-  })
-
 });
+
+app.on('quit', () => {
+  try {
+    tray.destroy()
+  } catch (e) {
+    
+  }
+})
 
 
 

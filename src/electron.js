@@ -1340,7 +1340,11 @@ function createSettings() {
   settingsWindow.on("closed", () => (settingsWindow = null));
 
   settingsWindow.once('ready-to-show', () => {
-    settingsWindow.show()
+    
+    // Show after a very short delay to avoid visual bugs
+    setTimeout(() => {
+      settingsWindow.show()
+    }, 100)
 
     // Prevent links from opening in Electron
     settingsWindow.webContents.on('will-navigate', (e, url) => {

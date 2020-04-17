@@ -1429,9 +1429,9 @@ getLatestUpdate = async (version) => {
     // Remove old update
     if (fs.existsSync(updatePath)) {
       try {
-        fs.unlink(updatePath)
+        fs.unlinkSync(updatePath)
       } catch (e) {
-        console.log("Couldn't delete update file")
+        console.log("Couldn't delete old update file")
       }
     }
 
@@ -1463,22 +1463,17 @@ function runUpdate(expectedSize = false) {
   try {
 
     if(!fs.existsSync(updatePath)) {
-      console.log("Update file doesn't exist!")
-      latestVersion.show = true
-      sendToAllWindows('latest-version', latestVersion)
-      return false;
+      throw("Update file doesn't exist!")
     }
     console.log("Expected size: " + expectedSize)
     if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
       console.log("Update is wrong file size!")
       try {
-        fs.unlink(updatePath)
-        latestVersion.show = true
-        sendToAllWindows('latest-version', latestVersion)
+        fs.unlinkSync(updatePath)
       } catch (e) {
-        console.log("Couldn't delete update file")
+        throw("Couldn't delete update file")
       }
-      return false;
+      throw("Atempted to delete update file")
     }
 
     const { spawn } = require('child_process');
@@ -1490,6 +1485,9 @@ function runUpdate(expectedSize = false) {
     app.quit()
   } catch (e) {
     console.log(e)
+    latestVersion.show = true
+    latestVersion.error = true
+    sendToAllWindows('latest-version', latestVersion)
   }
 
 }

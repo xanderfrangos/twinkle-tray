@@ -113,8 +113,14 @@ export default class SettingsWindow extends PureComponent {
                     releaseURL: (window.isAppX ? "ms-windows-store://pdp/?productid=9PLJWWSV01LK" : version.releaseURL),
                     latest: version.version,
                     downloadURL: version.downloadURL,
-                    changelog: version.changelog
+                    changelog: version.changelog,
+                    error: (version.error != undefined ? version.error : false)
                 })
+                if(e.detail.error == true) {
+                    this.setState({
+                        downloadingUpdate: false
+                    })
+                }
             })
             window.checkForUpdates()
         }

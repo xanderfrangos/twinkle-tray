@@ -616,8 +616,8 @@ refreshMonitors = async (fullRefresh = false) => {
   console.log("\x1b[34m-------------- Refresh Monitors -------------- \x1b[0m")
 
   const startTime = process.hrtime()
-  const namesPromise = refreshNames()
   const wmiPromise = refreshWMI()
+  const namesPromise = refreshNames()
   const ddcciPromise = refreshDDCCI()
 
   namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })

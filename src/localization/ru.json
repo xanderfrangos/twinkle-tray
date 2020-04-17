@@ -52,9 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Сброс настроек",
     "SETTINGS_GENERAL_RESET_DESC": "Если по какой-то причине вам необходимо очистить настройки, нажмите на эту кнопку.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Сбросить настройки",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
-    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Включить аналитику",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Отправлять данные об использовании, чтобы помочь улучшить Twinkle Tray. Личная информация не отправляется. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Подробнее",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Частота обновления яркости",

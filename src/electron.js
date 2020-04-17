@@ -43,7 +43,7 @@ const debug = {
   error: log
 }
 
-
+if(!isDev) console.log = () => {};
 
 // Analytics
 

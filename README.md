@@ -43,7 +43,6 @@ If you wish to run a development build of Twinkly Tray:
 
 - Download or clone.
 - Run *npm install*.
-- Run *npm run build* to build the native modules.
 - Run *npm run parcel* and *npm start* (both must run at the same time).
 
 ## License

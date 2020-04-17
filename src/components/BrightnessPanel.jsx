@@ -113,20 +113,18 @@ export default class BrightnessPanel extends PureComponent {
 
   // Update monitor info
   recievedMonitors = (e) => {
-    if (Object.keys(this.state.monitors).length > 0 || Object.keys(e.detail).length > 0) {
-      let newMonitors = Object.assign(e.detail, {})
-      this.lastLevels = []
-      let numMonitors = 0
-      for (let key in newMonitors) {
-        if (newMonitors[key].type != "none") numMonitors++;
-      }
-      this.numMonitors = numMonitors
-      // Reset panel height so it's recalculated
-      this.panelHeight = -1
-      this.setState({
-        monitors: newMonitors
-      })
+    let newMonitors = Object.assign(e.detail, {})
+    this.lastLevels = []
+    let numMonitors = 0
+    for (let key in newMonitors) {
+      if (newMonitors[key].type != "none") numMonitors++;
     }
+    this.numMonitors = numMonitors
+    // Reset panel height so it's recalculated
+    this.panelHeight = -1
+    this.setState({
+      monitors: newMonitors
+    })
   }
 
 

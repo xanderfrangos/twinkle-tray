@@ -939,7 +939,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionTitle">Other</div>
                         <br/>
                         <p>
-                            <a className="button" onClick={() => { window.sendSettings({ isDev: true }) }}>Enable Dev Mode</a>
+                            <a className="button" onClick={() => { window.sendSettings({ isDev: !this.state.rawSettings.isDev }) }}>Toggle Dev Mode ({(this.state.rawSettings && this.state.rawSettings.isDev !== undefined ? this.state.rawSettings.isDev.toString() : "?")})</a>
                         </p>
                     </div>
 

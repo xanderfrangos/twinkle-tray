@@ -123,15 +123,15 @@ export default class BrightnessPanel extends PureComponent {
     // Reset panel height so it's recalculated
     this.panelHeight = -1
     this.setState({
-      monitors: newMonitors
+      monitors: this.updateMinMax(newMonitors)
     })
   }
 
 
-  updateMinMax = () => {
+  updateMinMax = (inMonitors = false) => {
     if (this.numMonitors > 0) {
 
-      let newMonitors = Object.assign(this.state.monitors, {})
+      let newMonitors = Object.assign((inMonitors ? inMonitors : this.state.monitors), {})
 
       for (let key in newMonitors) {
         for (let remap in this.state.remaps) {
@@ -144,11 +144,16 @@ export default class BrightnessPanel extends PureComponent {
 
       this.levelsChanged = true
 
-      this.setState({
-        monitors: newMonitors
-      }, () => {
-        this.doBackgroundEvent = true
-      })
+      if(inMonitors) {
+        return inMonitors
+      } else {
+        this.setState({
+          monitors: newMonitors
+        }, () => {
+          this.doBackgroundEvent = true
+        })
+      }
+
     }
   }
 

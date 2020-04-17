@@ -352,11 +352,14 @@ a {
 
 
 .reorderList {
-    max-width: 320px;
+    max-width: 360px;
     border: 1px solid var(--window-border);
     .sectionSubtitle {
         padding: 15px;
         margin: 0;
+    }
+    .no-displays-message {
+        margin: 10px 12px -10px 12px;
     }
 }
 

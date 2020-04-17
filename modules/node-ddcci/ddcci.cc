@@ -1,121 +1,163 @@
 #include <napi.h>
 
-#include "windows.h"
-#include "winuser.h"
-#include "PhysicalMonitorEnumerationAPI.h"
 #include "HighLevelMonitorConfigurationAPI.h"
 #include "LowLevelMonitorConfigurationAPI.h"
+#include "PhysicalMonitorEnumerationAPI.h"
+#include "windows.h"
+#include "winuser.h"
 
-#include <vector>
-#include <map>
 #include <iostream>
+#include <map>
 #include <sstream>
+#include <vector>
 
 
-BOOL CALLBACK monitorEnumProc (
-        HMONITOR hMonitor
-      , HDC hdcMonitor
-      , LPRECT lprcMonitor
-      , LPARAM dwData)
+std::map<std::string, HANDLE> handles;
+
+void
+populateHandlesMap()
 {
-    // Get vector from dwData
-    std::vector<HMONITOR>* monitorList =
-            reinterpret_cast<std::vector<HMONITOR>*>(dwData);
-
-    // Insert monitor handle into vector
-    monitorList->push_back(hMonitor);
-
-    return TRUE;
-}
-
-
-std::map<std::string, HANDLE> monitorMap;
-
-void populateMonitorMap() {
-    if (!monitorMap.empty()) {
-        for (auto const& monitor : monitorMap) {
-            DestroyPhysicalMonitor(monitor.second);
+    // Cleanup
+    if (!handles.empty()) {
+        for (auto const& handle : handles) {
+            DestroyPhysicalMonitor(handle.second);
         }
-        monitorMap.clear();
+        handles.clear();
     }
 
-    std::vector<HMONITOR> monitorHandles;
-    EnumDisplayMonitors(NULL, NULL, &monitorEnumProc
-          , reinterpret_cast<LPARAM>(&monitorHandles));
 
-    DISPLAY_DEVICE displayAdapter;
-    displayAdapter.cb = sizeof(DISPLAY_DEVICE);
+    struct Monitor {
+        HMONITOR handle;
+        std::vector<HANDLE> physicalHandles;
+    };
 
-    DWORD adapterIndex = 0; 
-    while (EnumDisplayDevices(0, adapterIndex, &displayAdapter, 0)) {
-        DISPLAY_DEVICE displayMonitor;
-        displayMonitor.cb = sizeof(DISPLAY_DEVICE);
+    auto monitorEnumProc = [](HMONITOR hMonitor,
+                              HDC hdcMonitor,
+                              LPRECT lprcMonitor,
+                              LPARAM dwData) -> BOOL {
+        auto monitors = reinterpret_cast<std::vector<struct Monitor>*>(dwData);
+        monitors->push_back({ hMonitor, {} });
+        return TRUE;
+    };
 
-        DWORD monitorIndex = 0;
-        while (EnumDisplayDevices(displayAdapter.DeviceName, monitorIndex
-              , &displayMonitor, EDD_GET_DEVICE_INTERFACE_NAME)) {
-            if (!(displayMonitor.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) && (displayMonitor.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) && (displayMonitor.StateFlags & DISPLAY_DEVICE_ACTIVE)) {
+    std::vector<struct Monitor> monitors;
+    EnumDisplayMonitors(
+      NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
 
-                for (auto const& handle : monitorHandles) {
-                    MONITORINFOEX monitorInfo;
-                    monitorInfo.cbSize = sizeof(MONITORINFOEX);
-                    GetMonitorInfo(handle, &monitorInfo);
+    // Get physical monitor handles
+    for (auto& monitor : monitors) {
+        DWORD numPhysicalMonitors;
+        LPPHYSICAL_MONITOR physicalMonitors = NULL;
+        if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
+                                                     &numPhysicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitor count.");
+            exit(EXIT_FAILURE);
+        }
 
-                    DWORD numPhysicalMonitors;
-                    LPPHYSICAL_MONITOR physicalMonitors = NULL;
+        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
+        if (physicalMonitors == NULL) {
+            throw std::runtime_error(
+              "Failed to allocate physical monitor array");
+        }
 
-                    if (!GetNumberOfPhysicalMonitorsFromHMONITOR(handle
-                          , &numPhysicalMonitors)) {
-                        throw std::runtime_error("Failed to get number of physical monitors");
-                        break;
-                    }
+        if (!GetPhysicalMonitorsFromHMONITOR(
+              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitors.");
+        }
 
-                    physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
-                    if (physicalMonitors == NULL) {
-                        throw std::runtime_error("Failed to allocate monitor array");
-                        break;
-                    }
+        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
+            monitor.physicalHandles.push_back(
+              physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)].hPhysicalMonitor);
+        }
 
-                    if (!GetPhysicalMonitorsFromHMONITOR(
-                            handle, numPhysicalMonitors, physicalMonitors)) {
-                        throw std::runtime_error("Failed to get physical monitors");
-                        break;
-                    }
+        delete[] physicalMonitors;
+    }
 
-                    for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
-                        std::string monitorName =
-                                static_cast<std::string>(monitorInfo.szDevice)
-                              + "\\Monitor"
-                              + std::to_string(i);
 
-                        std::string deviceName =
-                                static_cast<std::string>(displayMonitor.DeviceName);
+    DISPLAY_DEVICE adapterDev;
+    adapterDev.cb = sizeof(DISPLAY_DEVICE);
 
-                        if (monitorName == deviceName) {
-                            monitorMap.insert({
-                                static_cast<std::string>(displayMonitor.DeviceID)
-                              , physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)].hPhysicalMonitor
-                            });
-                        }
-                    }
+    // Loop through adapters
+    int adapterDevIndex = 0;
+    while (EnumDisplayDevices(NULL, adapterDevIndex++, &adapterDev, 0)) {
+        DISPLAY_DEVICE displayDev;
+        displayDev.cb = sizeof(DISPLAY_DEVICE);
 
-                    delete[] physicalMonitors;
-                }
+        // Loop through displays (with device ID) on each adapter
+        int displayDevIndex = 0;
+        while (EnumDisplayDevices(adapterDev.DeviceName,
+                                  displayDevIndex++,
+                                  &displayDev,
+                                  EDD_GET_DEVICE_INTERFACE_NAME)) {
+
+            // Check valid target
+            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+                || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
+                continue;
             }
 
-            monitorIndex++;
-        }
+            for (auto const& monitor : monitors) {
+                MONITORINFOEX monitorInfo;
+                monitorInfo.cbSize = sizeof(MONITORINFOEX);
+                GetMonitorInfo(monitor.handle, &monitorInfo);
 
-        adapterIndex++; 
+                for (size_t i = 0; i < monitor.physicalHandles.size(); i++) {
+                    /**
+                     * Re-create DISPLAY_DEVICE.DeviceName with
+                     * MONITORINFOEX.szDevice and monitor index.
+                     */
+                    std::string monitorName =
+                      static_cast<std::string>(monitorInfo.szDevice)
+                      + "\\Monitor" + std::to_string(i);
+
+                    std::string deviceName =
+                      static_cast<std::string>(displayDev.DeviceName);
+
+                    // Match and store against device ID
+                    if (monitorName == deviceName) {
+                        handles.insert(
+                          { static_cast<std::string>(displayDev.DeviceID),
+                            monitor.physicalHandles[i] });
+
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
-Napi::Value refresh(const Napi::CallbackInfo& info)
+
+std::string
+getLastErrorString()
+{
+    DWORD errorCode = GetLastError();
+    if (!errorCode) {
+        return std::string();
+    }
+
+    LPSTR buf = NULL;
+    DWORD size =
+      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
+                      | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,
+                    errorCode,
+                    LANG_SYSTEM_DEFAULT,
+                    (LPSTR)&buf,
+                    0,
+                    NULL);
+
+    std::string message(buf, size);
+    return message;
+}
+
+Napi::Value
+refresh(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
 
     try {
-        populateMonitorMap();
+        populateHandlesMap();
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }
@@ -124,23 +166,24 @@ Napi::Value refresh(const Napi::CallbackInfo& info)
 }
 
 
-Napi::Array getMonitorList(const Napi::CallbackInfo& info)
+Napi::Array
+getMonitorList(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
-    Napi::Array ret = Napi::Array::New(env, monitorMap.size());
+    Napi::Array ret = Napi::Array::New(env, handles.size());
 
     int i = 0;
-    for (auto const& monitor : monitorMap) {
-        ret.Set(i++, monitor.first);
+    for (auto const& handle : handles) {
+        ret.Set(i++, handle.first);
     }
 
     return ret;
 }
 
 
-Napi::Value setVCP(const Napi::CallbackInfo& info)
+Napi::Value
+setVCP(const Napi::CallbackInfo& info)
 {
-
     Napi::Env env = info.Env();
 
     if (info.Length() < 3) {
@@ -152,21 +195,25 @@ Napi::Value setVCP(const Napi::CallbackInfo& info)
 
     std::string monitorName = info[0].As<Napi::String>().Utf8Value();
     BYTE vcpCode = static_cast<BYTE>(info[1].As<Napi::Number>().Int32Value());
-    DWORD newValue = static_cast<DWORD>(info[2].As<Napi::Number>().Int32Value());
+    DWORD newValue =
+      static_cast<DWORD>(info[2].As<Napi::Number>().Int32Value());
 
-    auto it = monitorMap.find(monitorName);
-    if (it == monitorMap.end()) {
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
         throw Napi::Error::New(env, "Monitor not found");
     }
 
     if (!SetVCPFeature(it->second, vcpCode, newValue)) {
-        throw Napi::Error::New(env, "Failed to set VCP code value");
+        throw Napi::Error::New(env,
+                               std::string("Failed to set VCP code value\n")
+                                 + getLastErrorString());
     }
 
     return env.Undefined();
 }
 
-Napi::Value getVCP(const Napi::CallbackInfo& info)
+Napi::Value
+getVCP(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
 
@@ -180,33 +227,33 @@ Napi::Value getVCP(const Napi::CallbackInfo& info)
     std::string monitorName = info[0].As<Napi::String>().Utf8Value();
     BYTE vcpCode = static_cast<BYTE>(info[1].As<Napi::Number>().Int32Value());
 
-    auto it = monitorMap.find(monitorName);
-    if (it == monitorMap.end()) {
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
         throw Napi::Error::New(env, "Monitor not found");
     }
 
     DWORD currentValue;
     if (!GetVCPFeatureAndVCPFeatureReply(
-            it->second, vcpCode, NULL, &currentValue, NULL)) {
-        throw Napi::Error::New(env, "Failed to get VCP code value");
+          it->second, vcpCode, NULL, &currentValue, NULL)) {
+        throw Napi::Error::New(env,
+                               std::string("Failed to get VCP code value\n")
+                                 + getLastErrorString());
     }
 
     return Napi::Number::New(env, static_cast<double>(currentValue));
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports)
+Napi::Object
+Init(Napi::Env env, Napi::Object exports)
 {
-    exports.Set("getMonitorList", Napi::Function::New(env
-          , getMonitorList, "getMonitorList"));
-    exports.Set("refresh", Napi::Function::New(env
-          , refresh, "refresh"));
-    exports.Set("setVCP", Napi::Function::New(env
-          , setVCP, "setVCP"));
-    exports.Set("getVCP", Napi::Function::New(env
-          , getVCP, "getVCP"));
+    exports.Set("getMonitorList",
+                Napi::Function::New(env, getMonitorList, "getMonitorList"));
+    exports.Set("refresh", Napi::Function::New(env, refresh, "refresh"));
+    exports.Set("setVCP", Napi::Function::New(env, setVCP, "setVCP"));
+    exports.Set("getVCP", Napi::Function::New(env, getVCP, "getVCP"));
 
     try {
-        populateMonitorMap();
+        populateHandlesMap();
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }

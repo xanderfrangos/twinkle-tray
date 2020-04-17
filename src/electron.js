@@ -333,6 +333,13 @@ function processSettings(newSettings = {}) {
       }
     }
 
+    if(mainWindow && newSettings.isDev !== undefined) {
+      mainWindow.close()
+      setTimeout(() => {
+        createPanel()
+      }, 333)
+    }
+
   } catch (e) {
     console.log("Couldn't process settings!", e)
   }
@@ -1066,7 +1073,8 @@ function createPanel(toggleOnLoad = false) {
     maximizable: false,
     minimizable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      devTools: settings.isDev
     }
   });
 
@@ -1329,7 +1337,8 @@ function createSettings() {
     icon: './src/assets/logo.ico',
     backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
-      preload: path.join(__dirname, 'settings-preload.js')
+      preload: path.join(__dirname, 'settings-preload.js'),
+      devTools: settings.isDev
     }
   });
 

@@ -52,9 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Restablecer ajustes",
     "SETTINGS_GENERAL_RESET_DESC": "Si por alguna razón necesita borrar sus ajustes, pulse este botón.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Restablecer ajustes",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
-    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Habilitar analíticas",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Enviar datos de uso para ayudar a mejorar Twinkle Tray. No se enviará información personal. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Saber más",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Frecuencia de actualización del brillo",

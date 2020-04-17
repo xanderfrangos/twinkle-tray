@@ -80,7 +80,7 @@ export default class Slider extends Component {
                         <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} onWheel={this.handleWheel} className="range" />
                         <div className="progress" style={this.progressStyle()}></div>
                     </div>
-                    <input type="number" min={min} max={max} value={level} onChange={this.handleChange} onWheel={this.handleWheel} className="val" />
+                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} onWheel={this.handleWheel} className="val" />
                 </div>
             </div>
         );

@@ -41,7 +41,7 @@
     },
     "files": [
       "src/electron.js",
-      "src/preload.js",
+      "src/panel-preload.js",
       "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",

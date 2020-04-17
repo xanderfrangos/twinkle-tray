@@ -1078,7 +1078,7 @@ function createPanel(toggleOnLoad = false) {
     maximizable: false,
     minimizable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev
     }
   });

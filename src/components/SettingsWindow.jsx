@@ -781,9 +781,11 @@ export default class SettingsWindow extends PureComponent {
                 <div id="page">
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
-                        <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
-                        <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
-                        <br /><br />
+                        <div style={ { display: (window.isAppX ? "none" : "block")} }>
+                            <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
+                            <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
+                            <br /><br />
+                        </div>
                         <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
                         <select value={window.settings.theme} onChange={this.themeChanged}>
                             <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>

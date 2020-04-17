@@ -2,6 +2,8 @@ const { ipcRenderer: ipc, remote } = require('electron');
 const { exec } = require('child_process')
 let browser = remote.getCurrentWindow()
 
+const log = console.log
+
 // Show or hide the brightness panel
 function setPanelVisibility(visible) {
     window.showPanel = visible
@@ -135,6 +137,11 @@ ipc.on('taskbar', (event, taskbar) => {
 
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
+    if(settings.isDev == false) {
+        console.log = () => {}
+    } else {
+        console.log = log
+    }
     window.settings = settings
     window.dispatchEvent(new CustomEvent('settingsUpdated', {
         detail: settings

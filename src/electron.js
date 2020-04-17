@@ -184,6 +184,7 @@ if (!fs.existsSync(app.getPath("appData"))) {
 const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
 
 const defaultSettings = {
+  isDev,
   userClosedIntro: false,
   theme: "default",
   updateInterval: 500,
@@ -218,6 +219,7 @@ function readSettings() {
   } catch (e) {
     debug.error("Couldn't load settings", e)
   }
+  settings.isDev = isDev
   processSettings()
 }
 

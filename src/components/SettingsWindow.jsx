@@ -935,7 +935,13 @@ export default class SettingsWindow extends PureComponent {
                         <p style={{whiteSpace:"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
                     </div>
 
-
+                    <div className="pageSection debug" data-active={this.isSection("debug")}>
+                        <div className="sectionTitle">Other</div>
+                        <br/>
+                        <p>
+                            <a className="button" onClick={() => { window.sendSettings({ isDev: true }) }}>Enable Dev Mode</a>
+                        </p>
+                    </div>
 
                 </div>
             </div>

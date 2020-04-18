@@ -1,6 +1,5 @@
 {
     "LANGUAGE": "Russian",
-
     "GENERIC_OK": "ОК",
     "GENERIC_CANCEL": "Отмена",
     "GENERIC_SAVE": "Сохранить",
@@ -12,35 +11,25 @@
     "GENERIC_SETTINGS": "Настройки",
     "GENERIC_INSTALL": "Установить",
     "GENERIC_DISMISS": "Отклонить",
-    "GENERIC_DISPLAY_SINGLE": "Дисплей", 
+    "GENERIC_DISPLAY_SINGLE": "Дисплей",
     "GENERIC_ALL_DISPLAYS": "Все дисплеи",
     "GENERIC_MINIMUM": "Мин",
     "GENERIC_MAXIMUM": "Макс",
     "GENERIC_NO_DISPLAYS": "Дисплеи не обнаружены. Пожалуйста, подключите дисплей к ПК.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "Совместимых дисплеев не найдено. Пожалуйста, проверьте, что \"DDC/CI\" включен для ваших дисплеев.",
     "GENERIC_NO_DISPLAYS_SHORT": "Совместимых дисплеев не обнаружено.",
-
-
     "PANEL_TITLE": "Регулировка яркости",
     "PANEL_UPDATE_AVAILABLE": "Доступно обновление",
     "PANEL_BUTTON_LINK_LEVELS": "Link levels",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Выключить дисплеи",
-
-
     "INTRO_TITLE": "Добро пожаловать в Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "Значок Twinkle Tray в панели задач вероятно скрыт, поэтому вы должны переместить его в то место, где можно легко получить к нему доступ. Инструкции см. ниже.",
-
-
     "SETTINGS_TITLE": "Настройки Twinkle Tray",
-
-
     "SETTINGS_SIDEBAR_GENERAL": "Общие",
     "SETTINGS_SIDEBAR_MONITORS": "Настройки монитора",
     "SETTINGS_SIDEBAR_TIME": "Корректировки времени",
     "SETTINGS_SIDEBAR_HOTKEYS": "Сочетание клавиш",
     "SETTINGS_SIDEBAR_UPDATES": "Обновления",
-
-
     "SETTINGS_GENERAL_TITLE": "Общие",
     "SETTINGS_GENERAL_STARTUP": "Запускать при запуске системы",
     "SETTINGS_GENERAL_THEME_TITLE": "Тема приложения",
@@ -55,11 +44,9 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Включить аналитику",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Отправлять данные об использовании, чтобы помочь улучшить Twinkle Tray. Личная информация не отправляется. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Подробнее",
-
-
     "SETTINGS_MONITORS_RATE_TITLE": "Частота обновления яркости",
     "SETTINGS_MONITORS_RATE_DESC": "Как часто яркость будет обновляться на ваших дисплеях, когда вы регулируете их значения. Увеличьте время, если ваши дисплеи мерцают.",
-    "SETTINGS_MONITORS_RATE_0": "Ludicrous",
+    "SETTINGS_MONITORS_RATE_0": "Мгновенно",
     "SETTINGS_MONITORS_RATE_1": "Быстро (250 мс)",
     "SETTINGS_MONITORS_RATE_2": "Нормально (500 мс)",
     "SETTINGS_MONITORS_RATE_3": "Медленно (1 секунда)",
@@ -70,19 +57,15 @@
     "SETTINGS_MONITORS_REORDER_TITLE": "Упорядочивание мониторов",
     "SETTINGS_MONITORS_REORDER_DESC": "Измените порядок отображения мониторов в панели задач. Нажмите и перетащите, чтобы внести изменения.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Нормализация яркости",
-    "SETTINGS_MONITORS_NORMALIZE_DESC": "Мониторы часто имеют различные диапазоны яркости. Ограничение минимального/максимального значение яркости каждого дисплея обеспечивает более равномерный уровень яркости между дисплеями. Аналогичные мониторы будут использовать те же настройки",
-
-
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Мониторы часто имеют различные диапазоны яркости. Ограничение минимального/максимального значение яркости каждого дисплея обеспечивает более равномерный уровень яркости между дисплеями. Аналогичные мониторы будут использовать те же настройки.",
     "SETTINGS_TIME_TITLE": "Корректировка времени суток",
-    "SETTINGS_TIME_DESC": "Автоматически устанавливать мониторы на определенный уровень яркости в нужное время. Все мониторы будут установлены на одинаковые, нормализованные уровни",
+    "SETTINGS_TIME_DESC": "Автоматически устанавливать мониторы на определенный уровень яркости в нужное время. Все мониторы будут установлены на одинаковые, нормализованные уровни.",
     "SETTINGS_TIME_ADD": "Добавить время",
     "SETTINGS_TIME_REMOVE": "Удалить время",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Настройка яркости для отдельных дисплеев",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Настройте яркость для каждого дисплея, а не для всех дисплеев сразу.",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Настройте яркость для каждого дисплея, а не для всех дисплеев сразу",
     "SETTINGS_TIME_STARTUP_TITLE": "Проверка при запуске приложения",
     "SETTINGS_TIME_STARTUP_DESC": "Adjust the brightness to match the most relevant time when Twinkle Tray starts.",
-
-
     "SETTINGS_HOTKEYS_TITLE": "Сочетание клавиш",
     "SETTINGS_HOTKEYS_DESC": "Настройка сочетания клавиш для регулировки яркости одного или всех дисплеев.",
     "SETTINGS_HOTKEYS_ADD": "Добавить сочетание клавиш",
@@ -92,8 +75,6 @@
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Нажмите клавиши здесь",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Регулировка уровня яркости",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "Насколько яркость должна регулироваться при использовании горячих клавиш.",
-
-
     "SETTINGS_UPDATES_TITLE": "Обновления",
     "SETTINGS_UPDATES_VERSION": "Ваша версия Twinkle Tray {{1}}.",
     "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Автоматическая проверка наличия обновлений",
@@ -101,7 +82,6 @@
     "SETTINGS_UPDATES_MS_STORE": "Чтобы проверить наличие обновлений, посетите Microsoft Store.",
     "SETTINGS_UPDATES_AVAILABLE": "Доступно обновление для Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "В настоящее время нет доступных обновлений. Эта версия Twinkle Tray включает в себя следующие изменения:",
-    "SETTINGS_UPDATES_DOWNLOADING": "Загрузка обновлений...",
+    "SETTINGS_UPDATES_DOWNLOADING": "Загрузка обновлений…",
     "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}"
-    
 }

@@ -473,7 +473,7 @@ function getLocalization() {
 
   // Get default localization file
   try {
-    const defaultFile = fs.readFileSync(path.join(__dirname, `/localization/default.json`))
+    const defaultFile = fs.readFileSync(path.join(__dirname, `/localization/en.json`))
     localization.default = JSON.parse(defaultFile)
   } catch (e) {
     console.error("Couldn't read default langauge file!")

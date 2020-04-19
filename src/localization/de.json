@@ -52,9 +52,9 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Einstellungen zurücksetzen",
     "SETTINGS_GENERAL_RESET_DESC": "Falls Sie die Einstellungen zurücksetzen möchten, klicken Sie hier.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Einstellungen zurücksetzen",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
-    "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analyse zur Nutzung aktivieren",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Nutzerdaten an Twinkle Tray senden, um Twinkle Tray zu verbessern. Es werden keine persönlichen Daten versendet. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "Mehr erfahren",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Helligkeitsaktualisierungsintervall",

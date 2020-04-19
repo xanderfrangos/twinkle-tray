@@ -1,6 +1,5 @@
 {
     "LANGUAGE": "Italiano",
-
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "Annulla",
     "GENERIC_SAVE": "Salva",
@@ -12,35 +11,25 @@
     "GENERIC_SETTINGS": "Impostazioni",
     "GENERIC_INSTALL": "Installa",
     "GENERIC_DISMISS": "Cancella",
-    "GENERIC_DISPLAY_SINGLE": "Schermo", 
+    "GENERIC_DISPLAY_SINGLE": "Schermo",
     "GENERIC_ALL_DISPLAYS": "Tutti gli schermi",
     "GENERIC_MINIMUM": "Min",
     "GENERIC_MAXIMUM": "Max",
     "GENERIC_NO_DISPLAYS": "Nessuno schermo rilevato. Collega uno schermo al tuo PC.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "Nessuno schermo compatibile rilevato. Controlla che il \"DDC/CI\" sia abilitato per i tuoi schermi.",
     "GENERIC_NO_DISPLAYS_SHORT": "Nessuno schermo compatibile rilevato.",
-
-
     "PANEL_TITLE": "Cambia Luminosità",
     "PANEL_UPDATE_AVAILABLE": "È disponibile un aggiornamento",
     "PANEL_BUTTON_LINK_LEVELS": "Collega livelli",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Spegni gli schermi",
-
-
     "INTRO_TITLE": "Benvenuto in Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "L'icona di Twinkle Tray è probabilmente nascosta, quindi dovresti spostarla da qualche parte per accedervi facilmente. Guarda qui sotto per le istruzioni.",
-
-
     "SETTINGS_TITLE": "Impostazioni di Twinkle Tray",
-
-
     "SETTINGS_SIDEBAR_GENERAL": "Generale",
     "SETTINGS_SIDEBAR_MONITORS": "Impostazioni Schermi",
     "SETTINGS_SIDEBAR_TIME": "Pianificazione Oraria",
     "SETTINGS_SIDEBAR_HOTKEYS": "Tasti di Scelta Rapida",
     "SETTINGS_SIDEBAR_UPDATES": "Aggiornamenti",
-
-
     "SETTINGS_GENERAL_TITLE": "Generale",
     "SETTINGS_GENERAL_STARTUP": "Apri all'avvio",
     "SETTINGS_GENERAL_THEME_TITLE": "Tema App",
@@ -55,8 +44,6 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Abilita analytics",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Invia i dati di utilizzo per aiutarmi a migliorare Twinkle Tray. Non verrà inviata nessuna informazione personale. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Scopri di più",
-
-
     "SETTINGS_MONITORS_RATE_TITLE": "Velocità di aggiornamento della luminosità",
     "SETTINGS_MONITORS_RATE_DESC": "Quanto spesso verrà aggiornata la luminosità degli schermi mentre la stai cambiando. Aumenta il tempo se i tuoi schermi sfarfallano.",
     "SETTINGS_MONITORS_RATE_0": "Istantaneo",
@@ -71,8 +58,6 @@
     "SETTINGS_MONITORS_REORDER_DESC": "Cambia l'ordine in cui vengono mostrati gli schermi. Premi e trascina per fare le modifiche.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalizza Luminosità",
     "SETTINGS_MONITORS_NORMALIZE_DESC": "Spesso gli schermi hanno un intervallo di luminosità diverso. Limitando la luminosità minima e massima per ciascuno, il livello di luminosità tra diversi schermi sarà più consistente. Schermi simili avranno le stesse impostazioni.",
-
-
     "SETTINGS_TIME_TITLE": "Pianificazione in base all'ora",
     "SETTINGS_TIME_DESC": "Cambia automaticamente il livello di luminosità degli schermi ad un orario specifico. Tutti gli schermi verranno impostati allo stesso livello normalizzato.",
     "SETTINGS_TIME_ADD": "Aggiungi un orario",
@@ -81,8 +66,6 @@
     "SETTINGS_TIME_INDIVIDUAL_DESC": "Imposta la luminosità individualmente per ciascuno schermo invece che tutti insieme",
     "SETTINGS_TIME_STARTUP_TITLE": "Controlla all'avvio dell'app",
     "SETTINGS_TIME_STARTUP_DESC": "Cambia la luminosità in base all'orario più vicino all'avvio di Twinkle Tray.",
-
-
     "SETTINGS_HOTKEYS_TITLE": "Tasti di Scelta Rapida",
     "SETTINGS_HOTKEYS_DESC": "Configura i tasti di scelta rapida per cambiare la luminosità di uno o tutti gli schermi.",
     "SETTINGS_HOTKEYS_ADD": "Aggiungi tasti",
@@ -92,8 +75,6 @@
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Premi i tasti qui",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Cambio del livello di luminosità",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "Quanto verrà modificata la luminosità usando i tasti di scelta rapida.",
-
-
     "SETTINGS_UPDATES_TITLE": "Aggiornamenti",
     "SETTINGS_UPDATES_VERSION": "La tua versione di Twinkle Tray è {{1}}.",
     "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Cerca automaticamente gli aggiornamenti",
@@ -101,7 +82,6 @@
     "SETTINGS_UPDATES_MS_STORE": "Per controllare gli aggiornamenti, visita il Microsoft Store.",
     "SETTINGS_UPDATES_AVAILABLE": "È disponibile un aggiornamento per Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Non ci sono aggiornamenti disponibili al momento. This version of Twinkle tray includes the following changes:",
-    "SETTINGS_UPDATES_DOWNLOADING": "Scarico l'aggiornamento...",
+    "SETTINGS_UPDATES_DOWNLOADING": "Scarico l'aggiornamento…",
     "SETTINGS_UPDATES_DOWNLOAD": "Scarica e Installa {{1}}"
-    
 }

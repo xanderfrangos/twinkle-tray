@@ -348,7 +348,7 @@ export default class SettingsWindow extends PureComponent {
                 return (
                     <div>
                         <p>{T.t("SETTINGS_UPDATES_NONE_AVAILABLE")}</p>
-                        <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
+                        <div className="changelog"><Markdown options={{ forceBlock: true }}>{this.state.changelog}</Markdown></div>
                     </div>
                 )
             }

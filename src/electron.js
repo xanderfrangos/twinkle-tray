@@ -203,7 +203,8 @@ const defaultSettings = {
   settingsVer: "v" + app.getVersion(),
   names: {},
   analytics: !isDev,
-  uuid: uuid()
+  uuid: uuid(),
+  branch: "master"
 }
 
 let settings = Object.assign({}, defaultSettings)
@@ -284,7 +285,12 @@ function processSettings(newSettings = {}) {
       } else {
         lastCheck = false
       }
+    }
 
+    if(newSettings.branch) {
+      lastCheck = false
+      settings.dismissedUpdate = false
+      checkForUpdates()
     }
 
     if (settings.analytics) {
@@ -1176,7 +1182,6 @@ app.on("ready", () => {
   showIntro()
   createPanel()
   addEventListeners()
-  checkForUpdates()
 })
 
 app.on("window-all-closed", () => {
@@ -1390,7 +1395,7 @@ function createSettings() {
 
 let latestVersion = false
 let lastCheck = false
-function checkForUpdates() {
+checkForUpdates = async () => {
   if (!settings.checkForUpdates) return false;
   if (lastCheck && lastCheck == new Date().getDate()) return false;
   lastCheck = new Date().getDate()
@@ -1399,19 +1404,31 @@ function checkForUpdates() {
     if (isAppX === false) {
       console.log("Checking for updates...")
       fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
-        response.json().then((json) => {
-          latestVersion = {
-            releaseURL: (json[0].html_url),
-            version: json[0].tag_name,
-            downloadURL: json[0].assets[0]["browser_download_url"],
-            filesize: json[0].assets[0]["size"],
-            changelog: json[0].body,
-            show: false
+        response.json().then((releases) => {
+          let foundVersion = false
+          for(let release of releases) {
+            if(release.target_commitish == settings.branch) {
+              foundVersion = true
+              latestVersion = {
+                releaseURL: (release.html_url),
+                version: release.tag_name,
+                downloadURL: release.assets[0]["browser_download_url"],
+                filesize: release.assets[0]["size"],
+                changelog: release.body,
+                show: false,
+                error: false
+              }
+              console.log("Found version: " + latestVersion.version)
+              break
+            }
           }
-          if ("v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
+
+          if (foundVersion && "v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
             latestVersion.show = true
+            console.log("Sending new version to windows.")
+            sendToAllWindows('latest-version', latestVersion)
           }
-          sendToAllWindows('latest-version', latestVersion)
+          
         })
       });
     }

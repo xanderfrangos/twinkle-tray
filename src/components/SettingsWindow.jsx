@@ -2,7 +2,7 @@ import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
 import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { markdown } from 'markdown';
+import Markdown from 'markdown-to-jsx';
 import TranslateReact from "../TranslateReact"
 
 const reorder = (list, startIndex, endIndex) => {
@@ -335,8 +335,11 @@ export default class SettingsWindow extends PureComponent {
             if (this.state.latest && this.state.latest != window.version) {
                 return (
                     <div>
-                        <p><b style={{ color: window.accent }}>{T.t("SETTINGS_UPDATES_AVAILABLE")}</b></p>
-                        <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
+                        <p><b style={{ color: window.accent }}>{T.t("SETTINGS_UPDATES_AVAILABLE") + ` (${this.state.latest})`}</b></p>
+                        <div className="changelog">
+                            <h3>{this.state.latest}</h3>
+                            <Markdown options={{ forceBlock: true }}>{this.state.changelog}</Markdown>
+                        </div>
                         <br />
                         {this.getUpdateButton()}
                     </div>
@@ -923,7 +926,16 @@ export default class SettingsWindow extends PureComponent {
                     </div>
 
 
-
+                    <div className="pageSection debug" data-active={this.isSection("debug")}>
+                        <div className="sectionTitle">Update channel</div>
+                        <p>
+                            <select value={ this.state.rawSettings.branch } onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
+                                <option value="master">Stable (default)</option>
+                                <option value="beta">Beta</option>
+                            </select>
+                        </p>
+                        
+                    </div>
 
                     <div className="pageSection debug" data-active={this.isSection("debug")}>
                         <div className="sectionTitle">All Displays</div>
@@ -951,6 +963,7 @@ export default class SettingsWindow extends PureComponent {
                         <p>
                             <a className="button" onClick={() => { window.sendSettings({ killWhenIdle: !this.state.rawSettings.killWhenIdle }) }}>Toggle Kill When Idle ({(this.state.rawSettings && this.state.rawSettings.killWhenIdle !== undefined ? this.state.rawSettings.killWhenIdle.toString() : "?")})</a>
                         </p>
+                        
                     </div>
 
                 </div>

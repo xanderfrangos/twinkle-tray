@@ -1395,9 +1395,11 @@ function createSettings() {
 
 let latestVersion = false
 let lastCheck = false
-checkForUpdates = async () => {
-  if (!settings.checkForUpdates) return false;
-  if (lastCheck && lastCheck == new Date().getDate()) return false;
+checkForUpdates = async (force = false) => {
+  if(!force) {
+    if (!settings.checkForUpdates) return false;
+    if (lastCheck && lastCheck == new Date().getDate()) return false;
+  }
   lastCheck = new Date().getDate()
   try {
     const fetch = require('node-fetch');
@@ -1423,8 +1425,8 @@ checkForUpdates = async () => {
             }
           }
 
-          if (foundVersion && "v" + app.getVersion() != latestVersion.version && settings.dismissedUpdate != latestVersion.version) {
-            latestVersion.show = true
+          if (foundVersion && "v" + app.getVersion() != latestVersion.version && (settings.dismissedUpdate != latestVersion.version || force)) {
+            if(!force) latestVersion.show = true
             console.log("Sending new version to windows.")
             sendToAllWindows('latest-version', latestVersion)
           }
@@ -1513,7 +1515,7 @@ function runUpdate(expectedSize = false) {
 ipcMain.on('check-for-updates', () => {
   latestVersion.error = false
   sendToAllWindows('latest-version', latestVersion)
-  checkForUpdates()
+  checkForUpdates(true)
 })
 
 ipcMain.on('ignore-update', (event, dismissedUpdate) => {

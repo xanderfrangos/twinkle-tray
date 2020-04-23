@@ -49,28 +49,32 @@ if(!isDev) console.log = () => {};
 
 
 // Mouse wheel scrolling
-const ioHook = require('iohook');
 let bounds
-ioHook.on('mousewheel', event => {
-  try {
-    if(!bounds) return false;
-    if(event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-      const amount = event.amount * event.rotation * -1;
-      for (let key in monitors) {
-        const monitor = monitors[key]
-        if(monitor.type !== "none") {
-          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-          updateBrightnessThrottle(monitor.id, normalizedAdjust + amount, true)
-          monitors[key].brightness = normalizedAdjust + amount
+let ioHook
+try {
+  ioHook = require('iohook');
+  ioHook.on('mousewheel', event => {
+    try {
+      if(!bounds) return false;
+      if(event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
+        const amount = event.amount * event.rotation * -1;
+        for (let key in monitors) {
+          const monitor = monitors[key]
+          if(monitor.type !== "none") {
+            let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+            updateBrightnessThrottle(monitor.id, normalizedAdjust + amount, true)
+            monitors[key].brightness = normalizedAdjust + amount
+          }
         }
       }
+    } catch (e) {
+      console.error(e)
     }
-  } catch (e) {
-    console.error(e)
-  }
-});
-ioHook.start();
-
+  });
+  ioHook.start();
+} catch(e) {
+  console.error(e)
+}
 
 
 // Analytics

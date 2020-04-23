@@ -45,6 +45,34 @@ const debug = {
 
 if(!isDev) console.log = () => {};
 
+
+
+
+// Mouse wheel scrolling
+const ioHook = require('iohook');
+let bounds
+ioHook.on('mousewheel', event => {
+  try {
+    if(!bounds) return false;
+    if(event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
+      const amount = event.amount * event.rotation * -1;
+      for (let key in monitors) {
+        const monitor = monitors[key]
+        if(monitor.type !== "none") {
+          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+          updateBrightnessThrottle(monitor.id, normalizedAdjust + amount, true)
+          monitors[key].brightness = normalizedAdjust + amount
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+});
+ioHook.start();
+
+
+
 // Analytics
 
 let analytics = false
@@ -809,9 +837,9 @@ function makeName(monitorDevice, fallback) {
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 function updateBrightnessThrottle(id, level, useCap = false) {
-  const idx = updateBrightnessQueue.find(item => item.id === id) || updateBrightnessQueue.length
-  console.log(idx, id)
-  updateBrightnessQueue[idx] = {
+  let idx = updateBrightnessQueue.length
+  const found = updateBrightnessQueue.findIndex(item => item.id === id)
+  updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
     useCap
@@ -822,11 +850,9 @@ function updateBrightnessThrottle(id, level, useCap = false) {
       for (let bUpdate of updateBrightnessQueueCopy) {
         if (bUpdate) {
           try {
-            console.log(bUpdate)
             updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap)
           } catch (e) {
             console.error(e)
-            console.error(bUpdate)
           }
         }
       }
@@ -1222,6 +1248,9 @@ function createTray() {
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   tray.setContextMenu(contextMenu)
   tray.on("click", toggleTray)
+  tray.on('mouse-move', () => {
+    bounds = tray.getBounds()
+  })
 }
 
 function quitApp() {

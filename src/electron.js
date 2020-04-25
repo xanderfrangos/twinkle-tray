@@ -48,6 +48,7 @@ if(!isDev) console.log = () => {};
 
 
 
+/*
 // Mouse wheel scrolling
 let bounds
 let ioHook
@@ -76,6 +77,7 @@ try {
   console.error(e)
 }
 
+*/
 
 // Analytics
 

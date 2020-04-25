@@ -27,7 +27,6 @@
     "@hensm/ddcci": "file:modules/node-ddcci",
     "color": "^3.1.2",
     "electron-winstore-auto-launch": "^2.0.3",
-    "iohook": "^0.6.5",
     "markdown-to-jsx": "^6.11.1",
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",
@@ -92,16 +91,5 @@
     "react-dom": "16.9.0",
     "sass": "^1.26.3",
     "wait-on": "3.2.0"
-  },
-  "iohook": {
-    "targets": [
-      "electron-76"
-    ],
-    "platforms": [
-      "win32"
-    ],
-    "arches": [
-      "x64"
-    ]
   }
 }

@@ -46,8 +46,6 @@ const debug = {
 if(!isDev) console.log = () => {};
 
 
-
-
 /*
 // Mouse wheel scrolling
 let bounds
@@ -76,7 +74,6 @@ try {
 } catch(e) {
   console.error(e)
 }
-
 */
 
 // Analytics
@@ -171,13 +168,41 @@ function getSettingsAnalytics() {
 }
 
 
-
-const ddcci = require("@hensm/ddcci");
-if (isDev) {
-  var WmiClient = require('wmi-client');
-} else {
-  var WmiClient = require(path.join(app.getAppPath(), '../node_modules/wmi-client'));
+let ddcci = false
+function getDDCCI() {
+  if(ddcci) return true;
+  try {
+    ddcci = require("@hensm/ddcci");
+    return true;
+  } catch(e) {
+    console.log('Couldn\'t start DDC/CI', e);
+    return false;
+  }
 }
+getDDCCI();
+
+
+let wmi = false
+function getWMI() {
+  if(wmi) return true;
+  let WmiClient = false
+  try {
+    if (isDev) {
+      WmiClient = require('wmi-client');
+    } else {
+      WmiClient = require(path.join(app.getAppPath(), '../node_modules/wmi-client'));
+    }
+    wmi = new WmiClient({
+      host: 'localhost',
+      namespace: '\\\\root\\WMI'
+    });
+    return true;
+  } catch(e) {
+    console.log('Couldn\'t start WMI', e);
+    return false;
+  }
+}
+getWMI();
 
 
 let monitors = {}
@@ -191,10 +216,7 @@ const panelSize = {
   height: 500
 }
 
-var wmi = new WmiClient({
-  host: 'localhost',
-  namespace: '\\\\root\\WMI'
-});
+
 
 // Fix regedit tool path in production
 if (!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
@@ -700,7 +722,7 @@ refreshDDCCI = async () => {
   let ddcciList = []
 
     try {
-
+      getDDCCI()
       ddcci._refresh()
       const ddcciMonitors = ddcci.getMonitorList()
 
@@ -765,6 +787,7 @@ refreshWMI = async () => {
     let local = 0
     let wmiList = []
     try {
+      getWMI();
       wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
         if (err != null) {
           resolve([])
@@ -969,10 +992,11 @@ function sleepDisplays() {
 refreshNames = () => {
 
   return new Promise((resolve, reject) => {
+    getWMI();
     wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
       let foundMonitors = []
       if (err != null) {
-        callback([])
+        resolve([])
       } else if (result) {
         // Apply names
         
@@ -1018,7 +1042,7 @@ refreshNames = () => {
   
         resolve(foundMonitors)
       } else {
-        reject(foundMonitors)
+        resolve(foundMonitors)
       }
     });
   })
@@ -1665,5 +1689,22 @@ function handleBackgroundUpdate() {
   }
 
   checkForUpdates()
+
+}
+
+
+function init() {
+
+  try {
+
+  } catch (e) {
+
+  }
+
+  try {
+
+  } catch(e) {
+
+  }
 
 }

@@ -52,6 +52,8 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="updateBar">
         <div className="left">{T.t("PANEL_UPDATE_AVAILABLE")} ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>{T.t("GENERIC_INSTALL")}</a><a className="icon" title={T.t("GENERIC_DISMISS")} onClick={window.dismissUpdate}>&#xEF2C;</a></div>
       </div>)
+    } else if(this.state.update && this.state.update.downloading) {
+      return (<div className="updateBar"><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div>)
     }
   }
 
@@ -245,7 +247,8 @@ export default class BrightnessPanel extends PureComponent {
       linkedLevelsActive: false,
       names: {},
       update: false,
-      sleeping: false
+      sleeping: false,
+      updateProgress: 0
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -263,6 +266,14 @@ export default class BrightnessPanel extends PureComponent {
     window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
+
+    if (window.isAppX === false) {
+      window.addEventListener("updateProgress", (e) => {
+          this.setState({
+              updateProgress: e.detail.progress
+          })
+      })
+  }
 
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()

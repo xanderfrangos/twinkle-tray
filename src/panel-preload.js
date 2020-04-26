@@ -163,6 +163,15 @@ ipc.on('latest-version', (event, version) => {
     }))
 })
 
+// Update download progress
+ipc.on('updateProgress', (event, progress) => {
+    window.dispatchEvent(new CustomEvent('updateProgress', {
+        detail: {
+            progress
+        }
+    }))
+})
+
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {

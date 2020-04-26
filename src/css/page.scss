@@ -375,6 +375,21 @@ a {
     }
 }
 
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    max-width: 320px;
+    background: var(--window-border);
+    & > div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: var(--system-accent-color);
+    }
+}
 
 
 .hotkey-monitors {

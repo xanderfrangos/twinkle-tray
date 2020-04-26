@@ -93,7 +93,8 @@ export default class SettingsWindow extends PureComponent {
             checkForUpdates: false,
             adjustmentTimeIndividualDisplays: false,
             languages: [],
-            analytics: false
+            analytics: false,
+            updateProgress: 0
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -121,6 +122,11 @@ export default class SettingsWindow extends PureComponent {
                         downloadingUpdate: false
                     })
                 }
+            })
+            window.addEventListener("updateProgress", (e) => {
+                this.setState({
+                    updateProgress: e.detail.progress
+                })
             })
             window.checkForUpdates()
         }
@@ -357,9 +363,9 @@ export default class SettingsWindow extends PureComponent {
 
     getUpdateButton = () => {
         if (this.state.downloadingUpdate) {
-            return (<p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p>)
+            return (<div><p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span class="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span className="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
         }
     }
 

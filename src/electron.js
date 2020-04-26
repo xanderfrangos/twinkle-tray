@@ -46,17 +46,16 @@ const debug = {
 if(!isDev) console.log = () => {};
 
 
-/*
 // Mouse wheel scrolling
 let bounds
-let ioHook
+let mouseEvents
 try {
-  ioHook = require('iohook');
-  ioHook.on('mousewheel', event => {
+  mouseEvents = require("global-mouse-events");
+  mouseEvents.on('mousewheel', event => {
     try {
       if(!bounds) return false;
       if(event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-        const amount = event.amount * event.rotation * -1;
+        const amount = event.delta;
         for (let key in monitors) {
           const monitor = monitors[key]
           if(monitor.type !== "none") {
@@ -70,11 +69,10 @@ try {
       console.error(e)
     }
   });
-  ioHook.start();
 } catch(e) {
   console.error(e)
 }
-*/
+
 
 // Analytics
 

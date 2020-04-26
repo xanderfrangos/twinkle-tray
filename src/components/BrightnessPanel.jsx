@@ -53,7 +53,7 @@ export default class BrightnessPanel extends PureComponent {
         <div className="left">{T.t("PANEL_UPDATE_AVAILABLE")} ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>{T.t("GENERIC_INSTALL")}</a><a className="icon" title={T.t("GENERIC_DISMISS")} onClick={window.dismissUpdate}>&#xEF2C;</a></div>
       </div>)
     } else if(this.state.update && this.state.update.downloading) {
-      return (<div className="updateBar"><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div>)
+    return (<div className="updateBar"><div className="left progress"><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div><div className="right">{this.state.updateProgress}%</div></div>)
     }
   }
 

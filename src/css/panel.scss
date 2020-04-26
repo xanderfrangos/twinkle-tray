@@ -118,7 +118,11 @@ body {
 
     .left {
         font-size: 13px;
-            opacity: 0.8;
+        opacity: 0.8;
+        &.progress {
+            padding-right: 15px;
+            width: 100%;
+        }
     }
     .right {
         display: flex;

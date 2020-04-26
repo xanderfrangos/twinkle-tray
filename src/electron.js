@@ -43,7 +43,7 @@ const debug = {
   error: log
 }
 
-if(!isDev) console.log = () => {};
+if (!isDev) console.log = () => { };
 
 
 // Mouse wheel scrolling
@@ -53,15 +53,15 @@ try {
   mouseEvents = require("global-mouse-events");
   mouseEvents.on('mousewheel', event => {
     try {
-      if(!bounds) return false;
-      if(event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-        const amount = event.delta;
+      if (!bounds) return false;
+      if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
+        const amount = Math.round(event.delta) * 2;
         for (let key in monitors) {
           const monitor = monitors[key]
-          if(monitor.type !== "none") {
-            let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-            updateBrightnessThrottle(monitor.id, normalizedAdjust + amount, true)
-            monitors[key].brightness = normalizedAdjust + amount
+          if (monitor.type !== "none") {
+            let normalizedAdjust = amount + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+            monitors[key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
+            updateBrightnessThrottle(monitor.id, monitors[key].brightness, false)
           }
         }
       }
@@ -69,7 +69,7 @@ try {
       console.error(e)
     }
   });
-} catch(e) {
+} catch (e) {
   console.error(e)
 }
 
@@ -168,11 +168,11 @@ function getSettingsAnalytics() {
 
 let ddcci = false
 function getDDCCI() {
-  if(ddcci) return true;
+  if (ddcci) return true;
   try {
     ddcci = require("@hensm/ddcci");
     return true;
-  } catch(e) {
+  } catch (e) {
     console.log('Couldn\'t start DDC/CI', e);
     return false;
   }
@@ -182,7 +182,7 @@ getDDCCI();
 
 let wmi = false
 function getWMI() {
-  if(wmi) return true;
+  if (wmi) return true;
   let WmiClient = false
   try {
     if (isDev) {
@@ -195,7 +195,7 @@ function getWMI() {
       namespace: '\\\\root\\WMI'
     });
     return true;
-  } catch(e) {
+  } catch (e) {
     console.log('Couldn\'t start WMI', e);
     return false;
   }
@@ -341,7 +341,7 @@ function processSettings(newSettings = {}) {
       }
     }
 
-    if(newSettings.branch) {
+    if (newSettings.branch) {
       lastCheck = false
       settings.dismissedUpdate = false
       checkForUpdates()
@@ -397,7 +397,7 @@ function processSettings(newSettings = {}) {
       }
     }
 
-    if(mainWindow && newSettings.isDev !== undefined) {
+    if (mainWindow && newSettings.isDev !== undefined) {
       mainWindow.close()
       setTimeout(() => {
         createPanel()
@@ -431,6 +431,7 @@ function applyHotkeys() {
 
 const doHotkey = (hotkey) => {
   try {
+    refreshMonitors(true, true)
     analyticsUsage.UsedHotkeys++
     if (hotkey.monitor === "all") {
       for (let key in monitors) {
@@ -438,10 +439,10 @@ const doHotkey = (hotkey) => {
         let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
         updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
       }
-    } else if(hotkey.monitor == "turn_off_displays") {
+    } else if (hotkey.monitor == "turn_off_displays") {
       sleepDisplays()
     } else {
-      if(Object.keys(monitors).length) {
+      if (Object.keys(monitors).length) {
         const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
         if (monitor) {
           let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
@@ -681,26 +682,48 @@ function getAccentColors() {
 //
 //
 
-refreshMonitors = async (fullRefresh = false) => {
+let isRefreshing = false
+refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
-  // Reset all known displays
-  if(fullRefresh) monitors = {};
+  // Don't do 2+ refreshes at once
+  if (!fullRefresh && isRefreshing) {
+    console.log(`Already refreshing. Aborting.`)
+    return monitors;
+  }
 
+  console.log(" ")
   console.log("\x1b[34m-------------- Refresh Monitors -------------- \x1b[0m")
 
+  // Don't check too often for no reason
+  const now = Date.now()
+  if (!fullRefresh && !bypassRateLimit && now < lastEagerUpdate + 5000) {
+    console.log(`Requesting update too soon. ${(now - lastEagerUpdate)}ms left.`)
+    console.log("\x1b[34m---------------------------------------------- \x1b[0m")
+    return monitors;
+  }
+  isRefreshing = true
+
+  // Reset all known displays
+  if (fullRefresh) monitors = {};
+
   const startTime = process.hrtime()
-  const wmiPromise = refreshWMI()
-  const namesPromise = refreshNames()
-  const ddcciPromise = refreshDDCCI()
+  try {
+    const wmiPromise = refreshWMI()
+    const namesPromise = refreshNames()
+    const ddcciPromise = refreshDDCCI()
 
-  namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-  wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-  ddcciPromise.then(() => { console.log(`DDC/CI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+    namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+    wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+    ddcciPromise.then(() => { console.log(`DDC/CI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
 
-  await namesPromise
-  await wmiPromise
-  await ddcciPromise
+    await namesPromise
+    await wmiPromise
+    await ddcciPromise
+  } catch (e) {
+    console.log('Couldn\'t refresh monitors', e)
+  }
 
+  isRefreshing = false
   applyOrder()
   applyRemaps()
   setTrayPercent()
@@ -717,8 +740,8 @@ refreshMonitors = async (fullRefresh = false) => {
 refreshDDCCI = async () => {
 
   return new Promise((resolve, reject) => {
-  let local = 0
-  let ddcciList = []
+    let local = 0
+    let ddcciList = []
 
     try {
       getDDCCI()
@@ -738,7 +761,7 @@ refreshDDCCI = async () => {
             min: 0,
             max: 100
           }
-  
+
           const hwid = monitor.split("#")
           if (monitors[hwid[2]] == undefined) {
             monitors[hwid[2]] = {
@@ -757,10 +780,10 @@ refreshDDCCI = async () => {
             if (monitors[hwid[2]].name)
               ddcciInfo.name = monitors[hwid[2]].name
           }
-  
+
           ddcciList.push(ddcciInfo)
           Object.assign(monitors[hwid[2]], ddcciInfo)
-  
+
           local++
         } catch (e) {
           // Probably failed to get VCP code, which means the display is not compatible
@@ -791,7 +814,7 @@ refreshWMI = async () => {
         if (err != null) {
           resolve([])
         } else if (result) {
-          
+
           for (let monitor of result) {
 
             const wmiInfo = {
@@ -808,7 +831,7 @@ refreshWMI = async () => {
 
             let hwid = readInstanceName(monitor.InstanceName)
             hwid[2] = hwid[2].split("_")[0]
-            if(monitors[hwid[2]] == undefined) {
+            if (monitors[hwid[2]] == undefined) {
               monitors[hwid[2]] = {
                 id: monitor.InstanceName,
                 key: hwid[2],
@@ -823,9 +846,9 @@ refreshWMI = async () => {
               }
             } else {
               if (monitors[hwid[2]].name)
-              wmiInfo.name = monitors[hwid[2]].name
+                wmiInfo.name = monitors[hwid[2]].name
             }
-    
+
             wmiList.push(wmiInfo)
             Object.assign(monitors[hwid[2]], wmiInfo)
 
@@ -889,6 +912,7 @@ function updateBrightnessThrottle(id, level, useCap = false) {
     }, settings.updateInterval)
   }
 }
+
 
 
 
@@ -979,7 +1003,7 @@ function transitionBrightness(level, eventMonitors = []) {
 function sleepDisplays() {
   analyticsUsage.UsedSleep++
   exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
- }
+}
 
 
 
@@ -999,7 +1023,7 @@ refreshNames = () => {
         resolve([])
       } else if (result) {
         // Apply names
-        
+
         for (let monitor of result) {
           let hwid = readInstanceName(monitor.InstanceName)
           hwid[2] = hwid[2].split("_")[0]
@@ -1008,10 +1032,10 @@ refreshNames = () => {
             //name: parseWMIString(monitor.UserFriendlyName),
             serial: parseWMIString(monitor.SerialNumberID)
           }
-  
+
           foundMonitors.push(hwid[2])
-  
-          if(monitors[hwid[2]] == undefined) {
+
+          if (monitors[hwid[2]] == undefined) {
             monitors[hwid[2]] = {
               id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
               key: hwid[2],
@@ -1025,7 +1049,7 @@ refreshNames = () => {
               serial: false
             }
           }
-          
+
           if (monitor.UserFriendlyName !== null)
             wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
 
@@ -1033,13 +1057,13 @@ refreshNames = () => {
 
         }
 
-        
-  
+
+
         // Delete disconnected displays
-        for(let key in monitors) {
-          if(!foundMonitors.includes(key)) delete monitors[key];
+        for (let key in monitors) {
+          if (!foundMonitors.includes(key)) delete monitors[key];
         }
-  
+
         resolve(foundMonitors)
       } else {
         resolve(foundMonitors)
@@ -1047,12 +1071,12 @@ refreshNames = () => {
     });
   })
 
-  
+
 
 }
 
 function parseWMIString(str) {
-  if(str === null) return str;
+  if (str === null) return str;
   let hexed = str.replace('{', '').replace('}', '').replace(/;0/g, ';32')
   var decoded = '';
   var split = hexed.split(';')
@@ -1083,11 +1107,11 @@ ipcMain.on('update-brightness', function (event, data) {
 })
 
 ipcMain.on('request-monitors', function (event, arg) {
-  refreshMonitors(false)
+  refreshMonitors(false, true)
 })
 
 ipcMain.on('full-refresh', function (event, arg) {
-  refreshMonitors(true)
+  refreshMonitors(true, true)
 })
 
 ipcMain.on('open-settings', createSettings)
@@ -1280,27 +1304,37 @@ function createTray() {
   tray.on("click", toggleTray)
   tray.on('mouse-move', () => {
     bounds = tray.getBounds()
+    tryEagerUpdate()
   })
 }
 
 function setTrayPercent() {
   try {
-    if(tray) {
+    if (tray) {
       let averagePerc = 0
       let i = 0
-      for(let key in monitors) {
-        if(monitors[key].type === "ddcci" || monitors[key].type === "wmi") {
+      for (let key in monitors) {
+        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi") {
           i++
           averagePerc += monitors[key].brightness
         }
       }
-      if(i > 0) {
+      if (i > 0) {
         averagePerc = Math.floor(averagePerc / i)
         tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.log(e)
+  }
+}
+
+let lastEagerUpdate = 0
+function tryEagerUpdate() {
+  const now = Date.now()
+  if (now > lastEagerUpdate + 5000) {
+    lastEagerUpdate = now
+    refreshMonitors(false, true)
   }
 }
 
@@ -1313,17 +1347,17 @@ const toggleTray = async (doRefresh = true) => {
     createPanel(true)
     return false
   }
-  
-  if(doRefresh) {
+
+  if (doRefresh) {
     refreshMonitors()
     getThemeRegistry()
     getSettings()
-  
+
     // Send accent
     sendToAllWindows('update-colors', getAccentColors())
     if (latestVersion) sendToAllWindows('latest-version', latestVersion);
   }
-  
+
   if (mainWindow) {
     mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
     repositionPanel()
@@ -1445,7 +1479,7 @@ function createSettings() {
   settingsWindow.on("closed", () => (settingsWindow = null));
 
   settingsWindow.once('ready-to-show', () => {
-    
+
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       settingsWindow.show()
@@ -1476,7 +1510,7 @@ function createSettings() {
 let latestVersion = false
 let lastCheck = false
 checkForUpdates = async (force = false) => {
-  if(!force) {
+  if (!force) {
     if (!settings.checkForUpdates) return false;
     if (lastCheck && lastCheck == new Date().getDate()) return false;
   }
@@ -1488,8 +1522,8 @@ checkForUpdates = async (force = false) => {
       fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
         response.json().then((releases) => {
           let foundVersion = false
-          for(let release of releases) {
-            if(release.target_commitish == settings.branch) {
+          for (let release of releases) {
+            if (release.target_commitish == settings.branch) {
               foundVersion = true
               latestVersion = {
                 releaseURL: (release.html_url),
@@ -1506,11 +1540,11 @@ checkForUpdates = async (force = false) => {
           }
 
           if (foundVersion && "v" + app.getVersion() != latestVersion.version && (settings.dismissedUpdate != latestVersion.version || force)) {
-            if(!force) latestVersion.show = true
+            if (!force) latestVersion.show = true
             console.log("Sending new version to windows.")
             sendToAllWindows('latest-version', latestVersion)
           }
-          
+
         })
       });
     }
@@ -1562,18 +1596,18 @@ getLatestUpdate = async (version) => {
 function runUpdate(expectedSize = false) {
   try {
 
-    if(!fs.existsSync(updatePath)) {
-      throw("Update file doesn't exist!")
+    if (!fs.existsSync(updatePath)) {
+      throw ("Update file doesn't exist!")
     }
     console.log("Expected size: " + expectedSize)
-    if(expectedSize && fs.statSync(updatePath).size != expectedSize) {
+    if (expectedSize && fs.statSync(updatePath).size != expectedSize) {
       console.log("Update is wrong file size!")
       try {
         fs.unlinkSync(updatePath)
       } catch (e) {
-        throw("Couldn't delete update file")
+        throw ("Couldn't delete update file")
       }
-      throw("Atempted to delete update file")
+      throw ("Atempted to delete update file")
     }
 
     const { spawn } = require('child_process');
@@ -1640,7 +1674,7 @@ function handleAccentChange() {
 
 function handleMonitorChange(e, d) {
   // Reset all known displays
-  refreshMonitors(true)
+  refreshMonitors(true, true)
 }
 
 let restartBackgroundUpdateThrottle = false
@@ -1699,7 +1733,7 @@ function handleBackgroundUpdate() {
           console.log("Adjusting brightness automatically", foundEvent)
           lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
-          refreshMonitors().then(() => {
+          refreshMonitors(true, true).then(() => {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           })
         }
@@ -1724,7 +1758,7 @@ function init() {
 
   try {
 
-  } catch(e) {
+  } catch (e) {
 
   }
 

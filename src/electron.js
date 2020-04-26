@@ -1577,7 +1577,7 @@ getLatestUpdate = async (version) => {
     await new Promise((resolve, reject) => {
       console.log("Downloading...!")
       const dest = fs.createWriteStream(updatePath);
-      update.body.pipe(dest);
+      //update.body.pipe(dest);
       update.body.on('error', (err) => {
         reject(err)
       })
@@ -1590,13 +1590,17 @@ getLatestUpdate = async (version) => {
       })
       update.body.on('finish', function () {
         console.log("Saved! Running...")
-        dest.close()
       });
 
       let size = 0
       let lastSizeUpdate = 0
       update.body.on('data', (chunk) => {
         size += chunk.length
+        dest.write(chunk, (err) => {
+          if(size >= version.filesize) {
+            dest.close()
+          }
+        })
         if(size >= lastSizeUpdate + (version.filesize * 0.01) || lastSizeUpdate === 0 || size === version.filesize) {
           lastSizeUpdate = size
           sendToAllWindows('updateProgress', Math.floor((size / version.filesize) * 100))

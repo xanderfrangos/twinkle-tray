@@ -703,6 +703,7 @@ refreshMonitors = async (fullRefresh = false) => {
 
   applyOrder()
   applyRemaps()
+  setTrayPercent()
   sendToAllWindows('monitors-updated', monitors)
 
   console.log(`Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
@@ -914,6 +915,7 @@ function updateBrightness(index, level, useCap = false) {
     } else if (monitor.type == "wmi") {
       exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
     }
+    setTrayPercent()
   } catch (e) {
     debug.error("Could not update brightness", e)
   }
@@ -1279,6 +1281,27 @@ function createTray() {
   tray.on('mouse-move', () => {
     bounds = tray.getBounds()
   })
+}
+
+function setTrayPercent() {
+  try {
+    if(tray) {
+      let averagePerc = 0
+      let i = 0
+      for(let key in monitors) {
+        if(monitors[key].type === "ddcci" || monitors[key].type === "wmi") {
+          i++
+          averagePerc += monitors[key].brightness
+        }
+      }
+      if(i > 0) {
+        averagePerc = Math.floor(averagePerc / i)
+        tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
+      }
+    }
+  } catch(e) {
+    console.log(e)
+  }
 }
 
 function quitApp() {

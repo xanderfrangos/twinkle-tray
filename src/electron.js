@@ -1304,6 +1304,7 @@ function createTray() {
   tray.on("click", toggleTray)
   tray.on('mouse-move', () => {
     bounds = tray.getBounds()
+    bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
   })
 }

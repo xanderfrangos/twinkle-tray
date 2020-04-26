@@ -697,7 +697,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   // Don't check too often for no reason
   const now = Date.now()
   if (!fullRefresh && !bypassRateLimit && now < lastEagerUpdate + 5000) {
-    console.log(`Requesting update too soon. ${(now - lastEagerUpdate)}ms left.`)
+    console.log(`Requesting update too soon. ${5000 - (now - lastEagerUpdate)}ms left.`)
     console.log("\x1b[34m---------------------------------------------- \x1b[0m")
     return monitors;
   }

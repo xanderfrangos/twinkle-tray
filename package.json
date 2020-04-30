@@ -27,7 +27,7 @@
     "@hensm/ddcci": "0.0.4",
     "color": "^3.1.2",
     "electron-winstore-auto-launch": "^2.0.3",
-    "global-mouse-events": "^1.0.2",
+    "global-mouse-events": "^1.0.3",
     "markdown-to-jsx": "^6.11.1",
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",

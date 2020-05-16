@@ -666,7 +666,12 @@ function getThemeRegistry() {
 }
 
 function getAccentColors() {
-  const accent = Color("#" + systemPreferences.getAccentColor().substr(0, 6), "hex")
+  let detectedAccent = "0078d7"
+  try {
+    if(systemPreferences.getAccentColor().length == 8)
+    detectedAccent = systemPreferences.getAccentColor().substr(0, 6)
+  } catch(e) { console.log("Couldn't get accent color from registry!")}
+  const accent = Color("#" + detectedAccent, "hex")
   const matchLumi = (color, level) => {
     let adjusted = color.hsl()
     adjusted.color[2] = (level * 100)

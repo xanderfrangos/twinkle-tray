@@ -429,29 +429,40 @@ function applyHotkeys() {
   }
 }
 
+let hotkeyThrottle = []
 const doHotkey = (hotkey) => {
-  try {
-    refreshMonitors(true, true)
-    analyticsUsage.UsedHotkeys++
-    if (hotkey.monitor === "all") {
-      for (let key in monitors) {
-        const monitor = monitors[key]
-        let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-        updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
-      }
-    } else if (hotkey.monitor == "turn_off_displays") {
-      sleepDisplays()
-    } else {
-      if (Object.keys(monitors).length) {
-        const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
-        if (monitor) {
-          let normalizedAdjust = normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-          updateBrightnessThrottle(monitor.id, normalizedAdjust + (settings.hotkeyPercent * hotkey.direction), true)
+  const now = Date.now()
+  if(hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100) {
+    hotkeyThrottle[hotkey.monitor] = now
+
+    try {
+      //refreshMonitors(false)
+      analyticsUsage.UsedHotkeys++
+      if (hotkey.monitor === "all") {
+        for (let key in monitors) {
+          const monitor = monitors[key]
+          let normalizedAdjust = (settings.hotkeyPercent * hotkey.direction) + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+          monitors[key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
+          updateBrightnessThrottle(monitor.id, monitors[key].brightness, false, false)
+        }
+        sendToAllWindows('monitors-updated', monitors);
+      } else if (hotkey.monitor == "turn_off_displays") {
+        sleepDisplays()
+      } else {
+        if (Object.keys(monitors).length) {
+          const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
+          if (monitor) {
+            let normalizedAdjust = (settings.hotkeyPercent * hotkey.direction) + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
+            monitors[monitor.key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
+            sendToAllWindows('monitors-updated', monitors);
+            updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, false, false)
+          }
         }
       }
+    } catch (e) {
+      console.log("HOTKEY ERROR:", e)
     }
-  } catch (e) {
-    console.log("HOTKEY ERROR:", e)
+
   }
 }
 
@@ -887,7 +898,8 @@ function makeName(monitorDevice, fallback) {
 
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
-function updateBrightnessThrottle(id, level, useCap = false) {
+let lastBrightnessTimes = []
+function updateBrightnessThrottle(id, level, useCap = false, sendUpdate = true) {
   let idx = updateBrightnessQueue.length
   const found = updateBrightnessQueue.findIndex(item => item.id === id)
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
@@ -895,7 +907,14 @@ function updateBrightnessThrottle(id, level, useCap = false) {
     level,
     useCap
   }
-  if (!updateBrightnessTimeout) {
+  const now = Date.now()
+  if(lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
+    lastBrightnessTimes[id] = now
+    updateBrightness(id, level, useCap)
+    if(sendUpdate) sendToAllWindows('monitors-updated', monitors);
+    return true
+  } else if (!updateBrightnessTimeout) {
+    lastBrightnessTimes[id] = now
     updateBrightnessTimeout = setTimeout(() => {
       const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
       for (let bUpdate of updateBrightnessQueueCopy) {
@@ -908,9 +927,10 @@ function updateBrightnessThrottle(id, level, useCap = false) {
         }
       }
       updateBrightnessTimeout = false
-      sendToAllWindows('monitors-updated', monitors)
+      if(sendUpdate) sendToAllWindows('monitors-updated', monitors);
     }, settings.updateInterval)
   }
+  return false
 }
 
 
@@ -1103,6 +1123,7 @@ ipcMain.on('request-colors', () => {
 })
 
 ipcMain.on('update-brightness', function (event, data) {
+  console.log(`Update brightness recieved: ${data.index} - ${data.level}`)
   updateBrightness(data.index, data.level)
 })
 

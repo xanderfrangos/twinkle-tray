@@ -46,7 +46,7 @@
     "SETTINGS_GENERAL_ANALYTICS_LINK": "En savoir plus",
     "SETTINGS_MONITORS_RATE_TITLE": "Fréquene de mise à jour de la luminosité",
     "SETTINGS_MONITORS_RATE_DESC": "La fréquence à laquelle la luminosité sera mise à jour sur vos écrans lorsque vous ajustez leurs valeurs. Augmentez la durée si vos écrans clignotent.",
-    "SETTINGS_MONITORS_RATE_0": "Vitesse de la lumière !",
+    "SETTINGS_MONITORS_RATE_0": "Vitesse de la lumière",
     "SETTINGS_MONITORS_RATE_1": "Rapide (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
     "SETTINGS_MONITORS_RATE_3": "Lent (1 seconde)",

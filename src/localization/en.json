@@ -22,12 +22,12 @@
 
 
     "PANEL_TITLE": "Adjust Brightness",
-    "PANEL_UPDATE_AVAILABLE": "An update is available",
+    "PANEL_UPDATE_AVAILABLE": "New version available",
     "PANEL_BUTTON_LINK_LEVELS": "Link levels",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays",
 
 
-    "INTRO_TITLE": "Welcome to Twinkle Tray!",
+    "INTRO_TITLE": "Welcome.",
     "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions.",
 
 
@@ -43,17 +43,17 @@
 
     "SETTINGS_GENERAL_TITLE": "General",
     "SETTINGS_GENERAL_STARTUP": "Launch at startup",
-    "SETTINGS_GENERAL_THEME_TITLE": "App Theme",
-    "SETTINGS_GENERAL_THEME_SYSTEM": "System Preferences (Default)",
-    "SETTINGS_GENERAL_THEME_DARK": "Dark Mode",
-    "SETTINGS_GENERAL_THEME_LIGHT": "Light Mode",
+    "SETTINGS_GENERAL_THEME_TITLE": "Theme",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "System preferences (default)",
+    "SETTINGS_GENERAL_THEME_DARK": "Dark",
+    "SETTINGS_GENERAL_THEME_LIGHT": "Light",
     "SETTINGS_GENERAL_LANGUAGE_TITLE": "Language",
-    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "System Language (Default)",
-    "SETTINGS_GENERAL_RESET_TITLE": "Reset Settings",
-    "SETTINGS_GENERAL_RESET_DESC": "If for some reason you need to clear your settings, hit this button.",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "System language (default)",
+    "SETTINGS_GENERAL_RESET_TITLE": "Reset settings",
+    "SETTINGS_GENERAL_RESET_DESC": "Hit this button to clear your config.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Reset settings",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Enable analytics",
-    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help me improve Twinkle Tray. No personal information is sent. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analytics",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help improve Twinkle Tray. No personal info is sent. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
 
 
@@ -70,7 +70,7 @@
     "SETTINGS_MONITORS_REORDER_TITLE": "Reorder Monitors",
     "SETTINGS_MONITORS_REORDER_DESC": "Change the order that monitors are displayed in the tray. Click and drag to make changes.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalize Brightness",
-    "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitors often have different brightness ranges. By limiting the minimum/maximum brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitors often have different brightness ranges. By limiting the min/max brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.",
 
 
     "SETTINGS_TIME_TITLE": "Time of Day Adjustments",
@@ -78,7 +78,7 @@
     "SETTINGS_TIME_ADD": "Add a time",
     "SETTINGS_TIME_REMOVE": "Remove time",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Set brightness for individual displays",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure the brightness per display instead of for all displays at once",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure the brightness per display instead of for all displays at once.",
     "SETTINGS_TIME_STARTUP_TITLE": "Check at app startup",
     "SETTINGS_TIME_STARTUP_DESC": "Adjust the brightness to match the most relevant time when Twinkle Tray starts.",
 
@@ -95,12 +95,12 @@
 
 
     "SETTINGS_UPDATES_TITLE": "Updates",
-    "SETTINGS_UPDATES_VERSION": "Your version of Twinkle Tray is {{1}}.",
-    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Automatically check for updates",
-    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray will occasionally check for updates automatically and notify you in the brightness panel.",
-    "SETTINGS_UPDATES_MS_STORE": "To check for updates, visit the Microsoft Store app.",
-    "SETTINGS_UPDATES_AVAILABLE": "An update is available for Twinkle Tray!",
-    "SETTINGS_UPDATES_NONE_AVAILABLE": "There are no updates available at this time. This version of Twinkle tray includes the following changes:",
+    "SETTINGS_UPDATES_VERSION": "You have Twinkle Tray {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Automatically check for new versions",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "When there is a new version, it will be shown in the brightness panel.",
+    "SETTINGS_UPDATES_MS_STORE": "To check for new versions, visit the Microsoft Store app.",
+    "SETTINGS_UPDATES_AVAILABLE": "New version of Twinkle Tray available!",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "Up to date. The current version includes the following changes:",
     "SETTINGS_UPDATES_DOWNLOADING": "Downloading update…",
     "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}"
     

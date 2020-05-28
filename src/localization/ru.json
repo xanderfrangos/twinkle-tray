@@ -22,7 +22,7 @@
     "PANEL_UPDATE_AVAILABLE": "Доступна новая версия",
     "PANEL_BUTTON_LINK_LEVELS": "Одновременная регулировка",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Выключить дисплеи",
-    "INTRO_TITLE": "Добро пожаловать",
+    "INTRO_TITLE": "Добро пожаловать.",
     "INTRO_INSTRUCTIONS": "Значок Twinkle Tray в панели задач вероятно скрыт, поэтому вы должны переместить его в то место, где можно легко получить к нему доступ. Инструкции см. ниже.",
     "SETTINGS_TITLE": "Настройки Twinkle Tray",
     "SETTINGS_SIDEBAR_GENERAL": "Общие",
@@ -81,7 +81,7 @@
     "SETTINGS_UPDATES_AUTOMATIC_DESC": "Когда появится новая версия, информация будет показана на панели яркости.",
     "SETTINGS_UPDATES_MS_STORE": "Чтобы проверить наличие новых версий, посетите Microsoft Store.",
     "SETTINGS_UPDATES_AVAILABLE": "Доступна новая версия Twinkle Tray!",
-    "SETTINGS_UPDATES_NONE_AVAILABLE": "В настоящее время нет доступных обновлений. Эта версия Twinkle Tray включает в себя следующие изменения:",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "В актуальном состоянии. Текущая версия включает в себя следующие изменения:",
     "SETTINGS_UPDATES_DOWNLOADING": "Загрузка обновлений…",
     "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}"
 }

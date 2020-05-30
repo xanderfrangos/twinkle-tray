@@ -82,6 +82,6 @@
     "SETTINGS_UPDATES_MS_STORE": "Para comprobar si hay actualizaciones, visite la aplicación Microsoft Store.",
     "SETTINGS_UPDATES_AVAILABLE": "¡Hay una actualización disponible para Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "No hay actualizaciones disponibles en este momento. Esta versión de Twinkle Tray incluye los cambios siguientes:",
-    "SETTINGS_UPDATES_DOWNLOADING": "Descargando actualización...",
+    "SETTINGS_UPDATES_DOWNLOADING": "Descargando actualización…",
     "SETTINGS_UPDATES_DOWNLOAD": "Descargar e instalar {{1}}"
 }

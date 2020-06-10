@@ -431,11 +431,15 @@ function applyHotkeys() {
   }
 }
 
+let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 const doHotkey = (hotkey) => {
   const now = Date.now()
   if(hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100) {
     hotkeyThrottle[hotkey.monitor] = now
+
+
+    let showOverlay = true
 
     try {
       //refreshMonitors(false)
@@ -449,6 +453,7 @@ const doHotkey = (hotkey) => {
         }
         sendToAllWindows('monitors-updated', monitors);
       } else if (hotkey.monitor == "turn_off_displays") {
+        showOverlay = false
         sleepDisplays()
       } else {
         if (Object.keys(monitors).length) {
@@ -461,11 +466,67 @@ const doHotkey = (hotkey) => {
           }
         }
       }
+
+      // Show brightness overlay, if applicable
+      if(showOverlay) {
+        if(canReposition) {
+          hotkeyOverlayShow()
+        }
+        clearTimeout(hotkeyOverlayTimeout)
+        hotkeyOverlayTimeout = setTimeout(hotkeyOverlayHide, 3000)
+      }
+
     } catch (e) {
       console.log("HOTKEY ERROR:", e)
     }
 
   }
+}
+
+async function hotkeyOverlayShow() {
+  canReposition = false
+  await toggleTray(true, true)
+  mainWindow.setAlwaysOnTop(true)
+  sendToAllWindows("display-mode", "overlay")
+  const taskbar = taskbarPosition()
+
+  const panelOffset = 40
+  if (mainWindow) {
+    if (taskbar.position == "LEFT") {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: taskbar.gap + panelOffset,
+        y: panelOffset
+      })
+    } else if (taskbar.position == "TOP") {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: panelOffset,
+        y: taskbar.gap + panelOffset
+      })
+    } else {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: panelOffset,
+        y: panelOffset
+      })
+    }
+  }
+
+
+
+
+}
+
+function hotkeyOverlayHide() {
+  clearTimeout(hotkeyOverlayTimeout)
+  canReposition = true
+  mainWindow.setAlwaysOnTop(false)
+  sendToAllWindows("panelBlur")
+  hotkeyOverlayTimeout = false
 }
 
 function applyOrder() {
@@ -1161,6 +1222,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   mainWindow.setAlwaysOnTop(false)
+  sendToAllWindows("display-mode", "normal")
   if (settings.killWhenIdle) mainWindow.close()
 })
 
@@ -1217,12 +1279,23 @@ function createPanel(toggleOnLoad = false) {
   })
 
   mainWindow.on("blur", () => {
-    sendToAllWindows("panelBlur")
+    // Only run when not in an overlay
+    if(canReposition) {
+      sendToAllWindows("panelBlur")
+    }
   })
 
 }
 
+let canReposition = true
 function repositionPanel() {
+  if(!canReposition) {
+    mainWindow.setBounds({
+      width: panelSize.width,
+      height: panelSize.height
+    })
+    return false
+  }
   let displays = screen.getAllDisplays()
   let primaryDisplay = displays.find((display) => {
     return display.bounds.x == 0 && display.bounds.y == 0
@@ -1329,7 +1402,7 @@ function createTray() {
   ])
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   tray.setContextMenu(contextMenu)
-  tray.on("click", toggleTray)
+  tray.on("click", () => toggleTray(true))
   tray.on('mouse-move', () => {
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
@@ -1371,7 +1444,7 @@ function quitApp() {
   app.quit()
 }
 
-const toggleTray = async (doRefresh = true) => {
+const toggleTray = async (doRefresh = true, isOverlay = false) => {
   if (mainWindow == null) {
     createPanel(true)
     return false
@@ -1388,14 +1461,32 @@ const toggleTray = async (doRefresh = true) => {
   }
 
   if (mainWindow) {
-    mainWindow.setBounds({ y: tray.getBounds().y - panelSize.height })
+    mainWindow.setOpacity(1)
+    if(!isOverlay) {
+      
+      // Check if overlay is currently open and deal with that
+      if(!canReposition) {
+        mainWindow.setOpacity(0)
+        hotkeyOverlayHide()
+        setTimeout(() => {
+          sendToAllWindows("display-mode", "normal")
+          toggleTray(doRefresh, isOverlay)
+        }, 300)
+        return false
+      }
+
+      sendToAllWindows("display-mode", "normal")
+      mainWindow.focus()
+    } else {
+      sendToAllWindows("display-mode", "overlay")
+      analyticsUsage.OpenedPanel++
+    }
+    sendToAllWindows('request-height')
     repositionPanel()
     mainWindow.setAlwaysOnTop(true)
     mainWindow.webContents.send("tray-clicked")
-    mainWindow.focus()
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)
-    analyticsUsage.OpenedPanel++
   }
 }
 

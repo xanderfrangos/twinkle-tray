@@ -135,6 +135,15 @@ ipc.on('taskbar', (event, taskbar) => {
     window.document.getElementById("root").dataset["position"] = taskbar.position
 })
 
+// Set display mode (overlay or normal)
+ipc.on('display-mode', (event, mode) => {
+    window.document.getElementById("root").dataset["mode"] = mode
+})
+
+ipc.on('request-height', () => {
+    ipc.send('panel-height', window.document.getElementById("panel").offsetHeight)
+})
+
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
     if(settings.isDev == false) {

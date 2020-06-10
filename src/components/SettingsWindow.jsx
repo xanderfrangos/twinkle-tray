@@ -94,6 +94,7 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimeIndividualDisplays: false,
             languages: [],
             analytics: false,
+            scrollShortcut: true,
             updateProgress: 0
         }
         this.numMonitors = 0
@@ -253,6 +254,12 @@ export default class SettingsWindow extends PureComponent {
         const analytics = (this.state.analytics ? false : true)
         this.setState({ analytics })
         window.sendSettings({ analytics })
+    }
+
+    scrollShortcutChanged = (event) => {
+        const scrollShortcut = (this.state.scrollShortcut ? false : true)
+        this.setState({ scrollShortcut })
+        window.sendSettings({ scrollShortcut })
     }
 
     ramChanged = (event) => {
@@ -740,6 +747,7 @@ export default class SettingsWindow extends PureComponent {
         const hotkeys = (settings.hotkeys || {})
         const hotkeyPercent = (settings.hotkeyPercent || 10)
         const analytics = settings.analytics
+        const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
             linkedLevelsActive,
@@ -755,7 +763,8 @@ export default class SettingsWindow extends PureComponent {
             language,
             hotkeys,
             hotkeyPercent,
-            analytics
+            analytics,
+            scrollShortcut
         }, () => {
             this.forceUpdate()
         })
@@ -821,6 +830,10 @@ export default class SettingsWindow extends PureComponent {
                             <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
                             {this.getLanguages()}
                         </select>
+                        <br /><br />
+                        <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
+                        <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
+                        <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
                     </div>
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>

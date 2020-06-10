@@ -55,6 +55,8 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analytics",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help improve Twinkle Tray. No personal info is sent. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Tray icon scroll shortcut",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Adjust the brightness of all displays at once by scrolling over the system tray icon. This does not work with some trackpads.",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",

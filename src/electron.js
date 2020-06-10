@@ -52,6 +52,7 @@ let mouseEvents
 try {
   mouseEvents = require("global-mouse-events");
   mouseEvents.on('mousewheel', event => {
+    if(!settings.scrollShortcut) return false;
     try {
       if (!bounds) return false;
       if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
@@ -257,6 +258,7 @@ const defaultSettings = {
   settingsVer: "v" + app.getVersion(),
   names: {},
   analytics: !isDev,
+  scrollShortcut: true,
   uuid: uuid(),
   branch: "master"
 }

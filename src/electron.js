@@ -66,6 +66,7 @@ try {
           }
         }
       }
+      hotkeyOverlayStart()
     } catch (e) {
       console.error(e)
     }
@@ -469,11 +470,7 @@ const doHotkey = (hotkey) => {
 
       // Show brightness overlay, if applicable
       if(showOverlay) {
-        if(canReposition) {
-          hotkeyOverlayShow()
-        }
-        clearTimeout(hotkeyOverlayTimeout)
-        hotkeyOverlayTimeout = setTimeout(hotkeyOverlayHide, 3000)
+        hotkeyOverlayStart()
       }
 
     } catch (e) {
@@ -483,43 +480,36 @@ const doHotkey = (hotkey) => {
   }
 }
 
+function hotkeyOverlayStart(timeout = 3000) {
+  if(canReposition) {
+    hotkeyOverlayShow()
+  }
+  clearTimeout(hotkeyOverlayTimeout)
+  hotkeyOverlayTimeout = setTimeout(hotkeyOverlayHide, timeout)
+}
+
 async function hotkeyOverlayShow() {
   canReposition = false
   await toggleTray(true, true)
   sendToAllWindows("display-mode", "overlay")
-  const taskbar = taskbarPosition()
 
   const panelOffset = 40
-  if (mainWindow) {
-    if (taskbar.position == "LEFT") {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: taskbar.gap + panelOffset,
-        y: panelOffset
-      })
-    } else if (taskbar.position == "TOP") {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: panelOffset,
-        y: taskbar.gap + panelOffset
-      })
-    } else {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: panelOffset,
-        y: panelOffset
-      })
-    }
-  }
+  mainWindow.setBounds({
+    width: panelSize.width,
+    height: panelSize.height,
+    x: panelOffset + 10,
+    y: panelOffset + 20
+  })
 
 
 
 }
 
 function hotkeyOverlayHide() {
+  if(mainWindow.isFocused()) {
+    hotkeyOverlayStart(333)
+    return false;
+  }
   clearTimeout(hotkeyOverlayTimeout)
   canReposition = true
   sendToAllWindows("panelBlur")

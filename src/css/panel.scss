@@ -175,23 +175,26 @@ body {
     }
 }
 
+$overlayBarWidth: 11px;
+$overlayBarWidthOff: $overlayBarWidth * -0.5;
+
 #root {
     &[data-mode="overlay"] {
         .input--range .progress {
-            height: 10px;
-            margin-top: -5px;
+            height: $overlayBarWidth;
+            margin-top: $overlayBarWidthOff;
         }
         
         .input--range .range::-webkit-slider-thumb {
-            height: 10px;
-            width: 10px;
+            height: $overlayBarWidth;
+            width: $overlayBarWidth;
             border-radius: 0;
             margin-top: 0px;
             background: var(--tray-text);
         }
         
         .input--range .range::-webkit-slider-runnable-track {
-            height: 10px;
+            height: $overlayBarWidth;
         }
         
         .titlebar {
@@ -203,30 +206,76 @@ body {
         }
         
         .monitor-item {
-            height: 46px;
+            height: 140px;
+            height: 136px;
+            width: 60px;
+            box-sizing: content-box;
+            overflow: visible;
+            position: relative;
         }
         
         & > .window-base {
             border: none;
-            border: 1px solid var(--tray-border);
+            border: 0px solid var(--tray-border);
             width: calc(100% - 60px);
-            padding-top: 18px;
-            padding-bottom: 12px;
+            width: auto;
+            padding: 0 18px;
             transition: none !important;
+            display: flex;
+            background: rgba(19, 19, 19, 0.95);
         }
         
         .monitor-item .name-row .icon {
             display: none;
         }
+
+        .input--range {
+            width:66px;
+            height: $overlayBarWidth;
+            overflow: visible;
+            position: relative;
+            left: 50%;
+            margin-left: -8px;
+            will-change: transform;
+        }
+
+        .input--range .rangeGroup {
+            flex: none;
+            width: 80px;
+            transform: rotate(-90deg) translate(0.5px, 0.5px);
+            position: relative;
+            top: 50px;
+            left: -33.5px;
+        }
         
         .input--range .val {
-            font-size: 18px;
+            font-size: 14px;
             width: 40px;
             padding-right: 4px;
+            
+
+            position: absolute;
+            top: 104px;
+            left: -21px;
+            width: 50px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
         }
         
         .monitor-item .name-row .title {
-            margin-bottom: -10px;
+            display:none;
+            position: absolute;
+            top: 108px;
+            left: 8px;
+            width: 50px;
+            font-size: 10px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .updateBar {

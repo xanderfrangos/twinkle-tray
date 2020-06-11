@@ -190,11 +190,12 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             width: $overlayBarWidth;
             border-radius: 0;
             margin-top: 0px;
-            background: var(--tray-text);
+            background: white;
         }
         
         .input--range .range::-webkit-slider-runnable-track {
             height: $overlayBarWidth;
+            background: #6a6a6a;
         }
         
         .titlebar {
@@ -252,7 +253,7 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             font-size: 13px;
             width: 40px;
             padding-right: 4px;
-            
+            color: white;
 
             position: absolute;
             top: 104px;

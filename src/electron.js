@@ -65,8 +65,13 @@ try {
             updateBrightnessThrottle(monitor.id, monitors[key].brightness, false)
           }
         }
+        
+        // If panel isn't open, use the overlay
+        if(panelState !== "visible") {
+          hotkeyOverlayStart()
+        }
+        
       }
-      hotkeyOverlayStart()
     } catch (e) {
       console.error(e)
     }
@@ -491,6 +496,8 @@ function hotkeyOverlayStart(timeout = 3000) {
 async function hotkeyOverlayShow() {
   canReposition = false
   await toggleTray(true, true)
+  mainWindow.blur()
+  mainWindow.setIgnoreMouseEvents(false)
   sendToAllWindows("display-mode", "overlay")
 
   const panelOffset = 40
@@ -512,6 +519,7 @@ function hotkeyOverlayHide() {
   }
   clearTimeout(hotkeyOverlayTimeout)
   canReposition = true
+  mainWindow.setIgnoreMouseEvents(true)
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
 }
@@ -1209,6 +1217,7 @@ ipcMain.on('panel-height', (event, height) => {
 
 ipcMain.on('panel-hidden', () => {
   sendToAllWindows("display-mode", "normal")
+  panelState = "hidden"
   if (settings.killWhenIdle) mainWindow.close()
 })
 
@@ -1221,6 +1230,8 @@ ipcMain.on('sleep-displays', sleepDisplays)
 //    Initialize Panel
 //
 //
+
+let panelState = "hidden"
 
 function createPanel(toggleOnLoad = false) {
 
@@ -1464,9 +1475,11 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
       }
 
       sendToAllWindows("display-mode", "normal")
+      panelState = "visible"
       mainWindow.focus()
     } else {
       sendToAllWindows("display-mode", "overlay")
+      panelState = "overlay"
       analyticsUsage.OpenedPanel++
     }
     sendToAllWindows('request-height')

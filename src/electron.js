@@ -497,7 +497,6 @@ function hotkeyOverlayStart(timeout = 3000) {
 async function hotkeyOverlayShow() {
   canReposition = false
   await toggleTray(true, true)
-  mainWindow.blur()
   mainWindow.setIgnoreMouseEvents(false)
   sendToAllWindows("display-mode", "overlay")
 

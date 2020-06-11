@@ -474,7 +474,8 @@ const doHotkey = (hotkey) => {
       }
 
       // Show brightness overlay, if applicable
-      if(showOverlay) {
+      // If panel isn't open, use the overlay
+      if(showOverlay && panelState !== "visible") {
         hotkeyOverlayStart()
       }
 

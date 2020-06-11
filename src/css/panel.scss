@@ -208,7 +208,7 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
         .monitor-item {
             height: 140px;
             height: 136px;
-            width: 60px;
+            width: 40px;
             box-sizing: content-box;
             overflow: visible;
             position: relative;
@@ -219,7 +219,7 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             border: 0px solid var(--tray-border);
             width: calc(100% - 60px);
             width: auto;
-            padding: 0 18px;
+            padding: 2px 13px;
             transition: none !important;
             display: flex;
             background: rgba(19, 19, 19, 0.95);
@@ -244,7 +244,7 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             width: 80px;
             transform: rotate(-90deg) translate(0.5px, 0.5px);
             position: relative;
-            top: 50px;
+            top: 53px;
             left: -33.5px;
         }
         

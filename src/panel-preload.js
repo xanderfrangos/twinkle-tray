@@ -27,7 +27,6 @@ function setPanelVisibility(visible) {
     // Update interactivity
     if (window.showPanel) {
         browser.setIgnoreMouseEvents(false)
-        browser.focus()
     } else {
         browser.setIgnoreMouseEvents(true)
     }

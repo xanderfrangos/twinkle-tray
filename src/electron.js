@@ -486,7 +486,6 @@ const doHotkey = (hotkey) => {
 async function hotkeyOverlayShow() {
   canReposition = false
   await toggleTray(true, true)
-  mainWindow.setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
   const taskbar = taskbarPosition()
 
@@ -518,13 +517,11 @@ async function hotkeyOverlayShow() {
 
 
 
-
 }
 
 function hotkeyOverlayHide() {
   clearTimeout(hotkeyOverlayTimeout)
   canReposition = true
-  mainWindow.setAlwaysOnTop(false)
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
 }
@@ -1221,7 +1218,6 @@ ipcMain.on('panel-height', (event, height) => {
 })
 
 ipcMain.on('panel-hidden', () => {
-  mainWindow.setAlwaysOnTop(false)
   sendToAllWindows("display-mode", "normal")
   if (settings.killWhenIdle) mainWindow.close()
 })
@@ -1258,6 +1254,8 @@ function createPanel(toggleOnLoad = false) {
       devTools: settings.isDev
     }
   });
+
+  mainWindow.setAlwaysOnTop(true, 'screen-saver')
 
   mainWindow.loadURL(
     isDev
@@ -1483,7 +1481,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
     }
     sendToAllWindows('request-height')
     repositionPanel()
-    mainWindow.setAlwaysOnTop(true)
     mainWindow.webContents.send("tray-clicked")
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)

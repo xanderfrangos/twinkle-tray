@@ -1,5 +1,4 @@
 const { ipcRenderer: ipc, remote } = require('electron');
-const { exec } = require('child_process')
 let browser = remote.getCurrentWindow()
 
 const log = console.log

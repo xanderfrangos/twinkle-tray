@@ -790,9 +790,12 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
     ddcciPromise.then(() => { console.log(`DDC/CI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
 
-    await namesPromise
+    let monitorNames = await namesPromise
     await wmiPromise
     await ddcciPromise
+    
+    // Clean up list
+    monitors = getCleanList(monitors, monitorNames)
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
   }
@@ -1140,13 +1143,6 @@ refreshNames = () => {
 
         }
 
-
-
-        // Delete disconnected displays
-        for (let key in monitors) {
-          if (!foundMonitors.includes(key)) delete monitors[key];
-        }
-
         resolve(foundMonitors)
       } else {
         resolve(foundMonitors)
@@ -1156,6 +1152,15 @@ refreshNames = () => {
 
 
 
+}
+
+function getCleanList(fullList, filterKeys) {
+  let monitors = Object.assign(fullList, {})
+  // Delete disconnected displays
+  for (let key in monitors) {
+    if (!filterKeys.includes(key)) delete monitors[key];
+  }
+  return monitors
 }
 
 function parseWMIString(str) {

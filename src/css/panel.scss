@@ -69,12 +69,13 @@ body {
 .titlebar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     user-select: none;
     margin-bottom: 20px;
 
     .title {
-        font-weight: 600;
-        font-size: 18px;
+        font-size: 14.5px;
+        font-weight: 400;
     }
 
     .icons {

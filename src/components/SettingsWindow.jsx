@@ -5,6 +5,9 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Markdown from 'markdown-to-jsx';
 import TranslateReact from "../TranslateReact"
 
+import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
+import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
+
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -779,6 +782,8 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    isIcon = (icon) => (this.state.rawSettings.icon === icon ? true : false)
+
     addAdjustmentTime = () => {
         this.state.adjustmentTimes.push({
             brightness: 50,
@@ -834,6 +839,17 @@ export default class SettingsWindow extends PureComponent {
                         <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
                         <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
                         <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
+
+                        <br /><br />
+                        <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
+                        <div className="icons-row">
+                            <div class="icon-option" data-active={ this.isIcon("icon") } onClick={ () => window.sendSettings({icon: "icon"})}>
+                                <img src={DefaultIcon} />
+                            </div>
+                            <div class="icon-option" data-active={ this.isIcon("mdl2") } onClick={ () => window.sendSettings({icon: "mdl2"})}>
+                                <img src={MDL2Icon} />
+                            </div>
+                        </div>
                     </div>
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>

@@ -248,6 +248,7 @@ const defaultSettings = {
   isDev,
   userClosedIntro: false,
   theme: "default",
+  icon: "icon",
   updateInterval: 500,
   openAtLogin: true,
   killWhenIdle: false,
@@ -338,6 +339,12 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.language !== undefined) {
       getLocalization()
+    }
+
+    if (newSettings.icon !== undefined) {
+      if (tray) {
+        tray.setImage(getTrayIconPath())
+      }
     }
 
     if (newSettings.checkForUpdates !== undefined) {
@@ -710,7 +717,7 @@ function getThemeRegistry() {
             sendToAllWindows('theme-settings', themeSettings)
             lastTheme = themeSettings
             if (tray) {
-              tray.setImage((themeSettings.SystemUsesLightTheme ? path.join(__dirname, 'assets/light-theme/icon.ico') : path.join(__dirname, 'assets/icon.ico')))
+              tray.setImage(getTrayIconPath())
             }
             break; // Only the first one is needed
           }
@@ -721,6 +728,15 @@ function getThemeRegistry() {
     }
 
   })
+}
+
+function getTrayIconPath() {
+  const themeDir = (lastTheme && lastTheme.SystemUsesLightTheme ? 'light' : 'dark')
+  let icon = "icon";
+  if(settings.icon === "mdl2") {
+    icon = settings.icon
+  }
+  return path.join(__dirname, `assets/tray-icons/${themeDir}/${icon}.ico`)
 }
 
 function getAccentColors() {
@@ -793,7 +809,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     let monitorNames = await namesPromise
     await wmiPromise
     await ddcciPromise
-    
+
     // Clean up list
     monitors = getCleanList(monitors, monitorNames)
   } catch (e) {
@@ -1399,7 +1415,7 @@ app.on('quit', () => {
 function createTray() {
   if (tray != null) return false;
 
-  tray = new Tray(path.join(__dirname, 'assets/icon.ico'))
+  tray = new Tray(getTrayIconPath())
   const contextMenu = Menu.buildFromTemplate([
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }

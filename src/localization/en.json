@@ -57,6 +57,7 @@
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
     "SETTINGS_GENERAL_SCROLL_TITLE": "Tray icon scroll shortcut",
     "SETTINGS_GENERAL_SCROLL_DESC": "Adjust the brightness of all displays at once by scrolling over the system tray icon. This does not work with some trackpads.",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Tray icon",
 
 
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",

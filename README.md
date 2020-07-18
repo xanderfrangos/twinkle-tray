@@ -40,6 +40,14 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitor
 - DVI and VGA may not be compatible.
 - USB/Thunderbolt/Surface docks with HDMI or DisplayPort may not be compatible. 
 
+## Localization
+Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/graphs/contributors), Twinkle Tray is localized for multiple languages. If you'd like to create or update a localization, see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Localization-files) for details. Special thanks to [Weblate](https://weblate.org/) for allowing free use of their service.
+
+#### Localization progress
+<a href="https://hosted.weblate.org/engage/twinkle-tray/?utm_source=widget">
+<img src="https://hosted.weblate.org/widgets/twinkle-tray/-/multi-auto.svg" alt="Translation status" />
+</a>
+
 ## Build
 If you wish to run a development build of Twinkly Tray:
 

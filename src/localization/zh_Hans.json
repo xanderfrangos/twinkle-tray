@@ -44,8 +44,8 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "分析",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "发送使用数据以帮助改进Twinkle Tray。不会发送个人信息。{{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "了解更多",
-    "SETTINGS_GENERAL_SCROLL_TITLE": "",
-    "SETTINGS_GENERAL_SCROLL_DESC": "",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "托盘图标鼠标滚动快捷方式",
+    "SETTINGS_GENERAL_SCROLL_DESC": "通过鼠标滚动系统托盘图标，一次调整所有显示器的亮度。但这对某些触控板不起作用。",
     "SETTINGS_MONITORS_RATE_TITLE": "亮度更新速度",
     "SETTINGS_MONITORS_RATE_DESC": "调整显示器的亮度值时，显示器亮度的更新速度。如果显示器闪烁，请增加时间。",
     "SETTINGS_MONITORS_RATE_0": "非常快",
@@ -85,5 +85,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray 有新版本可用！",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "无更新。目前的版本包括以下更新：",
     "SETTINGS_UPDATES_DOWNLOADING": "正在下载更新中…",
-    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "托盘图标"
 }

@@ -83,5 +83,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Доступна новая версия Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "В актуальном состоянии. Текущая версия включает в себя следующие изменения:",
     "SETTINGS_UPDATES_DOWNLOADING": "Загрузка обновлений…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Показывать иконку в трее"
 }

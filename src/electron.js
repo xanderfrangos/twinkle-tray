@@ -121,6 +121,7 @@ function getSettingsAnalytics() {
     usingHotkeys: (Object.keys(settings.hotkeys).length > 0 ? true : false),
     usingLinkedLevels: settings.linkedLevelsActive,
     usingAutomaticUpdates: settings.checkForUpdates,
+    trayIcon: settings.icon,
   }
 
   // Check if renames are used

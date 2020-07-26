@@ -173,6 +173,7 @@ export default class SettingsWindow extends PureComponent {
     getRemap = (name) => {
         if (this.state.remaps[name] === undefined) {
             return {
+                isFallback: true,
                 min: 0,
                 max: 100
             }
@@ -184,7 +185,7 @@ export default class SettingsWindow extends PureComponent {
     minMaxChanged = (value, slider) => {
         console.log(value, slider, this.state.remaps)
 
-        const name = slider.props.monitorName
+        const name = slider.props.monitorID
         let remaps = Object.assign({}, this.state.remaps)
 
         if (remaps[name] === undefined) {
@@ -387,15 +388,20 @@ export default class SettingsWindow extends PureComponent {
                 if (monitor.type == "none") {
                     return (<div key={monitor.name}></div>)
                 } else {
-                    const remap = this.getRemap(monitor.name)
+                    // New method, by ID
+                    let remap = this.getRemap(monitor.id)
+                    // Old method, by name
+                    if(remap.isFallback) {
+                        remap = this.getRemap(monitor.name)
+                    }
                     return (
-                        <div key={monitor.name}>
+                        <div key={monitor.id}>
                             <br />
                             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{this.getMonitorName(monitor, this.state.names)}</div></div>
                             <label>{T.t("GENERIC_MINIMUM")}</label>
-                            <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
+                            <Slider key={monitor.id + ".min"} type="min" monitorID={monitor.id} level={remap.min} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
                             <label>{T.t("GENERIC_MAXIMUM")}</label>
-                            <Slider key={monitor.name + ".max"} type="max" level={remap.max} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
+                            <Slider key={monitor.id + ".max"} type="max" monitorID={monitor.id} level={remap.max} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
                         </div>
 
                     )
@@ -690,6 +696,7 @@ export default class SettingsWindow extends PureComponent {
                         <br />Internal name: <b>{monitor.hwid[1]}</b>
                         <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
                         <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
+                        <br />Raw Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightnessRaw) }</b>
                         <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
                         <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                         <br />Key: <b>{monitor.key}</b>

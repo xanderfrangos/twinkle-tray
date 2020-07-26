@@ -57,15 +57,37 @@ try {
       if (!bounds) return false;
       if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
         const amount = Math.round(event.delta) * 2;
+
+        let linkedLevelVal = false
+
+        // Update internal brightness values
         for (let key in monitors) {
           const monitor = monitors[key]
           if (monitor.type !== "none") {
-            let normalizedAdjust = amount + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-            monitors[key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
-            updateBrightnessThrottle(monitor.id, monitors[key].brightness, false)
+            let normalizedAdjust = minMax(amount + monitor.brightness)
+
+            // Use linked levels, if applicable
+            if(settings.linkedLevelsActive) {
+              // Set shared brightness value if not set
+              if(linkedLevelVal) {
+                normalizedAdjust = linkedLevelVal
+              } else {
+                linkedLevelVal = normalizedAdjust
+              }
+            }
+
+            monitors[key].brightness = normalizedAdjust
           }
         }
-        
+
+        // Update UI
+        sendToAllWindows('monitors-updated', monitors);
+
+        // Send brightness updates
+        for (let key in monitors) {
+          updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
+        }
+         
         // If panel isn't open, use the overlay
         if(panelState !== "visible") {
           hotkeyOverlayStart()
@@ -447,25 +469,44 @@ function applyHotkeys() {
 
 let hotkeyOverlayTimeout
 let hotkeyThrottle = []
+let doingHotkey = false
 const doHotkey = (hotkey) => {
   const now = Date.now()
-  if(hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100) {
+  if(!doingHotkey && (hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100)) {
     hotkeyThrottle[hotkey.monitor] = now
 
 
     let showOverlay = true
 
+    doingHotkey = true
+
     try {
       //refreshMonitors(false)
       analyticsUsage.UsedHotkeys++
-      if (hotkey.monitor === "all") {
+      if (hotkey.monitor === "all" || (settings.linkedLevelsActive && hotkey.monitor != "turn_off_displays")) {
+
+        let linkedLevelVal = false
         for (let key in monitors) {
           const monitor = monitors[key]
-          let normalizedAdjust = (settings.hotkeyPercent * hotkey.direction) + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-          monitors[key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
-          updateBrightnessThrottle(monitor.id, monitors[key].brightness, false, false)
+          let normalizedAdjust = minMax((settings.hotkeyPercent * hotkey.direction) + monitor.brightness)
+
+          // Use linked levels, if applicable
+          if(settings.linkedLevelsActive) {
+            // Set shared brightness value if not set
+            if(linkedLevelVal) {
+              normalizedAdjust = linkedLevelVal
+            } else {
+              linkedLevelVal = normalizedAdjust
+            }
+          }
+
+          monitors[key].brightness = normalizedAdjust
         }
+
         sendToAllWindows('monitors-updated', monitors);
+        for (let key in monitors) {
+          updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
+        }
       } else if (hotkey.monitor == "turn_off_displays") {
         showOverlay = false
         sleepDisplays()
@@ -473,10 +514,10 @@ const doHotkey = (hotkey) => {
         if (Object.keys(monitors).length) {
           const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
           if (monitor) {
-            let normalizedAdjust = (settings.hotkeyPercent * hotkey.direction) + normalizeBrightness(monitor.brightness, false, monitor.min, monitor.max)
-            monitors[monitor.key].brightness = normalizeBrightness(normalizedAdjust, true, monitor.min, monitor.max)
+            let normalizedAdjust = minMax((settings.hotkeyPercent * hotkey.direction) + monitor.brightness)
+            monitors[monitor.key].brightness = normalizedAdjust
             sendToAllWindows('monitors-updated', monitors);
-            updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, false, false)
+            updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
           }
         }
       }
@@ -490,6 +531,8 @@ const doHotkey = (hotkey) => {
     } catch (e) {
       console.log("HOTKEY ERROR:", e)
     }
+
+    doingHotkey = false
 
   }
 }
@@ -546,16 +589,30 @@ function applyOrder() {
 function applyRemaps() {
   for (let key in monitors) {
     const monitor = monitors[key]
-    if (settings.remaps) {
-      for (let remapName in settings.remaps) {
-        if (remapName == monitor.name) {
-          let remap = settings.remaps[remapName]
-          monitor.min = remap.min
-          monitor.max = remap.max
-        }
+    applyRemap(monitor)
+  }
+}
+
+function applyRemap(monitor) {
+  if (settings.remaps) {
+    for (let remapName in settings.remaps) {
+      if (remapName == monitor.name || remapName == monitor.id) {
+        let remap = settings.remaps[remapName]
+        monitor.min = remap.min
+        monitor.max = remap.max
+        // Stop if using new scheme
+        if(remapName == monitor.id) return monitor;
       }
     }
   }
+  return monitor
+}
+
+function minMax(value, min = 0, max = 100) {
+  let out = value
+  if(value < min) out = min;
+  if(value > max) out = max;
+  return out;
 }
 
 function determineTheme(themeName) {
@@ -845,12 +902,13 @@ refreshDDCCI = async () => {
       for (let monitor of ddcciMonitors) {
 
         try {
-          const ddcciInfo = {
+          let ddcciInfo = {
             name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
             id: monitor,
             num: local,
             localID: local,
             brightness: ddcci.getBrightness(monitor),
+            brightnessRaw: -1,
             type: 'ddcci',
             min: 0,
             max: 100
@@ -863,6 +921,7 @@ refreshDDCCI = async () => {
               key: hwid[2],
               num: false,
               brightness: 50,
+              brightnessRaw: 50,
               type: 'none',
               min: 0,
               max: 100,
@@ -874,6 +933,12 @@ refreshDDCCI = async () => {
             if (monitors[hwid[2]].name)
               ddcciInfo.name = monitors[hwid[2]].name
           }
+
+          // Get normalization info
+          ddcciInfo = applyRemap(ddcciInfo)
+          // Unnormalize brightness
+          ddcciInfo.brightnessRaw = ddcciInfo.brightness
+          ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightness, true, ddcciInfo.min, ddcciInfo.max)
 
           ddcciList.push(ddcciInfo)
           Object.assign(monitors[hwid[2]], ddcciInfo)
@@ -911,12 +976,13 @@ refreshWMI = async () => {
 
           for (let monitor of result) {
 
-            const wmiInfo = {
+            let wmiInfo = {
               name: makeName(monitor.InstanceName, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
               id: monitor.InstanceName,
               num: local,
               localID: local,
               brightness: monitor.CurrentBrightness,
+              brightnessRaw: -1,
               type: 'wmi',
               min: 0,
               max: 100
@@ -931,6 +997,7 @@ refreshWMI = async () => {
                 key: hwid[2],
                 num: false,
                 brightness: 50,
+                brightnessRaw: 50,
                 type: 'none',
                 min: 0,
                 max: 100,
@@ -942,6 +1009,12 @@ refreshWMI = async () => {
               if (monitors[hwid[2]].name)
                 wmiInfo.name = monitors[hwid[2]].name
             }
+
+            // Get normalization info
+            wmiInfo = applyRemap(wmiInfo)
+            // Unnormalize brightness
+            wmiInfo.brightnessRaw = wmiInfo.brightness
+            wmiInfo.brightness = normalizeBrightness(wmiInfo.brightness, true, wmiInfo.min, wmiInfo.max)
 
             wmiList.push(wmiInfo)
             Object.assign(monitors[hwid[2]], wmiInfo)
@@ -982,7 +1055,7 @@ function makeName(monitorDevice, fallback) {
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 let lastBrightnessTimes = []
-function updateBrightnessThrottle(id, level, useCap = false, sendUpdate = true) {
+function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
   let idx = updateBrightnessQueue.length
   const found = updateBrightnessQueue.findIndex(item => item.id === id)
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
@@ -1019,7 +1092,7 @@ function updateBrightnessThrottle(id, level, useCap = false, sendUpdate = true) 
 
 
 
-function updateBrightness(index, level, useCap = false) {
+function updateBrightness(index, level, useCap = true) {
 
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
@@ -1034,13 +1107,13 @@ function updateBrightness(index, level, useCap = false) {
     monitor = monitors[index]
   }
 
-  const brightness = normalizeBrightness(level, true, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
+  const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
-    monitor.brightness = brightness
+    monitor.brightness = level
     if (monitor.type == "ddcci") {
-      ddcci.setBrightness(monitor.id, brightness)
+      ddcci.setBrightness(monitor.id, normalized)
     } else if (monitor.type == "wmi") {
-      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
+      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${normalized})"`)
     }
     setTrayPercent()
   } catch (e) {
@@ -1048,15 +1121,17 @@ function updateBrightness(index, level, useCap = false) {
   }
 }
 
-function normalizeBrightness(brightness, sending = false, min = 0, max = 100) {
+function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100) {
   let level = brightness
   if (level > 100) level = 100;
   if (level < 0) level = 0;
   if (min > 0 || max < 100) {
     let out = level
-    if (sending) {
+    if (!unnormalize) {
+      // Normalize
       out = (min + ((level / 100) * (max - min)))
     } else {
+      // Unnormalize
       out = ((level - min) * (100 / (max - min)))
     }
     if (out > 100) out = 100;
@@ -1086,7 +1161,7 @@ function transitionBrightness(level, eventMonitors = []) {
         for (let remapName in settings.remaps) {
           if (remapName == monitor.name) {
             let remap = settings.remaps[remapName]
-            normalized = normalizeBrightness(normalized, true, remap.min, remap.max)
+            normalized = normalized
           }
         }
       }

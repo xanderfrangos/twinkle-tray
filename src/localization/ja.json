@@ -3,7 +3,7 @@
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "キャンセル",
     "GENERIC_SAVE": "保存",
-    "GENERIC_CLEAR": "クリア",
+    "GENERIC_CLEAR": "消去",
     "GENERIC_OFF": "オフ",
     "GENERIC_ON": "オン",
     "GENERIC_QUIT": "終了",
@@ -22,7 +22,7 @@
     "PANEL_UPDATE_AVAILABLE": "最新版が利用できます",
     "PANEL_BUTTON_LINK_LEVELS": "すべて同時に設定",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "ディスプレイの電源を切る",
-    "INTRO_TITLE": "ご利用を歓迎します。",
+    "INTRO_TITLE": "ご利用を歓迎します",
     "INTRO_INSTRUCTIONS": "Twinkle Tray のアイコンはおそらく隠れています。ですので簡単に利用できるようにするには以下の手順をご覧ください。",
     "SETTINGS_TITLE": "Twinkle Tray 設定",
     "SETTINGS_SIDEBAR_GENERAL": "一般",
@@ -83,5 +83,8 @@
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray の最新版が利用できます！",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "更新なし。以下は現在お使いのバージョンの更新履歴です。",
     "SETTINGS_UPDATES_DOWNLOADING": "更新をダウンロード中…",
-    "SETTINGS_UPDATES_DOWNLOAD": "ダウンロード & インストール {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "ダウンロード & インストール {{1}}",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "トレイのアイコン上でスクロール",
+    "SETTINGS_GENERAL_SCROLL_DESC": "トレイアイコン上でのスクロールで全ディスプレイの輝度を調整します。一部のタッチパッドでは動作しません。",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "トレイのアイコン"
 }

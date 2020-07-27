@@ -127,16 +127,18 @@
     .name-row {
         display: flex;
         justify-content: flex-start;
+        align-items: center;
         width: 100%;
 
         .title {
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .icon {
             font-family: "Segoe MDL2 Assets";
             font-size: 22px;
             margin-right: 10px;
+            margin-bottom: -3px;
         }
     }
 }

@@ -1,10 +1,9 @@
 {
     "LANGUAGE": "Deutsch",
-
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "Abbrechen",
     "GENERIC_SAVE": "Speichern",
-    "GENERIC_CLEAR": "Clear",
+    "GENERIC_CLEAR": "Löschen",
     "GENERIC_OFF": "Aus",
     "GENERIC_ON": "An",
     "GENERIC_QUIT": "Beenden",
@@ -12,77 +11,61 @@
     "GENERIC_SETTINGS": "Einstellungen",
     "GENERIC_INSTALL": "Installieren",
     "GENERIC_DISMISS": "Ignorieren",
-    "GENERIC_DISPLAY_SINGLE": "Monitor", 
+    "GENERIC_DISPLAY_SINGLE": "Monitor",
     "GENERIC_ALL_DISPLAYS": "Alle Monitore",
     "GENERIC_MINIMUM": "Min",
     "GENERIC_MAXIMUM": "Max",
     "GENERIC_NO_DISPLAYS": "Keine Monitore gefunden. Bitte verbinden Sie einen Monitor mit Ihrem PC.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "Keine kompatiblen Monitore gefunden. Bitte stellen Sie sicher, dass \"DDC/CI\" für Ihre Monitore aktiviert ist.",
     "GENERIC_NO_DISPLAYS_SHORT": "Keine kompatiblen Monitore gefunden.",
-
-
     "PANEL_TITLE": "Helligkeit anpassen",
-    "PANEL_UPDATE_AVAILABLE": "Ein Update ist verfügbar",
+    "PANEL_UPDATE_AVAILABLE": "Eine neue Version ist verfügbar",
     "PANEL_BUTTON_LINK_LEVELS": "Verbindungsebenen",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Monitore ausschalten",
-
-
-    "INTRO_TITLE": "Willkommen bei Twinkle Tray!",
-    "INTRO_INSTRUCTIONS": "Das Tray-Icon von Twinkle Tray ist vermutlich versteckt, Sie sollten es an einen sichtbaren Ort verschieben, sodass Sie es einfach erreichen können. Siehe untenstehende Anweisungen.",
-
-
+    "INTRO_TITLE": "Hallo, Twinkle Tray!",
+    "INTRO_INSTRUCTIONS": "Das Tray-Icon von Twinkle Tray ist vermutlich versteckt, Sie sollten es an einen sichtbaren Ort verschieben, so dass Sie es einfach erreichen können. Siehe untenstehende Anweisungen.",
     "SETTINGS_TITLE": "Twinkle Tray Einstellungen",
-
-
     "SETTINGS_SIDEBAR_GENERAL": "Allgemein",
-    "SETTINGS_SIDEBAR_MONITORS": "Monitor Einstellungen",
-    "SETTINGS_SIDEBAR_TIME": "Zeit Einstellungen",
+    "SETTINGS_SIDEBAR_MONITORS": "Monitor-Einstellungen",
+    "SETTINGS_SIDEBAR_TIME": "Zeit-Einstellungen",
     "SETTINGS_SIDEBAR_HOTKEYS": "Hotkeys",
     "SETTINGS_SIDEBAR_UPDATES": "Updates",
-
-
     "SETTINGS_GENERAL_TITLE": "Allgemein",
     "SETTINGS_GENERAL_STARTUP": "Beim PC-Start öffnen",
-    "SETTINGS_GENERAL_THEME_TITLE": "App aussehen",
-    "SETTINGS_GENERAL_THEME_SYSTEM": "System Einstellungen (Standard)",
+    "SETTINGS_GENERAL_THEME_TITLE": "Aussehen",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "Systemeinstellungen (Standard)",
     "SETTINGS_GENERAL_THEME_DARK": "Dunkel",
     "SETTINGS_GENERAL_THEME_LIGHT": "Hell",
     "SETTINGS_GENERAL_LANGUAGE_TITLE": "Sprache",
-    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "System Sprache (Standard)",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "Systemsprache (Standard)",
     "SETTINGS_GENERAL_RESET_TITLE": "Einstellungen zurücksetzen",
-    "SETTINGS_GENERAL_RESET_DESC": "Falls Sie die Einstellungen zurücksetzen möchten, klicken Sie hier.",
+    "SETTINGS_GENERAL_RESET_DESC": "Hier klicken, um die Konfiguration zu leeren.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Einstellungen zurücksetzen",
-    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analyse zur Nutzung aktivieren",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analyse",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Nutzerdaten an Twinkle Tray senden, um Twinkle Tray zu verbessern. Es werden keine persönlichen Daten versendet. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Mehr erfahren",
-
-
-    "SETTINGS_MONITORS_RATE_TITLE": "Helligkeitsaktualisierungsintervall",
-    "SETTINGS_MONITORS_RATE_DESC": "Wie oft die Helligkeit ihrer Monitore aktualisiert wird, während Sie diese Eisntellungen vornhemen. Erhöhnen Sie die Zeit, wenn Ihre Monitore flackern.",
-    "SETTINGS_MONITORS_RATE_0": "Lächerlich schnell",
+    "SETTINGS_MONITORS_RATE_TITLE": "Intervall für Helligkeitsaktualisierung",
+    "SETTINGS_MONITORS_RATE_DESC": "Legt fest, wie oft die Helligkeit Ihrer Monitore aktualisiert wird, während Sie diese Einstellungen vornhemen. Erhöhen Sie die Zeit, wenn Ihre Monitore flackern.",
+    "SETTINGS_MONITORS_RATE_0": "Sehr schnell",
     "SETTINGS_MONITORS_RATE_1": "Schnell (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
     "SETTINGS_MONITORS_RATE_3": "Langsam (1 second)",
     "SETTINGS_MONITORS_RATE_4": "Sehr langsam (2 seconds)",
-    "SETTINGS_MONITORS_RENAME_TITLE": "Montire umbenennen",
+    "SETTINGS_MONITORS_RENAME_TITLE": "Monitore umbenennen",
     "SETTINGS_MONITORS_RENAME_DESC": "Falls Sie einen eigenen Namen pro Monitor wünschen (ex \"Linker Monitor\", \"Mittlerer Monitor\"), können Sie den Namen unten eingeben. Falls Sie das Feld leer lassen, wird der originale Name verwendet.",
     "SETTINGS_MONITORS_ENTER_NAME": "Name eingeben",
     "SETTINGS_MONITORS_REORDER_TITLE": "Position anpassen",
-    "SETTINGS_MONITORS_REORDER_DESC": "Verändern Sie die Reihenfolge, in der die Monitore in der Leiste angezeigt werden. Clicken und ziehen Sie, um Änderungen vorzunehmen.",
+    "SETTINGS_MONITORS_REORDER_DESC": "Verändern Sie die Reihenfolge, in der die Monitore in der Leiste angezeigt werden. Klicken und ziehen Sie, um Änderungen vorzunehmen.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Helligkeit normalisieren",
     "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitore haben oftmals verschiedene Helligkeits-Spektren. Die Helligkeitsstufen können konsistenter gemacht werden, indem die minimale / maximale Helligkeit der Monitore limitiert wird. Ähnliche Monitore werden dieselben Einstellungen verwenden.",
-
-
     "SETTINGS_TIME_TITLE": "Tageszeitanpassungen",
-    "SETTINGS_TIME_DESC": "Automatisch die Monitore an einer gewünschten Uhrzeit auf eine bestimmte Helligkeit setzen. Alle Monitore werden dieselben, normalisierten Einstellung verwenden.",
+    "SETTINGS_TIME_DESC": "Helligkeit je nach Uhrzeit auf eine bestimmte Helligkeit setzen. Alle Monitore werden dieselben, normalisierten Einstellungen verwenden.",
     "SETTINGS_TIME_ADD": "Eine Uhrzeit hinzufügen",
     "SETTINGS_TIME_REMOVE": "Uhrzeit entfernen",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Die Helligkeit für einzelne Monitore einstellen",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Die Helligkeit für einzelnde Monitore anpassen, anstelle aller Monitore auf einmal.",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Die Helligkeit für einzelne Monitore anpassen, anstelle aller Monitore auf einmal.",
     "SETTINGS_TIME_STARTUP_TITLE": "Beim Starten der App überprüfen",
     "SETTINGS_TIME_STARTUP_DESC": "Die Helligkeit automatisch der am meisten relevanten Uhrzeit anpassen, wenn Twinkle Tray startet.",
-
-
     "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
     "SETTINGS_HOTKEYS_DESC": "Hotkeys anpassen um die Helligkeit von einzelnen oder allen Monitoren anzupassen.",
     "SETTINGS_HOTKEYS_ADD": "Hotkey hinzufügen",
@@ -90,18 +73,15 @@
     "SETTINGS_HOTKEYS_INCREASE": "Helligkeit erhöhen",
     "SETTINGS_HOTKEYS_DECREASE": "Helligkeit verringern",
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Hier Tasten drücken",
-    "SETTINGS_HOTKEYS_LEVEL_TITLE": "Anpassung der Helligkeitlevel",
-    "SETTINGS_HOTKEYS_LEVEL_DESC": "Wie sehr die Helligkeit angepasst werden soll, wenn Hotkeys gedrückt werden.",
-
-
+    "SETTINGS_HOTKEYS_LEVEL_TITLE": "Anpassung des Helligkeitslevel",
+    "SETTINGS_HOTKEYS_LEVEL_DESC": "Legt fest, wie stark die Helligkeit angepasst werden soll, wenn Hotkeys gedrückt werden.",
     "SETTINGS_UPDATES_TITLE": "Updates",
-    "SETTINGS_UPDATES_VERSION": "Ihre Version von Twinkle Tray ist {{1}}.",
-    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Automatisch nach Updates suchen",
-    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Twinkle Tray wird automatisch nach Update suchen und Sie in der Helligkeitsanzeigen informieren.",
-    "SETTINGS_UPDATES_MS_STORE": "Um nach Updates zu suchen, besuchen Sie die Twinkle Tray Shopseite im Microsoft Store",
-    "SETTINGS_UPDATES_AVAILABLE": "Für Twinkle Tray ist ein Update verfügbar!",
-    "SETTINGS_UPDATES_NONE_AVAILABLE": "Momentan sind keine Updates verfügbar. Die aktuelle Version von Twinkle Tray enthält die folgenden Änderungen:",
-    "SETTINGS_UPDATES_DOWNLOADING": "Update wird heruntergeladen...",
-    "SETTINGS_UPDATES_DOWNLOAD": "Herunteladen & installieren {{1}}"
-    
+    "SETTINGS_UPDATES_VERSION": "Sie haben Twinkle Tray {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Automatisch nach neuen Versionen suchen",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "Wenn es eine neue Version gibt, wird dies in der Helligkeitsanzeige angezeigt.",
+    "SETTINGS_UPDATES_MS_STORE": "Um nach Updates zu suchen, besuchen Sie die Microsoft Store App.",
+    "SETTINGS_UPDATES_AVAILABLE": "Neue Version für Twinkle Tray verfügbar!",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "Aktuell. Die aktuelle Version von Twinkle Tray enthält folgende Änderungen:",
+    "SETTINGS_UPDATES_DOWNLOADING": "Update wird heruntergeladen…",
+    "SETTINGS_UPDATES_DOWNLOAD": "Herunterladen & installieren {{1}}"
 }

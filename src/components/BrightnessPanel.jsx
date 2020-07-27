@@ -23,7 +23,7 @@ export default class BrightnessPanel extends PureComponent {
           return (<div key={monitor.key}></div>)
         } else {
           return (
-            <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={monitor.min} max={monitor.max} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+            <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
           )
         }
       })
@@ -52,6 +52,8 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="updateBar">
         <div className="left">{T.t("PANEL_UPDATE_AVAILABLE")} ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>{T.t("GENERIC_INSTALL")}</a><a className="icon" title={T.t("GENERIC_DISMISS")} onClick={window.dismissUpdate}>&#xEF2C;</a></div>
       </div>)
+    } else if(this.state.update && this.state.update.downloading) {
+    return (<div className="updateBar"><div className="left progress"><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div><div className="right">{this.state.updateProgress}%</div></div>)
     }
   }
 
@@ -81,7 +83,7 @@ export default class BrightnessPanel extends PureComponent {
         const monitor = monitors[key]
         monitor.brightness = level
         if (slider.props.id != monitor.id) {
-          monitor.brightness = this.normalize(this.normalize(level, false, sliderMonitor.min, sliderMonitor.max), true, monitor.min, monitor.max)
+          //monitor.brightness = this.normalize(this.normalize(level, false, sliderMonitor.min, sliderMonitor.max), true, monitor.min, monitor.max)
         } else {
 
         }
@@ -123,7 +125,7 @@ export default class BrightnessPanel extends PureComponent {
     // Reset panel height so it's recalculated
     this.panelHeight = -1
     this.setState({
-      monitors: this.updateMinMax(newMonitors)
+      monitors: newMonitors
     })
 
     // Delay initial adjustments
@@ -245,7 +247,8 @@ export default class BrightnessPanel extends PureComponent {
       linkedLevelsActive: false,
       names: {},
       update: false,
-      sleeping: false
+      sleeping: false,
+      updateProgress: 0
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -263,6 +266,14 @@ export default class BrightnessPanel extends PureComponent {
     window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
+
+    if (window.isAppX === false) {
+      window.addEventListener("updateProgress", (e) => {
+          this.setState({
+              updateProgress: e.detail.progress
+          })
+      })
+  }
 
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()

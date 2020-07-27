@@ -2,8 +2,11 @@ import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
 import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { markdown } from 'markdown';
+import Markdown from 'markdown-to-jsx';
 import TranslateReact from "../TranslateReact"
+
+import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
+import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -93,7 +96,9 @@ export default class SettingsWindow extends PureComponent {
             checkForUpdates: false,
             adjustmentTimeIndividualDisplays: false,
             languages: [],
-            analytics: false
+            analytics: false,
+            scrollShortcut: true,
+            updateProgress: 0
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -121,6 +126,11 @@ export default class SettingsWindow extends PureComponent {
                         downloadingUpdate: false
                     })
                 }
+            })
+            window.addEventListener("updateProgress", (e) => {
+                this.setState({
+                    updateProgress: e.detail.progress
+                })
             })
             window.checkForUpdates()
         }
@@ -163,6 +173,7 @@ export default class SettingsWindow extends PureComponent {
     getRemap = (name) => {
         if (this.state.remaps[name] === undefined) {
             return {
+                isFallback: true,
                 min: 0,
                 max: 100
             }
@@ -174,7 +185,7 @@ export default class SettingsWindow extends PureComponent {
     minMaxChanged = (value, slider) => {
         console.log(value, slider, this.state.remaps)
 
-        const name = slider.props.monitorName
+        const name = slider.props.monitorID
         let remaps = Object.assign({}, this.state.remaps)
 
         if (remaps[name] === undefined) {
@@ -247,6 +258,12 @@ export default class SettingsWindow extends PureComponent {
         const analytics = (this.state.analytics ? false : true)
         this.setState({ analytics })
         window.sendSettings({ analytics })
+    }
+
+    scrollShortcutChanged = (event) => {
+        const scrollShortcut = (this.state.scrollShortcut ? false : true)
+        this.setState({ scrollShortcut })
+        window.sendSettings({ scrollShortcut })
     }
 
     ramChanged = (event) => {
@@ -335,8 +352,11 @@ export default class SettingsWindow extends PureComponent {
             if (this.state.latest && this.state.latest != window.version) {
                 return (
                     <div>
-                        <p><b style={{ color: window.accent }}>{T.t("SETTINGS_UPDATES_AVAILABLE")}</b></p>
-                        <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
+                        <p><b style={{ color: window.accent }}>{T.t("SETTINGS_UPDATES_AVAILABLE") + ` (${this.state.latest})`}</b></p>
+                        <div className="changelog">
+                            <h3>{this.state.latest}</h3>
+                            <Markdown options={{ forceBlock: true }}>{this.state.changelog}</Markdown>
+                        </div>
                         <br />
                         {this.getUpdateButton()}
                     </div>
@@ -345,7 +365,7 @@ export default class SettingsWindow extends PureComponent {
                 return (
                     <div>
                         <p>{T.t("SETTINGS_UPDATES_NONE_AVAILABLE")}</p>
-                        <div className="changelog" dangerouslySetInnerHTML={{ __html: markdown.toHTML(this.state.changelog) }}></div>
+                        <div className="changelog"><Markdown options={{ forceBlock: true }}>{this.state.changelog}</Markdown></div>
                     </div>
                 )
             }
@@ -354,9 +374,9 @@ export default class SettingsWindow extends PureComponent {
 
     getUpdateButton = () => {
         if (this.state.downloadingUpdate) {
-            return (<p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p>)
+            return (<div><p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span class="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span className="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
         }
     }
 
@@ -368,15 +388,20 @@ export default class SettingsWindow extends PureComponent {
                 if (monitor.type == "none") {
                     return (<div key={monitor.name}></div>)
                 } else {
-                    const remap = this.getRemap(monitor.name)
+                    // New method, by ID
+                    let remap = this.getRemap(monitor.id)
+                    // Old method, by name
+                    if(remap.isFallback) {
+                        remap = this.getRemap(monitor.name)
+                    }
                     return (
-                        <div key={monitor.name}>
+                        <div key={monitor.id}>
                             <br />
                             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{this.getMonitorName(monitor, this.state.names)}</div></div>
                             <label>{T.t("GENERIC_MINIMUM")}</label>
-                            <Slider key={monitor.name + ".min"} type="min" level={remap.min} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
+                            <Slider key={monitor.id + ".min"} type="min" monitorID={monitor.id} level={remap.min} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
                             <label>{T.t("GENERIC_MAXIMUM")}</label>
-                            <Slider key={monitor.name + ".max"} type="max" level={remap.max} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
+                            <Slider key={monitor.id + ".max"} type="max" monitorID={monitor.id} level={remap.max} monitorName={monitor.name} monitortype={monitor.type} onChange={this.minMaxChanged} scrolling={false} />
                         </div>
 
                     )
@@ -671,6 +696,7 @@ export default class SettingsWindow extends PureComponent {
                         <br />Internal name: <b>{monitor.hwid[1]}</b>
                         <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
                         <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
+                        <br />Raw Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightnessRaw) }</b>
                         <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
                         <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                         <br />Key: <b>{monitor.key}</b>
@@ -731,6 +757,7 @@ export default class SettingsWindow extends PureComponent {
         const hotkeys = (settings.hotkeys || {})
         const hotkeyPercent = (settings.hotkeyPercent || 10)
         const analytics = settings.analytics
+        const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
             linkedLevelsActive,
@@ -746,7 +773,8 @@ export default class SettingsWindow extends PureComponent {
             language,
             hotkeys,
             hotkeyPercent,
-            analytics
+            analytics,
+            scrollShortcut
         }, () => {
             this.forceUpdate()
         })
@@ -760,6 +788,8 @@ export default class SettingsWindow extends PureComponent {
             return false
         }
     }
+
+    isIcon = (icon) => (this.state.rawSettings.icon === icon ? true : false)
 
     addAdjustmentTime = () => {
         this.state.adjustmentTimes.push({
@@ -812,6 +842,21 @@ export default class SettingsWindow extends PureComponent {
                             <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
                             {this.getLanguages()}
                         </select>
+                        <br /><br />
+                        <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
+                        <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
+                        <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
+
+                        <br /><br />
+                        <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
+                        <div className="icons-row">
+                            <div class="icon-option" data-active={ this.isIcon("icon") } onClick={ () => window.sendSettings({icon: "icon"})}>
+                                <img src={DefaultIcon} />
+                            </div>
+                            <div class="icon-option" data-active={ this.isIcon("mdl2") } onClick={ () => window.sendSettings({icon: "mdl2"})}>
+                                <img src={MDL2Icon} />
+                            </div>
+                        </div>
                     </div>
                     <div className="pageSection" data-active={this.isSection("general")}>
                         <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>
@@ -923,7 +968,16 @@ export default class SettingsWindow extends PureComponent {
                     </div>
 
 
-
+                    <div className="pageSection debug" data-active={this.isSection("debug")}>
+                        <div className="sectionTitle">Update channel</div>
+                        <p>
+                            <select value={ this.state.rawSettings.branch } onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
+                                <option value="master">Stable (default)</option>
+                                <option value="beta">Beta</option>
+                            </select>
+                        </p>
+                        
+                    </div>
 
                     <div className="pageSection debug" data-active={this.isSection("debug")}>
                         <div className="sectionTitle">All Displays</div>
@@ -951,6 +1005,7 @@ export default class SettingsWindow extends PureComponent {
                         <p>
                             <a className="button" onClick={() => { window.sendSettings({ killWhenIdle: !this.state.rawSettings.killWhenIdle }) }}>Toggle Kill When Idle ({(this.state.rawSettings && this.state.rawSettings.killWhenIdle !== undefined ? this.state.rawSettings.killWhenIdle.toString() : "?")})</a>
                         </p>
+                        
                     </div>
 
                 </div>

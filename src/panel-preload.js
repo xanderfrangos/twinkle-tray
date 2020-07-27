@@ -1,5 +1,4 @@
 const { ipcRenderer: ipc, remote } = require('electron');
-const { exec } = require('child_process')
 let browser = remote.getCurrentWindow()
 
 const log = console.log
@@ -27,7 +26,6 @@ function setPanelVisibility(visible) {
     // Update interactivity
     if (window.showPanel) {
         browser.setIgnoreMouseEvents(false)
-        browser.focus()
     } else {
         browser.setIgnoreMouseEvents(true)
     }
@@ -135,6 +133,15 @@ ipc.on('taskbar', (event, taskbar) => {
     window.document.getElementById("root").dataset["position"] = taskbar.position
 })
 
+// Set display mode (overlay or normal)
+ipc.on('display-mode', (event, mode) => {
+    window.document.getElementById("root").dataset["mode"] = mode
+})
+
+ipc.on('request-height', () => {
+    ipc.send('panel-height', window.document.getElementById("panel").offsetHeight)
+})
+
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
     if(settings.isDev == false) {
@@ -160,6 +167,15 @@ ipc.on('latest-version', (event, version) => {
     window.latestVersion = version
     window.dispatchEvent(new CustomEvent('updateUpdated', {
         detail: version
+    }))
+})
+
+// Update download progress
+ipc.on('updateProgress', (event, progress) => {
+    window.dispatchEvent(new CustomEvent('updateProgress', {
+        detail: {
+            progress
+        }
     }))
 })
 

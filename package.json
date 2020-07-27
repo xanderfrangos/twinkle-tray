@@ -1,11 +1,11 @@
 {
   "name": "twinkle-tray",
-  "version": "1.9.0",
+  "version": "1.11.4",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
     "parcel": "parcel *.html --port 3000 --out-dir cache",
-    "parcel-build": "del build && parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
+    "parcel-build": "del /q build && parcel build *.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
     "electron-build": "electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
@@ -24,13 +24,14 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
-    "@hensm/ddcci": "file:modules/node-ddcci",
+    "@hensm/ddcci": "0.0.4",
     "color": "^3.1.2",
     "electron-winstore-auto-launch": "^2.0.3",
-    "markdown": "^0.5.0",
+    "global-mouse-events": "^1.0.3",
+    "markdown-to-jsx": "^6.11.4",
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",
-    "universal-analytics": "^0.4.20",
+    "universal-analytics": "^0.4.23",
     "wmi-client": "^0.5.0"
   },
   "build": {
@@ -46,7 +47,8 @@
       "src/settings-preload.js",
       "src/intro-preload.js",
       "src/localization/*",
-      "src/assets/icon.ico",
+      "src/assets/tray-icons/dark/*",
+      "src/assets/tray-icons/light/*",
       "build/**/*",
       "!node_modules/wmi-client/bin",
       "!node_modules/@hensm/ddcci/build",
@@ -77,20 +79,20 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/preset-react": "^7.9.4",
-    "concurrently": "4.1.0",
-    "cross-env": "5.2.0",
-    "electron": "^8.2.1",
-    "electron-builder": "21.2.0",
-    "electron-is-dev": "1.0.1",
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "concurrently": "^5.2.0",
+    "cross-env": "^7.0.2",
+    "electron": "^8.4.0",
+    "electron-builder": "^22.7.0",
+    "electron-is-dev": "^1.2.0",
     "parcel-bundler": "^1.12.4",
-    "react": "16.9.0",
-    "react-beautiful-dnd": "^12.2.0",
-    "react-dom": "16.9.0",
-    "sass": "^1.26.3",
-    "wait-on": "3.2.0",
+    "react": "^16.13.1",
+    "react-beautiful-dnd": "^13.0.0",
+    "react-dom": "16.13.1",
+    "sass": "^1.26.10",
+    "wait-on": "4.0.2"
     "electron-acrylic-window": "^0.2.2"
   }
 }

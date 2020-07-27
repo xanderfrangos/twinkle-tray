@@ -69,12 +69,13 @@ body {
 .titlebar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     user-select: none;
     margin-bottom: 20px;
 
     .title {
-        font-weight: 600;
-        font-size: 18px;
+        font-size: 14.5px;
+        font-weight: 400;
     }
 
     .icons {
@@ -118,7 +119,11 @@ body {
 
     .left {
         font-size: 13px;
-            opacity: 0.8;
+        opacity: 0.8;
+        &.progress {
+            padding-right: 15px;
+            width: 100%;
+        }
     }
     .right {
         display: flex;
@@ -143,6 +148,22 @@ body {
     }
 }
 
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    max-width: 320px;
+    background: rgba(white, 0.2);
+    & > div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 100%;
+        background: white;
+    }
+}
+
 .icon {
     font-family: "Segoe MDL2 Assets";
 }
@@ -152,5 +173,115 @@ body {
     height: 73px;
     .input--range {
         padding-bottom: 15px;
+    }
+}
+
+$overlayBarWidth: 11px;
+$overlayBarWidthOff: $overlayBarWidth * -0.5;
+
+#root {
+    &[data-mode="overlay"] {
+        .input--range .progress {
+            height: $overlayBarWidth;
+            margin-top: $overlayBarWidthOff;
+        }
+        
+        .input--range .range::-webkit-slider-thumb {
+            height: $overlayBarWidth;
+            width: $overlayBarWidth;
+            border-radius: 0;
+            margin-top: 0px;
+            background: white;
+        }
+        
+        .input--range .range::-webkit-slider-runnable-track {
+            height: $overlayBarWidth;
+            background: #6a6a6a;
+        }
+        
+        .titlebar {
+            display: none;
+        }
+        
+        .monitor-item .input--range {
+            padding-bottom: 15px;
+        }
+        
+        .monitor-item {
+            height: 140px;
+            height: 136px;
+            width: 40px;
+            box-sizing: content-box;
+            overflow: visible;
+            position: relative;
+        }
+        
+        & > .window-base {
+            border: none;
+            border: 0px solid var(--tray-border);
+            width: calc(100% - 60px);
+            width: auto;
+            padding: 2px 13px;
+            transition: none !important;
+            display: flex;
+            background: rgba(19, 19, 19, 0.95);
+        }
+        
+        .monitor-item .name-row .icon {
+            display: none;
+        }
+
+        .input--range {
+            width:66px;
+            height: $overlayBarWidth;
+            overflow: visible;
+            position: relative;
+            left: 50%;
+            margin-left: -8px;
+            will-change: transform;
+        }
+
+        .input--range .rangeGroup {
+            flex: none;
+            width: 80px;
+            transform: rotate(-90deg) translate(0.5px, 0.5px);
+            position: relative;
+            top: 53px;
+            left: -33.5px;
+        }
+        
+        .input--range .val {
+            font-size: 13px;
+            width: 40px;
+            padding-right: 4px;
+            color: white;
+
+            position: absolute;
+            top: 104px;
+            left: -21px;
+            width: 50px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+        }
+        
+        .monitor-item .name-row .title {
+            display:none;
+            position: absolute;
+            top: 108px;
+            left: 8px;
+            width: 50px;
+            font-size: 10px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .updateBar {
+            display: none;
+        }
     }
 }

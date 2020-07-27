@@ -1,5 +1,5 @@
 {
-    "LANGUAGE": "Engelsk",
+    "LANGUAGE": "Norwegian Bokmål",
     "GENERIC_OK": "OK",
     "GENERIC_CANCEL": "Avbryt",
     "GENERIC_SAVE": "Lagre",
@@ -63,7 +63,7 @@
     "SETTINGS_TIME_ADD": "Legg til tidspunkt",
     "SETTINGS_TIME_REMOVE": "Fjern tidspunkt",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Sett lysstyrke for enkeltskjermer",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Sett opp lysstyrke per skjerm istedenfor på alle skjermene samtidig.",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Sett opp lysstyrke per skjerm istedenfor på alle skjermene samtidig",
     "SETTINGS_TIME_STARTUP_TITLE": "Sjekk ved programoppstart",
     "SETTINGS_TIME_STARTUP_DESC": "Jamfør lysstyrken for å passe mest relevante tid når Twinkle Tray startes.",
     "SETTINGS_HOTKEYS_TITLE": "Hurtigtaster",

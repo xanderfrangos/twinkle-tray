@@ -74,6 +74,15 @@ ipc.on('latest-version', (event, version) => {
     }))
 })
 
+// Update download progress
+ipc.on('updateProgress', (event, progress) => {
+    window.dispatchEvent(new CustomEvent('updateProgress', {
+        detail: {
+            progress
+        }
+    }))
+})
+
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
     if(JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;

@@ -1696,14 +1696,75 @@ function createSettings() {
     maximizable: true,
     resizable: true,
     minimizable: true,
+    backgroundColor: "#00000000",
     frame: false,
     icon: './src/assets/logo.ico',
-    backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
+    //backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev
     }
   });
+
+
+  // Replace window moving behavior to fix mouse polling rate bug
+  const pollingRate = 59.997 // TO-DO: Detect the current monitor's refresh rate
+  const win = settingsWindow
+  win.on('will-move', (e) => {
+      e.preventDefault()
+  
+      // Track if the user is moving the window
+      if(win._moveTimeout) clearTimeout(win._moveTimeout);
+      win._moveTimeout = setTimeout(
+        () => {
+          win._isMoving = false
+          clearInterval(win._moveInterval)
+          win._moveInterval = null 
+        }, 1000/60)
+  
+      // Start new behavior if not already
+      if(!win._isMoving) {
+        win._isMoving = true
+        if(win._moveInterval) return false;
+
+        // Get start positions
+        win._moveLastUpdate = 0
+        win._moveStartBounds = win.getBounds()
+        win._moveStartCursor = screen.getCursorScreenPoint()
+    
+        // Poll at 600hz while moving window
+        win._moveInterval = setInterval(() => {
+          const now = Date.now()
+          if(now >= win._moveLastUpdate + (1000/pollingRate)) {
+            win._moveLastUpdate = now
+            const cursor = screen.getCursorScreenPoint()
+    
+            // Set new position
+            win.setBounds({
+              x: win._moveStartBounds.x + (cursor.x - win._moveStartCursor.x),
+              y: win._moveStartBounds.y + (cursor.y - win._moveStartCursor.y),
+              width: win._moveStartBounds.width,
+              height: win._moveStartBounds.height
+            })
+          }
+        }, 1000/600)
+      }
+
+    })
+  
+    // Replace window resizing behavior to fix mouse polling rate bug
+    win.on('will-resize', (e, newBounds) => {
+      const now = Date.now()
+      if(!win._resizeLastUpdate) win._resizeLastUpdate = 0;
+        if(now >= win._resizeLastUpdate + (1000/pollingRate)) {
+          win._resizeLastUpdate = now
+          //win.setBounds(newBounds)
+        } else {
+          e.preventDefault()
+        }
+    })
+
+
 
   settingsWindow.loadURL(
     isDev
@@ -1718,6 +1779,7 @@ function createSettings() {
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       settingsWindow.show()
+      settingsWindow.setVibrancy('dark')
     }, 100)
 
     // Prevent links from opening in Electron

@@ -110,7 +110,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages }); console.log(e.detail); T.setLocalizationData(e.detail.desired, e.detail.default) })
-        
+
         if (window.isAppX === false) {
             window.addEventListener("updateUpdated", (e) => {
                 const version = e.detail
@@ -121,7 +121,7 @@ export default class SettingsWindow extends PureComponent {
                     changelog: version.changelog,
                     error: (version.error != undefined ? version.error : false)
                 })
-                if(e.detail.error == true) {
+                if (e.detail.error == true) {
                     this.setState({
                         downloadingUpdate: false
                     })
@@ -374,9 +374,9 @@ export default class SettingsWindow extends PureComponent {
 
     getUpdateButton = () => {
         if (this.state.downloadingUpdate) {
-            return (<div><p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div>)
+            return (<div><p><b>{T.t("SETTINGS_UPDATES_DOWNLOADING")}</b></p><div className="progress-bar"><div style={{ width: `${this.state.updateProgress}%` }}></div></div></div>)
         } else {
-            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span className="icon red vfix" style={ { paddingRight: "6px", display: (this.state.error ? "inline" : "none") } }>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
+            return (<a className="button" onClick={() => { window.getUpdate(); this.setState({ downloadingUpdate: true }) }}><span className="icon red vfix" style={{ paddingRight: "6px", display: (this.state.error ? "inline" : "none") }}>&#xE783;</span>{T.t("SETTINGS_UPDATES_DOWNLOAD", this.state.latest)}</a>)
         }
     }
 
@@ -391,7 +391,7 @@ export default class SettingsWindow extends PureComponent {
                     // New method, by ID
                     let remap = this.getRemap(monitor.id)
                     // Old method, by name
-                    if(remap.isFallback) {
+                    if (remap.isFallback) {
                         remap = this.getRemap(monitor.name)
                     }
                     return (
@@ -601,34 +601,34 @@ export default class SettingsWindow extends PureComponent {
                     }} />
                     {this.getHotkeyStatusIcon(id, -1)}
                 </div>
-                { this.getSleepHotkey(id) }
+                {this.getSleepHotkey(id)}
             </div>
         )
     }
 
     getSleepHotkey = (id) => {
-        if(id == "all") {
+        if (id == "all") {
             return (<>
-                    <div className="title">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</div>
-                    <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey("turn_off_displays", 1)} type="text" readOnly={true} onKeyDown={
-                        (e) => {
-                            e.preventDefault()
-                            let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                            if (this.downKeys[key] === undefined) {
-                                this.downKeys[key] = true;
-                                this.updateHotkey("turn_off_displays", this.downKeys, 1);
-                            }
-                            return false
+                <div className="title">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</div>
+                <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey("turn_off_displays", 1)} type="text" readOnly={true} onKeyDown={
+                    (e) => {
+                        e.preventDefault()
+                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
+                        if (this.downKeys[key] === undefined) {
+                            this.downKeys[key] = true;
+                            this.updateHotkey("turn_off_displays", this.downKeys, 1);
                         }
-                    } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
-                        <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
-                            this.downKeys = {}
-                            delete this.state.hotkeys["turn_off_displays" + "__dir" + 1]
-                            window.sendSettings({ hotkeys: this.state.hotkeys })
-                            this.forceUpdate()
-                        }} />
-                        {this.getHotkeyStatusIcon("turn_off_displays", 1)}
-                    </div>
+                        return false
+                    }
+                } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
+                    <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
+                        this.downKeys = {}
+                        delete this.state.hotkeys["turn_off_displays" + "__dir" + 1]
+                        window.sendSettings({ hotkeys: this.state.hotkeys })
+                        this.forceUpdate()
+                    }} />
+                    {this.getHotkeyStatusIcon("turn_off_displays", 1)}
+                </div>
             </>)
         } else {
             return (<></>)
@@ -687,21 +687,21 @@ export default class SettingsWindow extends PureComponent {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
         } else {
             return Object.values(this.state.monitors).map((monitor, index) => {
-                
+
                 return (
                     <div key={monitor.key}>
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
-                        <br />Internal name: <b>{monitor.hwid[1]}</b>
-                        <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
-                        <br />Current Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightness) }</b>
-                        <br />Raw Brightness: <b>{ (monitor.type == "none" ? "Not supported" : monitor.brightnessRaw) }</b>
-                        <br />Brightness Normalization: <b>{ (monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max) }</b>
-                        <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
-                        <br />Key: <b>{monitor.key}</b>
-                        <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
-                        <br />Serial Number: <b>{monitor.serial}</b></p>
+                            <br />Internal name: <b>{monitor.hwid[1]}</b>
+                            <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
+                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
+                            <br />Raw Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightnessRaw)}</b>
+                            <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
+                            <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
+                            <br />Key: <b>{monitor.key}</b>
+                            <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
+                            <br />Serial Number: <b>{monitor.serial}</b></p>
                     </div>
                 )
 
@@ -710,11 +710,11 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getDebugMonitorType = (type) => {
-        if(type == "none") {
+        if (type == "none") {
             return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
-        } else if(type == "ddcci") {
+        } else if (type == "ddcci") {
             return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
-        } else if(type == "wmi") {
+        } else if (type == "wmi") {
             return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
         } else {
             return (<><b>Unknown ({type})</b> <span className="icon red vfix">&#xEB90;</span></>)
@@ -811,203 +811,205 @@ export default class SettingsWindow extends PureComponent {
         return (
             <div className="window-base" data-theme={window.settings.theme || "default"}>
                 <Titlebar title={T.t("SETTINGS_TITLE")} />
-                <div id="sidebar">
-                    {this.getSidebar()}
-                </div>
-                <div id="page">
-                    <div className="pageSection" data-active={this.isSection("general")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
-                        <div style={ { display: (window.isAppX ? "none" : "block")} }>
-                            <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
-                            <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
-                            <br /><br />
-                        </div>
-                        <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
-                        <select value={window.settings.theme} onChange={this.themeChanged}>
-                            <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
-                            <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>
-                            <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
-                        </select>
-                        <br />
-                        <br />
-                        <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
-                        <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'https://twinkletray.com/privacy-policy.html\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
-                        <input onChange={this.analyticsChanged} checked={window.settings.analytics || false} data-checked={window.settings.analytics || false} type="checkbox" />
-                        <br /><br />
-                        <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>
-                        <select value={window.settings.language} onChange={(e) => {
-                            this.setState({ language: e.target.value })
-                            window.sendSettings({ language: e.target.value })
-                        }}>
-                            <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
-                            {this.getLanguages()}
-                        </select>
-                        <br /><br />
-                        <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
-                        <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
-                        <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
-
-                        <br /><br />
-                        <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
-                        <div className="icons-row">
-                            <div class="icon-option" data-active={ this.isIcon("icon") } onClick={ () => window.sendSettings({icon: "icon"})}>
-                                <img src={DefaultIcon} />
+                <div class="window-base-inner">
+                    <div id="sidebar">
+                        {this.getSidebar()}
+                    </div>
+                    <div id="page">
+                        <div className="pageSection" data-active={this.isSection("general")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
+                            <div style={{ display: (window.isAppX ? "none" : "block") }}>
+                                <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
+                                <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
+                                <br /><br />
                             </div>
-                            <div class="icon-option" data-active={ this.isIcon("mdl2") } onClick={ () => window.sendSettings({icon: "mdl2"})}>
-                                <img src={MDL2Icon} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("general")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>
-                        <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
-                        <br />
-                        <a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>
-                    </div>
-
-
-
-
-                    <div className="pageSection" data-active={this.isSection("time")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_TIME_TITLE")}</div>
-                        <p>{T.t("SETTINGS_TIME_DESC")}</p>
-                        <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ {T.t("SETTINGS_TIME_ADD")}</a></p>
-                        <div className="adjustmentTimes">
-                            {this.getAdjustmentTimes()}
-                        </div>
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("time")}>
-                        <label>{T.t("SETTINGS_TIME_INDIVIDUAL_TITLE")}</label>
-                        <p>{T.t("SETTINGS_TIME_INDIVIDUAL_DESC")}</p>
-                        <input onChange={() => {
-                            const adjustmentTimeIndividualDisplays = (this.state.adjustmentTimeIndividualDisplays ? false : true)
-                            this.setState({ adjustmentTimeIndividualDisplays })
-                            window.sendSettings({ adjustmentTimeIndividualDisplays })
-                        }} checked={window.settings.adjustmentTimeIndividualDisplays || false} data-checked={window.settings.adjustmentTimeIndividualDisplays || false} type="checkbox" />
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("time")}>
-                        <label>{T.t("SETTINGS_TIME_STARTUP_TITLE")}</label>
-                        <p>{T.t("SETTINGS_TIME_STARTUP_DESC")}</p>
-                        <input onChange={this.checkTimeAtStartupChanged} checked={window.settings.checkTimeAtStartup || false} data-checked={window.settings.checkTimeAtStartup || false} type="checkbox" />
-                    </div>
-
-
-
-
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RATE_TITLE")}</div>
-                        <p>{T.t("SETTINGS_MONITORS_RATE_DESC")}</p>
-                        <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
-                            <option value="999">{T.t("SETTINGS_MONITORS_RATE_0")}</option>
-                            <option value="250">{T.t("SETTINGS_MONITORS_RATE_1")}</option>
-                            <option value="500">{T.t("SETTINGS_MONITORS_RATE_2")}</option>
-                            <option value="1000">{T.t("SETTINGS_MONITORS_RATE_3")}</option>
-                            <option value="2000">{T.t("SETTINGS_MONITORS_RATE_4")}</option>
-                        </select>
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RENAME_TITLE")}</div>
-                        <p>{T.t("SETTINGS_MONITORS_RENAME_DESC")}</p>
-                        {this.getRenameMonitors()}
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_MONITORS_REORDER_TITLE")}</div>
-                        <p>{T.t("SETTINGS_MONITORS_REORDER_DESC")}</p>
-                        <div className="reorderList">
-                            {this.getReorderMonitors()}
-                        </div>
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("monitors")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_MONITORS_NORMALIZE_TITLE")}</div>
-                        <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
-                        <div className="monitorItem">
-                            {this.getMinMaxMonitors()}
-                        </div>
-                    </div>
-
-
-
-                    <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
-                        <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
-                        <div className="hotkey-monitors">
-                            {this.getHotkeyMonitor(T.t("GENERIC_ALL_DISPLAYS"), "all")}
-                            {this.getHotkeyMonitors()}
-                        </div>
-
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</div>
-                        <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
-                        <select value={this.state.hotkeyPercent} onChange={(e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) }}>
-                            <option value="5">5%</option>
-                            <option value="10">10%</option>
-                            <option value="15">15%</option>
-                            <option value="20">20%</option>
-                            <option value="25">25%</option>
-                            <option value="30">30%</option>
-                        </select>
-                    </div>
-
-
-
-
-                    <div className="pageSection" data-active={this.isSection("updates")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_UPDATES_TITLE")}</div>
-                        <p>{T.h("SETTINGS_UPDATES_VERSION", '<b>' + (window.version || "not available") + '</b>')}</p>
-                        {this.getUpdate()}
-                    </div>
-                    <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
-                        <label>{T.t("SETTINGS_UPDATES_AUTOMATIC_TITLE")}</label>
-                        <p>{T.t("SETTINGS_UPDATES_AUTOMATIC_DESC")}</p>
-                        <input onChange={() => {
-                            const checkForUpdates = (this.state.checkForUpdates ? false : true)
-                            this.setState({ checkForUpdates })
-                            window.sendSettings({ checkForUpdates })
-                        }} checked={window.settings.checkForUpdates || false} data-checked={window.settings.checkForUpdates || false} type="checkbox" />
-                    </div>
-
-
-                    <div className="pageSection debug" data-active={this.isSection("debug")}>
-                        <div className="sectionTitle">Update channel</div>
-                        <p>
-                            <select value={ this.state.rawSettings.branch } onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
-                                <option value="master">Stable (default)</option>
-                                <option value="beta">Beta</option>
+                            <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
+                            <select value={window.settings.theme} onChange={this.themeChanged}>
+                                <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
+                                <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>
+                                <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
                             </select>
-                        </p>
-                        
-                    </div>
+                            <br />
+                            <br />
+                            <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
+                            <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'https://twinkletray.com/privacy-policy.html\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
+                            <input onChange={this.analyticsChanged} checked={window.settings.analytics || false} data-checked={window.settings.analytics || false} type="checkbox" />
+                            <br /><br />
+                            <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>
+                            <select value={window.settings.language} onChange={(e) => {
+                                this.setState({ language: e.target.value })
+                                window.sendSettings({ language: e.target.value })
+                            }}>
+                                <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
+                                {this.getLanguages()}
+                            </select>
+                            <br /><br />
+                            <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
+                            <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
+                            <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
 
-                    <div className="pageSection debug" data-active={this.isSection("debug")}>
-                        <div className="sectionTitle">All Displays</div>
-                        <label>Every detected display (including those not compatible) is listed below.</label>
-                        <br/>
-                        <p>
-                            <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
-                        </p>
-                        {this.getDebugMonitors()}
-                    </div>
+                            <br /><br />
+                            <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
+                            <div className="icons-row">
+                                <div class="icon-option" data-active={this.isIcon("icon")} onClick={() => window.sendSettings({ icon: "icon" })}>
+                                    <img src={DefaultIcon} />
+                                </div>
+                                <div class="icon-option" data-active={this.isIcon("mdl2")} onClick={() => window.sendSettings({ icon: "mdl2" })}>
+                                    <img src={MDL2Icon} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("general")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>
+                            <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
+                            <br />
+                            <a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>
+                        </div>
 
-                    <div className="pageSection debug" data-active={this.isSection("debug")}>
-                        <div className="sectionTitle">Settings</div>
-                        <label>These are your raw user settings.</label>
-                        <p style={{whiteSpace:"pre-wrap"}}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
-                    </div>
 
-                    <div className="pageSection debug" data-active={this.isSection("debug")}>
-                        <div className="sectionTitle">Other</div>
-                        <br/>
-                        <p>
-                            <a className="button" onClick={() => { window.sendSettings({ isDev: !this.state.rawSettings.isDev }) }}>Toggle Dev Mode ({(this.state.rawSettings && this.state.rawSettings.isDev !== undefined ? this.state.rawSettings.isDev.toString() : "?")})</a>
-                        </p>
-                        <br />
-                        <p>
-                            <a className="button" onClick={() => { window.sendSettings({ killWhenIdle: !this.state.rawSettings.killWhenIdle }) }}>Toggle Kill When Idle ({(this.state.rawSettings && this.state.rawSettings.killWhenIdle !== undefined ? this.state.rawSettings.killWhenIdle.toString() : "?")})</a>
-                        </p>
-                        
-                    </div>
 
+
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_TIME_TITLE")}</div>
+                            <p>{T.t("SETTINGS_TIME_DESC")}</p>
+                            <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ {T.t("SETTINGS_TIME_ADD")}</a></p>
+                            <div className="adjustmentTimes">
+                                {this.getAdjustmentTimes()}
+                            </div>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>{T.t("SETTINGS_TIME_INDIVIDUAL_TITLE")}</label>
+                            <p>{T.t("SETTINGS_TIME_INDIVIDUAL_DESC")}</p>
+                            <input onChange={() => {
+                                const adjustmentTimeIndividualDisplays = (this.state.adjustmentTimeIndividualDisplays ? false : true)
+                                this.setState({ adjustmentTimeIndividualDisplays })
+                                window.sendSettings({ adjustmentTimeIndividualDisplays })
+                            }} checked={window.settings.adjustmentTimeIndividualDisplays || false} data-checked={window.settings.adjustmentTimeIndividualDisplays || false} type="checkbox" />
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>{T.t("SETTINGS_TIME_STARTUP_TITLE")}</label>
+                            <p>{T.t("SETTINGS_TIME_STARTUP_DESC")}</p>
+                            <input onChange={this.checkTimeAtStartupChanged} checked={window.settings.checkTimeAtStartup || false} data-checked={window.settings.checkTimeAtStartup || false} type="checkbox" />
+                        </div>
+
+
+
+
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RATE_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_RATE_DESC")}</p>
+                            <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
+                                <option value="999">{T.t("SETTINGS_MONITORS_RATE_0")}</option>
+                                <option value="250">{T.t("SETTINGS_MONITORS_RATE_1")}</option>
+                                <option value="500">{T.t("SETTINGS_MONITORS_RATE_2")}</option>
+                                <option value="1000">{T.t("SETTINGS_MONITORS_RATE_3")}</option>
+                                <option value="2000">{T.t("SETTINGS_MONITORS_RATE_4")}</option>
+                            </select>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RENAME_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_RENAME_DESC")}</p>
+                            {this.getRenameMonitors()}
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_REORDER_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_REORDER_DESC")}</p>
+                            <div className="reorderList">
+                                {this.getReorderMonitors()}
+                            </div>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_NORMALIZE_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
+                            <div className="monitorItem">
+                                {this.getMinMaxMonitors()}
+                            </div>
+                        </div>
+
+
+
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
+                            <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
+                            <div className="hotkey-monitors">
+                                {this.getHotkeyMonitor(T.t("GENERIC_ALL_DISPLAYS"), "all")}
+                                {this.getHotkeyMonitors()}
+                            </div>
+
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</div>
+                            <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
+                            <select value={this.state.hotkeyPercent} onChange={(e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) }}>
+                                <option value="5">5%</option>
+                                <option value="10">10%</option>
+                                <option value="15">15%</option>
+                                <option value="20">20%</option>
+                                <option value="25">25%</option>
+                                <option value="30">30%</option>
+                            </select>
+                        </div>
+
+
+
+
+                        <div className="pageSection" data-active={this.isSection("updates")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_UPDATES_TITLE")}</div>
+                            <p>{T.h("SETTINGS_UPDATES_VERSION", '<b>' + (window.version || "not available") + '</b>')}</p>
+                            {this.getUpdate()}
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
+                            <label>{T.t("SETTINGS_UPDATES_AUTOMATIC_TITLE")}</label>
+                            <p>{T.t("SETTINGS_UPDATES_AUTOMATIC_DESC")}</p>
+                            <input onChange={() => {
+                                const checkForUpdates = (this.state.checkForUpdates ? false : true)
+                                this.setState({ checkForUpdates })
+                                window.sendSettings({ checkForUpdates })
+                            }} checked={window.settings.checkForUpdates || false} data-checked={window.settings.checkForUpdates || false} type="checkbox" />
+                        </div>
+
+
+                        <div className="pageSection debug" data-active={this.isSection("debug")}>
+                            <div className="sectionTitle">Update channel</div>
+                            <p>
+                                <select value={this.state.rawSettings.branch} onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
+                                    <option value="master">Stable (default)</option>
+                                    <option value="beta">Beta</option>
+                                </select>
+                            </p>
+
+                        </div>
+
+                        <div className="pageSection debug" data-active={this.isSection("debug")}>
+                            <div className="sectionTitle">All Displays</div>
+                            <label>Every detected display (including those not compatible) is listed below.</label>
+                            <br />
+                            <p>
+                                <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
+                            </p>
+                            {this.getDebugMonitors()}
+                        </div>
+
+                        <div className="pageSection debug" data-active={this.isSection("debug")}>
+                            <div className="sectionTitle">Settings</div>
+                            <label>These are your raw user settings.</label>
+                            <p style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
+                        </div>
+
+                        <div className="pageSection debug" data-active={this.isSection("debug")}>
+                            <div className="sectionTitle">Other</div>
+                            <br />
+                            <p>
+                                <a className="button" onClick={() => { window.sendSettings({ isDev: !this.state.rawSettings.isDev }) }}>Toggle Dev Mode ({(this.state.rawSettings && this.state.rawSettings.isDev !== undefined ? this.state.rawSettings.isDev.toString() : "?")})</a>
+                            </p>
+                            <br />
+                            <p>
+                                <a className="button" onClick={() => { window.sendSettings({ killWhenIdle: !this.state.rawSettings.killWhenIdle }) }}>Toggle Kill When Idle ({(this.state.rawSettings && this.state.rawSettings.killWhenIdle !== undefined ? this.state.rawSettings.killWhenIdle.toString() : "?")})</a>
+                            </p>
+
+                        </div>
+
+                    </div>
                 </div>
             </div>
 

@@ -7,6 +7,7 @@ html, body {
 
 #settings > .window-base {
     background: var(--page-background);
+    background: none;
     color: var(--tray-text);
     font-family: 'Segoe UI';
     position: absolute;
@@ -23,11 +24,18 @@ html, body {
 
 #page {
     overflow: auto;
-    
     padding: 20px;
     box-sizing: border-box;
     height: 100%;
-    padding-left: $sidebarWidth + 20px;
+    background: var(--page-background);
+    padding-top: 30px;
+    flex: 1;
+    max-height: 100vh;
+    min-height: 100vh;
+    border-top: 30px solid black;
+    position: relative;
+    top: -30px;
+    //padding-left: $sidebarWidth + 20px;
     @media (max-width: 700px) {
         padding-left: $sidebarWidthSmall + 20px;
     }
@@ -163,6 +171,10 @@ html, body {
 
     }    
 
+}
+
+.window-base-inner {
+    display: flex;
 }
 
 
@@ -462,12 +474,12 @@ a {
 
 // Sidebar
 #sidebar {
-    position: fixed;
-    top: 1px;
-    left: 1px;
+    position: relative;
+    top: -30px;
+    left: 0px;
+    width: 300px;
     padding-top: 30px;
-    width: $sidebarWidth;
-    height: calc(100% - 2px - 30px);
+    height: calc(100vh - 2px - 30px);
     background: var(--tray-background);
     transition: width 0.2s;
     overflow: hidden;

@@ -119,6 +119,19 @@ ipc.on('localization-updated', (event, localization) => {
     }))
 })
 
+// User personalization settings recieved
+ipc.on('theme-settings', (event, theme) => {
+    try {
+        window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
+        window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
+        window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
+    } catch (e) {
+        window.document.body.dataset["systemTheme"] = "default"
+        window.document.body.dataset["transparent"] = "false"
+        window.document.body.dataset["coloredTaskbar"] = "false"
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()

@@ -35,10 +35,6 @@ html, body {
     border-top: 30px solid black;
     position: relative;
     top: -30px;
-    //padding-left: $sidebarWidth + 20px;
-    @media (max-width: 700px) {
-        padding-left: $sidebarWidthSmall + 20px;
-    }
 }
 
 

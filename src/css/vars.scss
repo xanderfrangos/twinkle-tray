@@ -13,7 +13,7 @@
 
     
     --tray-background: #e4e4e4;
-    --tray-background-transparent: rgba(219, 219, 219, 0.96);
+    --tray-background-transparent: rgba(219, 219, 219, 0.9);
     --tray-text: black;
     --tray-border: #aaaaaa;
 
@@ -37,7 +37,7 @@
 
     @media screen and (prefers-color-scheme: dark) {
         --tray-background: #1f1f1f;
-        --tray-background-transparent: rgba(41, 41, 41, 0.97);
+        --tray-background-transparent: rgba(41, 41, 41, 0.9);
         --tray-text: white;
         --tray-border: #434343;
     

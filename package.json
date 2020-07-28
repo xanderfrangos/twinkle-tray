@@ -93,5 +93,6 @@
     "react-dom": "16.13.1",
     "sass": "^1.26.10",
     "wait-on": "4.0.2"
+    "electron-acrylic-window": "^0.2.2"
   }
 }

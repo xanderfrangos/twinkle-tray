@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, Menu, Tray, BrowserWindow, ipcMain, app, screen, globalShortcut } = require('electron')
+const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut } = require('electron')
+const { BrowserWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
 const ua = require('universal-analytics');
@@ -1385,13 +1386,14 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
-    //mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools({ mode: 'detach' })
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
 
   mainWindow.on("blur", () => {
     // Only run when not in an overlay
     if(canReposition) {
+      mainWindow.setVibrancy()
       sendToAllWindows("panelBlur")
     }
   })
@@ -1589,6 +1591,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
       sendToAllWindows("display-mode", "normal")
       panelState = "visible"
       mainWindow.focus()
+      mainWindow.setVibrancy('dark')
     } else {
       sendToAllWindows("display-mode", "overlay")
       panelState = "overlay"

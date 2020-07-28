@@ -92,7 +92,7 @@
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "16.13.1",
     "sass": "^1.26.10",
-    "wait-on": "4.0.2"
-    "electron-acrylic-window": "^0.2.2"
+    "wait-on": "4.0.2",
+    "electron-acrylic-window": "^0.3.0"
   }
 }

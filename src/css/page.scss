@@ -32,7 +32,7 @@ html, body {
     flex: 1;
     max-height: 100vh;
     min-height: 100vh;
-    border-top: 30px solid black;
+    border-top: 30px solid var(--page-background);
     position: relative;
     top: -30px;
 }

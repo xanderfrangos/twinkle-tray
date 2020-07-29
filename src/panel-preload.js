@@ -19,7 +19,11 @@ function setPanelVisibility(visible) {
 
     // Update #root value
     window.document.body.dataset["acrylicShow"] = false
-    window.isAcrylic = false
+    if(window.isAcrylic) {
+        window.isAcrylic = false
+        browser.setVibrancy()
+    }
+    
     window.document.getElementById("root").dataset["visible"] = window.showPanel
     window.sleep = !visible
 

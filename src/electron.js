@@ -290,6 +290,7 @@ const defaultSettings = {
   names: {},
   analytics: !isDev,
   scrollShortcut: true,
+  useAcrylic: true,
   uuid: uuid(),
   branch: "master"
 }
@@ -363,6 +364,12 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.language !== undefined) {
       getLocalization()
+    }
+
+    if (newSettings.useAcrylic !== undefined) {
+      lastTheme["UseAcrylic"] = newSettings.useAcrylic
+      handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
+      sendToAllWindows('theme-settings', lastTheme)
     }
 
     if (newSettings.icon !== undefined) {
@@ -771,6 +778,7 @@ function getThemeRegistry() {
             for (let value in themeSettings) {
               themeSettings[value] = themeSettings[value].value
             }
+            themeSettings["UseAcrylic"] = settings.useAcrylic
 
             // Send it off!
             sendToAllWindows('theme-settings', themeSettings)
@@ -821,6 +829,27 @@ function getAccentColors() {
     mediumDark: matchLumi(accent, 0.33).desaturate(0.1).hex(),
     dark: matchLumi(accent, 0.275).desaturate(0.1).hex(),
     transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string()
+  }
+}
+
+// 0 = off
+// 1 = transparent
+// 2 = blur
+let currentTransparencyStyle
+function handleTransparencyChange(transparent = true, blur = false) {
+  const style = (transparent ? (blur ? 2 : 1) : 0)
+  if(style !== currentTransparencyStyle) {
+    currentTransparencyStyle = style
+  }
+  sendToAllWindows("transparencyStyle", style)
+  if(style === 2) {
+    if(settingsWindow) {
+      settingsWindow.setVibrancy("dark")
+    }
+  } else {
+    if(settingsWindow) {
+      settingsWindow.setVibrancy()
+    }
   }
 }
 
@@ -1591,7 +1620,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
       sendToAllWindows("display-mode", "normal")
       panelState = "visible"
       mainWindow.focus()
-      mainWindow.setVibrancy('dark')
     } else {
       sendToAllWindows("display-mode", "overlay")
       panelState = "overlay"
@@ -1706,13 +1734,13 @@ function createSettings() {
     }
   });
 
-
   // Replace window moving behavior to fix mouse polling rate bug
   const pollingRate = 59.997 // TO-DO: Detect the current monitor's refresh rate
   const win = settingsWindow
   win.on('will-move', (e) => {
+      if(!settings.useAcrylic) return false;
       e.preventDefault()
-  
+
       // Track if the user is moving the window
       if(win._moveTimeout) clearTimeout(win._moveTimeout);
       win._moveTimeout = setTimeout(
@@ -1721,7 +1749,7 @@ function createSettings() {
           clearInterval(win._moveInterval)
           win._moveInterval = null 
         }, 1000/60)
-  
+
       // Start new behavior if not already
       if(!win._isMoving) {
         win._isMoving = true
@@ -1751,9 +1779,10 @@ function createSettings() {
       }
 
     })
-  
+
     // Replace window resizing behavior to fix mouse polling rate bug
     win.on('will-resize', (e, newBounds) => {
+      if(!settings.useAcrylic) return false;
       const now = Date.now()
       if(!win._resizeLastUpdate) win._resizeLastUpdate = 0;
         if(now >= win._resizeLastUpdate + (1000/pollingRate)) {
@@ -1763,6 +1792,8 @@ function createSettings() {
           e.preventDefault()
         }
     })
+
+  
 
 
 
@@ -1779,7 +1810,9 @@ function createSettings() {
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       settingsWindow.show()
-      settingsWindow.setVibrancy('dark')
+      if(settings.useAcrylic) {
+        settingsWindow.setVibrancy('dark')
+      }
     }, 100)
 
     // Prevent links from opening in Electron

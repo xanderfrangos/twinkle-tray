@@ -52,6 +52,8 @@
     "SETTINGS_GENERAL_RESET_TITLE": "Reset settings",
     "SETTINGS_GENERAL_RESET_DESC": "Hit this button to clear your config.",
     "SETTINGS_GENERAL_RESET_BUTTON": "Reset settings",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Acrylic Blur",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Enable or disable the blur behind transparent backgrounds in Twinkle Tray.",
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analytics",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help improve Twinkle Tray. No personal info is sent. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",

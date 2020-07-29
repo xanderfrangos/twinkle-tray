@@ -32,7 +32,8 @@
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",
     "universal-analytics": "^0.4.23",
-    "wmi-client": "^0.5.0"
+    "wmi-client": "^0.5.0",
+    "electron-acrylic-window": "^0.3.0"
   },
   "build": {
     "productName": "Twinkle Tray",
@@ -92,7 +93,6 @@
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "16.13.1",
     "sass": "^1.26.10",
-    "wait-on": "4.0.2",
-    "electron-acrylic-window": "^0.3.0"
+    "wait-on": "4.0.2"
   }
 }

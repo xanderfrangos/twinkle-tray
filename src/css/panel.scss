@@ -34,7 +34,7 @@ body {
         bottom: 0;
         left: 0;
         opacity: 0;
-        transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.2s, border-color 0.2s, color 0.2s;
+        transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.99s, border-color 0.2s, color 0.2s;
         transform: translateY(100%);
         pointer-events: none;
     }

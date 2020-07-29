@@ -97,6 +97,7 @@ export default class SettingsWindow extends PureComponent {
             adjustmentTimeIndividualDisplays: false,
             languages: [],
             analytics: false,
+            useAcrylic: true,
             scrollShortcut: true,
             updateProgress: 0
         }
@@ -252,6 +253,12 @@ export default class SettingsWindow extends PureComponent {
         const openAtLogin = (this.state.openAtLogin ? false : true)
         this.setState({ openAtLogin })
         window.sendSettings({ openAtLogin })
+    }
+
+    acrylicChanged = (event) => {
+        const useAcrylic = (this.state.useAcrylic ? false : true)
+        this.setState({ useAcrylic })
+        window.sendSettings({ useAcrylic })
     }
 
     analyticsChanged = (event) => {
@@ -757,6 +764,7 @@ export default class SettingsWindow extends PureComponent {
         const hotkeys = (settings.hotkeys || {})
         const hotkeyPercent = (settings.hotkeyPercent || 10)
         const analytics = settings.analytics
+        const useAcrylic = settings.useAcrylic
         const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
@@ -774,6 +782,7 @@ export default class SettingsWindow extends PureComponent {
             hotkeys,
             hotkeyPercent,
             analytics,
+            useAcrylic,
             scrollShortcut
         }, () => {
             this.forceUpdate()
@@ -830,6 +839,10 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
                             </select>
                             <br />
+                            <br />
+                            <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
+                            <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
+                            <input onChange={this.acrylicChanged} checked={this.state.useAcrylic || false} data-checked={this.state.useAcrylic || false} type="checkbox" />                            <br />
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
                             <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'https://twinkletray.com/privacy-policy.html\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>

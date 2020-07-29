@@ -3,6 +3,8 @@ let browser = remote.getCurrentWindow()
 
 const log = console.log
 
+let isTransparent = false
+
 // Show or hide the brightness panel
 function setPanelVisibility(visible) {
     window.showPanel = visible
@@ -10,12 +12,14 @@ function setPanelVisibility(visible) {
     // Update browser var to avoid Electron bugs
     browser = remote.getCurrentWindow()
 
-    if(visible)
+    if(visible) 
     window.dispatchEvent(new CustomEvent('sleepUpdated', {
         detail: false
     }))
 
     // Update #root value
+    window.document.body.dataset["acrylicShow"] = false
+    window.isAcrylic = false
     window.document.getElementById("root").dataset["visible"] = window.showPanel
     window.sleep = !visible
 
@@ -73,6 +77,18 @@ function panelAnimationDone() {
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: true
         }))
+    } else {
+        setTimeout(tryApplyAcrylic, 111)
+    }
+}
+
+function tryApplyAcrylic() {
+    if(isTransparent && settings.useAcrylic && showPanel) {
+        console.log("ACRYLIC")
+        window.document.body.dataset["acrylicShow"] = true
+        if(!window.isAcrylic)
+        browser.setVibrancy("dark")
+        window.isAcrylic = true
     }
 }
 
@@ -184,10 +200,13 @@ ipc.on('theme-settings', (event, theme) => {
     try {
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
+        window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 ? "false" : "true")
         window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
+        isTransparent = theme.EnableTransparency
     } catch (e) {
         window.document.body.dataset["systemTheme"] = "default"
         window.document.body.dataset["transparent"] = "false"
+        window.document.body.dataset["acrylic"] = "false"
         window.document.body.dataset["coloredTaskbar"] = "false"
     }
 })
@@ -200,6 +219,7 @@ browser.webContents.once('dom-ready', () => {
 })
 
 window.ipc = ipc
+window.thisWindow = browser
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.openSettings = openSettings
@@ -214,5 +234,6 @@ window.turnOffDisplays = turnOffDisplays
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
+window.isAcrylic = false
 window.settings = {}
 window.isAppX = (remote.app.name == "twinkle-tray-appx" ? true : false)

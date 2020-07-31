@@ -86,5 +86,7 @@
     "SETTINGS_UPDATES_DOWNLOAD": "ダウンロード & インストール {{1}}",
     "SETTINGS_GENERAL_SCROLL_TITLE": "トレイのアイコン上でスクロール",
     "SETTINGS_GENERAL_SCROLL_DESC": "トレイアイコン上でのスクロールで全ディスプレイの輝度を調整します。一部のタッチパッドでは動作しません。",
-    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "トレイのアイコン"
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "トレイのアイコン",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Twinkle Tray の背景を透過するかを切り替えます。",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "半透明"
 }

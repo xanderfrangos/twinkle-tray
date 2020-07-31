@@ -1,0 +1,112 @@
+{
+    "LANGUAGE": "한국어",
+
+    "GENERIC_OK": "확인",
+    "GENERIC_CANCEL": "취소",
+    "GENERIC_SAVE": "저장",
+    "GENERIC_CLEAR": "지우기",
+    "GENERIC_OFF": "끄기",
+    "GENERIC_ON": "켜기",
+    "GENERIC_QUIT": "종료",
+    "GENERIC_CLOSE": "닫기",
+    "GENERIC_SETTINGS": "설정",
+    "GENERIC_INSTALL": "설치",
+    "GENERIC_DISMISS": "닫기",
+    "GENERIC_DISPLAY_SINGLE": "디스플레이",
+    "GENERIC_ALL_DISPLAYS": "모든 디스플레이",
+    "GENERIC_MINIMUM": "최소값",
+    "GENERIC_MAXIMUM": "최대값",
+    "GENERIC_NO_DISPLAYS": "모니터를 찾을 수 없습니다. 컴퓨터에 모니터를 연결하세요.",
+    "GENERIC_NO_COMPATIBLE_DISPLAYS": "호환되는 디스플레이를 찾을 수 없습니다. \"DDC/CI\"가 켜져있는지 확인하세요.",
+    "GENERIC_NO_DISPLAYS_SHORT": "호환되는 디스플레이를 찾을 수 없습니다.",
+
+
+    "PANEL_TITLE": "밝기 조정",
+    "PANEL_UPDATE_AVAILABLE": "업데이트가 있습니다.",
+    "PANEL_BUTTON_LINK_LEVELS": "동시에 설정",
+    "PANEL_BUTTON_TURN_OFF_DISPLAYS": "디스플레이 끄기",
+
+
+    "INTRO_TITLE": "Twinkle Tray를 사용해 주셔서 감사합니다!",
+    "INTRO_INSTRUCTIONS": "트레이 아이콘이 숨겨져 있기 때문에 고정 항목으로 옮겨야 합니다. 아래 방법을 따라하세요.",
+
+
+    "SETTINGS_TITLE": "Twinkle Tray 설정",
+
+
+    "SETTINGS_SIDEBAR_GENERAL": "기본",
+    "SETTINGS_SIDEBAR_MONITORS": "모니터 설정",
+    "SETTINGS_SIDEBAR_TIME": "시간 설정",
+    "SETTINGS_SIDEBAR_HOTKEYS": "단축키",
+    "SETTINGS_SIDEBAR_UPDATES": "업데이트",
+
+
+    "SETTINGS_GENERAL_TITLE": "기본",
+    "SETTINGS_GENERAL_STARTUP": "시작할 때 켜기",
+    "SETTINGS_GENERAL_THEME_TITLE": "테마",
+    "SETTINGS_GENERAL_THEME_SYSTEM": "시스템 기본값",
+    "SETTINGS_GENERAL_THEME_DARK": "어둡게",
+    "SETTINGS_GENERAL_THEME_LIGHT": "밝게",
+    "SETTINGS_GENERAL_LANGUAGE_TITLE": "언어",
+    "SETTINGS_GENERAL_LANGUAGE_SYSTEM": "시스템 언어",
+    "SETTINGS_GENERAL_RESET_TITLE": "설정 초기화",
+    "SETTINGS_GENERAL_RESET_DESC": "버튼을 눌러 설정을 초기화하세요.",
+    "SETTINGS_GENERAL_RESET_BUTTON": "설정 초기화",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "블러 효과",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "블러 효과를 켜거나 끕니다.",
+    "SETTINGS_GENERAL_ANALYTICS_TITLE": "로그 전송",
+    "SETTINGS_GENERAL_ANALYTICS_DESC": "로그를 보내 Twinkle Tray를 개선하는 데 도움을 주세요. 전송되는 정보는 개인 정보를 포함하지 않습니다. {{1}}",
+    "SETTINGS_GENERAL_ANALYTICS_LINK": "더 알아보기",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "스크롤로 밝기 조정",
+    "SETTINGS_GENERAL_SCROLL_DESC": "시스템 트레이 아이콘 위에서 스크롤하여 모든 디스플레이의 밝기를 한 번에 조정하세요. 몇몇 터치패드에서는 작동하지 않을 수 있습니다.",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "트레이 아이콘",
+
+
+    "SETTINGS_MONITORS_RATE_TITLE": "밝기 업데이트 주기",
+    "SETTINGS_MONITORS_RATE_DESC": "값을 조정할 때 디스플레이의 밝기가 업데이트되는 빈도를 설정하세요. 모니터가 깜빡이는 것 같으면 시간을 늘이세요.",
+    "SETTINGS_MONITORS_RATE_0": "즉시",
+    "SETTINGS_MONITORS_RATE_1": "빠르게 (250 ms)",
+    "SETTINGS_MONITORS_RATE_2": "보통 (500 ms)",
+    "SETTINGS_MONITORS_RATE_3": "느리게 (1초)",
+    "SETTINGS_MONITORS_RATE_4": "매우 느리게 (2초)",
+    "SETTINGS_MONITORS_RENAME_TITLE": "모니터 이름 바꾸기",
+    "SETTINGS_MONITORS_RENAME_DESC": "모니터를 다른 명칭으로 바꾸고 싶다면 (예 - \"왼쪽 모니터\", \"가운데 모니터\"), 아래에 입력하세요. 칸을 비우면 기본 이름으로 설정될 것입니다.",
+    "SETTINGS_MONITORS_ENTER_NAME": "이름을 입력하세요.",
+    "SETTINGS_MONITORS_REORDER_TITLE": "모니터 정렬 순서 바꾸기",
+    "SETTINGS_MONITORS_REORDER_DESC": "드래그해서 트레이에 표시되는 모니터의 정렬 순서를 바꾸세요.",
+    "SETTINGS_MONITORS_NORMALIZE_TITLE": "밝기 정규화하기",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "모니터는 서로 다른 최대/최소 밝기를 갖고 있습니다. 밝기를 정규화하면, 모든 모니터의 밝기를 일관되게 설정할 수 있습니다. 비슷한 모니터는 같은 값을 사용할 것입니다.",
+
+
+    "SETTINGS_TIME_TITLE": "시간 설정",
+    "SETTINGS_TIME_DESC": "특정 시간에 모니터의 밝기를 자동으로 바꾸도록 설정하세요.",
+    "SETTINGS_TIME_ADD": "시간 추가",
+    "SETTINGS_TIME_REMOVE": "시간 제거",
+    "SETTINGS_TIME_INDIVIDUAL_TITLE": "디스플레이별 밝기 조정",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "각각의 디스플레이에 다른 밝기 값을 설정합니다.",
+    "SETTINGS_TIME_STARTUP_TITLE": "앱 시작시 체크하기",
+    "SETTINGS_TIME_STARTUP_DESC": "트레이가 시작될 때 가장 적절한 시간에 맞춰 밝기를 조정하세요.",
+
+
+    "SETTINGS_HOTKEYS_TITLE": "단축키",
+    "SETTINGS_HOTKEYS_DESC": "밝기를 빠르게 바꾸기 위해 단축키를 설정하세요",
+    "SETTINGS_HOTKEYS_ADD": "단축키 추가",
+    "SETTINGS_HOTKEYS_REMOVE": "단축키 제거",
+    "SETTINGS_HOTKEYS_INCREASE": "밝기 증가",
+    "SETTINGS_HOTKEYS_DECREASE": "밝기 감소",
+    "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "여기서 키를 누르세요.",
+    "SETTINGS_HOTKEYS_LEVEL_TITLE": "밝기 조정 정도",
+    "SETTINGS_HOTKEYS_LEVEL_DESC": "단축키를 눌렀을 때 밝기를 얼마나 바꿀 것인지 설정하세요.",
+
+
+    "SETTINGS_UPDATES_TITLE": "업데이트",
+    "SETTINGS_UPDATES_VERSION": "Twinkle Tray {{1}}.",
+    "SETTINGS_UPDATES_AUTOMATIC_TITLE": "업데이트 자동 확인",
+    "SETTINGS_UPDATES_AUTOMATIC_DESC": "새 버전이 있으면 패널에 나타날 것입니다.",
+    "SETTINGS_UPDATES_MS_STORE": "업데이트를 확인하려면 Microsoft Store를 방문하세요.",
+    "SETTINGS_UPDATES_AVAILABLE": "새 버전이 있습니다.",
+    "SETTINGS_UPDATES_NONE_AVAILABLE": "최신 버전입니다. 현재 버전은 다음과 같은 수정사항을 포함하고 있습니다:",
+    "SETTINGS_UPDATES_DOWNLOADING": "업데이트를 다운로드 하는 중...",
+    "SETTINGS_UPDATES_DOWNLOAD": "{{1}} 설치하기"
+    
+}

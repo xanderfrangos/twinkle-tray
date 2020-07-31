@@ -23,7 +23,7 @@
     "PANEL_BUTTON_LINK_LEVELS": "Razine veza",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Isključi ekrane",
     "INTRO_TITLE": "Bok, Twinkle Tray!",
-    "INTRO_INSTRUCTIONS": "Twinkle Tray ikona je u programskoj traci vjerojatno skrivena. Premjesti je na neko mjesto gdje joj lako možeš pristupiti. Pogledaj upute niže dolje.",
+    "INTRO_INSTRUCTIONS": "Twinkle Tray ikona u programskoj traci je vjerojatno skrivena. Premjesti je na neko mjesto gdje joj lako možeš pristupiti. Pogledaj upute niže dolje.",
     "SETTINGS_TITLE": "Twinkle Tray postavke",
     "SETTINGS_SIDEBAR_GENERAL": "Opće",
     "SETTINGS_SIDEBAR_MONITORS": "Postavke monitora",
@@ -44,8 +44,8 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analize",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Šalji podatke o upotrebi, kako bi se Twinkle Tray poboljšao. Ne šalju se osobni podaci. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Saznaj više",
-    "SETTINGS_GENERAL_SCROLL_TITLE": "",
-    "SETTINGS_GENERAL_SCROLL_DESC": "",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Prečac za klizanje na ikonu u programskoj traci",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Prilagodi svjetlinu svih ekrana istovremeno, klizanjem preko ikone u programskoj traci. Ne radi s nekim dodirnim pločama.",
     "SETTINGS_MONITORS_RATE_TITLE": "Brzina aktualiziranja svjetline",
     "SETTINGS_MONITORS_RATE_DESC": "Učestalost aktualiziranja svjetline ekrana dok podešavaš njihove vrijednosti. Povećaj vrijeme, ako ekrani trepere.",
     "SETTINGS_MONITORS_RATE_0": "Ludo",
@@ -85,5 +85,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Postoji nova verzija za Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Aktualan. Trenutačna verzija uključuje sljedeće promjene:",
     "SETTINGS_UPDATES_DOWNLOADING": "Preuzimanje nadogradnje …",
-    "SETTINGS_UPDATES_DOWNLOAD": "Preuzmi i instaliraj {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Preuzmi i instaliraj {{1}}",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Ikone u programskoj traci"
 }

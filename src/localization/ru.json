@@ -65,7 +65,7 @@
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Настройка яркости для отдельных дисплеев",
     "SETTINGS_TIME_INDIVIDUAL_DESC": "Настройте яркость для каждого дисплея, а не для всех дисплеев сразу.",
     "SETTINGS_TIME_STARTUP_TITLE": "Проверка при запуске приложения",
-    "SETTINGS_TIME_STARTUP_DESC": "Adjust the brightness to match the most relevant time when Twinkle Tray starts.",
+    "SETTINGS_TIME_STARTUP_DESC": "",
     "SETTINGS_HOTKEYS_TITLE": "Сочетание клавиш",
     "SETTINGS_HOTKEYS_DESC": "Настройка сочетания клавиш для регулировки яркости одного или всех дисплеев.",
     "SETTINGS_HOTKEYS_ADD": "Добавить сочетание клавиш",

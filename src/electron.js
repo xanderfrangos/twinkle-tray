@@ -932,12 +932,16 @@ refreshDDCCI = async () => {
       for (let monitor of ddcciMonitors) {
 
         try {
+          // Get brightness current/max
+          const brightnessValues = ddcci._getVCP(monitor, 0x10)
+
           let ddcciInfo = {
             name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
             id: monitor,
             num: local,
             localID: local,
-            brightness: ddcci.getBrightness(monitor),
+            brightness: brightnessValues[0],
+            brightnessMax: (brightnessValues[1] || 100),
             brightnessRaw: -1,
             type: 'ddcci',
             min: 0,
@@ -947,11 +951,13 @@ refreshDDCCI = async () => {
 
           const hwid = monitor.split("#")
           if (monitors[hwid[2]] == undefined) {
+            // Monitor not in list
             monitors[hwid[2]] = {
               id: monitor,
               key: hwid[2],
               num: false,
               brightness: 50,
+              brightnessMax: 100,
               brightnessRaw: 50,
               type: 'none',
               min: 0,
@@ -962,8 +968,18 @@ refreshDDCCI = async () => {
               features: {}
             }
           } else {
-            if (monitors[hwid[2]].name)
+            if (monitors[hwid[2]].name) {
+              // Monitor is in list
               ddcciInfo.name = monitors[hwid[2]].name
+
+              if(monitors[hwid[2]].features === undefined) {
+                ddcciInfo.features = {
+                  powerState: (checkVCP(monitor, 0xD6) ? true : false)
+                }
+              }
+
+            }
+              
           }
 
           // Get normalization info
@@ -971,11 +987,6 @@ refreshDDCCI = async () => {
           // Unnormalize brightness
           ddcciInfo.brightnessRaw = ddcciInfo.brightness
           ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightness, true, ddcciInfo.min, ddcciInfo.max)
-
-          // DDC/CI Features
-          ddcciInfo.features = {
-            //powerState: (checkVCP(monitor, 0xD6) ? true : false)
-          }
 
           ddcciList.push(ddcciInfo)
           Object.assign(monitors[hwid[2]], ddcciInfo)
@@ -1019,6 +1030,7 @@ refreshWMI = async () => {
               num: local,
               localID: local,
               brightness: monitor.CurrentBrightness,
+              brightnessMax: 100,
               brightnessRaw: -1,
               type: 'wmi',
               min: 0,
@@ -1034,6 +1046,7 @@ refreshWMI = async () => {
                 key: hwid[2],
                 num: false,
                 brightness: 50,
+                brightnessMax: 100,
                 brightnessRaw: 50,
                 type: 'none',
                 min: 0,
@@ -1073,7 +1086,7 @@ refreshWMI = async () => {
 
 function checkVCP(monitor, code) {
   try {
-    return ddcci._getVCP(monitor, code)
+    return ddcci._getVCP(monitor, code)[0]
   } catch(e) {
     return false
   }
@@ -1156,7 +1169,7 @@ function updateBrightness(index, level, useCap = true) {
   try {
     monitor.brightness = level
     if (monitor.type == "ddcci") {
-      ddcci.setBrightness(monitor.id, normalized)
+      ddcci.setBrightness(monitor.id, normalized * ((monitor.brightnessMax || 100) / 100))
     } else if (monitor.type == "wmi") {
       exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${normalized})"`)
     }

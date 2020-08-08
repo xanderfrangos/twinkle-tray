@@ -24,7 +24,7 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
-    "@hensm/ddcci": "0.0.4",
+    "@hensm/ddcci": "file:src/modules/node-ddcci",
     "color": "^3.1.2",
     "electron-winstore-auto-launch": "^2.0.3",
     "global-mouse-events": "^1.0.3",

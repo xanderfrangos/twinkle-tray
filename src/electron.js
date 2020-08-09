@@ -940,7 +940,7 @@ refreshDDCCI = async () => {
             id: monitor,
             num: local,
             localID: local,
-            brightness: brightnessValues[0],
+            brightness: brightnessValues[0] * (100 / (brightnessValues[1] || 100)),
             brightnessMax: (brightnessValues[1] || 100),
             brightnessRaw: -1,
             type: 'ddcci',

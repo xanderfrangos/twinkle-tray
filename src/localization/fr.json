@@ -83,5 +83,10 @@
     "SETTINGS_UPDATES_AVAILABLE": "Une nouvelle version de Twinkle Tray est disponible !",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "À jour. Cette version de Twinkle Tray comprend les changements suivants :",
     "SETTINGS_UPDATES_DOWNLOADING": "Téléchargement de la mise à jour…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Télécharger & Installer {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Télécharger & Installer {{1}}",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Raccourci de défilement de la souris sur l'icône dans la zone de notification",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Régler la luminosité de tous les écrans à la fois en faisant défiler la souris sur l'icône dans la zone de notification. Cela ne fonctionne pas avec certains trackpads.",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Icône dans la zone de notification",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Activer ou désactiver le flou derrière les arrière-plans transparents dans Twinkle Tray.",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Flou acrylique"
 }

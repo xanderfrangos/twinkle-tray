@@ -84,5 +84,7 @@
     "SETTINGS_UPDATES_NONE_AVAILABLE": "В актуальном состоянии. Текущая версия включает в себя следующие изменения:",
     "SETTINGS_UPDATES_DOWNLOADING": "Загрузка обновлений…",
     "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}",
-    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Показывать иконку в трее"
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Показывать иконку в трее",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Включите или отключите размытие за прозрачным фоном в Twinkle Tray.",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Акриловое размытие"
 }

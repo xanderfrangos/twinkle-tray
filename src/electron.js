@@ -6,6 +6,8 @@ const { exec } = require('child_process');
 const os = require("os")
 const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
+const { VerticalRefreshRateContext } = require("win32-displayconfig");
+const refreshCtx = new VerticalRefreshRateContext();
 
 let isDev = false
 try {
@@ -242,7 +244,9 @@ let lastTheme = false
 
 const panelSize = {
   width: 356,
-  height: 500
+  height: 500,
+  base: 0,
+  visible: false
 }
 
 
@@ -301,6 +305,8 @@ function readSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
       settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))
+      // Overrides
+      settings.theme = "default"
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
@@ -555,6 +561,8 @@ function hotkeyOverlayStart(timeout = 3000) {
 
 async function hotkeyOverlayShow() {
   canReposition = false
+  mainWindow.setVibrancy()
+  mainWindow.setBackgroundColor("#00000000")
   await toggleTray(true, true)
   mainWindow.setIgnoreMouseEvents(false)
   sendToAllWindows("display-mode", "overlay")
@@ -567,7 +575,7 @@ async function hotkeyOverlayShow() {
     y: panelOffset + 20
   })
 
-
+  mainWindow.setOpacity(1)
 
 }
 
@@ -577,10 +585,12 @@ function hotkeyOverlayHide() {
     return false;
   }
   clearTimeout(hotkeyOverlayTimeout)
+  mainWindow.setOpacity(0)
   canReposition = true
   mainWindow.setIgnoreMouseEvents(true)
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
+  sendToAllWindows("display-mode", "normal")
 }
 
 function applyOrder() {
@@ -1368,7 +1378,6 @@ ipcMain.on('get-update', (event, version) => {
 
 ipcMain.on('panel-height', (event, height) => {
   panelSize.height = height
-  repositionPanel()
 })
 
 ipcMain.on('panel-hidden', () => {
@@ -1396,10 +1405,13 @@ function createPanel(toggleOnLoad = false) {
     height: panelSize.height,
     x: 0,
     y: 0,
+    minHeight: 0,
+    minWidth: 0,
     backgroundColor: "#00000000",
     frame: false,
     transparent: true,
     show: false,
+    opacity: 0,
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
@@ -1434,18 +1446,14 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
-    repositionPanel()
-
-    //mainWindow.webContents.openDevTools({ mode: 'detach' })
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
 
   mainWindow.on("blur", () => {
     // Only run when not in an overlay
     if(canReposition) {
-      mainWindow.setVibrancy()
-      mainWindow.setBackgroundColor("#00000000")
       sendToAllWindows("panelBlur")
+      showPanel(false)
     }
   })
 
@@ -1465,10 +1473,36 @@ function repositionPanel() {
     return display.bounds.x == 0 && display.bounds.y == 0
   })
 
+  function taskbarPosition() {
+    let displays = screen.getAllDisplays()
+    let primaryDisplay = displays.find((display) => {
+      return display.bounds.x == 0 || display.bounds.y == 0
+    })
+    const bounds = primaryDisplay.bounds
+    const workArea = primaryDisplay.workArea
+    let gap = 0
+    let position = "BOTTOM"
+    if (bounds.x < workArea.x) {
+      position = "LEFT"
+      gap = bounds.width - workArea.width
+    } else if (bounds.y < workArea.y) {
+      position = "TOP"
+      gap = bounds.height - workArea.height
+    } else if (bounds.width > workArea.width) {
+      position = "RIGHT"
+      gap = bounds.width - workArea.width
+    } else {
+      position = "BOTTOM"
+      gap = bounds.height - workArea.height
+    }
+    return { position, gap }
+  }
+
   const taskbar = taskbarPosition()
+  panelSize.taskbar = taskbar
   sendToAllWindows('taskbar', taskbar)
 
-  if (mainWindow) {
+  if (mainWindow && !isAnimatingPanel) {
     if (taskbar.position == "LEFT") {
       mainWindow.setBounds({
         width: panelSize.width,
@@ -1491,34 +1525,147 @@ function repositionPanel() {
         y: primaryDisplay.workArea.height - panelSize.height
       })
     }
+    panelSize.base = mainWindow.getBounds().y
   }
 }
 
 
-function taskbarPosition() {
-  let displays = screen.getAllDisplays()
-  let primaryDisplay = displays.find((display) => {
-    return display.bounds.x == 0 || display.bounds.y == 0
-  })
-  const bounds = primaryDisplay.bounds
-  const workArea = primaryDisplay.workArea
-  let gap = 0
-  let position = "BOTTOM"
-  if (bounds.x < workArea.x) {
-    position = "LEFT"
-    gap = bounds.width - workArea.width
-  } else if (bounds.y < workArea.y) {
-    position = "TOP"
-    gap = bounds.height - workArea.height
-  } else if (bounds.width > workArea.width) {
-    position = "RIGHT"
-    gap = bounds.width - workArea.width
+
+/*
+
+
+    Brightness panel animations
+
+
+*/
+
+
+
+let panelAnimationInterval = false
+let shouldAnimatePanel = false
+let isAnimatingPanel = false
+let panelHeight = 0
+let panelMaxHeight = 100
+let panelTransitionTime = 0.5
+let currentPanelTime = 0
+let startPanelTime = process.hrtime.bigint()
+let lastPanelTime = process.hrtime.bigint()
+let primaryRefreshRate = 59.97
+let easeOutQuad = t => 1+(--t)*t*t*t*t
+
+// Set brightness panel state (visible or not)
+function showPanel(show = true, height = 300) {
+  if(show) {
+    // Show panel
+    repositionPanel()
+    if(isAnimatingPanel) {
+        // Start new anim mid-transition
+        panelHeight = height
+    } else {
+        // Start new animation
+        panelHeight = height
+        panelSize.visible = true
+        if(lastTheme && lastTheme.ColorPrevalence) {
+            mainWindow.setVibrancy(getAccentColors().dark + "D0")
+        } else {
+          mainWindow.setVibrancy((lastTheme && lastTheme.SystemUsesLightTheme ? "#DBDBDBDD" : "#292929DD"))
+        }
+        startPanelAnimation()
+    }
   } else {
-    position = "BOTTOM"
-    gap = bounds.height - workArea.height
+    // Hide panel
+    mainWindow.setOpacity(0)
+    panelSize.visible = false
+    clearInterval(panelAnimationInterval)
+    panelAnimationInterval = false
+    shouldAnimatePanel = false
+    sendToAllWindows("display-mode", "normal")
+    panelState = "hidden"
   }
-  return { position, gap }
 }
+
+// Begins panel opening animation
+async function startPanelAnimation() {
+  if(!shouldAnimatePanel) {
+
+    // Set to animating
+    shouldAnimatePanel = true
+    isAnimatingPanel = true
+
+    // Reset timing variables
+    startPanelTime = process.hrtime.bigint()
+    currentPanelTime = 0
+
+    // Get refresh rate of primary display
+    // This allows the animation to play no more than the refresh rate
+    primaryRefreshRate = await refreshCtx.findVerticalRefreshRateForDisplayPoint(0, 0)
+
+    // Start animation interval after a short delay
+    // This avoids jank from React updating the DOM
+    if(!panelAnimationInterval)
+      setTimeout(() => {
+        panelAnimationInterval = setInterval(doAnimationStep, 1000 / 240)
+      }, 100)
+  }
+}
+
+// Borrowed some of this animation logic from @djsweet
+function hrtimeDeltaForFrequency(freq) {
+  return BigInt(Math.ceil(1000000000 / freq));
+}
+
+function doAnimationStep() {
+
+  // If animation has been requested to stop, kill it
+  if(!isAnimatingPanel) {
+    clearInterval(panelAnimationInterval)
+    panelAnimationInterval = false
+    shouldAnimatePanel = false
+    return false
+  }
+
+  // Limit updates to specific interval
+  const now = process.hrtime.bigint()
+  if(now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate || 59.97)) {
+    lastPanelTime = now
+    currentPanelTime = Number(Number(now - startPanelTime) / 1000000000)
+
+    // Check if at end of animation
+    if(currentPanelTime >= panelTransitionTime) {
+      // Stop animation
+      isAnimatingPanel = false
+      shouldAnimatePanel = false
+      // Stop at 100%
+      currentPanelTime = panelTransitionTime
+      clearInterval(panelAnimationInterval)
+      panelAnimationInterval = false
+    }
+
+    // LERP height and opacity
+    let calculatedHeight = panelHeight - panelMaxHeight + Math.round(easeOutQuad(currentPanelTime / panelTransitionTime) * panelMaxHeight)
+    let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 3)) * 100) / 100)
+
+    // Apply panel size
+    if(panelSize.taskbar.position === "TOP") {
+      mainWindow.setBounds({height: calculatedHeight, y: panelSize.base})
+    } else {
+      // Bottom, left, right
+      mainWindow.setBounds({height: calculatedHeight, y: panelSize.base + (panelHeight - calculatedHeight)})
+    }
+
+    // Stop opacity updates if at 1 already
+    if(mainWindow.getOpacity() < 1)
+    mainWindow.setOpacity(calculatedOpacity)
+  }
+}
+
+
+
+
+
+
+
+
 
 app.on("ready", () => {
   readSettings()
@@ -1609,8 +1756,14 @@ function quitApp() {
 }
 
 const toggleTray = async (doRefresh = true, isOverlay = false) => {
+
   if (mainWindow == null) {
     createPanel(true)
+    return false
+  }
+
+  if(panelSize.visible) {
+    showPanel(false)
     return false
   }
 
@@ -1625,7 +1778,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   }
 
   if (mainWindow) {
-    mainWindow.setOpacity(1)
     mainWindow.setBackgroundColor("#00000000")
     if(!isOverlay) {
       
@@ -1641,6 +1793,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
       }
 
       sendToAllWindows("display-mode", "normal")
+      showPanel(true, panelSize.height)
       panelState = "visible"
       mainWindow.focus()
     } else {
@@ -1649,7 +1802,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
       analyticsUsage.OpenedPanel++
     }
     sendToAllWindows('request-height')
-    repositionPanel()
     mainWindow.webContents.send("tray-clicked")
     mainWindow.setSkipTaskbar(false)
     mainWindow.setSkipTaskbar(true)
@@ -1750,7 +1902,6 @@ function createSettings() {
     backgroundColor: "#00000000",
     frame: false,
     icon: './src/assets/logo.ico',
-    //backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
@@ -1994,7 +2145,6 @@ function addEventListeners() {
 
   screen.on('display-added', handleMonitorChange)
   screen.on('display-removed', handleMonitorChange)
-  screen.on('display-metrics-changed', repositionPanel)
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;

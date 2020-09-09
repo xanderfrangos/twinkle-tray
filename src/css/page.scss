@@ -476,7 +476,7 @@ a {
     width: 300px;
     padding-top: 30px;
     height: calc(100vh - 2px - 30px);
-    background: var(--tray-background);
+    background: var(--tray-background-base);
     transition: width 0.2s;
     overflow: hidden;
     z-index: 3;
@@ -564,6 +564,7 @@ a {
     }
 }
 
-body[data-transparent=true][data-acrylic=true] .window-base {
-    --tray-background: var(--tray-background-blur) !important;
+body[data-transparent=true][data-acrylic=true] .window-base #sidebar {
+    //--tray-background: var(--tray-background-blur) !important;
+    background: none !important;
 }

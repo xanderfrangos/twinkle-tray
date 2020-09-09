@@ -18,10 +18,9 @@ function setPanelVisibility(visible) {
     }))
 
     // Update #root value
-    window.document.body.dataset["acrylicShow"] = false
+    //window.document.body.dataset["acrylicShow"] = false
     if(window.isAcrylic) {
         window.isAcrylic = false
-        browser.setVibrancy()
     }
     
     window.document.getElementById("root").dataset["visible"] = window.showPanel
@@ -81,18 +80,14 @@ function panelAnimationDone() {
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: true
         }))
-    } else {
-        setTimeout(tryApplyAcrylic, 333)
     }
 }
 
-function tryApplyAcrylic() {
-    if(isTransparent && settings.useAcrylic && showPanel) {
-        window.document.body.dataset["acrylicShow"] = true
-        if(!window.isAcrylic)
-        browser.setVibrancy((window.theme === "dark" ? "#292929DD" : "#DBDBDBDD"))
-        window.isAcrylic = true
-    }
+function shouldSendHeightUpdate() {
+    setTimeout(() => {
+        const height = window.document.getElementById("panel").offsetHeight
+        window.sendHeight(height)
+    }, 99)
 }
 
 function turnOffDisplays() {
@@ -155,6 +150,7 @@ ipc.on('taskbar', (event, taskbar) => {
 // Set display mode (overlay or normal)
 ipc.on('display-mode', (event, mode) => {
     window.document.getElementById("root").dataset["mode"] = mode
+    shouldSendHeightUpdate()
 })
 
 ipc.on('request-height', () => {

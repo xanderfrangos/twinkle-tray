@@ -11,8 +11,8 @@
     --slider-track-color: #727272;
     --slider-track-color-focus: #A5A5A5;
 
-    
-    --tray-background: #e4e4e4;
+    --tray-background-base: #e4e4e4;
+    --tray-background: var(--tray-background-base);
     --tray-background-transparent: rgba(219, 219, 219, 0.95);
     --tray-background-blur: rgba(219, 219, 219, 0);
     --tray-background-blur-start: rgba(219, 219, 219, 1);
@@ -38,7 +38,7 @@
 
 
     @media screen and (prefers-color-scheme: dark) {
-        --tray-background: #1f1f1f;
+        --tray-background-base: #1f1f1f;
         --tray-background-transparent: rgba(41, 41, 41, 0.95);
         --tray-background-blur: rgba(41, 41, 41, 0);
         --tray-background-blur-start: rgba(41, 41, 41, 1);
@@ -74,11 +74,13 @@ body[data-transparent="true"][data-acrylic="false"] {
 body[data-transparent="true"][data-acrylic="true"] {
     .window-base {
         --tray-background: var(--tray-background-blur-start) !important;
+        background: transparent !important;
     }
 }
 body[data-transparent="true"][data-acrylic="true"][data-acrylic-show="true"] {
     .window-base {
         background: var(--tray-background-blur) !important;
+        background: transparent !important;
     }
 }
 @media screen and (prefers-color-scheme: dark) {

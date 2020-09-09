@@ -26,13 +26,14 @@
   "dependencies": {
     "@hensm/ddcci": "file:src/modules/node-ddcci",
     "color": "^3.1.2",
-    "electron-winstore-auto-launch": "^2.0.3",
     "electron-acrylic-window": "file:src/modules/electron-acrylic-window",
+    "electron-winstore-auto-launch": "^2.0.3",
     "global-mouse-events": "^1.0.3",
     "markdown-to-jsx": "^6.11.4",
     "node-fetch": "^2.6.0",
     "regedit": "^3.0.3",
     "universal-analytics": "^0.4.23",
+    "win32-displayconfig": "^0.1.0",
     "wmi-client": "^0.5.0"
   },
   "build": {

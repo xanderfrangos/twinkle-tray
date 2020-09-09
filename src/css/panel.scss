@@ -31,32 +31,28 @@ body {
         box-sizing: border-box;
         padding: 15px 15px 0 15px;
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
-        opacity: 0;
-        transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.99s, border-color 0.2s, color 0.2s;
-        transform: translateY(100%);
+        transition: opacity 0.2s, transform 0s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0s, border-color 0.2s, color 0.2s;
         pointer-events: none;
     }
 
     &[data-visible="true"] > .window-base {
-        transform: translateY(0%) !important;
-        opacity: 1;
         pointer-events: all;
     }
 
     &[data-position="TOP"] > .window-base {
         border-width: 0 0 1px 1px;
-        transform: translateY(-100%);
+        top: auto;
+        bottom: 0;
     }
 
     &[data-position="LEFT"] > .window-base {
         border-width: 1px 1px 0 0;
-        transform: translateX(-100%);
     }
 
     &[data-position="RIGHT"] > .window-base {
-        transform: translateX(100%);
+
     }
 
 }
@@ -224,7 +220,7 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             padding: 2px 13px;
             transition: none !important;
             display: flex;
-            background: rgba(19, 19, 19, 0.95);
+            background: rgba(19, 19, 19, 0.95) !important;
         }
         
         .monitor-item .name-row .icon {

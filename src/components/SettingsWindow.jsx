@@ -832,14 +832,6 @@ export default class SettingsWindow extends PureComponent {
                                 <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
                                 <br /><br />
                             </div>
-                            <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
-                            <select value={window.settings.theme} onChange={this.themeChanged}>
-                                <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
-                                <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>
-                                <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
-                            </select>
-                            <br />
-                            <br />
                             <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
                             <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
                             <input onChange={this.acrylicChanged} checked={this.state.useAcrylic || false} data-checked={this.state.useAcrylic || false} type="checkbox" />                            <br />

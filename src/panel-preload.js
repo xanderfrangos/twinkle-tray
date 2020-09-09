@@ -82,16 +82,15 @@ function panelAnimationDone() {
             detail: true
         }))
     } else {
-        setTimeout(tryApplyAcrylic, 111)
+        setTimeout(tryApplyAcrylic, 333)
     }
 }
 
 function tryApplyAcrylic() {
     if(isTransparent && settings.useAcrylic && showPanel) {
-        console.log("ACRYLIC")
         window.document.body.dataset["acrylicShow"] = true
         if(!window.isAcrylic)
-        browser.setVibrancy("dark")
+        browser.setVibrancy((window.theme === "dark" ? "#292929DD" : "#DBDBDBDD"))
         window.isAcrylic = true
     }
 }
@@ -202,6 +201,7 @@ ipc.on('updateProgress', (event, progress) => {
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {
+        window.theme = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
         window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 ? "false" : "true")
@@ -239,5 +239,6 @@ window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
 window.isAcrylic = false
+window.theme = "dark"
 window.settings = {}
 window.isAppX = (remote.app.name == "twinkle-tray-appx" ? true : false)

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Acrylic Test Application</title>
+    <link href="./src/style.css" rel="stylesheet" type="text/css">
+    <script src="./src/frameless.js"></script>
+</head>
+<body style="box-sizing: border-box;user-select: none;">
+<header id="titlebar">
+    <div id="drag-region">
+        <div id="window-title">
+            <span id="appTitle">Acrylic Test Application</span>
+        </div>
+        <div id="window-controls">
+            <div class="button" id="min-button">
+                <span>&#xE921;</span>
+            </div>
+            <div class="button" id="max-button">
+                <span>&#xE922;</span>
+            </div>
+            <div class="button" id="restore-button">
+                <span>&#xE923;</span>
+            </div>
+            <div class="button" id="close-button">
+                <span>&#xE8BB;</span>
+            </div>
+        </div>
+    </div>
+</header>
+<main style="padding: 20px;">
+    <h1>Acrylic Test Application</h1>
+    <form id="form">
+        <input id="color" placeholder="Format: #RRGGBBAA" type="text" value="#661237cc">
+        <input onclick="window.updateColor()" type="button" value="Update Color"/>
+        <input onclick="window.toggleAcrylic()" type="button" value="Toggle Acrylic"/>
+    </form>
+</main>
+<script>
+    window.updateColor = () => {
+        const color = document.getElementById("color").value
+        window.updateVibrancy(color)
+        window.document.querySelector("html").style.setProperty("--window-border", color.substring(0, 7))
+    }
+    window.toggleAcrylic = () => {
+        if (win._vibrancyOp.theme) {
+            window.updateVibrancy()
+        } else {
+            window.updateVibrancy(document.getElementById("color").value)
+        }
+    }
+    document.getElementById("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        window.updateColor();
+        return false;
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+build/
+node_modules/
+.git/
+.idea/
+.gitignore
+.travis.yml
+logo.png
+screenshots/
+test/

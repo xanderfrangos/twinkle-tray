@@ -844,11 +844,12 @@ function handleTransparencyChange(transparent = true, blur = false) {
   sendToAllWindows("transparencyStyle", style)
   if(style === 2) {
     if(settingsWindow) {
-      settingsWindow.setVibrancy("dark")
+      settingsWindow.setVibrancy(determineTheme(settings.theme))
     }
   } else {
     if(settingsWindow) {
       settingsWindow.setVibrancy()
+      settingsWindow.setBackgroundColor("#00000000")
     }
   }
 }
@@ -1397,12 +1398,17 @@ function createPanel(toggleOnLoad = false) {
     y: 0,
     backgroundColor: "#00000000",
     frame: false,
+    transparent: true,
     show: false,
     alwaysOnTop: true,
-    transparent: true,
     skipTaskbar: true,
     resizable: false,
     type: "toolbar",
+    vibrancy: {
+      theme: false,
+      disableOnBlur: false,
+      useCustomWindowRefreshMethod: false
+    },
     maximizable: false,
     minimizable: false,
     webPreferences: {
@@ -1428,6 +1434,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
     repositionPanel()
+
     //mainWindow.webContents.openDevTools({ mode: 'detach' })
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
@@ -1436,6 +1443,7 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if(canReposition) {
       mainWindow.setVibrancy()
+      mainWindow.setBackgroundColor("#00000000")
       sendToAllWindows("panelBlur")
     }
   })
@@ -1617,6 +1625,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
 
   if (mainWindow) {
     mainWindow.setOpacity(1)
+    mainWindow.setBackgroundColor("#00000000")
     if(!isOverlay) {
       
       // Check if overlay is currently open and deal with that
@@ -1747,69 +1756,6 @@ function createSettings() {
     }
   });
 
-  // Replace window moving behavior to fix mouse polling rate bug
-  const pollingRate = 59.997 // TO-DO: Detect the current monitor's refresh rate
-  const win = settingsWindow
-  win.on('will-move', (e) => {
-      if(!settings.useAcrylic) return false;
-      e.preventDefault()
-
-      // Track if the user is moving the window
-      if(win._moveTimeout) clearTimeout(win._moveTimeout);
-      win._moveTimeout = setTimeout(
-        () => {
-          win._isMoving = false
-          clearInterval(win._moveInterval)
-          win._moveInterval = null 
-        }, 1000/60)
-
-      // Start new behavior if not already
-      if(!win._isMoving) {
-        win._isMoving = true
-        if(win._moveInterval) return false;
-
-        // Get start positions
-        win._moveLastUpdate = 0
-        win._moveStartBounds = win.getBounds()
-        win._moveStartCursor = screen.getCursorScreenPoint()
-    
-        // Poll at 600hz while moving window
-        win._moveInterval = setInterval(() => {
-          const now = Date.now()
-          if(now >= win._moveLastUpdate + (1000/pollingRate)) {
-            win._moveLastUpdate = now
-            const cursor = screen.getCursorScreenPoint()
-    
-            // Set new position
-            win.setBounds({
-              x: win._moveStartBounds.x + (cursor.x - win._moveStartCursor.x),
-              y: win._moveStartBounds.y + (cursor.y - win._moveStartCursor.y),
-              width: win._moveStartBounds.width,
-              height: win._moveStartBounds.height
-            })
-          }
-        }, 1000/600)
-      }
-
-    })
-
-    // Replace window resizing behavior to fix mouse polling rate bug
-    win.on('will-resize', (e, newBounds) => {
-      if(!settings.useAcrylic) return false;
-      const now = Date.now()
-      if(!win._resizeLastUpdate) win._resizeLastUpdate = 0;
-        if(now >= win._resizeLastUpdate + (1000/pollingRate)) {
-          win._resizeLastUpdate = now
-          //win.setBounds(newBounds)
-        } else {
-          e.preventDefault()
-        }
-    })
-
-  
-
-
-
   settingsWindow.loadURL(
     isDev
       ? "http://localhost:3000/settings.html"
@@ -1824,7 +1770,7 @@ function createSettings() {
     setTimeout(() => {
       settingsWindow.show()
       if(settings.useAcrylic) {
-        settingsWindow.setVibrancy('dark')
+        settingsWindow.setVibrancy(determineTheme(settings.theme))
       }
     }, 100)
 

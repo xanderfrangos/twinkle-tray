@@ -1413,7 +1413,8 @@ function createPanel(toggleOnLoad = false) {
     minimizable: false,
     webPreferences: {
       preload: path.join(__dirname, 'panel-preload.js'),
-      devTools: settings.isDev
+      devTools: settings.isDev,
+      enableRemoteModule: true
     }
   });
 
@@ -1752,7 +1753,8 @@ function createSettings() {
     //backgroundColor: (lastTheme && lastTheme.SystemUsesLightTheme == 1 ? "#FFFFFF" : "#000000"),
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
-      devTools: settings.isDev
+      devTools: settings.isDev,
+      enableRemoteModule: true
     }
   });
 

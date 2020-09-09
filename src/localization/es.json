@@ -13,8 +13,8 @@
     "GENERIC_DISMISS": "Descartar",
     "GENERIC_DISPLAY_SINGLE": "Pantalla",
     "GENERIC_ALL_DISPLAYS": "Todas las pantallas",
-    "GENERIC_MINIMUM": "Min",
-    "GENERIC_MAXIMUM": "Max",
+    "GENERIC_MINIMUM": "Mín",
+    "GENERIC_MAXIMUM": "Máx",
     "GENERIC_NO_DISPLAYS": "No se han detectado pantallas. Por favor, conecte una pantalla a su PC.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "No se han encontrado pantallas compatibles. Por favor, compruebe que \"DDC/CI\" esté activado en su pantalla.",
     "GENERIC_NO_DISPLAYS_SHORT": "No se han detectado pantallas compatibles.",
@@ -63,7 +63,7 @@
     "SETTINGS_TIME_ADD": "Añadir horario",
     "SETTINGS_TIME_REMOVE": "Borrar horario",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Ajustar brillo individualmente",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure el brillo por pantalla en vez de manera conjunta",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Configure el brillo por pantalla en lugar de para todas las pantallas a la vez.",
     "SETTINGS_TIME_STARTUP_TITLE": "Comprobar al iniciar la aplicación",
     "SETTINGS_TIME_STARTUP_DESC": "Ajusta el brillo al valor del horario más relevante cuándo Twinkle Tray se inicia.",
     "SETTINGS_HOTKEYS_TITLE": "Atajos de teclado",
@@ -83,5 +83,10 @@
     "SETTINGS_UPDATES_AVAILABLE": "¡Hay una actualización disponible para Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "No hay actualizaciones disponibles en este momento. Esta versión de Twinkle Tray incluye los cambios siguientes:",
     "SETTINGS_UPDATES_DOWNLOADING": "Descargando actualización…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Descargar e instalar {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Descargar e instalar {{1}}",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Icono de bandeja",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Ajuste el brillo de todas las pantallas a la vez desplazándose sobre el icono de bandeja del sistema. Esto no funciona con algunos trackpads.",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Atajo de desplazamiento del icono de bandeja",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Activar o desactivar el desenfoque detrás de los fondos transparentes en Twinkle Tray.",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Desenfoque acrílico"
 }

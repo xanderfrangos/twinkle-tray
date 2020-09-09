@@ -86,5 +86,7 @@
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Aktualan. Trenutačna verzija uključuje sljedeće promjene:",
     "SETTINGS_UPDATES_DOWNLOADING": "Preuzimanje nadogradnje …",
     "SETTINGS_UPDATES_DOWNLOAD": "Preuzmi i instaliraj {{1}}",
-    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Ikone u programskoj traci"
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Ikone u programskoj traci",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Akrilno zamućenje",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Aktiviraj ili deaktiviraj zamućenost iza prozirne pozadine u Twinkle Tray."
 }

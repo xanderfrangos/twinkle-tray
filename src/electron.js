@@ -1378,6 +1378,9 @@ ipcMain.on('get-update', (event, version) => {
 
 ipcMain.on('panel-height', (event, height) => {
   panelSize.height = height
+  if(panelSize.visible && !isAnimatingPanel) {
+    repositionPanel()
+  }
 })
 
 ipcMain.on('panel-hidden', () => {

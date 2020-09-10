@@ -560,12 +560,12 @@ function hotkeyOverlayStart(timeout = 3000) {
 }
 
 async function hotkeyOverlayShow() {
+  sendToAllWindows("display-mode", "overlay")
   canReposition = false
   mainWindow.setVibrancy()
   mainWindow.setBackgroundColor("#00000000")
-  await toggleTray(true, true)
   mainWindow.setIgnoreMouseEvents(false)
-  sendToAllWindows("display-mode", "overlay")
+  await toggleTray(true, true)
 
   const panelOffset = 40
   mainWindow.setBounds({

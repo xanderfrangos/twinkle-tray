@@ -1545,33 +1545,27 @@ let panelAnimationInterval = false
 let shouldAnimatePanel = false
 let isAnimatingPanel = false
 let panelHeight = 0
-let panelMaxHeight = 100
+let panelMaxHeight = 120
 let panelTransitionTime = 0.5
 let currentPanelTime = 0
 let startPanelTime = process.hrtime.bigint()
 let lastPanelTime = process.hrtime.bigint()
 let primaryRefreshRate = 59.97
-let easeOutQuad = t => 1+(--t)*t*t*t*t
+let easeOutQuad = t => 1-(--t)*t*t*t
 
 // Set brightness panel state (visible or not)
 function showPanel(show = true, height = 300) {
   if(show) {
     // Show panel
     repositionPanel()
-    if(isAnimatingPanel) {
-        // Start new anim mid-transition
-        panelHeight = height
+    panelHeight = height
+    panelSize.visible = true
+    if(lastTheme && lastTheme.ColorPrevalence) {
+        mainWindow.setVibrancy(getAccentColors().dark + "D0")
     } else {
-        // Start new animation
-        panelHeight = height
-        panelSize.visible = true
-        if(lastTheme && lastTheme.ColorPrevalence) {
-            mainWindow.setVibrancy(getAccentColors().dark + "D0")
-        } else {
-          mainWindow.setVibrancy((lastTheme && lastTheme.SystemUsesLightTheme ? "#DBDBDBDD" : "#292929DD"))
-        }
-        startPanelAnimation()
+      mainWindow.setVibrancy((lastTheme && lastTheme.SystemUsesLightTheme ? "#DBDBDBDD" : "#292929DD"))
     }
+    startPanelAnimation()
   } else {
     // Hide panel
     mainWindow.setOpacity(0)
@@ -1579,6 +1573,7 @@ function showPanel(show = true, height = 300) {
     clearInterval(panelAnimationInterval)
     panelAnimationInterval = false
     shouldAnimatePanel = false
+    isAnimatingPanel = false
     sendToAllWindows("display-mode", "normal")
     panelState = "hidden"
   }
@@ -1643,7 +1638,7 @@ function doAnimationStep() {
 
     // LERP height and opacity
     let calculatedHeight = panelHeight - panelMaxHeight + Math.round(easeOutQuad(currentPanelTime / panelTransitionTime) * panelMaxHeight)
-    let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 3)) * 100) / 100)
+    let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 2.2)) * 100) / 100)
 
     // Apply panel size
     if(panelSize.taskbar.position === "TOP") {
@@ -1759,11 +1754,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
 
   if (mainWindow == null) {
     createPanel(true)
-    return false
-  }
-
-  if(panelSize.visible) {
-    showPanel(false)
     return false
   }
 

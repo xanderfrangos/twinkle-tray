@@ -23,8 +23,7 @@ body {
 
     & > .window-base {
         background: var(--tray-background);
-        border: 1px solid var(--tray-border);
-        border-width: 1px 0px 0px 1px;
+        box-shadow: 0.5px 0.5px 0 0.5px var(--tray-border) inset;
         color: var(--tray-text);
         font-family: 'Segoe UI';
         width: 100vw;
@@ -42,13 +41,13 @@ body {
     }
 
     &[data-position="TOP"] > .window-base {
-        border-width: 0 0 1px 1px;
+        box-shadow: 0.5px -0.5px 0 0.5px var(--tray-border) inset;
         top: auto;
         bottom: 0;
     }
 
     &[data-position="LEFT"] > .window-base {
-        border-width: 1px 1px 0 0;
+        box-shadow: -0.5px 0.5px 0 0.5px var(--tray-border) inset;
     }
 
     &[data-position="RIGHT"] > .window-base {

@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut } = require('electron')
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch("in-process-gpu")
 const { BrowserWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
@@ -8,6 +10,11 @@ const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
+
+const ffi = require('ffi-napi')
+let SetWindowPos = ffi.Library("User32.dll", {
+  'SetWindowPos' : ['bool', ['int','int','int','int','int','int','int']]
+})
 
 let isDev = false
 try {
@@ -294,7 +301,7 @@ const defaultSettings = {
   names: {},
   analytics: !isDev,
   scrollShortcut: true,
-  useAcrylic: true,
+  useAcrylic: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -561,16 +568,21 @@ function hotkeyOverlayStart(timeout = 3000) {
 
 async function hotkeyOverlayShow() {
   sendToAllWindows("display-mode", "overlay")
+  let monitorCount = 0
+  Object.values(monitors).forEach((monitor) => {
+    if(monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
+  })
+
   canReposition = false
-  mainWindow.setVibrancy()
-  mainWindow.setBackgroundColor("#00000000")
+  mainWindow.setVibrancy({ theme: "#26262601", effect: "blur" })
+  //mainWindow.setBackgroundColor("#00000000")
   mainWindow.setIgnoreMouseEvents(false)
   await toggleTray(true, true)
 
   const panelOffset = 40
   mainWindow.setBounds({
-    width: panelSize.width,
-    height: panelSize.height,
+    width: 26 + (40 * monitorCount),
+    height: 138,
     x: panelOffset + 10,
     y: panelOffset + 20
   })
@@ -1412,7 +1424,7 @@ function createPanel(toggleOnLoad = false) {
     minWidth: 0,
     backgroundColor: "#00000000",
     frame: false,
-    transparent: true,
+    transparent: false,
     show: false,
     opacity: 0,
     alwaysOnTop: true,
@@ -1422,7 +1434,8 @@ function createPanel(toggleOnLoad = false) {
     vibrancy: {
       theme: false,
       disableOnBlur: false,
-      useCustomWindowRefreshMethod: false
+      useCustomWindowRefreshMethod: false,
+      effect: 'blur'
     },
     maximizable: false,
     minimizable: false,
@@ -1459,6 +1472,15 @@ function createPanel(toggleOnLoad = false) {
       showPanel(false)
     }
   })
+
+  mainWindow.on('move', (e) => {
+    e.preventDefault()
+  })
+
+  mainWindow.on('resize', (e) => {
+    e.preventDefault()
+  })
+
 
 }
 
@@ -1548,25 +1570,28 @@ let panelAnimationInterval = false
 let shouldAnimatePanel = false
 let isAnimatingPanel = false
 let panelHeight = 0
-let panelMaxHeight = 120
-let panelTransitionTime = 0.5
+let panelMaxHeight = 50
+let panelTransitionTime = 0.35
 let currentPanelTime = 0
 let startPanelTime = process.hrtime.bigint()
 let lastPanelTime = process.hrtime.bigint()
 let primaryRefreshRate = 59.97
-let easeOutQuad = t => 1-(--t)*t*t*t
+let primaryDPI = 1
+let mainWindowHandle
+let easeOutQuad = t => 1+(--t)*t*t*t*t
 
 // Set brightness panel state (visible or not)
 function showPanel(show = true, height = 300) {
   if(show) {
     // Show panel
+    mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
     repositionPanel()
     panelHeight = height
     panelSize.visible = true
     if(lastTheme && lastTheme.ColorPrevalence) {
-        mainWindow.setVibrancy(getAccentColors().dark + "D0")
+      mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
     } else {
-      mainWindow.setVibrancy((lastTheme && lastTheme.SystemUsesLightTheme ? "#DBDBDBDD" : "#292929DD"))
+      mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
     }
     startPanelAnimation()
   } else {
@@ -1592,17 +1617,22 @@ async function startPanelAnimation() {
 
     // Reset timing variables
     startPanelTime = process.hrtime.bigint()
-    currentPanelTime = 0
+    currentPanelTime = -1
 
     // Get refresh rate of primary display
     // This allows the animation to play no more than the refresh rate
     primaryRefreshRate = await refreshCtx.findVerticalRefreshRateForDisplayPoint(0, 0)
+    panelSize.bounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
+    panelSize.bounds = mainWindow.getBounds()
+    primaryDPI = screen.getPrimaryDisplay().scaleFactor
+    panelHeight = panelHeight * primaryDPI
 
     // Start animation interval after a short delay
     // This avoids jank from React updating the DOM
     if(!panelAnimationInterval)
       setTimeout(() => {
-        panelAnimationInterval = setInterval(doAnimationStep, 1000 / 240)
+        if(!panelAnimationInterval)
+        panelAnimationInterval = setTimeout(doAnimationStep, 1000 / 600)
       }, 100)
   }
 }
@@ -1622,9 +1652,15 @@ function doAnimationStep() {
     return false
   }
 
+  if(currentPanelTime === -1) {
+    startPanelTime = process.hrtime.bigint()
+    currentPanelTime = 0
+  }
+
   // Limit updates to specific interval
   const now = process.hrtime.bigint()
   if(now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate || 59.97)) {
+    
     lastPanelTime = now
     currentPanelTime = Number(Number(now - startPanelTime) / 1000000000)
 
@@ -1640,20 +1676,28 @@ function doAnimationStep() {
     }
 
     // LERP height and opacity
-    let calculatedHeight = panelHeight - panelMaxHeight + Math.round(easeOutQuad(currentPanelTime / panelTransitionTime) * panelMaxHeight)
-    let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 2.2)) * 100) / 100)
+    let calculatedHeight = panelHeight - (panelMaxHeight * primaryDPI) + Math.round(easeOutQuad(currentPanelTime / panelTransitionTime) * (panelMaxHeight * primaryDPI))
+    let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 6)) * 100) / 100)
 
     // Apply panel size
+    
     if(panelSize.taskbar.position === "TOP") {
-      mainWindow.setBounds({height: calculatedHeight, y: panelSize.base})
+      // Top
+      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, calculatedHeight, 0x0400)
     } else {
       // Bottom, left, right
-      mainWindow.setBounds({height: calculatedHeight, y: panelSize.base + (panelHeight - calculatedHeight)})
+      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight - calculatedHeight), panelSize.bounds.width * primaryDPI, calculatedHeight + 10, 0x0400)
     }
 
     // Stop opacity updates if at 1 already
     if(mainWindow.getOpacity() < 1)
     mainWindow.setOpacity(calculatedOpacity)
+  }
+
+  if(isAnimatingPanel) {
+    panelAnimationInterval = setTimeout(doAnimationStep, 1000 / (primaryRefreshRate || 59.97))
+  } else {
+    repositionPanel()
   }
 }
 

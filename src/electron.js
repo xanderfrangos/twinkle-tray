@@ -1686,7 +1686,7 @@ function doAnimationStep() {
       SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, calculatedHeight, 0x0400)
     } else {
       // Bottom, left, right
-      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight - calculatedHeight), panelSize.bounds.width * primaryDPI, calculatedHeight + 10, 0x0400)
+      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight - calculatedHeight), panelSize.bounds.width * primaryDPI, calculatedHeight + (3 * primaryDPI * (settings.useAcrylic ? 0 : 1)), 0x0400)
     }
 
     // Stop opacity updates if at 1 already

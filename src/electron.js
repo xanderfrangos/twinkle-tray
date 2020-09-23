@@ -1,8 +1,6 @@
 const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut } = require('electron')
-app.disableHardwareAcceleration()
-app.commandLine.appendSwitch("in-process-gpu")
 const { BrowserWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
@@ -601,6 +599,7 @@ function hotkeyOverlayHide() {
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
+  repositionPanel()
 }
 
 function applyOrder() {
@@ -1422,7 +1421,7 @@ function createPanel(toggleOnLoad = false) {
     minWidth: 0,
     backgroundColor: "#00000000",
     frame: false,
-    transparent: false,
+    transparent: true,
     show: false,
     opacity: 0,
     alwaysOnTop: true,
@@ -1586,12 +1585,30 @@ function showPanel(show = true, height = 300) {
     repositionPanel()
     panelHeight = height
     panelSize.visible = true
-    if(lastTheme && lastTheme.ColorPrevalence) {
-      mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+
+    if(settings.useAcrylic && lastTheme.EnableTransparency) {
+      if(lastTheme && lastTheme.ColorPrevalence) {
+        mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      } else {
+        mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      }
+      startPanelAnimation()
     } else {
-      mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      mainWindow.setVibrancy({ theme: "#00000000", effect: false})
+      if(panelSize.taskbar.position === "TOP") {
+        // Top
+        setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, panelHeight, 0x0400)
+      } else {
+        // Bottom, left, right
+        //setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight * primaryDPI), panelSize.bounds.width * primaryDPI, (panelHeight * primaryDPI), 0x0400)
+        sendToAllWindows("playPanelAnimation")
+        mainWindow.setOpacity(0)
+        mainWindow.setBounds(panelSize.bounds)
+      }
+      mainWindow.setOpacity(1)
     }
-    startPanelAnimation()
+
+    
   } else {
     // Hide panel
     mainWindow.setOpacity(0)
@@ -1602,6 +1619,7 @@ function showPanel(show = true, height = 300) {
     isAnimatingPanel = false
     sendToAllWindows("display-mode", "normal")
     panelState = "hidden"
+    sendToAllWindows("closePanelAnimation")
   }
 }
 

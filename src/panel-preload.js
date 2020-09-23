@@ -211,6 +211,16 @@ ipc.on('theme-settings', (event, theme) => {
     }
 })
 
+// Play non-acrylic animation
+ipc.on('playPanelAnimation', () => {
+    window.document.getElementById("root").dataset["visible"] = true
+})
+
+// Play non-acrylic animation
+ipc.on('closePanelAnimation', () => {
+    window.document.getElementById("root").dataset["visible"] = false
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()

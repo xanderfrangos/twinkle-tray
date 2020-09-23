@@ -71,15 +71,21 @@ body[data-transparent="true"][data-acrylic="false"] {
         --tray-background: var(--tray-background-transparent) !important;
     }
 }
-body[data-transparent="true"][data-acrylic="true"] {
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"] {
     .window-base {
-        --tray-background: var(--tray-background-blur-start) !important;
+        //--tray-background: var(--tray-background-blur-start) !important;
+        background: transparent !important;
+        background: var(--tray-background-blur-start) !important;
+    }
+}
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"] {
+    .window-base {
+        background: var(--tray-background-blur) !important;
         background: transparent !important;
     }
 }
-body[data-transparent="true"][data-acrylic="true"][data-acrylic-show="true"] {
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="true"] {
     .window-base {
-        background: var(--tray-background-blur) !important;
         background: transparent !important;
     }
 }

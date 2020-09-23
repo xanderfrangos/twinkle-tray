@@ -32,7 +32,7 @@ body {
         position: absolute;
         top: 0;
         left: 0;
-        transition: opacity 0s, transform 0s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0s, border-color 0.2s, color 0.2s;
+        transition: opacity 0s, transform 0s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.5s, border-color 0.2s, color 0.2s;
         transform: translate(0px, 0px);
         opacity: 1;
         pointer-events: none;
@@ -59,15 +59,15 @@ body {
 }
 
 
-body[data-acrylic="false"], body[data-transparent="false"] {
+body[data-acrylic="false"], body[data-transparent="false"], body[data-use-native-animation="false"] {
     #root {
         & > .window-base {
             opacity: 0;
             pointer-events: none;
-            transform: translateY(100px);
+            transform: translateY(120px);
         }
         &[data-visible="true"] > .window-base {
-            transition: opacity 0.1s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0s, border-color 0.2s, color 0.2s;
+            transition: opacity 0.1s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.85s, border-color 0.2s, color 0.2s;
             transform: translateY(0%) !important;
             opacity: 1;
             pointer-events: all;
@@ -75,16 +75,16 @@ body[data-acrylic="false"], body[data-transparent="false"] {
     
         &[data-position="TOP"] > .window-base {
             border-width: 0 0 1px 1px;
-            transform: translateY(-100px);
+            transform: translateY(-120px);
         }
     
         &[data-position="LEFT"] > .window-base {
             border-width: 1px 1px 0 0;
-            transform: translateX(-100px);
+            transform: translateX(-120px);
         }
     
         &[data-position="RIGHT"] > .window-base {
-            transform: translateX(100px);
+            transform: translateX(120px);
         }
     }
 }

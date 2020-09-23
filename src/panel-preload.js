@@ -12,13 +12,26 @@ function setPanelVisibility(visible) {
     // Update browser var to avoid Electron bugs
     browser = remote.getCurrentWindow()
 
-    if(visible) 
-    window.dispatchEvent(new CustomEvent('sleepUpdated', {
-        detail: false
-    }))
+    if(visible) {
+        window.dispatchEvent(new CustomEvent('sleepUpdated', {
+            detail: false
+        }))
+        if(!settings.useNativeAnimation) {
+            setTimeout(() => {
+                if(window.showPanel) {
+                    ipc.send('show-acrylic')
+                }
+            }, 500)
+        }
+    } else {
+        window.document.body.dataset["acrylicShow"] = false
+        if(window.isAcrylic) {
+            window.isAcrylic = false
+        }
+    }
+    
 
     // Update #root value
-    //window.document.body.dataset["acrylicShow"] = false
     if(window.isAcrylic) {
         window.isAcrylic = false
     }
@@ -76,10 +89,13 @@ function panelAnimationDone() {
     if(showPanel === false) {
         ipc.send('panel-hidden')
         window.sleep = true
+        window.document.body.dataset["acrylicShow"] = false
         window.document.getElementById("root").dataset["sleep"] = true
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: true
         }))
+    } else {
+        
     }
 }
 
@@ -202,12 +218,14 @@ ipc.on('theme-settings', (event, theme) => {
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
         window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 ? "false" : "true")
         window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
+        window.document.body.dataset["useNativeAnimation"] = (settings.useNativeAnimation == false ? "false" : "true")
         isTransparent = theme.EnableTransparency
     } catch (e) {
         window.document.body.dataset["systemTheme"] = "default"
         window.document.body.dataset["transparent"] = "false"
         window.document.body.dataset["acrylic"] = "false"
         window.document.body.dataset["coloredTaskbar"] = "false"
+        window.document.body.dataset["useNativeAnimation"] = "false"
     }
 })
 
@@ -219,6 +237,10 @@ ipc.on('playPanelAnimation', () => {
 // Play non-acrylic animation
 ipc.on('closePanelAnimation', () => {
     window.document.getElementById("root").dataset["visible"] = false
+})
+
+ipc.on('set-acrylic-show', () => {
+    window.document.body.dataset["acrylicShow"] = true
 })
 
 // Request startup data

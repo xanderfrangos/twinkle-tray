@@ -1044,6 +1044,10 @@ export default class SettingsWindow extends PureComponent {
                             <p>
                                 <a className="button" onClick={() => { window.sendSettings({ killWhenIdle: !this.state.rawSettings.killWhenIdle }) }}>Toggle Kill When Idle ({(this.state.rawSettings && this.state.rawSettings.killWhenIdle !== undefined ? this.state.rawSettings.killWhenIdle.toString() : "?")})</a>
                             </p>
+                            <br />
+                            <p>
+                                <a className="button" onClick={() => { window.sendSettings({ useNativeAnimation: !this.state.rawSettings.useNativeAnimation }) }}>Toggle Use Native Animation ({(this.state.rawSettings && this.state.rawSettings.useNativeAnimation !== undefined ? this.state.rawSettings.useNativeAnimation.toString() : "?")})</a>
+                            </p>
 
                         </div>
 

@@ -297,6 +297,7 @@ const defaultSettings = {
   analytics: !isDev,
   scrollShortcut: true,
   useAcrylic: false,
+  useNativeAnimation: true,
   uuid: uuid(),
   branch: "master"
 }
@@ -1398,6 +1399,17 @@ ipcMain.on('panel-hidden', () => {
   if (settings.killWhenIdle) mainWindow.close()
 })
 
+ipcMain.on('show-acrylic', () => {
+  if(settings.useAcrylic && !settings.useNativeAnimation) {
+    if(lastTheme && lastTheme.ColorPrevalence) {
+      mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+    } else {
+      mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+    }
+  }
+  sendToAllWindows("set-acrylic-show")
+})
+
 ipcMain.on('sleep-displays', sleepDisplays)
 
 
@@ -1586,7 +1598,7 @@ function showPanel(show = true, height = 300) {
     panelHeight = height
     panelSize.visible = true
 
-    if(settings.useAcrylic && lastTheme.EnableTransparency) {
+    if(settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
       if(lastTheme && lastTheme.ColorPrevalence) {
         mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
       } else {
@@ -1621,6 +1633,10 @@ function showPanel(show = true, height = 300) {
     sendToAllWindows("display-mode", "normal")
     panelState = "hidden"
     sendToAllWindows("closePanelAnimation")
+    if(!settings.useAcrylic || !settings.useNativeAnimation) {
+      mainWindow.setVibrancy(false)
+      mainWindow.setBackgroundColor("#00000000")
+    }
   }
 }
 

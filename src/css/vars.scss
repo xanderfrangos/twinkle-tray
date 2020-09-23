@@ -78,7 +78,13 @@ body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="fa
         background: var(--tray-background-blur-start) !important;
     }
 }
-body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"] {
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-colored-taskbar="true"] {
+    .window-base {
+        //--tray-background: var(--tray-background-blur-start) !important;
+        background: var(--system-accent-transparent) !important;
+    }
+}
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"], body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"][data-colored-taskbar="true"] {
     .window-base {
         background: var(--tray-background-blur) !important;
         background: transparent !important;

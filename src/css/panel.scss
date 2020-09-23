@@ -67,7 +67,7 @@ body[data-acrylic="false"], body[data-transparent="false"], body[data-use-native
             transform: translateY(120px);
         }
         &[data-visible="true"] > .window-base {
-            transition: opacity 0.1s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.85s, border-color 0.2s, color 0.2s;
+            transition: opacity 0.2s, transform 0.5s cubic-bezier(0.075, 0.82, 0.165, 1), background-color 0.85s, border-color 0.2s, color 0.2s;
             transform: translateY(0%) !important;
             opacity: 1;
             pointer-events: all;

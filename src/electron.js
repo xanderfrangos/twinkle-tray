@@ -11,10 +11,7 @@ const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const ffi = require('ffi-napi')
-let SetWindowPos = ffi.Library("User32.dll", {
-  'SetWindowPos' : ['bool', ['int','int','int','int','int','int','int']]
-})
+const setWindowPos = require("setwindowpos-binding")
 
 let isDev = false
 try {
@@ -588,6 +585,7 @@ async function hotkeyOverlayShow() {
   })
 
   mainWindow.setOpacity(1)
+  mainWindow.moveTop()
 
 }
 
@@ -1641,7 +1639,7 @@ async function startPanelAnimation() {
 function hrtimeDeltaForFrequency(freq) {
   return BigInt(Math.ceil(1000000000 / freq));
 }
-
+let busy = false
 function doAnimationStep() {
 
   // If animation has been requested to stop, kill it
@@ -1656,10 +1654,10 @@ function doAnimationStep() {
     startPanelTime = process.hrtime.bigint()
     currentPanelTime = 0
   }
-
   // Limit updates to specific interval
+  
   const now = process.hrtime.bigint()
-  if(now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate || 59.97)) {
+  if(!busy && now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97)) {
     
     lastPanelTime = now
     currentPanelTime = Number(Number(now - startPanelTime) / 1000000000)
@@ -1681,21 +1679,23 @@ function doAnimationStep() {
 
     // Apply panel size
     
+    busy = true
     if(panelSize.taskbar.position === "TOP") {
       // Top
-      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, calculatedHeight, 0x0400)
+      setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, calculatedHeight, 0x0400)
     } else {
       // Bottom, left, right
-      SetWindowPos.SetWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight - calculatedHeight), panelSize.bounds.width * primaryDPI, calculatedHeight + (3 * primaryDPI * (settings.useAcrylic ? 0 : 1)), 0x0400)
+      setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight - calculatedHeight), panelSize.bounds.width * primaryDPI, calculatedHeight + (6 * primaryDPI * (settings.useAcrylic ? 0 : 1)), 0x0400)
     }
 
     // Stop opacity updates if at 1 already
     if(mainWindow.getOpacity() < 1)
     mainWindow.setOpacity(calculatedOpacity)
+    busy = false
   }
 
   if(isAnimatingPanel) {
-    panelAnimationInterval = setTimeout(doAnimationStep, 1000 / (primaryRefreshRate || 59.97))
+    panelAnimationInterval = setTimeout(doAnimationStep, 1000 / (primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97))
   } else {
     repositionPanel()
   }

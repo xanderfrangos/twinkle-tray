@@ -1594,7 +1594,8 @@ function showPanel(show = true, height = 300) {
       }
       startPanelAnimation()
     } else {
-      mainWindow.setVibrancy({ theme: "#00000000", effect: false})
+      mainWindow.setVibrancy(false)
+      mainWindow.setBackgroundColor("#00000000")
       if(panelSize.taskbar.position === "TOP") {
         // Top
         setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, panelHeight, 0x0400)

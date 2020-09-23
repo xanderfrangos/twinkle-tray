@@ -297,7 +297,7 @@ const defaultSettings = {
   analytics: !isDev,
   scrollShortcut: true,
   useAcrylic: false,
-  useNativeAnimation: true,
+  useNativeAnimation: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -1599,6 +1599,7 @@ function showPanel(show = true, height = 300) {
     panelSize.visible = true
 
     if(settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
+      // Acrylic + Native Animation
       if(lastTheme && lastTheme.ColorPrevalence) {
         mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
       } else {
@@ -1606,6 +1607,7 @@ function showPanel(show = true, height = 300) {
       }
       startPanelAnimation()
     } else {
+      // No blur, or CSS Animation
       mainWindow.setVibrancy(false)
       mainWindow.setBackgroundColor("#00000000")
       if(panelSize.taskbar.position === "TOP") {
@@ -1613,7 +1615,6 @@ function showPanel(show = true, height = 300) {
         setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, panelHeight, 0x0400)
       } else {
         // Bottom, left, right
-        //setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI) + (panelHeight * primaryDPI), panelSize.bounds.width * primaryDPI, (panelHeight * primaryDPI), 0x0400)
         sendToAllWindows("playPanelAnimation")
         mainWindow.setOpacity(0)
         mainWindow.setBounds(panelSize.bounds)

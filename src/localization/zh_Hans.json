@@ -86,5 +86,7 @@
     "SETTINGS_UPDATES_NONE_AVAILABLE": "无更新。目前的版本包括以下更新：",
     "SETTINGS_UPDATES_DOWNLOADING": "正在下载更新中…",
     "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}",
-    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "托盘图标"
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "托盘图标",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "在 Twinkle Tray 中启用或禁用透明背景的模糊。",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "亚克力模糊"
 }

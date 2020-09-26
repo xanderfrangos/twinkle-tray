@@ -40,3 +40,9 @@ window.addEventListener("enableDemoMode", () => {
 window.document.getElementById("root").addEventListener('transitionend', function () {
     window.panelAnimationDone()
 });
+
+window.document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") { 
+        window.thisWindow.blur()
+    }
+})

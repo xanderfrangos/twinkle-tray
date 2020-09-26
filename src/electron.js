@@ -103,6 +103,28 @@ try {
       console.error(e)
     }
   });
+
+
+  // Handle edge cases where "blur" event doesn't properly fire
+  mouseEvents.on("mousedown", (e) => {
+    if(panelSize.visible || !canReposition) {
+
+      // Check if clicking outside of panel/overlay
+      const pBounds = mainWindow.getBounds()
+      if( e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height ) {
+        if(!canReposition) {
+          // Overlay is displayed
+          hotkeyOverlayHide()
+        } else {
+          // Panel is displayed
+          sendToAllWindows("panelBlur")
+          showPanel(false)
+        }
+      }
+      
+    }
+  })
+
 } catch (e) {
   console.error(e)
 }

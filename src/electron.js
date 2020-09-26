@@ -1942,7 +1942,9 @@ function showIntro() {
     transparent: true,
     icon: './src/assets/logo.ico',
     webPreferences: {
-      preload: path.join(__dirname, 'intro-preload.js')
+      preload: path.join(__dirname, 'intro-preload.js'),
+      devTools: settings.isDev,
+      enableRemoteModule: true
     }
   });
 

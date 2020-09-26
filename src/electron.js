@@ -601,6 +601,9 @@ function hotkeyOverlayHide() {
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
   repositionPanel()
+  if(!settings.useAcrylic || !settings.useNativeAnimation) {
+    mainWindow.setVibrancy("#00000000")
+  }
 }
 
 function applyOrder() {

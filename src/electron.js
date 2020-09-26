@@ -570,8 +570,9 @@ async function hotkeyOverlayShow() {
   })
 
   canReposition = false
-  mainWindow.setVibrancy({ theme: "#26262601", effect: "blur" })
-  //mainWindow.setBackgroundColor("#00000000")
+  if(settings.useAcrylic) {
+    mainWindow.setVibrancy({ theme: "#26262601", effect: "blur" })
+  }
   mainWindow.setIgnoreMouseEvents(false)
   await toggleTray(true, true)
 

@@ -114,7 +114,6 @@ try {
       if( e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height ) {
         if(!canReposition) {
           // Overlay is displayed
-          hotkeyOverlayHide()
           hotkeyOverlayHide(true)
         } else {
           // Panel is displayed

@@ -115,6 +115,7 @@ try {
         if(!canReposition) {
           // Overlay is displayed
           hotkeyOverlayHide()
+          hotkeyOverlayHide(true)
         } else {
           // Panel is displayed
           sendToAllWindows("panelBlur")
@@ -613,6 +614,8 @@ async function hotkeyOverlayShow() {
 
 function hotkeyOverlayHide() {
   if(mainWindow.isFocused()) {
+function hotkeyOverlayHide(force = false) {
+  if(!force && mainWindow.isFocused()) {
     hotkeyOverlayStart(333)
     return false;
   }

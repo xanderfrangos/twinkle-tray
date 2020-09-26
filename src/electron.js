@@ -612,8 +612,6 @@ async function hotkeyOverlayShow() {
 
 }
 
-function hotkeyOverlayHide() {
-  if(mainWindow.isFocused()) {
 function hotkeyOverlayHide(force = false) {
   if(!force && mainWindow.isFocused()) {
     hotkeyOverlayStart(333)

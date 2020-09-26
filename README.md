@@ -37,8 +37,10 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitor
 
 **Known issues:**
 - The AMD Radeon Control Panel can interfere with Twinkle Tray. Ensure "Custom Colors" is not enabled.
-- DVI and VGA may not be compatible.
+- VGA may not be compatible.
 - USB/Thunderbolt/Surface docks with HDMI or DisplayPort may not be compatible. 
+
+If some of your monitors are not being detected, please see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues) for troubleshooting steps.
 
 ## Localization
 Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/graphs/contributors), Twinkle Tray is localized for multiple languages. If you'd like to create or update a localization, see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Localization-files) for details. Special thanks to [Weblate](https://weblate.org/) for allowing free use of their service.

@@ -65,7 +65,7 @@
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Настройка яркости для отдельных дисплеев",
     "SETTINGS_TIME_INDIVIDUAL_DESC": "Настройте яркость для каждого дисплея, а не для всех дисплеев сразу.",
     "SETTINGS_TIME_STARTUP_TITLE": "Проверка при запуске приложения",
-    "SETTINGS_TIME_STARTUP_DESC": "",
+    "SETTINGS_TIME_STARTUP_DESC": "Регулировка яркости в соответствии с наиболее подходящим временем при запуске Twinkle Tray.",
     "SETTINGS_HOTKEYS_TITLE": "Сочетание клавиш",
     "SETTINGS_HOTKEYS_DESC": "Настройка сочетания клавиш для регулировки яркости одного или всех дисплеев.",
     "SETTINGS_HOTKEYS_ADD": "Добавить сочетание клавиш",
@@ -86,5 +86,7 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Скачать и установить {{1}}",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Показывать иконку в трее",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Включите или отключите размытие за прозрачным фоном в Twinkle Tray.",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Акриловое размытие"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Акриловое размытие",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Регулируйте яркость всех дисплеев одновременно, прокручивая поверх значка на панели задач. Это не работает с некоторыми трекпадами.",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Скроллинг поверх значка на панели задач"
 }

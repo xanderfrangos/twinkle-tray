@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -24,14 +24,14 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
-    "@hensm/ddcci": "file:src/modules/node-ddcci",
+    "@hensm/ddcci": "^0.1.0",
     "color": "^3.1.2",
     "electron-acrylic-window": "file:src/modules/electron-acrylic-window",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "electron-winstore-auto-launch": "^2.0.3",
     "global-mouse-events": "^1.0.3",
     "markdown-to-jsx": "^6.11.4",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "regedit": "^3.0.3",
     "universal-analytics": "^0.4.23",
     "win32-displayconfig": "^0.1.0",
@@ -56,7 +56,15 @@
       "!node_modules/wmi-client/bin",
       "!node_modules/@hensm/ddcci/build",
       "node_modules/@hensm/ddcci/build/Release/ddcci.node",
-      "!node_modules/node-addon-api/doc"
+      "!node_modules/node-addon-api/doc",
+      "!node_modules/win32-displayconfig/node_modules*",
+      "!node_modules/global-mouse-events/node_modules",
+      "!node_modules/electron-acrylic-window/node_modules",
+      "!node_modules/setwindowpos-binding/node_modules",
+      "!node_modules/**/node-gyp/*",
+      "!node_modules/**/*.ipdb",
+      "!node_modules/**/*.iobj",
+      "!node_modules/**/*.h"
     ],
     "extraResources": [
       "node_modules\\regedit\\vbs\\*",
@@ -82,19 +90,19 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.10.5",
+    "@babel/core": "^7.11.6",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-react": "^7.10.4",
-    "concurrently": "^5.2.0",
+    "concurrently": "^5.3.0",
     "cross-env": "^7.0.2",
-    "electron": "^10.1.1",
-    "electron-builder": "^22.8.0",
+    "electron": "^10.1.3",
+    "electron-builder": "^22.8.1",
     "electron-is-dev": "^1.2.0",
     "parcel-bundler": "^1.12.4",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "16.13.1",
-    "sass": "^1.26.10",
-    "wait-on": "4.0.2"
+    "sass": "^1.26.11",
+    "wait-on": "5.2.0"
   }
 }

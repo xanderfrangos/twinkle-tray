@@ -607,7 +607,6 @@ async function hotkeyOverlayShow() {
   })
 
   mainWindow.setOpacity(1)
-  mainWindow.moveTop()
 
 }
 
@@ -1481,7 +1480,7 @@ function createPanel(toggleOnLoad = false) {
     }
   });
 
-  mainWindow.setAlwaysOnTop(true, 'screen-saver')
+  mainWindow.setAlwaysOnTop(true, 'modal-panel')
 
   mainWindow.loadURL(
     isDev

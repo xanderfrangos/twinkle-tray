@@ -40,6 +40,7 @@
   "build": {
     "productName": "Twinkle Tray",
     "appId": "com.xanderfrangos.twinkle-tray",
+    "compression": "maximum",
     "directories": {
       "buildResources": "resources"
     },
@@ -64,7 +65,14 @@
       "!node_modules/**/node-gyp/*",
       "!node_modules/**/*.ipdb",
       "!node_modules/**/*.iobj",
-      "!node_modules/**/*.h"
+      "!node_modules/**/*.h",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.c",
+      "!node_modules/**/*.map",
+      "!node_modules/**/*.log",
+      "!node_modules/**/*.tlog",
+      "!node_modules/**/*.vcxproj",
+      "!node_modules/**/*.filters"
     ],
     "extraResources": [
       "node_modules\\regedit\\vbs\\*",

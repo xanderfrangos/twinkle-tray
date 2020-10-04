@@ -2250,9 +2250,7 @@ function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
 
-  screen.on('display-added', handleMonitorChange)
-  screen.on('display-removed', handleMonitorChange)
-  addDisplayChangeListener(handleAccentChange)
+  addDisplayChangeListener(handleMonitorChange)
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;

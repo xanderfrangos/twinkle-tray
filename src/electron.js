@@ -991,8 +991,7 @@ refreshDDCCI = async () => {
             brightnessRaw: -1,
             type: 'ddcci',
             min: 0,
-            max: 100,
-            features: {}
+            max: 100
           }
 
           const hwid = monitor.split("#")
@@ -1010,8 +1009,7 @@ refreshDDCCI = async () => {
               max: 100,
               hwid: false,
               name: "Unknown Display",
-              serial: false,
-              features: {}
+              serial: false
             }
           } else {
             if (monitors[hwid[2]].name) {
@@ -1020,7 +1018,11 @@ refreshDDCCI = async () => {
 
               if(monitors[hwid[2]].features === undefined) {
                 ddcciInfo.features = {
-                  powerState: (checkVCP(monitor, 0xD6) ? true : false)
+                  luminance: checkVCP(monitor, 0x10),
+                  brightness: checkVCP(monitor, 0x13),
+                  gain: (checkVCP(monitor, 0x16) && checkVCP(monitor, 0x18) && checkVCP(monitor, 0x1A)),
+                  contrast: checkVCP(monitor, 0x12),
+                  powerState: checkVCP(monitor, 0xD6)
                 }
               }
 
@@ -1132,7 +1134,7 @@ refreshWMI = async () => {
 
 function checkVCP(monitor, code) {
   try {
-    return ddcci._getVCP(monitor, code)[0]
+    return (ddcci._getVCP(monitor, code)[0] != undefined ? true : false)
   } catch(e) {
     return false
   }

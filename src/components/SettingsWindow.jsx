@@ -731,6 +731,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
                             <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
                             <br />Raw Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightnessRaw)}</b>
+                            <br />Features: <b>{( monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported" )}</b>
                             <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
                             <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                             <br />Key: <b>{monitor.key}</b>

@@ -88,5 +88,11 @@
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Включите или отключите размытие за прозрачным фоном в Twinkle Tray.",
     "SETTINGS_GENERAL_ACRYLIC_TITLE": "Акриловое размытие",
     "SETTINGS_GENERAL_SCROLL_DESC": "Регулируйте яркость всех дисплеев одновременно, прокручивая поверх значка на панели задач. Это не работает с некоторыми трекпадами.",
-    "SETTINGS_GENERAL_SCROLL_TITLE": "Скроллинг поверх значка на панели задач"
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Скроллинг поверх значка на панели задач",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Включите или отключите определенные функции DDC/CI на панели яркости. По крайней мере одна функция должна быть включена, чтобы ваш монитор отображался на панели яркости. Не все дисплеи поддерживают эти функции, например дисплеи ноутбуков и планшетов.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "Функции DDC/CI",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Цветовая температура",
+    "PANEL_LABEL_OFF_ON": "Состояние питания",
+    "PANEL_LABEL_CONTRAST": "Контрастность",
+    "PANEL_LABEL_BRIGHTNESS": "Яркость"
 }

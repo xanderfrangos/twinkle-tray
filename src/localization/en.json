@@ -27,7 +27,8 @@
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays",
     "PANEL_LABEL_BRIGHTNESS": "Brightness",
     "PANEL_LABEL_CONTRAST": "Contrast",
-    "PANEL_LABEL_OFF_ON": "Turn off/on",
+    "PANEL_LABEL_OFF_ON": "Power State",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Color Temperature",
 
     "INTRO_TITLE": "Hello, Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions.",
@@ -78,7 +79,8 @@
     "SETTINGS_MONITORS_REORDER_DESC": "Change the order that monitors are displayed in the tray. Click and drag to make changes.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalize Brightness",
     "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitors often have different brightness ranges. By limiting the min/max brightness per display, the brightness levels between displays is much more consistent. Similar monitors will use the same settings.",
-
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI Features",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Enable or disable specific DDC/CI features in the brightness panel. At least one feature must be on for your monitor to show up in the brightness panel. Not all displays support these features, such as laptop/tablet displays.",
 
     "SETTINGS_TIME_TITLE": "Time of Day Adjustments",
     "SETTINGS_TIME_DESC": "Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.",

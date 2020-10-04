@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const os = require("os")
 const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
-const { VerticalRefreshRateContext } = require("win32-displayconfig");
+const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
@@ -1518,6 +1518,11 @@ function createPanel(toggleOnLoad = false) {
 
 }
 
+function restartPanel() {
+  mainWindow.close()
+  mainWindow = null
+}
+
 let canReposition = true
 function repositionPanel() {
   if(!canReposition) {
@@ -2245,6 +2250,7 @@ function addEventListeners() {
 
   screen.on('display-added', handleMonitorChange)
   screen.on('display-removed', handleMonitorChange)
+  addDisplayChangeListener(handleAccentChange)
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
@@ -2259,6 +2265,10 @@ function handleAccentChange() {
 }
 
 function handleMonitorChange(e, d) {
+  // If displays not shown, refresh mainWindow
+  if(!panelSize.visible)
+  restartPanel()
+
   // Reset all known displays
   refreshMonitors(true, true)
 }

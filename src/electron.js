@@ -1521,8 +1521,10 @@ function createPanel(toggleOnLoad = false) {
 }
 
 function restartPanel() {
-  mainWindow.close()
-  mainWindow = null
+  if(mainWindow) {
+    mainWindow.close()
+    mainWindow = null
+  }
 }
 
 let canReposition = true
@@ -1783,7 +1785,7 @@ app.on("ready", () => {
   applyHotkeys()
   showIntro()
   createPanel()
-  addEventListeners()
+  setTimeout(addEventListeners, 2000)
 })
 
 app.on("window-all-closed", () => {

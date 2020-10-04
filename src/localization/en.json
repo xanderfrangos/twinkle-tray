@@ -25,7 +25,9 @@
     "PANEL_UPDATE_AVAILABLE": "New version available",
     "PANEL_BUTTON_LINK_LEVELS": "Link levels",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Turn off displays",
-
+    "PANEL_LABEL_BRIGHTNESS": "Brightness",
+    "PANEL_LABEL_CONTRAST": "Contrast",
+    "PANEL_LABEL_OFF_ON": "Turn off/on",
 
     "INTRO_TITLE": "Hello, Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions.",

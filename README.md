@@ -54,7 +54,7 @@ Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/g
 If you wish to run a development build of Twinkly Tray:
 
 - Download or clone.
-- Install [`node-gyp`](https://github.com/nodejs/node-gyp#installation) and its dependencies, if not already installed.
+- Install the build tools for [`node-gyp`](https://github.com/nodejs/node-gyp#installation), if not already installed. You may already have these from installing NodeJS.
 - Run *npm install*.
 - Run *npm run parcel* and *npm start* (both must run at the same time).
 

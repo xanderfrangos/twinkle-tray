@@ -88,5 +88,11 @@
     "SETTINGS_GENERAL_SCROLL_DESC": "トレイアイコン上でのスクロールで全ディスプレイの輝度を調整します。一部のタッチパッドでは動作しません。",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "トレイのアイコン",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Twinkle Tray の背景を透過するかを切り替えます。",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "半透明"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "半透明",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "明るさパネル内の特定の DDC/CI 機能を有効または無効にします。明るさパネル内でモニターを設定可能にするには少なくとも1つを有効にする必要があります。ノート/タブレットなど、すべてのモニターでこうした機能に対応するわけではありません。",
+    "PANEL_LABEL_BRIGHTNESS": "明るさ",
+    "PANEL_LABEL_OFF_ON": "電源の状態",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI 機能",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "色温度",
+    "PANEL_LABEL_CONTRAST": "コントラスト"
 }

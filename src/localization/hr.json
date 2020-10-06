@@ -88,5 +88,11 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Preuzmi i instaliraj {{1}}",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Ikone u programskoj traci",
     "SETTINGS_GENERAL_ACRYLIC_TITLE": "Akrilno zamućenje",
-    "SETTINGS_GENERAL_ACRYLIC_DESC": "Aktiviraj ili deaktiviraj zamućenost iza prozirne pozadine u Twinkle Tray."
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Aktiviraj ili deaktiviraj zamućenost iza prozirne pozadine u Twinkle Tray.",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Aktiviraj ili deaktiviraj određene DDC/CI funkcije na ploči svjetline. Da bi se monitor prikazao na ploči svjetline, mora biti uključena barem jedna funkcija. Ove funkcije ne podržavaju svi ekrani, kao što su ekrani prijenosnih računala/tableta.",
+    "PANEL_LABEL_BRIGHTNESS": "Svjetlina",
+    "PANEL_LABEL_OFF_ON": "Stanje napajanja",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI funkcije",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Temperatura boje",
+    "PANEL_LABEL_CONTRAST": "Kontrast"
 }

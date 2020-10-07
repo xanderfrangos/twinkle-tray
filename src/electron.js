@@ -585,6 +585,8 @@ function hotkeyOverlayStart(timeout = 3000) {
 }
 
 async function hotkeyOverlayShow() {
+  if(!mainWindow) return false;
+  
   sendToAllWindows("display-mode", "overlay")
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
@@ -611,7 +613,11 @@ async function hotkeyOverlayShow() {
 }
 
 function hotkeyOverlayHide(force = false) {
-  if(!force && mainWindow.isFocused()) {
+  if(!mainWindow) {
+    hotkeyOverlayStart(333)
+    return false
+  }
+  if(!force && mainWindow && mainWindow.isFocused()) {
     hotkeyOverlayStart(333)
     return false;
   }

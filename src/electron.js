@@ -1638,6 +1638,11 @@ function showPanel(show = true, height = 300) {
     panelHeight = height
     panelSize.visible = true
 
+    panelSize.bounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
+    panelSize.bounds = mainWindow.getBounds()
+    primaryDPI = screen.getPrimaryDisplay().scaleFactor
+    panelHeight = panelHeight * primaryDPI
+
     if(settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
       // Acrylic + Native Animation
       if(lastTheme && lastTheme.ColorPrevalence) {
@@ -1696,10 +1701,6 @@ async function startPanelAnimation() {
     // Get refresh rate of primary display
     // This allows the animation to play no more than the refresh rate
     primaryRefreshRate = await refreshCtx.findVerticalRefreshRateForDisplayPoint(0, 0)
-    panelSize.bounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
-    panelSize.bounds = mainWindow.getBounds()
-    primaryDPI = screen.getPrimaryDisplay().scaleFactor
-    panelHeight = panelHeight * primaryDPI
 
     // Start animation interval after a short delay
     // This avoids jank from React updating the DOM

@@ -1140,7 +1140,7 @@ refreshWMI = async () => {
 
 function checkVCP(monitor, code) {
   try {
-    return (ddcci._getVCP(monitor, code)[0] != undefined ? true : false)
+    return ddcci._getVCP(monitor, code)
   } catch(e) {
     return false
   }
@@ -1445,6 +1445,17 @@ ipcMain.on('show-acrylic', () => {
 
 ipcMain.on('sleep-displays', sleepDisplays)
 
+ipcMain.on('set-powerstate', (e, data) => {
+  if(data.display && data.value) {
+    ddcci._setVCP(data.display, 0xD6, data.value)
+  }
+})
+
+ipcMain.on('set-contrast', (e, data) => {
+  if(data.display && data.value) {
+    ddcci.setContrast(data.display, data.value)
+  }
+})
 
 
 //

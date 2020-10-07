@@ -1786,6 +1786,7 @@ app.on("ready", () => {
   showIntro()
   createPanel()
   setTimeout(addEventListeners, 2000)
+  setTimeout(() => {refreshMonitors()}, 2100)
 })
 
 app.on("window-all-closed", () => {

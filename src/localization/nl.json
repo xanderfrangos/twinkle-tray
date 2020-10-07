@@ -88,5 +88,11 @@
     "SETTINGS_UPDATES_AVAILABLE": "Nieuwe versie voor Twinkle Tray beschikbaar!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Je hebt de nieuwste versie. De huidige versie bevat de volgende wijzigingen:",
     "SETTINGS_UPDATES_DOWNLOADING": "Update downloaden…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Downloaden & Installeren {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Downloaden & Installeren {{1}}",
+    "PANEL_LABEL_OFF_ON": "Stroom Status",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Schakel specifieke DDC/CI-functies in het helderheidspaneel in of uit. Er moet ten minste één functie ingeschakeld zijn om uw monitor in het helderheidspaneel te kunnen weergeven. Sommige beeldschermen, zoals die van een laptop/tablet ondersteunen deze functies niet.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI Functies",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Kleurtemperatuur",
+    "PANEL_LABEL_CONTRAST": "Contrast",
+    "PANEL_LABEL_BRIGHTNESS": "Helderheid"
 }

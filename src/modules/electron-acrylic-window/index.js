@@ -20,7 +20,7 @@ function isRS4OrGreater() {
 }
 
 function getHwnd(win) {
-    if (!win) throw new TypeError('WINDOW_NOT_GIVEN');
+    if (!win) { console.log('WINDOW_NOT_GIVEN'); return false; }
     try {
         const hbuf = win.getNativeWindowHandle();
         if (os.endianness() === "LE") {
@@ -29,32 +29,37 @@ function getHwnd(win) {
             return hbuf.readInt32BE();
         }
     } catch (e) {
-        throw new TypeError('NOT_VALID_WINDOW');
+        console.log('NOT_VALID_WINDOW');
     }
 }
 
 function _setVibrancy(win, vibrancyOp = null) {
-    if (vibrancyOp && vibrancyOp.colors) {
-        if(_vibrancyDebug) console.log("Vibrancy On", vibrancyOp)
-        wSetVibrancy(getHwnd(win), vibrancyOp.effect, vibrancyOp.colors.r, vibrancyOp.colors.g, vibrancyOp.colors.b, vibrancyOp.colors.a);
-        win._vibrancyActivated = true;
-        setTimeout(() => {
-            try {
-                if (win._vibrancyActivated) win.setBackgroundColor('#00000000');
-            } catch (e) {
-
+    try {
+        if (vibrancyOp && vibrancyOp.colors) {
+            if(_vibrancyDebug) console.log("Vibrancy On", vibrancyOp)
+            wSetVibrancy(getHwnd(win), vibrancyOp.effect, vibrancyOp.colors.r, vibrancyOp.colors.g, vibrancyOp.colors.b, vibrancyOp.colors.a);
+            win._vibrancyActivated = true;
+            setTimeout(() => {
+                try {
+                    if (win._vibrancyActivated) win.setBackgroundColor('#00000000');
+                } catch (e) {
+    
+                }
+            }, 50);
+        } else {
+            if (_vibrancyDebug) console.log("Vibrancy Off", vibrancyOp, win._vibrancyOp)
+            win._vibrancyActivated = false;
+            if (win._vibrancyOp) {
+                win.setBackgroundColor((win._vibrancyOp && win._vibrancyOp.colors && win._vibrancyOp.colors.blur ? "#FE" + win._vibrancyOp.colors.blur.substring(1,7) : "#00000000"));
             }
-        }, 50);
-    } else {
-        if (_vibrancyDebug) console.log("Vibrancy Off", vibrancyOp, win._vibrancyOp)
-        win._vibrancyActivated = false;
-        if (win._vibrancyOp) {
-            win.setBackgroundColor((win._vibrancyOp && win._vibrancyOp.colors && win._vibrancyOp.colors.blur ? "#FE" + win._vibrancyOp.colors.blur.substring(1,7) : "#00000000"));
+            setTimeout(() => {
+                try { if (!win._vibrancyActivated) wDisableVibrancy(getHwnd(win)); } catch(e) { }
+            }, 10);
         }
-        setTimeout(() => {
-            if (!win._vibrancyActivated) wDisableVibrancy(getHwnd(win));
-        }, 10);
+    } catch(e) {
+        console.log(e)
     }
+    
 }
 
 function sleep(time) {

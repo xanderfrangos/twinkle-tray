@@ -906,7 +906,9 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
+  if(!window) return false;
   try {
+    window.getBounds()
     window.setVibrancy(value)
   }
   catch(e) {
@@ -1418,6 +1420,8 @@ ipcMain.on('full-refresh', function (event, arg) {
 
 ipcMain.on('open-settings', createSettings)
 
+ipcMain.on('log', (e, msg) => console.log(msg))
+
 
 ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)
@@ -1539,6 +1543,9 @@ function createPanel(toggleOnLoad = false) {
     e.preventDefault()
   })
 
+  mainWindow.webContents.once('dom-ready', () => {
+    refreshMonitors(false, true)
+  })
 
 }
 
@@ -1546,6 +1553,7 @@ function restartPanel() {
   if(mainWindow) {
     mainWindow.close()
     mainWindow = null
+    createPanel()
   }
 }
 
@@ -1807,10 +1815,10 @@ app.on("ready", () => {
   getLocalization()
   applyHotkeys()
   showIntro()
-  createPanel()
   createTray()
+  refreshMonitors(true)
+  createPanel()
   setTimeout(addEventListeners, 2000)
-  setTimeout(() => {refreshMonitors()}, 2100)
 })
 
 app.on("window-all-closed", () => {
@@ -2281,7 +2289,7 @@ function addEventListeners() {
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
-    setTimeout(handleBackgroundUpdate, 500)
+    setTimeout(handleBackgroundUpdate, 2500)
   }
   restartBackgroundUpdate()
 }

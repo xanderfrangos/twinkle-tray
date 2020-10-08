@@ -1,4 +1,5 @@
 const { ipcRenderer: ipc, remote } = require('electron');
+console.log = (...e) => {e.forEach((c) => ipc.send('log', c))}
 let browser = remote.getCurrentWindow()
 
 const log = console.log
@@ -179,6 +180,7 @@ ipc.on('settings-updated', (event, settings) => {
         console.log = () => {}
     } else {
         console.log = log
+        console.log = (...e) => {e.forEach((c) => ipc.send('log', c))}
     }
     window.settings = settings
     window.dispatchEvent(new CustomEvent('settingsUpdated', {

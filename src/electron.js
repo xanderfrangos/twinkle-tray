@@ -595,7 +595,7 @@ async function hotkeyOverlayShow() {
 
   canReposition = false
   if(settings.useAcrylic) {
-    mainWindow.setVibrancy({ theme: "#26262601", effect: "blur" })
+    tryVibrancy(mainWindow,{ theme: "#26262601", effect: "blur" })
   }
   mainWindow.setIgnoreMouseEvents(false)
   await toggleTray(true, true)
@@ -630,7 +630,7 @@ function hotkeyOverlayHide(force = false) {
   sendToAllWindows("display-mode", "normal")
   repositionPanel()
   if(!settings.useAcrylic || !settings.useNativeAnimation) {
-    mainWindow.setVibrancy("#00000000")
+    tryVibrancy(mainWindow,"#00000000")
   }
 }
 
@@ -895,13 +895,22 @@ function handleTransparencyChange(transparent = true, blur = false) {
   sendToAllWindows("transparencyStyle", style)
   if(style === 2) {
     if(settingsWindow) {
-      settingsWindow.setVibrancy(determineTheme(settings.theme))
+      tryVibrancy(settingsWindow,determineTheme(settings.theme))
     }
   } else {
     if(settingsWindow) {
-      settingsWindow.setVibrancy()
+      tryVibrancy(settingsWindow)
       settingsWindow.setBackgroundColor("#00000000")
     }
+  }
+}
+
+function tryVibrancy(window, value = null) {
+  try {
+    window.setVibrancy(value)
+  }
+  catch(e) {
+    console.log("Couldn't set vibrancy", e)
   }
 }
 
@@ -1435,9 +1444,9 @@ ipcMain.on('panel-hidden', () => {
 ipcMain.on('show-acrylic', () => {
   if(settings.useAcrylic && !settings.useNativeAnimation) {
     if(lastTheme && lastTheme.ColorPrevalence) {
-      mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      tryVibrancy(mainWindow,{ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
     } else {
-      mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      tryVibrancy(mainWindow,{ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
     }
   }
   sendToAllWindows("set-acrylic-show")
@@ -1508,10 +1517,6 @@ function createPanel(toggleOnLoad = false) {
   );
 
   mainWindow.on("closed", () => (mainWindow = null));
-
-  mainWindow.webContents.once('dom-ready', () => {
-    createTray()
-  })
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
@@ -1657,14 +1662,14 @@ function showPanel(show = true, height = 300) {
     if(settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
       // Acrylic + Native Animation
       if(lastTheme && lastTheme.ColorPrevalence) {
-        mainWindow.setVibrancy({ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+        tryVibrancy(mainWindow,{ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
       } else {
-        mainWindow.setVibrancy({ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+        tryVibrancy(mainWindow,{ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
       }
       startPanelAnimation()
     } else {
       // No blur, or CSS Animation
-      mainWindow.setVibrancy(false)
+      tryVibrancy(mainWindow,false)
       mainWindow.setBackgroundColor("#00000000")
       if(panelSize.taskbar.position === "TOP") {
         // Top
@@ -1691,7 +1696,7 @@ function showPanel(show = true, height = 300) {
     panelState = "hidden"
     sendToAllWindows("closePanelAnimation")
     if(!settings.useAcrylic || !settings.useNativeAnimation) {
-      mainWindow.setVibrancy(false)
+      tryVibrancy(mainWindow,false)
       mainWindow.setBackgroundColor("#00000000")
     }
   }
@@ -1803,6 +1808,7 @@ app.on("ready", () => {
   applyHotkeys()
   showIntro()
   createPanel()
+  createTray()
   setTimeout(addEventListeners, 2000)
   setTimeout(() => {refreshMonitors()}, 2100)
 })
@@ -2051,7 +2057,7 @@ function createSettings() {
     setTimeout(() => {
       settingsWindow.show()
       if(settings.useAcrylic) {
-        settingsWindow.setVibrancy(determineTheme(settings.theme))
+        tryVibrancy(settingsWindow,determineTheme(settings.theme))
       }
     }, 100)
 

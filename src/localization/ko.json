@@ -1,6 +1,5 @@
 {
     "LANGUAGE": "한국어",
-
     "GENERIC_OK": "확인",
     "GENERIC_CANCEL": "취소",
     "GENERIC_SAVE": "저장",
@@ -19,28 +18,18 @@
     "GENERIC_NO_DISPLAYS": "모니터를 찾을 수 없습니다. 컴퓨터에 모니터를 연결하세요.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "호환되는 디스플레이를 찾을 수 없습니다. \"DDC/CI\"가 켜져있는지 확인하세요.",
     "GENERIC_NO_DISPLAYS_SHORT": "호환되는 디스플레이를 찾을 수 없습니다.",
-
-
     "PANEL_TITLE": "밝기 조정",
     "PANEL_UPDATE_AVAILABLE": "업데이트가 있습니다.",
     "PANEL_BUTTON_LINK_LEVELS": "동시에 설정",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "디스플레이 끄기",
-
-
     "INTRO_TITLE": "Twinkle Tray를 사용해 주셔서 감사합니다!",
     "INTRO_INSTRUCTIONS": "트레이 아이콘이 숨겨져 있기 때문에 고정 항목으로 옮겨야 합니다. 아래 방법을 따라하세요.",
-
-
     "SETTINGS_TITLE": "Twinkle Tray 설정",
-
-
     "SETTINGS_SIDEBAR_GENERAL": "기본",
     "SETTINGS_SIDEBAR_MONITORS": "모니터 설정",
     "SETTINGS_SIDEBAR_TIME": "시간 설정",
     "SETTINGS_SIDEBAR_HOTKEYS": "단축키",
     "SETTINGS_SIDEBAR_UPDATES": "업데이트",
-
-
     "SETTINGS_GENERAL_TITLE": "기본",
     "SETTINGS_GENERAL_STARTUP": "시작할 때 켜기",
     "SETTINGS_GENERAL_THEME_TITLE": "테마",
@@ -60,8 +49,6 @@
     "SETTINGS_GENERAL_SCROLL_TITLE": "스크롤로 밝기 조정",
     "SETTINGS_GENERAL_SCROLL_DESC": "시스템 트레이 아이콘 위에서 스크롤하여 모든 디스플레이의 밝기를 한 번에 조정하세요. 몇몇 터치패드에서는 작동하지 않을 수 있습니다.",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "트레이 아이콘",
-
-
     "SETTINGS_MONITORS_RATE_TITLE": "밝기 업데이트 주기",
     "SETTINGS_MONITORS_RATE_DESC": "값을 조정할 때 디스플레이의 밝기가 업데이트되는 빈도를 설정하세요. 모니터가 깜빡이는 것 같으면 시간을 늘이세요.",
     "SETTINGS_MONITORS_RATE_0": "즉시",
@@ -76,8 +63,6 @@
     "SETTINGS_MONITORS_REORDER_DESC": "드래그해서 트레이에 표시되는 모니터의 정렬 순서를 바꾸세요.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "밝기 정규화하기",
     "SETTINGS_MONITORS_NORMALIZE_DESC": "모니터는 서로 다른 최대/최소 밝기를 갖고 있습니다. 밝기를 정규화하면, 모든 모니터의 밝기를 일관되게 설정할 수 있습니다. 비슷한 모니터는 같은 값을 사용할 것입니다.",
-
-
     "SETTINGS_TIME_TITLE": "시간 설정",
     "SETTINGS_TIME_DESC": "특정 시간에 모니터의 밝기를 자동으로 바꾸도록 설정하세요.",
     "SETTINGS_TIME_ADD": "시간 추가",
@@ -86,8 +71,6 @@
     "SETTINGS_TIME_INDIVIDUAL_DESC": "각각의 디스플레이에 다른 밝기 값을 설정합니다.",
     "SETTINGS_TIME_STARTUP_TITLE": "앱 시작시 체크하기",
     "SETTINGS_TIME_STARTUP_DESC": "트레이가 시작될 때 가장 적절한 시간에 맞춰 밝기를 조정하세요.",
-
-
     "SETTINGS_HOTKEYS_TITLE": "단축키",
     "SETTINGS_HOTKEYS_DESC": "밝기를 빠르게 바꾸기 위해 단축키를 설정하세요",
     "SETTINGS_HOTKEYS_ADD": "단축키 추가",
@@ -97,8 +80,6 @@
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "여기서 키를 누르세요.",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "밝기 조정 정도",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "단축키를 눌렀을 때 밝기를 얼마나 바꿀 것인지 설정하세요.",
-
-
     "SETTINGS_UPDATES_TITLE": "업데이트",
     "SETTINGS_UPDATES_VERSION": "Twinkle Tray {{1}}.",
     "SETTINGS_UPDATES_AUTOMATIC_TITLE": "업데이트 자동 확인",
@@ -107,6 +88,10 @@
     "SETTINGS_UPDATES_AVAILABLE": "새 버전이 있습니다.",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "최신 버전입니다. 현재 버전은 다음과 같은 수정사항을 포함하고 있습니다:",
     "SETTINGS_UPDATES_DOWNLOADING": "업데이트를 다운로드 하는 중...",
-    "SETTINGS_UPDATES_DOWNLOAD": "{{1}} 설치하기"
-    
+    "SETTINGS_UPDATES_DOWNLOAD": "{{1}} 설치하기",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI 기능",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "색온도",
+    "PANEL_LABEL_OFF_ON": "전원 상태",
+    "PANEL_LABEL_CONTRAST": "대비",
+    "PANEL_LABEL_BRIGHTNESS": "밝기"
 }

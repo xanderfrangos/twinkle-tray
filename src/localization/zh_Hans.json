@@ -88,5 +88,11 @@
     "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "托盘图标",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "在 Twinkle Tray 中启用或禁用透明背景的模糊。",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "亚克力模糊"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "亚克力模糊",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI 功能",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "在亮度面板中启用或禁用特定的 DDC/CI 功能。 必须至少启用一项功能，监视器才能显示在亮度面板中。 并非所有的显示器都支持这些功能，例如笔记本电脑/平板电脑显示器。",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "色温",
+    "PANEL_LABEL_OFF_ON": "电源状态",
+    "PANEL_LABEL_CONTRAST": "对比度",
+    "PANEL_LABEL_BRIGHTNESS": "亮度"
 }

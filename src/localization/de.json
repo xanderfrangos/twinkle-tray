@@ -88,5 +88,11 @@
     "SETTINGS_GENERAL_SCROLL_DESC": "Stellen Sie die Helligkeit aller Monitore auf einmal ein, indem Sie über das Taskleistensymbol scrollen. Dies funktioniert nicht mit einigen Trackpads.",
     "SETTINGS_GENERAL_SCROLL_TITLE": "Taskleistensymbol-Scrollkürzel",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Aktivieren oder deaktivieren Sie die Unschärfe hinter transparenten Hintergründen in Twinkle Tray.",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Acryl Unschärfe"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Acryl Unschärfe",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Aktivieren oder deaktivieren Sie bestimmte DDC/CI-Funktionen im Helligkeitsfeld. Mindestens eine Funktion muss aktiviert sein, damit Ihr Monitor im Helligkeitsfeld angezeigt wird. Nicht alle Bildschirme unterstützen diese Funktionen, wie z. B. Laptop-/Tablet-Bildschirme.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI-Funktionen",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Farbtemperatur",
+    "PANEL_LABEL_OFF_ON": "Energiezustand",
+    "PANEL_LABEL_CONTRAST": "Kontrast",
+    "PANEL_LABEL_BRIGHTNESS": "Helligkeit"
 }

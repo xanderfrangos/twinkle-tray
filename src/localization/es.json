@@ -88,5 +88,11 @@
     "SETTINGS_GENERAL_SCROLL_DESC": "Ajuste el brillo de todas las pantallas a la vez desplazándose sobre el icono de bandeja del sistema. Esto no funciona con algunos trackpads.",
     "SETTINGS_GENERAL_SCROLL_TITLE": "Atajo de desplazamiento del icono de bandeja",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Activar o desactivar el desenfoque detrás de los fondos transparentes en Twinkle Tray.",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Desenfoque acrílico"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Desenfoque acrílico",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Activa o Deshabilita las características específicas de DDC/CI en el panel de brillo. Al menos una función debe estar activada para que el monitor aparezca en el panel de brillo. No todas las pantallas son compatibles con estas funciones, como las pantallas de los portátiles o tabletas.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "Funciones DDC/CI",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Temperatura de Color",
+    "PANEL_LABEL_OFF_ON": "Estado de Energía",
+    "PANEL_LABEL_CONTRAST": "Contraste",
+    "PANEL_LABEL_BRIGHTNESS": "Brillo"
 }

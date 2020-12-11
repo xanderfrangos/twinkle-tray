@@ -88,5 +88,6 @@
     "PANEL_LABEL_CONTRAST": "Độ tương phản",
     "PANEL_LABEL_BRIGHTNESS": "Độ sáng",
     "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Bật hoặc tắt các tính năng DDC / CI trong cài đặt độ sáng. Ít nhất một tính năng phải được bật để màn hình của bạn hiển thị trong menu điều chỉnh độ sáng. Không phải tất cả các màn hình đều hỗ trợ các tính năng này, chẳng hạn như màn hình máy tính xách tay / máy tính bảng.",
-    "SETTINGS_MONITORS_FEATURES_TITLE": "Tính năng DDC/CI"
+    "SETTINGS_MONITORS_FEATURES_TITLE": "Tính năng DDC/CI",
+    "PANEL_LABEL_OFF_ON": "Trạng thái quyền lực"
 }

@@ -83,5 +83,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Nuova versione di Twinkle Tray disponibile!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Aggiornato. La versione attuale include questi cambiamenti:",
     "SETTINGS_UPDATES_DOWNLOADING": "Scarico l'aggiornamento…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Scarica e Installa {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Scarica e Installa {{1}}",
+    "PANEL_LABEL_OFF_ON": "Stato di alimentazione"
 }

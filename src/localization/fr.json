@@ -88,5 +88,11 @@
     "SETTINGS_GENERAL_SCROLL_DESC": "Régler la luminosité de tous les écrans à la fois en faisant défiler la souris sur l'icône dans la zone de notification. Cela ne fonctionne pas avec certains trackpads.",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Icône dans la zone de notification",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "Activer ou désactiver le flou derrière les arrière-plans transparents dans Twinkle Tray.",
-    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Flou acrylique"
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Flou acrylique",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Activer ou désactiver des fonctionnalités DDC/CI spécifiques dans le panneau de luminosité. Au moins une fonctionnalité doit être activée pour que votre écran s'affiche dans le panneau de luminosité. Tous les écrans ne supportent pas ces fonctionnalités, tels que les écrans d'ordinateur portable/tablette.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "Fonctionnalités DDC/CI",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Température de couleur",
+    "PANEL_LABEL_OFF_ON": "État de l'alimentation",
+    "PANEL_LABEL_CONTRAST": "Contraste",
+    "PANEL_LABEL_BRIGHTNESS": "Luminosité"
 }

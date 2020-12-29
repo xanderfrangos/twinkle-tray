@@ -22,7 +22,7 @@
     "PANEL_UPDATE_AVAILABLE": "Đã có phiên bản mới",
     "PANEL_BUTTON_LINK_LEVELS": "Liên kết",
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Tắt màn hình",
-    "INTRO_TITLE": "Xin chào.",
+    "INTRO_TITLE": "Xin chào, Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "Biểu tượng Twinkle Tray đã bị ẩn, vì vậy bạn nên di chuyển nó đến nơi có thể dễ dàng truy cập. Xem bên dưới để được hướng dẫn.",
     "SETTINGS_TITLE": "Thiết lập Twinkle Tray",
     "SETTINGS_SIDEBAR_GENERAL": "Cài đặt chung",
@@ -83,5 +83,11 @@
     "SETTINGS_UPDATES_AVAILABLE": "Đã có phiên bản mới của Twinkle Tray!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Cập nhật. Phiên bản hiện tại bao gồm các thay đổi sau:",
     "SETTINGS_UPDATES_DOWNLOADING": "Đang cập nhật…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Tải & cài đặt {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Tải & cài đặt {{1}}",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Nhiệt độ màu",
+    "PANEL_LABEL_CONTRAST": "Độ tương phản",
+    "PANEL_LABEL_BRIGHTNESS": "Độ sáng",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Bật hoặc tắt các tính năng DDC / CI trong cài đặt độ sáng. Ít nhất một tính năng phải được bật để màn hình của bạn hiển thị trong menu điều chỉnh độ sáng. Không phải tất cả các màn hình đều hỗ trợ các tính năng này, chẳng hạn như màn hình máy tính xách tay / máy tính bảng.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "Tính năng DDC/CI",
+    "PANEL_LABEL_OFF_ON": "Trạng thái quyền lực"
 }

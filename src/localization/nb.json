@@ -83,5 +83,16 @@
     "SETTINGS_UPDATES_AVAILABLE": "En oppdatering er tilgjengelig for Twinkle Tray.",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Ingen nye versjoner per nå. Denne versjonen av Twinkle Tray har følgende endringer:",
     "SETTINGS_UPDATES_DOWNLOADING": "Laster ned oppdatering…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Last ned og installer {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Last ned og installer {{1}}",
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "Skru på eller av spesifikke DDC/CI-funksjoner i lysstyrkepanelet. Minst én må være påslått for at skjermen din skal vises i lysstyrkepanelet. Ikke alle skjermer støtter disse funksjonene, som f.eks. bærbar/nettbrett-skjermer.",
+    "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI-funksjoner",
+    "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Systemkurvsikon",
+    "SETTINGS_GENERAL_SCROLL_DESC": "Juster lysstyrken for alle skjermer samtidig ved å rulle over systemkurvsikonet. Dette fungerer ikke med noen pekeflater.",
+    "SETTINGS_GENERAL_SCROLL_TITLE": "Rulle-systemkurvssnarvei",
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Skru på eller av uskarphet bak gjennomsiktige bakgrunner i Twinkle Tray.",
+    "SETTINGS_GENERAL_ACRYLIC_TITLE": "Akryluskarpt",
+    "PANEL_LABEL_COLOR_TEMPERATURE": "Fargetemperatur",
+    "PANEL_LABEL_OFF_ON": "Effekttilstand",
+    "PANEL_LABEL_CONTRAST": "Kontrast",
+    "PANEL_LABEL_BRIGHTNESS": "Lysstyrke"
 }

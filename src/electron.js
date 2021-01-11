@@ -92,12 +92,12 @@ try {
         for (let key in monitors) {
           updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
         }
-         
+
         // If panel isn't open, use the overlay
         if(panelState !== "visible") {
           hotkeyOverlayStart()
         }
-        
+
       }
     } catch (e) {
       console.error(e)
@@ -121,7 +121,7 @@ try {
           showPanel(false)
         }
       }
-      
+
     }
   })
 
@@ -586,7 +586,7 @@ function hotkeyOverlayStart(timeout = 3000) {
 
 async function hotkeyOverlayShow() {
   if(!mainWindow) return false;
-  
+
   sendToAllWindows("display-mode", "overlay")
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
@@ -1044,7 +1044,7 @@ refreshDDCCI = async () => {
               }
 
             }
-              
+
           }
 
           // Get normalization info
@@ -1691,7 +1691,7 @@ function showPanel(show = true, height = 300) {
       mainWindow.setOpacity(1)
     }
 
-    
+
   } else {
     // Hide panel
     mainWindow.setOpacity(0)
@@ -1756,10 +1756,10 @@ function doAnimationStep() {
     currentPanelTime = 0
   }
   // Limit updates to specific interval
-  
+
   const now = process.hrtime.bigint()
   if(!busy && now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97)) {
-    
+
     lastPanelTime = now
     currentPanelTime = Number(Number(now - startPanelTime) / 1000000000)
 
@@ -1779,7 +1779,7 @@ function doAnimationStep() {
     let calculatedOpacity = (Math.round(Math.min(1, currentPanelTime / (panelTransitionTime / 6)) * 100) / 100)
 
     // Apply panel size
-    
+
     busy = true
     if(panelSize.taskbar.position === "TOP") {
       // Top
@@ -1864,6 +1864,10 @@ function createTray() {
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
   })
+  nativeTheme.on('updated', ()=>{
+    getThemeRegistry()
+    tray.setImage(getTrayIconPath())
+  })
 }
 
 function setTrayPercent() {
@@ -1920,7 +1924,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   if (mainWindow) {
     mainWindow.setBackgroundColor("#00000000")
     if(!isOverlay) {
-      
+
       // Check if overlay is currently open and deal with that
       if(!canReposition) {
         mainWindow.setOpacity(0)
@@ -2332,7 +2336,7 @@ let lastTimeEvent = {
 function handleBackgroundUpdate() {
 
   try {
-    // Time of Day Adjustments 
+    // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0) {
       const date = new Date()
       const hour = date.getHours()

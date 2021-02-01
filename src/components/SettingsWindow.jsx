@@ -868,6 +868,14 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
                                 {this.getLanguages()}
                             </select>
+                            <br />	
+                            <br />
+                            <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>	
+                            <select value={window.settings.theme} onChange={this.themeChanged}>	
+                                <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>	
+                                <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>	
+                                <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>	
+                            </select>	
                             <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
                             <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>

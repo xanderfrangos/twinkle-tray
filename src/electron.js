@@ -330,8 +330,6 @@ function readSettings() {
   try {
     if (fs.existsSync(settingsPath)) {
       settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))
-      // Overrides
-      settings.theme = "default"
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }

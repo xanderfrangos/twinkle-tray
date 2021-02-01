@@ -2,7 +2,7 @@ const { ipcRenderer: ipc, remote } = require('electron');
 let browser = remote.getCurrentWindow()
 
 function requestMonitors(fullRefresh = false) {
-    if(fullRefresh) {
+    if (fullRefresh) {
         ipc.send('full-refresh')
     } else {
         ipc.send('request-monitors')
@@ -31,7 +31,7 @@ let sendSettingsThrottle = false
 let sendSettingsObj = {}
 function sendSettings(newSettings = {}) {
     sendSettingsObj = Object.assign(sendSettingsObj, newSettings)
-    if(!sendSettingsThrottle) {
+    if (!sendSettingsThrottle) {
         actuallySendSettings()
         sendSettingsThrottle = setTimeout(() => {
             actuallySendSettings()
@@ -85,7 +85,7 @@ ipc.on('updateProgress', (event, progress) => {
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
-    if(JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
+    if (JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
     window.dispatchEvent(new CustomEvent('monitorsUpdated', {

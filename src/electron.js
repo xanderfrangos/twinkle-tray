@@ -57,7 +57,7 @@ let mouseEvents
 try {
   mouseEvents = require("global-mouse-events");
   mouseEvents.on('mousewheel', event => {
-    if(!settings.scrollShortcut) return false;
+    if (!settings.scrollShortcut) return false;
     try {
       if (!bounds) return false;
       if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
@@ -72,9 +72,9 @@ try {
             let normalizedAdjust = minMax(amount + monitor.brightness)
 
             // Use linked levels, if applicable
-            if(settings.linkedLevelsActive) {
+            if (settings.linkedLevelsActive) {
               // Set shared brightness value if not set
-              if(linkedLevelVal) {
+              if (linkedLevelVal) {
                 normalizedAdjust = linkedLevelVal
               } else {
                 linkedLevelVal = normalizedAdjust
@@ -94,7 +94,7 @@ try {
         }
 
         // If panel isn't open, use the overlay
-        if(panelState !== "visible") {
+        if (panelState !== "visible") {
           hotkeyOverlayStart()
         }
 
@@ -107,12 +107,12 @@ try {
 
   // Handle edge cases where "blur" event doesn't properly fire
   mouseEvents.on("mousedown", (e) => {
-    if(panelSize.visible || !canReposition) {
+    if (panelSize.visible || !canReposition) {
 
       // Check if clicking outside of panel/overlay
       const pBounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
-      if( e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height ) {
-        if(!canReposition) {
+      if (e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height) {
+        if (!canReposition) {
           // Overlay is displayed
           hotkeyOverlayHide(true)
         } else {
@@ -511,7 +511,7 @@ let hotkeyThrottle = []
 let doingHotkey = false
 const doHotkey = (hotkey) => {
   const now = Date.now()
-  if(!doingHotkey && (hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100)) {
+  if (!doingHotkey && (hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100)) {
     hotkeyThrottle[hotkey.monitor] = now
 
 
@@ -530,9 +530,9 @@ const doHotkey = (hotkey) => {
           let normalizedAdjust = minMax((settings.hotkeyPercent * hotkey.direction) + monitor.brightness)
 
           // Use linked levels, if applicable
-          if(settings.linkedLevelsActive) {
+          if (settings.linkedLevelsActive) {
             // Set shared brightness value if not set
-            if(linkedLevelVal) {
+            if (linkedLevelVal) {
               normalizedAdjust = linkedLevelVal
             } else {
               linkedLevelVal = normalizedAdjust
@@ -563,7 +563,7 @@ const doHotkey = (hotkey) => {
 
       // Show brightness overlay, if applicable
       // If panel isn't open, use the overlay
-      if(showOverlay && panelState !== "visible") {
+      if (showOverlay && panelState !== "visible") {
         hotkeyOverlayStart()
       }
 
@@ -577,7 +577,7 @@ const doHotkey = (hotkey) => {
 }
 
 function hotkeyOverlayStart(timeout = 3000) {
-  if(canReposition) {
+  if (canReposition) {
     hotkeyOverlayShow()
   }
   clearTimeout(hotkeyOverlayTimeout)
@@ -585,17 +585,17 @@ function hotkeyOverlayStart(timeout = 3000) {
 }
 
 async function hotkeyOverlayShow() {
-  if(!mainWindow) return false;
+  if (!mainWindow) return false;
 
   sendToAllWindows("display-mode", "overlay")
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if(monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
+    if (monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
   })
 
   canReposition = false
-  if(settings.useAcrylic) {
-    tryVibrancy(mainWindow,{ theme: "#26262601", effect: "blur" })
+  if (settings.useAcrylic) {
+    tryVibrancy(mainWindow, { theme: "#26262601", effect: "blur" })
   }
   mainWindow.setIgnoreMouseEvents(false)
   await toggleTray(true, true)
@@ -613,11 +613,11 @@ async function hotkeyOverlayShow() {
 }
 
 function hotkeyOverlayHide(force = false) {
-  if(!mainWindow) {
+  if (!mainWindow) {
     hotkeyOverlayStart(333)
     return false
   }
-  if(!force && mainWindow && mainWindow.isFocused()) {
+  if (!force && mainWindow && mainWindow.isFocused()) {
     hotkeyOverlayStart(333)
     return false;
   }
@@ -629,8 +629,8 @@ function hotkeyOverlayHide(force = false) {
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
   repositionPanel()
-  if(!settings.useAcrylic || !settings.useNativeAnimation) {
-    tryVibrancy(mainWindow,"#00000000")
+  if (!settings.useAcrylic || !settings.useNativeAnimation) {
+    tryVibrancy(mainWindow, "#00000000")
   }
 }
 
@@ -660,7 +660,7 @@ function applyRemap(monitor) {
         monitor.min = remap.min
         monitor.max = remap.max
         // Stop if using new scheme
-        if(remapName == monitor.id) return monitor;
+        if (remapName == monitor.id) return monitor;
       }
     }
   }
@@ -669,8 +669,8 @@ function applyRemap(monitor) {
 
 function minMax(value, min = 0, max = 100) {
   let out = value
-  if(value < min) out = min;
-  if(value > max) out = max;
+  if (value < min) out = min;
+  if (value > max) out = max;
   return out;
 }
 
@@ -851,7 +851,7 @@ function getThemeRegistry() {
 function getTrayIconPath() {
   const themeDir = (lastTheme && lastTheme.SystemUsesLightTheme ? 'light' : 'dark')
   let icon = "icon";
-  if(settings.icon === "mdl2") {
+  if (settings.icon === "mdl2") {
     icon = settings.icon
   }
   return path.join(__dirname, `assets/tray-icons/${themeDir}/${icon}.ico`)
@@ -860,9 +860,9 @@ function getTrayIconPath() {
 function getAccentColors() {
   let detectedAccent = "0078d7"
   try {
-    if(systemPreferences.getAccentColor().length == 8)
-    detectedAccent = systemPreferences.getAccentColor().substr(0, 6)
-  } catch(e) { console.log("Couldn't get accent color from registry!")}
+    if (systemPreferences.getAccentColor().length == 8)
+      detectedAccent = systemPreferences.getAccentColor().substr(0, 6)
+  } catch (e) { console.log("Couldn't get accent color from registry!") }
   const accent = Color("#" + detectedAccent, "hex")
   const matchLumi = (color, level) => {
     let adjusted = color.hsl()
@@ -889,16 +889,16 @@ function getAccentColors() {
 let currentTransparencyStyle
 function handleTransparencyChange(transparent = true, blur = false) {
   const style = (transparent ? (blur ? 2 : 1) : 0)
-  if(style !== currentTransparencyStyle) {
+  if (style !== currentTransparencyStyle) {
     currentTransparencyStyle = style
   }
   sendToAllWindows("transparencyStyle", style)
-  if(style === 2) {
-    if(settingsWindow) {
-      tryVibrancy(settingsWindow,determineTheme(settings.theme))
+  if (style === 2) {
+    if (settingsWindow) {
+      tryVibrancy(settingsWindow, determineTheme(settings.theme))
     }
   } else {
-    if(settingsWindow) {
+    if (settingsWindow) {
       tryVibrancy(settingsWindow)
       settingsWindow.setBackgroundColor("#00000000")
     }
@@ -906,12 +906,12 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
-  if(!window) return false;
+  if (!window) return false;
   try {
     window.getBounds()
     window.setVibrancy(value)
   }
-  catch(e) {
+  catch (e) {
     console.log("Couldn't set vibrancy", e)
   }
 }
@@ -1033,7 +1033,7 @@ refreshDDCCI = async () => {
               // Monitor is in list
               ddcciInfo.name = monitors[hwid[2]].name
 
-              if(monitors[hwid[2]].features === undefined) {
+              if (monitors[hwid[2]].features === undefined) {
                 ddcciInfo.features = {
                   luminance: checkVCP(monitor, 0x10),
                   brightness: checkVCP(monitor, 0x13),
@@ -1152,7 +1152,7 @@ refreshWMI = async () => {
 function checkVCP(monitor, code) {
   try {
     return ddcci._getVCP(monitor, code)
-  } catch(e) {
+  } catch (e) {
     return false
   }
 }
@@ -1187,10 +1187,10 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
     useCap
   }
   const now = Date.now()
-  if(lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
+  if (lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
     lastBrightnessTimes[id] = now
     updateBrightness(id, level, useCap)
-    if(sendUpdate) sendToAllWindows('monitors-updated', monitors);
+    if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
   } else if (!updateBrightnessTimeout) {
     lastBrightnessTimes[id] = now
@@ -1206,7 +1206,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
         }
       }
       updateBrightnessTimeout = false
-      if(sendUpdate) sendToAllWindows('monitors-updated', monitors);
+      if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     }, settings.updateInterval)
   }
   return false
@@ -1434,7 +1434,7 @@ ipcMain.on('get-update', (event, version) => {
 
 ipcMain.on('panel-height', (event, height) => {
   panelSize.height = height
-  if(panelSize.visible && !isAnimatingPanel) {
+  if (panelSize.visible && !isAnimatingPanel) {
     repositionPanel()
   }
 })
@@ -1446,11 +1446,11 @@ ipcMain.on('panel-hidden', () => {
 })
 
 ipcMain.on('show-acrylic', () => {
-  if(settings.useAcrylic && !settings.useNativeAnimation) {
-    if(lastTheme && lastTheme.ColorPrevalence) {
-      tryVibrancy(mainWindow,{ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+  if (settings.useAcrylic && !settings.useNativeAnimation) {
+    if (lastTheme && lastTheme.ColorPrevalence) {
+      tryVibrancy(mainWindow, { theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     } else {
-      tryVibrancy(mainWindow,{ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      tryVibrancy(mainWindow, { theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     }
   }
   sendToAllWindows("set-acrylic-show")
@@ -1459,13 +1459,13 @@ ipcMain.on('show-acrylic', () => {
 ipcMain.on('sleep-displays', sleepDisplays)
 
 ipcMain.on('set-powerstate', (e, data) => {
-  if(data.display && data.value) {
+  if (data.display && data.value) {
     ddcci._setVCP(data.display, 0xD6, data.value)
   }
 })
 
 ipcMain.on('set-contrast', (e, data) => {
-  if(data.display && data.value) {
+  if (data.display && data.value) {
     ddcci.setContrast(data.display, data.value)
   }
 })
@@ -1529,7 +1529,7 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.on("blur", () => {
     // Only run when not in an overlay
-    if(canReposition) {
+    if (canReposition) {
       sendToAllWindows("panelBlur")
       showPanel(false)
     }
@@ -1550,7 +1550,7 @@ function createPanel(toggleOnLoad = false) {
 }
 
 function restartPanel() {
-  if(mainWindow) {
+  if (mainWindow) {
     mainWindow.close()
     mainWindow = null
     createPanel()
@@ -1559,7 +1559,7 @@ function restartPanel() {
 
 let canReposition = true
 function repositionPanel() {
-  if(!canReposition) {
+  if (!canReposition) {
     mainWindow.setBounds({
       width: panelSize.width,
       height: panelSize.height
@@ -1651,11 +1651,11 @@ let lastPanelTime = process.hrtime.bigint()
 let primaryRefreshRate = 59.97
 let primaryDPI = 1
 let mainWindowHandle
-let easeOutQuad = t => 1+(--t)*t*t*t*t
+let easeOutQuad = t => 1 + (--t) * t * t * t * t
 
 // Set brightness panel state (visible or not)
 function showPanel(show = true, height = 300) {
-  if(show) {
+  if (show) {
     // Show panel
     mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
     repositionPanel()
@@ -1667,19 +1667,19 @@ function showPanel(show = true, height = 300) {
     primaryDPI = screen.getPrimaryDisplay().scaleFactor
     panelHeight = panelHeight * primaryDPI
 
-    if(settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
+    if (settings.useNativeAnimation && settings.useAcrylic && lastTheme.EnableTransparency) {
       // Acrylic + Native Animation
-      if(lastTheme && lastTheme.ColorPrevalence) {
-        tryVibrancy(mainWindow,{ theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+      if (lastTheme && lastTheme.ColorPrevalence) {
+        tryVibrancy(mainWindow, { theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur") })
       } else {
-        tryVibrancy(mainWindow,{ theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur")})
+        tryVibrancy(mainWindow, { theme: (lastTheme && lastTheme.SystemUsesLightTheme ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
       }
       startPanelAnimation()
     } else {
       // No blur, or CSS Animation
-      tryVibrancy(mainWindow,false)
+      tryVibrancy(mainWindow, false)
       mainWindow.setBackgroundColor("#00000000")
-      if(panelSize.taskbar.position === "TOP") {
+      if (panelSize.taskbar.position === "TOP") {
         // Top
         setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, panelHeight, 0x0400)
       } else {
@@ -1703,8 +1703,8 @@ function showPanel(show = true, height = 300) {
     sendToAllWindows("display-mode", "normal")
     panelState = "hidden"
     sendToAllWindows("closePanelAnimation")
-    if(!settings.useAcrylic || !settings.useNativeAnimation) {
-      tryVibrancy(mainWindow,false)
+    if (!settings.useAcrylic || !settings.useNativeAnimation) {
+      tryVibrancy(mainWindow, false)
       mainWindow.setBackgroundColor("#00000000")
     }
   }
@@ -1712,7 +1712,7 @@ function showPanel(show = true, height = 300) {
 
 // Begins panel opening animation
 async function startPanelAnimation() {
-  if(!shouldAnimatePanel) {
+  if (!shouldAnimatePanel) {
 
     // Set to animating
     shouldAnimatePanel = true
@@ -1728,10 +1728,10 @@ async function startPanelAnimation() {
 
     // Start animation interval after a short delay
     // This avoids jank from React updating the DOM
-    if(!panelAnimationInterval)
+    if (!panelAnimationInterval)
       setTimeout(() => {
-        if(!panelAnimationInterval)
-        panelAnimationInterval = setTimeout(doAnimationStep, 1000 / 600)
+        if (!panelAnimationInterval)
+          panelAnimationInterval = setTimeout(doAnimationStep, 1000 / 600)
       }, 100)
   }
 }
@@ -1744,27 +1744,27 @@ let busy = false
 function doAnimationStep() {
 
   // If animation has been requested to stop, kill it
-  if(!isAnimatingPanel) {
+  if (!isAnimatingPanel) {
     clearInterval(panelAnimationInterval)
     panelAnimationInterval = false
     shouldAnimatePanel = false
     return false
   }
 
-  if(currentPanelTime === -1) {
+  if (currentPanelTime === -1) {
     startPanelTime = process.hrtime.bigint()
     currentPanelTime = 0
   }
   // Limit updates to specific interval
 
   const now = process.hrtime.bigint()
-  if(!busy && now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97)) {
+  if (!busy && now > lastPanelTime + hrtimeDeltaForFrequency(primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97)) {
 
     lastPanelTime = now
     currentPanelTime = Number(Number(now - startPanelTime) / 1000000000)
 
     // Check if at end of animation
-    if(currentPanelTime >= panelTransitionTime) {
+    if (currentPanelTime >= panelTransitionTime) {
       // Stop animation
       isAnimatingPanel = false
       shouldAnimatePanel = false
@@ -1781,7 +1781,7 @@ function doAnimationStep() {
     // Apply panel size
 
     busy = true
-    if(panelSize.taskbar.position === "TOP") {
+    if (panelSize.taskbar.position === "TOP") {
       // Top
       setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, calculatedHeight, 0x0400)
     } else {
@@ -1790,12 +1790,12 @@ function doAnimationStep() {
     }
 
     // Stop opacity updates if at 1 already
-    if(mainWindow.getOpacity() < 1)
-    mainWindow.setOpacity(calculatedOpacity)
+    if (mainWindow.getOpacity() < 1)
+      mainWindow.setOpacity(calculatedOpacity)
     busy = false
   }
 
-  if(isAnimatingPanel) {
+  if (isAnimatingPanel) {
     panelAnimationInterval = setTimeout(doAnimationStep, 1000 / (primaryRefreshRate * (settings.useAcrylic ? 1 : 2) || 59.97))
   } else {
     repositionPanel()
@@ -1864,7 +1864,7 @@ function createTray() {
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
   })
-  nativeTheme.on('updated', ()=>{
+  nativeTheme.on('updated', () => {
     getThemeRegistry()
     tray.setImage(getTrayIconPath())
   })
@@ -1923,10 +1923,10 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
 
   if (mainWindow) {
     mainWindow.setBackgroundColor("#00000000")
-    if(!isOverlay) {
+    if (!isOverlay) {
 
       // Check if overlay is currently open and deal with that
-      if(!canReposition) {
+      if (!canReposition) {
         mainWindow.setOpacity(0)
         hotkeyOverlayHide()
         setTimeout(() => {
@@ -2068,8 +2068,8 @@ function createSettings() {
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       settingsWindow.show()
-      if(settings.useAcrylic) {
-        tryVibrancy(settingsWindow,determineTheme(settings.theme))
+      if (settings.useAcrylic) {
+        tryVibrancy(settingsWindow, determineTheme(settings.theme))
       }
     }, 100)
 
@@ -2184,11 +2184,11 @@ getLatestUpdate = async (version) => {
       update.body.on('data', (chunk) => {
         size += chunk.length
         dest.write(chunk, (err) => {
-          if(size >= version.filesize) {
+          if (size >= version.filesize) {
             dest.close()
           }
         })
-        if(size >= lastSizeUpdate + (version.filesize * 0.01) || lastSizeUpdate === 0 || size === version.filesize) {
+        if (size >= lastSizeUpdate + (version.filesize * 0.01) || lastSizeUpdate === 0 || size === version.filesize) {
           lastSizeUpdate = size
           sendToAllWindows('updateProgress', Math.floor((size / version.filesize) * 100))
           console.log(`Downloaded ${size / 1000}KB. [${Math.floor((size / version.filesize) * 100)}%]`)
@@ -2221,7 +2221,7 @@ function runUpdate(expectedSize = false) {
         throw ("Couldn't delete update file. " + e)
       }
       console.log("Atempted to delete update file")
-      throw(`Update is wrong file size! Expected: ${expectedSize}. Got: ${fileSize}`)
+      throw (`Update is wrong file size! Expected: ${expectedSize}. Got: ${fileSize}`)
     }
 
     /*
@@ -2305,8 +2305,8 @@ function handleAccentChange() {
 
 function handleMonitorChange(e, d) {
   // If displays not shown, refresh mainWindow
-  if(!panelSize.visible)
-  restartPanel()
+  if (!panelSize.visible)
+    restartPanel()
 
   // Reset all known displays
   refreshMonitors(true, true)

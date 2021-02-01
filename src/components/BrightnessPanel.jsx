@@ -52,8 +52,8 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="updateBar">
         <div className="left">{T.t("PANEL_UPDATE_AVAILABLE")} ({this.state.update.version})</div><div className="right"><a onClick={window.installUpdate}>{T.t("GENERIC_INSTALL")}</a><a className="icon" title={T.t("GENERIC_DISMISS")} onClick={window.dismissUpdate}>&#xEF2C;</a></div>
       </div>)
-    } else if(this.state.update && this.state.update.downloading) {
-    return (<div className="updateBar"><div className="left progress"><div className="progress-bar"><div style={ { width: `${this.state.updateProgress}%`} }></div></div></div><div className="right">{this.state.updateProgress}%</div></div>)
+    } else if (this.state.update && this.state.update.downloading) {
+      return (<div className="updateBar"><div className="left progress"><div className="progress-bar"><div style={{ width: `${this.state.updateProgress}%` }}></div></div></div><div className="right">{this.state.updateProgress}%</div></div>)
     }
   }
 
@@ -129,7 +129,7 @@ export default class BrightnessPanel extends PureComponent {
     })
 
     // Delay initial adjustments
-    if(!this.init) setTimeout( () => { this.init = true }, 333)
+    if (!this.init) setTimeout(() => { this.init = true }, 333)
   }
 
 
@@ -149,7 +149,7 @@ export default class BrightnessPanel extends PureComponent {
 
       this.levelsChanged = true
 
-      if(inMonitors) {
+      if (inMonitors) {
         return inMonitors
       } else {
         this.setState({
@@ -269,11 +269,11 @@ export default class BrightnessPanel extends PureComponent {
 
     if (window.isAppX === false) {
       window.addEventListener("updateProgress", (e) => {
-          this.setState({
-              updateProgress: e.detail.progress
-          })
+        this.setState({
+          updateProgress: e.detail.progress
+        })
       })
-  }
+    }
 
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()

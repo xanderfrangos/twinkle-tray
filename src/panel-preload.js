@@ -1,5 +1,5 @@
 const { ipcRenderer: ipc, remote } = require('electron');
-console.log = (...e) => {e.forEach((c) => ipc.send('log', c))}
+console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
 let browser = remote.getCurrentWindow()
 
 const log = console.log
@@ -13,30 +13,30 @@ function setPanelVisibility(visible) {
     // Update browser var to avoid Electron bugs
     browser = remote.getCurrentWindow()
 
-    if(visible) {
+    if (visible) {
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: false
         }))
-        if(!settings.useNativeAnimation) {
+        if (!settings.useNativeAnimation) {
             setTimeout(() => {
-                if(window.showPanel) {
+                if (window.showPanel) {
                     ipc.send('show-acrylic')
                 }
             }, 500)
         }
     } else {
         window.document.body.dataset["acrylicShow"] = false
-        if(window.isAcrylic) {
+        if (window.isAcrylic) {
             window.isAcrylic = false
         }
     }
-    
+
 
     // Update #root value
-    if(window.isAcrylic) {
+    if (window.isAcrylic) {
         window.isAcrylic = false
     }
-    
+
     window.document.getElementById("root").dataset["visible"] = window.showPanel
     window.sleep = !visible
 
@@ -62,7 +62,7 @@ function requestAccent() {
 
 // Send brightness update request. Params are the monitor's index in the array and requested brightness level.
 function updateBrightness(index, level) {
-    if(!window.showPanel) return false;
+    if (!window.showPanel) return false;
     ipc.send('update-brightness', {
         index,
         level
@@ -87,7 +87,7 @@ function sendHeight(height) {
 }
 
 function panelAnimationDone() {
-    if(showPanel === false) {
+    if (showPanel === false) {
         ipc.send('panel-hidden')
         window.sleep = true
         window.document.body.dataset["acrylicShow"] = false
@@ -96,7 +96,7 @@ function panelAnimationDone() {
             detail: true
         }))
     } else {
-        
+
     }
 }
 
@@ -140,7 +140,7 @@ ipc.on("panelBlur", (e) => {
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
-    if(JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
+    if (JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
     window.dispatchEvent(new CustomEvent('monitorsUpdated', {
@@ -176,11 +176,11 @@ ipc.on('request-height', () => {
 
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
-    if(settings.isDev == false) {
-        console.log = () => {}
+    if (settings.isDev == false) {
+        console.log = () => { }
     } else {
         console.log = log
-        console.log = (...e) => {e.forEach((c) => ipc.send('log', c))}
+        console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
     }
     window.settings = settings
     window.dispatchEvent(new CustomEvent('settingsUpdated', {

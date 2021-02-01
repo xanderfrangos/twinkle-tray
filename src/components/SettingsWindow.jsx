@@ -689,7 +689,7 @@ export default class SettingsWindow extends PureComponent {
 
 
 
-    
+
     getInfoMonitors = () => {
         if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
@@ -713,8 +713,8 @@ export default class SettingsWindow extends PureComponent {
             })
         }
     }
-    
-    
+
+
     getDebugMonitors = () => {
         if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
@@ -731,7 +731,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
                             <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
                             <br />Raw Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightnessRaw)}</b>
-                            <br />Features: <b>{( monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported" )}</b>
+                            <br />Features: <b>{(monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported")}</b>
                             <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
                             <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                             <br />Key: <b>{monitor.key}</b>
@@ -859,7 +859,7 @@ export default class SettingsWindow extends PureComponent {
                                 <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
                                 <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
                                 <br /><br />
-                            </div>                            
+                            </div>
                             <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>
                             <select value={window.settings.language} onChange={(e) => {
                                 this.setState({ language: e.target.value })

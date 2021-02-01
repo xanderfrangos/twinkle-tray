@@ -44,20 +44,20 @@
         --tray-background-blur-start: rgba(41, 41, 41, 1);
         --tray-text: white;
         --tray-border: #434343;
-    
+
         --page-background: #030303;
         --page-text: #fff;
         --page-text-mid: #bbb;
-        
+
         --window-border: #222;
-    
+
         --titlebar-icon: #888;
         --titlebar-icon-hover: #fff;
-    
+
         --input-border: #6f6f6f;
         --input-border-hover: #fff;
         --input-active-background: #444;
-    
+
         --slider-track-color: rgba(255, 255, 255, 0.42);
         --slider-track-color-focus: rgba(255, 255, 255, 0.65);
     }
@@ -71,6 +71,7 @@ body[data-transparent="true"][data-acrylic="false"] {
         --tray-background: var(--tray-background-transparent) !important;
     }
 }
+
 body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"] {
     .window-base {
         //--tray-background: var(--tray-background-blur-start) !important;
@@ -78,32 +79,38 @@ body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="fa
         background: var(--tray-background-blur-start) !important;
     }
 }
+
 body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-colored-taskbar="true"] {
     .window-base {
         //--tray-background: var(--tray-background-blur-start) !important;
         background: var(--system-accent-transparent) !important;
     }
 }
-body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"], body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"][data-colored-taskbar="true"] {
+
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"],
+body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="false"][data-acrylic-show="true"][data-colored-taskbar="true"] {
     .window-base {
         background: var(--tray-background-blur) !important;
         background: transparent !important;
     }
 }
+
 body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="true"] {
     .window-base {
         background: transparent !important;
     }
 }
+
 @media screen and (prefers-color-scheme: dark) {
-body[data-colored-taskbar="true"] {
-    .window-base {
-        --tray-background: var(--system-accent-dark) !important;
-    }
-    &[data-transparent="true"] {
+    body[data-colored-taskbar="true"] {
         .window-base {
-            --tray-background: var(--system-accent-transparent) !important;
+            --tray-background: var(--system-accent-dark) !important;
+        }
+
+        &[data-transparent="true"] {
+            .window-base {
+                --tray-background: var(--system-accent-transparent) !important;
+            }
         }
     }
-}
 }

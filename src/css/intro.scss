@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
     background: transparent;
 }
 
@@ -28,9 +29,20 @@ body {
     animation: introIn 1s;
 
     @keyframes introIn {
-        0% { opacity: 0; transform: scale(0.96); }
-        80% { opacity: 0; transform: scale(0.96); }
-        100% { opacity: 1; transform: scale(1); }
+        0% {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        80% {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 }
 
@@ -41,6 +53,7 @@ img {
     height: 84px;
     margin: -62px auto 0;
 }
+
 .intro-title {
     font-size: 18px;
     font-weight: 700;

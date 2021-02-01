@@ -42,7 +42,7 @@ window.document.getElementById("root").addEventListener('transitionend', functio
 });
 
 window.document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape") { 
+    if (e.key === "Escape") {
         window.thisWindow.blur()
     }
 })

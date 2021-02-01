@@ -18,7 +18,7 @@ export default class Titlebar extends React.Component {
           <div className="window-icon-bg" onClick={() => { window.thisWindow.minimize() }}>
             <div className="window-icon window-minimize"></div>
           </div>
-          <div className="window-icon-bg" onClick={() => { if(window.thisWindow.isMaximized() === false) { window.thisWindow.maximize() } else { window.thisWindow.unmaximize() } }}>
+          <div className="window-icon-bg" onClick={() => { if (window.thisWindow.isMaximized() === false) { window.thisWindow.maximize() } else { window.thisWindow.unmaximize() } }}>
             <div className="window-icon window-max-restore window-maximize"></div>
           </div>
           <div className="window-icon-bg window-close-bg" onClick={() => { window.thisWindow.close() }}>

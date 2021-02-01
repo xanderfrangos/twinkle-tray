@@ -57,6 +57,10 @@ body {
 
 
 
+@media (prefers-reduced-motion: reduce) {
+    #root>.window-base {
+        transition: none !important;
+    }
 }
 
 

@@ -1236,7 +1236,7 @@ function updateBrightness(index, level, useCap = true) {
     if (monitor.type == "ddcci") {
       ddcci.setBrightness(monitor.id, normalized * ((monitor.brightnessMax || 100) / 100))
     } else if (monitor.type == "wmi") {
-      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${normalized})"`)
+      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${normalized})`)
     }
     setTrayPercent()
   } catch (e) {

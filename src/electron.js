@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut } = require('electron')
+const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const { BrowserWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
@@ -2311,6 +2311,12 @@ function handleMonitorChange(e, d) {
   // Reset all known displays
   refreshMonitors(true, true)
 }
+
+// Handle resume from sleep/hibernation
+powerMonitor.on("resume", () => {
+  handleBackgroundUpdate()
+  // TODO: Set brightness to last known settings
+})
 
 let restartBackgroundUpdateThrottle = false
 function restartBackgroundUpdate() {

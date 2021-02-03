@@ -1,13 +1,16 @@
 const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
+const Utils = require("./Utils")
 
-// Handle multiple instances
+// Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
-  app.quit()
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch(e) { }
+  app.exit()
   return false;
 } else {
+  console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
 }
 

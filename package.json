@@ -52,6 +52,7 @@
       "src/settings-preload.js",
       "src/intro-preload.js",
       "src/localization/*",
+      "src/Utils.js",
       "src/assets/tray-icons/dark/*",
       "src/assets/tray-icons/light/*",
       "build/**/*",

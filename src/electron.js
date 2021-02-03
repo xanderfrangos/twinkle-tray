@@ -8,11 +8,7 @@ if (!singleInstanceLock) {
   app.quit()
   return false;
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
-    if (mainWindow) {
-      toggleTray()
-    }
-  })
+  app.on('second-instance', handleCommandLine)
 }
 
 const { BrowserWindow } = require('electron-acrylic-window')
@@ -77,35 +73,7 @@ try {
       if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
         const amount = Math.round(event.delta) * 2;
 
-        let linkedLevelVal = false
-
-        // Update internal brightness values
-        for (let key in monitors) {
-          const monitor = monitors[key]
-          if (monitor.type !== "none") {
-            let normalizedAdjust = minMax(amount + monitor.brightness)
-
-            // Use linked levels, if applicable
-            if (settings.linkedLevelsActive) {
-              // Set shared brightness value if not set
-              if (linkedLevelVal) {
-                normalizedAdjust = linkedLevelVal
-              } else {
-                linkedLevelVal = normalizedAdjust
-              }
-            }
-
-            monitors[key].brightness = normalizedAdjust
-          }
-        }
-
-        // Update UI
-        sendToAllWindows('monitors-updated', monitors);
-
-        // Send brightness updates
-        for (let key in monitors) {
-          updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
-        }
+        updateAllBrightness(amount)
 
         // If panel isn't open, use the overlay
         if (panelState !== "visible") {
@@ -1256,6 +1224,41 @@ function updateBrightness(index, level, useCap = true) {
   }
 }
 
+
+function updateAllBrightness(brightness, mode = "offset") {
+
+          let linkedLevelVal
+
+          // Update internal brightness values
+          for (let key in monitors) {
+            const monitor = monitors[key]
+            if (monitor.type !== "none") {
+
+              let normalizedAdjust = minMax(mode == "set" ? brightness : brightness + monitor.brightness)
+  
+              // Use linked levels, if applicable
+              if (settings.linkedLevelsActive) {
+                // Set shared brightness value if not set
+                if (linkedLevelVal) {
+                  normalizedAdjust = linkedLevelVal
+                } else {
+                  linkedLevelVal = normalizedAdjust
+                }
+              }
+  
+              monitors[key].brightness = normalizedAdjust
+            }
+          }
+  
+          // Update UI
+          sendToAllWindows('monitors-updated', monitors);
+  
+          // Send brightness updates
+          for (let key in monitors) {
+            updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
+          }
+}
+
 function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100) {
   let level = brightness
   if (level > 100) level = 100;
@@ -2399,3 +2402,98 @@ function handleBackgroundUpdate() {
   checkForUpdates()
 
 }
+ 
+/*
+
+Handle input from second process command line. One monitor argument and one brightness argument is required. Multiple arguments will override each other.
+Full example: TwinkleTray.exe --MonitorNum=1 --Offset=-30
+
+Supported args:
+
+--MonitorNum
+Select monitor by number. Starts at 1.
+Example: --MonitorNum=2
+
+--MonitorID
+Select monitor by internal ID. Partial or whole matches accepted.
+Example: --MonitorID="UID2353"
+
+--All
+Update all monitors.
+Example: --All
+
+--Set
+Set brightness percentage.
+Example: --Set=95
+
+--Offset
+Adjust brightness percentage.
+Example: --Offset=-20
+
+*/
+function handleCommandLine(event, commandLine) {
+
+  let display
+  let type
+  let brightness
+
+  if (commandLine.length <= 2 && mainWindow) {
+    toggleTray()
+  }
+  if(commandLine.length > 2) {
+
+    commandLine.forEach(arg => {
+
+      // Get display by index
+      if(arg.indexOf("--monitornum=") === 0) {
+        display = Object.values(monitors)[(arg.substring(13) * 1) - 1]
+      }
+
+      // Get display by ID (partial or whole)
+      if(arg.indexOf("--monitorid=") === 0) {
+        //display = Object.values(monitors)[(arg.substring(12) * 1) - 1]
+        console.log(Object.keys(monitors))
+        const monID =  Object.keys(monitors).find(id => {
+          return id.indexOf(arg.substring(12)) >= 0
+        })
+        display = monitors[monID]
+      }
+
+      // Run on all displays
+      if(arg.indexOf("--all") === 0 && arg.length === 5) {
+        display = "all"
+      }
+
+      // Use absolute brightness
+      if(arg.indexOf("--set=") === 0) {
+        brightness = (arg.substring(6) * 1)
+        type = "set"
+      }
+
+      // Use relative brightness
+      if(arg.indexOf("--offset=") === 0) {
+        brightness = (arg.substring(9) * 1)
+        type = "offset"
+      }
+
+    })
+
+    // If value input, update brightness
+    if(display && type && brightness) {
+
+      if(display === "all") {
+        console.log(`Setting brightness via command line: All @ ${brightness}%`);
+        updateAllBrightness(brightness, type)
+      } else {
+        const newBrightness = minMax(type === "set" ? brightness : display.brightness + brightness)
+        console.log(`Setting brightness via command line: Display #${display.num} (${display.name}) @ ${newBrightness}%`);
+        updateBrightnessThrottle(display.id, newBrightness, true)
+      }
+
+    }
+
+  }
+
+}
+
+

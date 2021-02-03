@@ -14,6 +14,7 @@ if (!singleInstanceLock) {
   app.on('second-instance', handleCommandLine)
 }
 
+const { fork } = require('child_process');
 const { BrowserWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
@@ -32,7 +33,7 @@ const regedit = require('regedit')
 const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
-const Translate = require('./Translate')
+const Translate = require('./Translate');
 
 app.allowRendererProcessReuse = true
 
@@ -208,45 +209,9 @@ function getSettingsAnalytics() {
 }
 
 
-let ddcci = false
-function getDDCCI() {
-  if (ddcci) return true;
-  try {
-    ddcci = require("@hensm/ddcci");
-    return true;
-  } catch (e) {
-    console.log('Couldn\'t start DDC/CI', e);
-    return false;
-  }
-}
-getDDCCI();
-
-
-let wmi = false
-function getWMI() {
-  if (wmi) return true;
-  let WmiClient = false
-  try {
-    if (isDev) {
-      WmiClient = require('wmi-client');
-    } else {
-      WmiClient = require(path.join(app.getAppPath(), '../node_modules/wmi-client'));
-    }
-    wmi = new WmiClient({
-      host: 'localhost',
-      namespace: '\\\\root\\WMI'
-    });
-    return true;
-  } catch (e) {
-    console.log('Couldn\'t start WMI', e);
-    return false;
-  }
-}
-getWMI();
 
 
 let monitors = {}
-let monitorNames = []
 let mainWindow;
 let tray = null
 let lastTheme = false
@@ -467,6 +432,18 @@ function processSettings(newSettings = {}) {
   } catch (e) {
     console.log("Couldn't process settings!", e)
   }
+
+  monitorsThread.send({
+    type: "settings",
+    settings: settings
+  })
+
+  monitorsThread.send({
+    type: "localization",
+    localization: {
+      GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
+    }
+  })
 
   sendToAllWindows('settings-updated', settings)
 }
@@ -907,6 +884,35 @@ function tryVibrancy(window, value = null) {
 //
 
 let isRefreshing = false
+let shouldShowPanel = false
+
+
+refreshMonitorsJob = async (fullRefresh = falsee) => {
+  return await new Promise( (resolve, reject) => {
+    monitorsThread.send({
+      type: "refreshMonitors",
+      fullRefresh
+    })
+
+    let timeout = setTimeout(() => {
+      reject("Monitor thread timed out.")
+    }, 10000)
+
+    function listen(resolve) {
+      monitorsThread.once("message", data => {
+        if(data.type === "refreshMonitors") {
+          clearTimeout(timeout)
+          resolve(data.monitors)
+        } else {
+          listen(resolve)
+        }
+      })
+    }
+    listen(resolve)
+  })
+}
+
+
 refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   // Don't do 2+ refreshes at once
@@ -928,24 +934,13 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   isRefreshing = true
 
   // Reset all known displays
-  if (fullRefresh) monitors = {};
+  if (fullRefresh) {
+    console.log("Doing full refresh.")
+  }
 
-  const startTime = process.hrtime()
   try {
-    const wmiPromise = refreshWMI()
-    const namesPromise = refreshNames()
-    const ddcciPromise = refreshDDCCI()
-
-    namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-    wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-    ddcciPromise.then(() => { console.log(`DDC/CI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-
-    let monitorNames = await namesPromise
-    await wmiPromise
-    await ddcciPromise
-
-    // Clean up list
-    monitors = getCleanList(monitors, monitorNames)
+    monitors = await refreshMonitorsJob(fullRefresh)
+    lastEagerUpdate = Date.now()
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
   }
@@ -956,198 +951,15 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   setTrayPercent()
   sendToAllWindows('monitors-updated', monitors)
 
-  console.log(`Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+  if(shouldShowPanel) {
+    shouldShowPanel = false
+    setTimeout(() => toggleTray(true), 333)
+  }
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
   return monitors;
 }
 
-
-
-refreshDDCCI = async () => {
-
-  return new Promise((resolve, reject) => {
-    let local = 0
-    let ddcciList = []
-
-    try {
-      getDDCCI()
-      ddcci._refresh()
-      const ddcciMonitors = ddcci.getMonitorList()
-
-      for (let monitor of ddcciMonitors) {
-
-        try {
-          // Get brightness current/max
-          const brightnessValues = ddcci._getVCP(monitor, 0x10)
-
-          let ddcciInfo = {
-            name: makeName(monitor, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
-            id: monitor,
-            num: local,
-            localID: local,
-            brightness: brightnessValues[0] * (100 / (brightnessValues[1] || 100)),
-            brightnessMax: (brightnessValues[1] || 100),
-            brightnessRaw: -1,
-            type: 'ddcci',
-            min: 0,
-            max: 100
-          }
-
-          const hwid = monitor.split("#")
-          if (monitors[hwid[2]] == undefined) {
-            // Monitor not in list
-            monitors[hwid[2]] = {
-              id: monitor,
-              key: hwid[2],
-              num: false,
-              brightness: 50,
-              brightnessMax: 100,
-              brightnessRaw: 50,
-              type: 'none',
-              min: 0,
-              max: 100,
-              hwid: false,
-              name: "Unknown Display",
-              serial: false
-            }
-          } else {
-            if (monitors[hwid[2]].name) {
-              // Monitor is in list
-              ddcciInfo.name = monitors[hwid[2]].name
-
-              if (monitors[hwid[2]].features === undefined) {
-                ddcciInfo.features = {
-                  luminance: checkVCP(monitor, 0x10),
-                  brightness: checkVCP(monitor, 0x13),
-                  gain: (checkVCP(monitor, 0x16) && checkVCP(monitor, 0x18) && checkVCP(monitor, 0x1A)),
-                  contrast: checkVCP(monitor, 0x12),
-                  powerState: checkVCP(monitor, 0xD6)
-                }
-              }
-
-            }
-
-          }
-
-          // Get normalization info
-          ddcciInfo = applyRemap(ddcciInfo)
-          // Unnormalize brightness
-          ddcciInfo.brightnessRaw = ddcciInfo.brightness
-          ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightness, true, ddcciInfo.min, ddcciInfo.max)
-
-          ddcciList.push(ddcciInfo)
-          Object.assign(monitors[hwid[2]], ddcciInfo)
-
-          local++
-        } catch (e) {
-          // Probably failed to get VCP code, which means the display is not compatible
-          // No need to yell about it...
-        }
-      }
-      resolve(ddcciList)
-
-    } catch (e) {
-      // ...but we should yell about this.
-      console.log(e)
-      resolve(ddcciList)
-    }
-
-  })
-
-}
-
-refreshWMI = async () => {
-  // Request WMI monitors.
-
-  return new Promise((resolve, reject) => {
-    let local = 0
-    let wmiList = []
-    try {
-      getWMI();
-      wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
-        if (err != null) {
-          resolve([])
-        } else if (result) {
-
-          for (let monitor of result) {
-
-            let wmiInfo = {
-              name: makeName(monitor.InstanceName, `${T.getString("GENERIC_DISPLAY_SINGLE")} ${local + 1}`),
-              id: monitor.InstanceName,
-              num: local,
-              localID: local,
-              brightness: monitor.CurrentBrightness,
-              brightnessMax: 100,
-              brightnessRaw: -1,
-              type: 'wmi',
-              min: 0,
-              max: 100
-            }
-            local++
-
-            let hwid = readInstanceName(monitor.InstanceName)
-            hwid[2] = hwid[2].split("_")[0]
-            if (monitors[hwid[2]] == undefined) {
-              monitors[hwid[2]] = {
-                id: monitor.InstanceName,
-                key: hwid[2],
-                num: false,
-                brightness: 50,
-                brightnessMax: 100,
-                brightnessRaw: 50,
-                type: 'none',
-                min: 0,
-                max: 100,
-                hwid: false,
-                name: "Unknown Display",
-                serial: false
-              }
-            } else {
-              if (monitors[hwid[2]].name)
-                wmiInfo.name = monitors[hwid[2]].name
-            }
-
-            // Get normalization info
-            wmiInfo = applyRemap(wmiInfo)
-            // Unnormalize brightness
-            wmiInfo.brightnessRaw = wmiInfo.brightness
-            wmiInfo.brightness = normalizeBrightness(wmiInfo.brightness, true, wmiInfo.min, wmiInfo.max)
-
-            wmiList.push(wmiInfo)
-            Object.assign(monitors[hwid[2]], wmiInfo)
-
-          }
-          resolve(wmiList)
-        } else {
-          reject(wmiList)
-        }
-      });
-
-    } catch (e) {
-      debug.log(e)
-      resolve([])
-    }
-  })
-
-}
-
-function checkVCP(monitor, code) {
-  try {
-    return ddcci._getVCP(monitor, code)
-  } catch (e) {
-    return false
-  }
-}
-
-
-function makeName(monitorDevice, fallback) {
-  if (monitorNames[monitorDevice] !== undefined) {
-    return monitorNames[monitorDevice]
-  } else {
-    return fallback;
-  }
-}
 
 
 
@@ -1216,11 +1028,20 @@ function updateBrightness(index, level, useCap = true) {
   const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
     monitor.brightness = level
+
     if (monitor.type == "ddcci") {
-      ddcci.setBrightness(monitor.id, normalized * ((monitor.brightnessMax || 100) / 100))
+      monitorsThread.send({
+        type: "brightness",
+        brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+        id: monitor.id
+      })
     } else if (monitor.type == "wmi") {
-      exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${normalized})`)
+      monitorsThread.send({
+        type: "brightness",
+        brightness: normalized
+      })
     }
+
     setTrayPercent()
   } catch (e) {
     debug.error("Could not update brightness", e)
@@ -1326,87 +1147,6 @@ function sleepDisplays() {
 
 
 
-//
-//
-//    Get monitor names
-//
-//
-
-refreshNames = () => {
-
-  return new Promise((resolve, reject) => {
-    getWMI();
-    wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
-      let foundMonitors = []
-      if (err != null) {
-        resolve([])
-      } else if (result) {
-        // Apply names
-
-        for (let monitor of result) {
-          let hwid = readInstanceName(monitor.InstanceName)
-          hwid[2] = hwid[2].split("_")[0]
-          const wmiInfo = {
-            hwid: hwid,
-            //name: parseWMIString(monitor.UserFriendlyName),
-            serial: parseWMIString(monitor.SerialNumberID)
-          }
-
-          foundMonitors.push(hwid[2])
-
-          if (monitors[hwid[2]] == undefined) {
-            monitors[hwid[2]] = {
-              id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
-              key: hwid[2],
-              num: false,
-              brightness: 50,
-              type: 'none',
-              min: 0,
-              max: 100,
-              hwid: false,
-              name: false,
-              serial: false
-            }
-          }
-
-          if (monitor.UserFriendlyName !== null)
-            wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
-
-          Object.assign(monitors[hwid[2]], wmiInfo)
-
-        }
-
-        resolve(foundMonitors)
-      } else {
-        resolve(foundMonitors)
-      }
-    });
-  })
-
-
-
-}
-
-function getCleanList(fullList, filterKeys) {
-  let monitors = Object.assign(fullList, {})
-  // Delete disconnected displays
-  for (let key in monitors) {
-    if (!filterKeys.includes(key)) delete monitors[key];
-  }
-  return monitors
-}
-
-function parseWMIString(str) {
-  if (str === null) return str;
-  let hexed = str.replace('{', '').replace('}', '').replace(/;0/g, ';32')
-  var decoded = '';
-  var split = hexed.split(';')
-  for (var i = 0; (i < split.length); i++)
-    decoded += String.fromCharCode(parseInt(split[i], 10));
-  decoded = decoded.trim()
-  return decoded;
-}
-
 
 function readInstanceName(insName) {
   return insName.replace(/&amp;/g, '&').split("\\")
@@ -1476,18 +1216,6 @@ ipcMain.on('show-acrylic', () => {
 
 ipcMain.on('sleep-displays', sleepDisplays)
 
-ipcMain.on('set-powerstate', (e, data) => {
-  if (data.display && data.value) {
-    ddcci._setVCP(data.display, 0xD6, data.value)
-  }
-})
-
-ipcMain.on('set-contrast', (e, data) => {
-  if (data.display && data.value) {
-    ddcci.setContrast(data.display, data.value)
-  }
-})
-
 
 //
 //
@@ -1496,8 +1224,11 @@ ipcMain.on('set-contrast', (e, data) => {
 //
 
 let panelState = "hidden"
+let panelReady = false
 
 function createPanel(toggleOnLoad = false) {
+
+  console.log("Creating panel...")
 
   mainWindow = new BrowserWindow({
     width: panelSize.width,
@@ -1541,7 +1272,11 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.on("closed", () => (mainWindow = null));
 
   mainWindow.once('ready-to-show', () => {
+    panelReady = true
+    console.log("Panel ready!")
     mainWindow.show()
+    createTray()
+    
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
 
@@ -1562,7 +1297,7 @@ function createPanel(toggleOnLoad = false) {
   })
 
   mainWindow.webContents.once('dom-ready', () => {
-    refreshMonitors(false, true)
+    //refreshMonitors(true, true)
   })
 
 }
@@ -1673,6 +1408,7 @@ let easeOutQuad = t => 1 + (--t) * t * t * t * t
 
 // Set brightness panel state (visible or not)
 function showPanel(show = true, height = 300) {
+
   if (show) {
     // Show panel
     mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
@@ -1833,8 +1569,6 @@ app.on("ready", () => {
   getLocalization()
   applyHotkeys()
   showIntro()
-  createTray()
-  refreshMonitors(true)
   createPanel()
   setTimeout(addEventListeners, 2000)
 })
@@ -1847,7 +1581,6 @@ app.on("activate", () => {
   if (mainWindow === null) {
     //createPanel(true);
   }
-
 });
 
 app.on('quit', () => {
@@ -1927,6 +1660,11 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   if (mainWindow == null) {
     createPanel(true)
     return false
+  }
+
+  if(isRefreshing) {
+    //shouldShowPanel = true
+    //return false
   }
 
   if (doRefresh) {
@@ -2321,7 +2059,15 @@ function handleAccentChange() {
   getThemeRegistry()
 }
 
+let skipFirstMonChange = false
 function handleMonitorChange(e, d) {
+  
+  // Skip event that happens at startup
+  if(!skipFirstMonChange) {
+    skipFirstMonChange = true
+    return false
+  }
+
   // If displays not shown, refresh mainWindow
   if (!panelSize.visible)
     restartPanel()
@@ -2454,8 +2200,6 @@ function handleCommandLine(event, commandLine) {
 
       // Get display by ID (partial or whole)
       if(arg.indexOf("--monitorid=") === 0) {
-        //display = Object.values(monitors)[(arg.substring(12) * 1) - 1]
-        console.log(Object.keys(monitors))
         const monID =  Object.keys(monitors).find(id => {
           return id.indexOf(arg.substring(12)) >= 0
         })
@@ -2500,3 +2244,11 @@ function handleCommandLine(event, commandLine) {
 }
 
 
+// Monitors thread
+// Handles WMI + DDC/CI activity
+
+let monitorsThread
+function startMonitorThread() {
+  monitorsThread = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+}
+startMonitorThread()

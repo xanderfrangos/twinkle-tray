@@ -74,9 +74,6 @@ export default class BrightnessPanel extends PureComponent {
     const monitors = Object.assign(this.state.monitors, {})
     const sliderMonitor = monitors[slider.props.hwid]
 
-    console.log(sliderMonitor)
-    console.log(level)
-
     if (this.numMonitors && this.state.linkedLevelsActive) {
       // Update all monitors (linked)
       for (let key in monitors) {

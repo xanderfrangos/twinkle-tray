@@ -1,6 +1,8 @@
 const { ipcRenderer: ipc, remote } = require('electron');
-console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
 let browser = remote.getCurrentWindow()
+
+// Send logs to main thread
+//console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
 
 const log = console.log
 

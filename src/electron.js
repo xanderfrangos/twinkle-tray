@@ -2079,8 +2079,17 @@ function handleMonitorChange(e, d) {
 
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
+
+  // Set brightness to last known settings
+  monitors.forEach(monitor => {
+    if (monitor.type != "none") {
+      updateBrightnessThrottle(monitor.id, monitor.brightness, true, false)
+    }
+  })
+
+  // Check if time adjustments should apply
   handleBackgroundUpdate()
-  // TODO: Set brightness to last known settings
+
 })
 
 let restartBackgroundUpdateThrottle = false

@@ -114,3 +114,37 @@ body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="tr
         }
     }
 }
+
+
+body[data-colored-taskbar="true"] {
+    div#panel {
+        --tray-background-base: #1f1f1f;
+        --tray-background-transparent: var(--system-accent-transparent);
+        --tray-background-blur: rgba(41, 41, 41, 0);
+        --tray-background-blur-start: rgba(41, 41, 41, 1);
+        --tray-text: white;
+        --tray-border: #434343;
+    
+        --page-background: #030303;
+        --page-text: #fff;
+        --page-text-mid: #bbb;
+    
+        --window-border: #222;
+    
+        --titlebar-icon: #888;
+        --titlebar-icon-hover: #fff;
+    
+        --input-border: #6f6f6f;
+        --input-border-hover: #fff;
+        --input-active-background: #444;
+    
+        --slider-track-color: rgba(255, 255, 255, 0.42);
+        --slider-track-color-focus: rgba(255, 255, 255, 0.65);
+    }
+}
+
+body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"] {
+    div#panel {
+        --tray-background: var(--system-accent-transparent) !important;
+    }
+}

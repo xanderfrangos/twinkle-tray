@@ -887,7 +887,7 @@ let isRefreshing = false
 let shouldShowPanel = false
 
 
-refreshMonitorsJob = async (fullRefresh = falsee) => {
+refreshMonitorsJob = async (fullRefresh = false) => {
   return await new Promise( (resolve, reject) => {
     monitorsThread.send({
       type: "refreshMonitors",

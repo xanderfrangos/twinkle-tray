@@ -174,6 +174,7 @@ refreshDDCCI = async () => {
                             gain: (checkVCP(monitor, 0x16) && checkVCP(monitor, 0x18) && checkVCP(monitor, 0x1A)),
                             contrast: checkVCP(monitor, 0x12),
                             powerState: checkVCP(monitor, 0xD6),
+                            volume: checkVCP(monitor, 0x62)
                         }
                     } else {
                         ddcciInfo.features = monitors[hwid[2]].features

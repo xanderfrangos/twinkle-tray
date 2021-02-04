@@ -6,7 +6,7 @@ const Utils = require("./Utils")
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
-  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch(e) { }
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch (e) { }
   app.exit()
   return false;
 } else {
@@ -888,7 +888,7 @@ let shouldShowPanel = false
 
 
 refreshMonitorsJob = async (fullRefresh = false) => {
-  return await new Promise( (resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     monitorsThread.send({
       type: "refreshMonitors",
       fullRefresh
@@ -900,7 +900,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
     function listen(resolve) {
       monitorsThread.once("message", data => {
-        if(data.type === "refreshMonitors") {
+        if (data.type === "refreshMonitors") {
           clearTimeout(timeout)
           resolve(data.monitors)
         } else {
@@ -951,7 +951,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   setTrayPercent()
   sendToAllWindows('monitors-updated', monitors)
 
-  if(shouldShowPanel) {
+  if (shouldShowPanel) {
     shouldShowPanel = false
     setTimeout(() => toggleTray(true), 333)
   }
@@ -1051,36 +1051,36 @@ function updateBrightness(index, level, useCap = true) {
 
 function updateAllBrightness(brightness, mode = "offset") {
 
-          let linkedLevelVal
+  let linkedLevelVal
 
-          // Update internal brightness values
-          for (let key in monitors) {
-            const monitor = monitors[key]
-            if (monitor.type !== "none") {
+  // Update internal brightness values
+  for (let key in monitors) {
+    const monitor = monitors[key]
+    if (monitor.type !== "none") {
 
-              let normalizedAdjust = minMax(mode == "set" ? brightness : brightness + monitor.brightness)
-  
-              // Use linked levels, if applicable
-              if (settings.linkedLevelsActive) {
-                // Set shared brightness value if not set
-                if (linkedLevelVal) {
-                  normalizedAdjust = linkedLevelVal
-                } else {
-                  linkedLevelVal = normalizedAdjust
-                }
-              }
-  
-              monitors[key].brightness = normalizedAdjust
-            }
-          }
-  
-          // Update UI
-          sendToAllWindows('monitors-updated', monitors);
-  
-          // Send brightness updates
-          for (let key in monitors) {
-            updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
-          }
+      let normalizedAdjust = minMax(mode == "set" ? brightness : brightness + monitor.brightness)
+
+      // Use linked levels, if applicable
+      if (settings.linkedLevelsActive) {
+        // Set shared brightness value if not set
+        if (linkedLevelVal) {
+          normalizedAdjust = linkedLevelVal
+        } else {
+          linkedLevelVal = normalizedAdjust
+        }
+      }
+
+      monitors[key].brightness = normalizedAdjust
+    }
+  }
+
+  // Update UI
+  sendToAllWindows('monitors-updated', monitors);
+
+  // Send brightness updates
+  for (let key in monitors) {
+    updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
+  }
 }
 
 function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100) {
@@ -1277,7 +1277,7 @@ function createPanel(toggleOnLoad = false) {
     console.log("Panel ready!")
     mainWindow.show()
     createTray()
-    
+
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
 
@@ -1663,7 +1663,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
     return false
   }
 
-  if(isRefreshing) {
+  if (isRefreshing) {
     //shouldShowPanel = true
     //return false
   }
@@ -2062,9 +2062,9 @@ function handleAccentChange() {
 
 let skipFirstMonChange = false
 function handleMonitorChange(e, d) {
-  
+
   // Skip event that happens at startup
-  if(!skipFirstMonChange) {
+  if (!skipFirstMonChange) {
     skipFirstMonChange = true
     return false
   }
@@ -2152,7 +2152,7 @@ function handleBackgroundUpdate() {
   checkForUpdates()
 
 }
- 
+
 /*
 
 Handle input from second process command line. One monitor argument and one brightness argument is required. Multiple arguments will override each other.
@@ -2190,36 +2190,36 @@ function handleCommandLine(event, commandLine) {
   if (commandLine.length <= 2 && mainWindow) {
     toggleTray()
   }
-  if(commandLine.length > 2) {
+  if (commandLine.length > 2) {
 
     commandLine.forEach(arg => {
 
       // Get display by index
-      if(arg.indexOf("--monitornum=") === 0) {
+      if (arg.indexOf("--monitornum=") === 0) {
         display = Object.values(monitors)[(arg.substring(13) * 1) - 1]
       }
 
       // Get display by ID (partial or whole)
-      if(arg.indexOf("--monitorid=") === 0) {
-        const monID =  Object.keys(monitors).find(id => {
+      if (arg.indexOf("--monitorid=") === 0) {
+        const monID = Object.keys(monitors).find(id => {
           return id.indexOf(arg.substring(12)) >= 0
         })
         display = monitors[monID]
       }
 
       // Run on all displays
-      if(arg.indexOf("--all") === 0 && arg.length === 5) {
+      if (arg.indexOf("--all") === 0 && arg.length === 5) {
         display = "all"
       }
 
       // Use absolute brightness
-      if(arg.indexOf("--set=") === 0) {
+      if (arg.indexOf("--set=") === 0) {
         brightness = (arg.substring(6) * 1)
         type = "set"
       }
 
       // Use relative brightness
-      if(arg.indexOf("--offset=") === 0) {
+      if (arg.indexOf("--offset=") === 0) {
         brightness = (arg.substring(9) * 1)
         type = "offset"
       }
@@ -2227,9 +2227,9 @@ function handleCommandLine(event, commandLine) {
     })
 
     // If value input, update brightness
-    if(display && type && brightness) {
+    if (display && type && brightness) {
 
-      if(display === "all") {
+      if (display === "all") {
         console.log(`Setting brightness via command line: All @ ${brightness}%`);
         updateAllBrightness(brightness, type)
       } else {

@@ -191,15 +191,24 @@ refreshDDCCI = async () => {
                         brightnessType = 0x13
                     }
 
+                    // If something goes wrong and there are previous values, use those
+                    if(!brightnessValues) {
+                        if(monitors[hwid[2]].brightnessRaw && monitors[hwid[2]].brightnessMax) {
+                            brightnessValues = [monitors[hwid[2]].brightnessRaw, monitors[hwid[2]].brightnessMax]
+                        } else {
+                            // Catastrophic failure. Revert to defaults.
+                            brightnessValues = [50, 100]
+                        }
+                    }
+
                     ddcciInfo.brightness = brightnessValues[0] * (100 / (brightnessValues[1] || 100))
                     ddcciInfo.brightnessMax = (brightnessValues[1] || 100)
-                    ddcciInfo.brightnessRaw = -1
+                    ddcciInfo.brightnessRaw = ddcciInfo.brightness // Raw value from DDC/CI. Not normalized or adjusted.
                     ddcciInfo.brightnessType = brightnessType
 
                     // Get normalization info
                     ddcciInfo = applyRemap(ddcciInfo)
                     // Unnormalize brightness
-                    ddcciInfo.brightnessRaw = ddcciInfo.brightness
                     ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightness, true, ddcciInfo.min, ddcciInfo.max)
 
                     ddcciList.push(ddcciInfo)

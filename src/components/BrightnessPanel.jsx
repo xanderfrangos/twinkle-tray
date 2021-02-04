@@ -22,9 +22,11 @@ export default class BrightnessPanel extends PureComponent {
         if (monitor.type == "none") {
           return (<div key={monitor.key}></div>)
         } else {
-          return (
-            <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
-          )
+          if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            return (
+              <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+            )
+          }
         }
       })
     }

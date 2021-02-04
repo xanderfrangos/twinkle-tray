@@ -131,17 +131,12 @@ refreshDDCCI = async () => {
             for (let monitor of ddcciMonitors) {
 
                 try {
-                    // Get brightness current/max
-                    const brightnessValues = ddcci._getVCP(monitor, 0x10)
 
                     let ddcciInfo = {
                         name: makeName(monitor, `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
                         id: monitor,
                         num: local,
                         localID: local,
-                        brightness: brightnessValues[0] * (100 / (brightnessValues[1] || 100)),
-                        brightnessMax: (brightnessValues[1] || 100),
-                        brightnessRaw: -1,
                         type: 'ddcci',
                         min: 0,
                         max: 100
@@ -168,20 +163,37 @@ refreshDDCCI = async () => {
                         if (monitors[hwid[2]].name) {
                             // Monitor is in list
                             ddcciInfo.name = monitors[hwid[2]].name
-
-                            if (monitors[hwid[2]].features === undefined) {
-                                ddcciInfo.features = {
-                                    luminance: checkVCP(monitor, 0x10),
-                                    brightness: checkVCP(monitor, 0x13),
-                                    gain: (checkVCP(monitor, 0x16) && checkVCP(monitor, 0x18) && checkVCP(monitor, 0x1A)),
-                                    contrast: checkVCP(monitor, 0x12),
-                                    powerState: checkVCP(monitor, 0xD6)
-                                }
-                            }
-
                         }
-
                     }
+
+                    // Determine features
+                    if (monitors[hwid[2]].features === undefined) {
+                        ddcciInfo.features = {
+                            luminance: checkVCP(monitor, 0x10),
+                            brightness: checkVCP(monitor, 0x13),
+                            gain: (checkVCP(monitor, 0x16) && checkVCP(monitor, 0x18) && checkVCP(monitor, 0x1A)),
+                            contrast: checkVCP(monitor, 0x12),
+                            powerState: checkVCP(monitor, 0xD6),
+                        }
+                    } else {
+                        ddcciInfo.features = monitors[hwid[2]].features
+                    }
+
+                    // Determine / get brightness
+                    let brightnessValues = [50, 100] // current, max
+                    let brightnessType = 0x00
+                    if(ddcciInfo.features.luminance) {
+                        brightnessValues = checkVCP(monitor, 0x10)
+                        brightnessType = 0x10
+                    } else if(ddcciInfo.features.brightness) {
+                        brightnessValues = checkVCP(monitor, 0x13)
+                        brightnessType = 0x13
+                    }
+
+                    ddcciInfo.brightness = brightnessValues[0] * (100 / (brightnessValues[1] || 100))
+                    ddcciInfo.brightnessMax = (brightnessValues[1] || 100)
+                    ddcciInfo.brightnessRaw = -1
+                    ddcciInfo.brightnessType = brightnessType
 
                     // Get normalization info
                     ddcciInfo = applyRemap(ddcciInfo)

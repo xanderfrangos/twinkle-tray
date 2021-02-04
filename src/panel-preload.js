@@ -73,7 +73,10 @@ function updateBrightness(index, level) {
 
 function openSettings() {
     setPanelVisibility(false)
-    ipc.send("open-settings")
+    thisWindow.blur()
+    setTimeout(() => {
+        ipc.send("open-settings")
+    }, 111)
 }
 
 function sendSettings(newSettings) {
@@ -111,7 +114,10 @@ function shouldSendHeightUpdate() {
 
 function turnOffDisplays() {
     setPanelVisibility(false)
-    ipc.send('sleep-displays')
+    thisWindow.blur()
+    setTimeout(() => {
+        ipc.send('sleep-displays')
+    }, 111)
 }
 
 function installUpdate() {

@@ -939,7 +939,8 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   }
 
   try {
-    monitors = await refreshMonitorsJob(fullRefresh)
+    const newMonitors = await refreshMonitorsJob(fullRefresh)
+    monitors = newMonitors
     lastEagerUpdate = Date.now()
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
@@ -1142,7 +1143,9 @@ function transitionBrightness(level, eventMonitors = []) {
 
 function sleepDisplays() {
   analyticsUsage.UsedSleep++
-  exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+  setTimeout(() => {
+    exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+  }, 333)
 }
 
 
@@ -2061,34 +2064,48 @@ function handleAccentChange() {
 }
 
 let skipFirstMonChange = false
+let handleChangeTimeout
 function handleMonitorChange(e, d) {
 
-  // Skip event that happens at startup
-  if (!skipFirstMonChange) {
-    skipFirstMonChange = true
-    return false
+    // Skip event that happens at startup
+    if (!skipFirstMonChange) {
+      skipFirstMonChange = true
+      return false
+    }
+
+  // Defer actions for a moment just in case of repeat events
+  if(!handleChangeTimeout) {
+    handleChangeTimeout = setTimeout(() => {
+      // If displays not shown, refresh mainWindow
+      if (!panelSize.visible)
+        restartPanel()
+
+      // Reset all known displays
+      refreshMonitors(true, true)
+
+      handleChangeTimeout = false
+    }, 1500)
   }
 
-  // If displays not shown, refresh mainWindow
-  if (!panelSize.visible)
-    restartPanel()
-
-  // Reset all known displays
-  refreshMonitors(true, true)
 }
 
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
 
-  // Set brightness to last known settings
-  monitors.forEach(monitor => {
-    if (monitor.type != "none") {
-      updateBrightnessThrottle(monitor.id, monitor.brightness, true, false)
-    }
-  })
+  setTimeout(
+    () => {
+      // Set brightness to last known settings
+      Object.values(monitors).forEach(monitor => {
+        if (monitor.type != "none") {
+          updateBrightnessThrottle(monitor.id, monitor.brightness, true, false)
+        }
+      })
 
-  // Check if time adjustments should apply
-  handleBackgroundUpdate()
+      // Check if time adjustments should apply
+      handleBackgroundUpdate()
+    },
+    3000 // Give Windows a few seconds to... you know... wake up.
+  )
 
 })
 

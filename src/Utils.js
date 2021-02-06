@@ -9,7 +9,7 @@ module.exports = {
 
             // Get display by index
             if (arg.indexOf("--monitornum=") === 0) {
-                validArgs.MonitorNum = (arg.substring(13) * 1) - 1
+                validArgs.MonitorNum = (arg.substring(13) * 1)
             }
 
             // Get display by ID (partial or whole)

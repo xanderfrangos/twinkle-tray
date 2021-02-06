@@ -696,6 +696,14 @@ export default class SettingsWindow extends PureComponent {
         } else {
             return Object.values(this.state.monitors).map((monitor, index) => {
 
+                let brightness = monitor.brightness
+                let brightnessMax = monitor.brightnessMax
+
+                if(monitor.type == "ddcci" && !monitor.brightnessType) {
+                    brightness = "???"
+                    brightnessMax = "???"
+                }
+
                 return (
                     <div key={monitor.key}>
                         <br />
@@ -703,8 +711,8 @@ export default class SettingsWindow extends PureComponent {
                         <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
                             <br />Internal name: <b>{monitor.hwid[1]}</b>
                             <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
-                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
-                            <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
+                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
+                            <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : brightnessMax)}</b>
                             <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
                         </p>
                     </div>

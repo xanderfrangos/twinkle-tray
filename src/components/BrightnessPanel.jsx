@@ -118,7 +118,7 @@ export default class BrightnessPanel extends PureComponent {
     this.lastLevels = []
     let numMonitors = 0
     for (let key in newMonitors) {
-      if (newMonitors[key].type != "none") numMonitors++;
+      if (newMonitors[key].type != "none" && !(newMonitors[key].type == "ddcci" && !newMonitors[key].brightnessType)) numMonitors++;
     }
     this.numMonitors = numMonitors
     // Reset panel height so it's recalculated

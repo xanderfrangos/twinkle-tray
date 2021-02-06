@@ -42,6 +42,22 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitor
 
 If some of your monitors are not being detected, please see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues) for troubleshooting steps.
 
+## Command Line Arguments
+
+Twinkle Tray (v1.13.0+) supports requesting brightness changes from the command line. Twinkle Tray must already be running. One monitor argument and one brightness argument are required. Multiple arguments will override each other.
+
+For example: `"%LocalAppData%\Programs\twinkle-tray\Twinkle Tray.exe" --MonitorNum=1 --Offset=-30` will adjust monitor number 1 by -30 brightness.
+
+### Supported args:
+
+- `--MonitorNum` Select monitor by number. Starts at 1. *Example: `--MonitorNum=2`*
+- `--MonitorID` Select monitor by internal ID. Partial or whole matches accepted. *Example: `--MonitorID="UID2353"`*
+- `--All` Select all monitors.
+- `--Set` Set brightness percentage. *Example: `--Set=95`*
+- `--Offset` Adjust brightness percentage. *Example: `--Offset=-20`*
+
+*This feature is not available on the Windows Store version of Twinkle Tray.*
+
 ## Localization
 Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/graphs/contributors), Twinkle Tray is localized for multiple languages. If you'd like to create or update a localization, see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Localization-files) for details. Special thanks to [Weblate](https://weblate.org/) for allowing free use of their service.
 

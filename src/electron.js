@@ -454,9 +454,12 @@ function applyHotkeys() {
     globalShortcut.unregisterAll()
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
-        hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
-          doHotkey(hotkey)
-        })
+        // Only apply if found
+        if(Object.values(monitors).find(m => m.id == hotkey.monitor)) {
+          hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
+            doHotkey(hotkey)
+          })
+        }
       } catch (e) {
         // Couldn't register hotkey
       }
@@ -2081,7 +2084,10 @@ function handleMonitorChange(e, d) {
         restartPanel()
 
       // Reset all known displays
-      refreshMonitors(true, true)
+      refreshMonitors(true, true).then(() => {
+        // Reapply hotkeys
+        applyHotkeys()
+      })
 
       handleChangeTimeout = false
     }, 1500)

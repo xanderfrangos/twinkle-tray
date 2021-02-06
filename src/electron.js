@@ -952,6 +952,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   isRefreshing = false
   applyOrder()
   applyRemaps()
+  applyHotkeys()
   setTrayPercent()
   sendToAllWindows('monitors-updated', monitors)
 
@@ -1574,7 +1575,6 @@ function doAnimationStep() {
 app.on("ready", () => {
   readSettings()
   getLocalization()
-  applyHotkeys()
   showIntro()
   createPanel()
   setTimeout(addEventListeners, 2000)
@@ -2084,10 +2084,7 @@ function handleMonitorChange(e, d) {
         restartPanel()
 
       // Reset all known displays
-      refreshMonitors(true, true).then(() => {
-        // Reapply hotkeys
-        applyHotkeys()
-      })
+      refreshMonitors(true, true)
 
       handleChangeTimeout = false
     }, 1500)

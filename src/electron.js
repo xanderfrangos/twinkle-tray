@@ -455,7 +455,7 @@ function applyHotkeys() {
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
         // Only apply if found
-        if(Object.values(monitors).find(m => m.id == hotkey.monitor)) {
+        if(hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitors).find(m => m.id == hotkey.monitor)) {
           hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
             doHotkey(hotkey)
           })

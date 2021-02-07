@@ -1679,7 +1679,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
     //return false
   }
 
-  if (doRefresh) {
+  if (doRefresh && !isOverlay) {
     refreshMonitors()
     getThemeRegistry()
     getSettings()

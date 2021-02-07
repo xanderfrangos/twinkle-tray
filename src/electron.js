@@ -793,6 +793,11 @@ function getThemeRegistry() {
               themeSettings[value] = themeSettings[value].value
             }
             themeSettings["UseAcrylic"] = settings.useAcrylic
+            if(themeSettings.ColorPrevalence) {
+              if(settings.theme == "dark" || settings.theme == "light") {
+                themeSettings.ColorPrevalence = false
+              }
+            }
 
             // Send it off!
             sendToAllWindows('theme-settings', themeSettings)

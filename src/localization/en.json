@@ -47,6 +47,8 @@
 
     "SETTINGS_GENERAL_TITLE": "General",
     "SETTINGS_GENERAL_STARTUP": "Launch at startup",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Apply brightness at startup",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Restore the last known brightness for each display when Twinkle Tray starts.",
     "SETTINGS_GENERAL_THEME_TITLE": "Theme",
     "SETTINGS_GENERAL_THEME_SYSTEM": "System preferences (default)",
     "SETTINGS_GENERAL_THEME_DARK": "Dark",

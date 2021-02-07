@@ -253,6 +253,7 @@ const defaultSettings = {
   icon: "icon",
   updateInterval: 500,
   openAtLogin: true,
+  brightnessAtStartup: true,
   killWhenIdle: false,
   remaps: {},
   hotkeys: {},
@@ -446,6 +447,70 @@ function processSettings(newSettings = {}) {
   })
 
   sendToAllWindows('settings-updated', settings)
+}
+
+const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
+let updateKnownDisplaysTimeout
+
+// Save all known displays to disk for future use
+async function updateKnownDisplays() {
+
+  // Reset timeout
+  if(updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
+  // Wait a moment
+  updateKnownDisplaysTimeout = setTimeout(async () => {
+    try {
+
+      // Get from file
+      let known = getKnownDisplays()
+  
+      // Merge with existing displays
+      Object.assign(known, monitors)
+  
+      // Write back to file
+      fs.writeFileSync(knownDisplaysPath, JSON.stringify(known))
+      console.log(`\x1b[36mSaved known displays!\x1b[0m`)
+    } catch(e) {
+      console.error("Couldn't update known displays file.")
+    }
+  }, 3000)
+
+}
+
+// Get known displays from file, along with current displays
+function getKnownDisplays(useCurrentMonitors) {
+  let known
+  try {
+    // Load known displays DB
+    known = fs.readFileSync(knownDisplaysPath)
+    known = JSON.parse(known)
+  } catch(e) {
+    known = {}
+   }
+
+  // Merge with existing displays
+  if(useCurrentMonitors) {
+    Object.assign(known, monitors)
+  }
+  
+  return known
+}
+
+// Look up all known displays and re-apply last brightness
+function setKnownBrightness(useCurrentMonitors = false) {
+
+  console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`)
+
+  const known = getKnownDisplays(useCurrentMonitors)
+  for(const hwid in known) {
+    const monitor = known[hwid]
+
+    // Apply brightness to valid display types
+    if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+      updateBrightness(monitor.id, monitor.brightness, true)
+    }
+
+  }
 }
 
 
@@ -959,6 +1024,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   applyRemaps()
   applyHotkeys()
   setTrayPercent()
+  updateKnownDisplays()
   sendToAllWindows('monitors-updated', monitors)
 
   if (shouldShowPanel) {
@@ -1053,6 +1119,7 @@ function updateBrightness(index, level, useCap = true) {
     }
 
     setTrayPercent()
+    updateKnownDisplays()
   } catch (e) {
     debug.error("Could not update brightness", e)
   }
@@ -1310,7 +1377,7 @@ function createPanel(toggleOnLoad = false) {
   })
 
   mainWindow.webContents.once('dom-ready', () => {
-    //refreshMonitors(true, true)
+    sendToAllWindows('monitors-updated', monitors)
   })
 
 }
@@ -1579,6 +1646,9 @@ function doAnimationStep() {
 
 app.on("ready", () => {
   readSettings()
+  refreshMonitors(true, true).then(() => {
+    if(settings.brightnessAtStartup) setKnownBrightness();
+  })
   getLocalization()
   showIntro()
   createPanel()
@@ -2102,17 +2172,15 @@ powerMonitor.on("resume", () => {
 
   setTimeout(
     () => {
-      // Set brightness to last known settings
-      Object.values(monitors).forEach(monitor => {
-        if (monitor.type != "none") {
-          updateBrightnessThrottle(monitor.id, monitor.brightness, true, false)
-        }
-      })
+      refreshMonitors().then(() => {
+        // Set brightness to last known settings
+        setKnownBrightness()
 
-      // Check if time adjustments should apply
-      handleBackgroundUpdate()
+        // Check if time adjustments should apply
+        handleBackgroundUpdate()
+      })
     },
-    3000 // Give Windows a few seconds to... you know... wake up.
+    1500 // Give Windows a few seconds to... you know... wake up.
   )
 
 })

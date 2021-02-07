@@ -96,6 +96,7 @@ export default class SettingsWindow extends PureComponent {
             activePage: 'general',
             theme: 'default',
             openAtLogin: false,
+            brightnessAtStartup: true,
             monitors: [],
             remaps: [],
             names: [],
@@ -260,9 +261,15 @@ export default class SettingsWindow extends PureComponent {
     }
 
     startupChanged = (event) => {
-        const openAtLogin = (this.state.openAtLogin ? false : true)
+        const openAtLogin = (this.state.openAtLogin ? true : false)
         this.setState({ openAtLogin })
         window.sendSettings({ openAtLogin })
+    }
+
+    startupBrightnessChanged = (event) => {
+        const brightnessAtStartup = (this.state.brightnessAtStartup ? true : false)
+        this.setState({ brightnessAtStartup })
+        window.sendSettings({ brightnessAtStartup })
     }
 
     acrylicChanged = (event) => {
@@ -876,6 +883,12 @@ export default class SettingsWindow extends PureComponent {
                             <div style={{ display: (window.isAppX ? "none" : "block") }}>
                                 <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
                                 <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
+                                <br /><br />
+                            </div>
+                            <div>
+                                <label>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")}</label>
+                                <p>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")}</p>
+                                <input onChange={this.startupBrightnessChanged} checked={window.settings.brightnessAtStartup || true} data-checked={window.settings.brightnessAtStartup || false} type="checkbox" />
                                 <br /><br />
                             </div>
                             <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>

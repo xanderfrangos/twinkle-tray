@@ -256,7 +256,7 @@ ipc.on('set-acrylic-show', () => {
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()
-    requestMonitors()
+    //requestMonitors()
     requestAccent()
 })
 

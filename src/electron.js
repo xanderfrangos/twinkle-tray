@@ -2203,7 +2203,7 @@ Select monitor by internal ID. Partial or whole matches accepted.
 Example: --MonitorID="UID2353"
 
 --All
-Update all monitors.
+Flag to update all monitors.
 Example: --All
 
 --Set
@@ -2213,6 +2213,10 @@ Example: --Set=95
 --Offset
 Adjust brightness percentage.
 Example: --Offset=-20
+
+--Overlay
+Flag to show brightness levels in the overlay
+Example: --Overlay
 
 */
 function handleCommandLine(event, commandLine) {
@@ -2256,6 +2260,11 @@ function handleCommandLine(event, commandLine) {
       if (arg.indexOf("--offset=") === 0) {
         brightness = (arg.substring(9) * 1)
         type = "offset"
+      }
+
+      // Show overlay
+      if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
+        hotkeyOverlayStart()
       }
 
     })

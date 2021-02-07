@@ -34,6 +34,11 @@ module.exports = {
                 validArgs.BrightnessType = "offset"
             }
 
+            // Show overlay
+            if (arg.indexOf("--overlay") === 0) {
+                validArgs.ShowOverlay = true
+            }
+
         })
 
         return validArgs
@@ -64,7 +69,7 @@ Select monitor by internal ID. Partial or whole matches accepted.
 \x1b[2mExample: --MonitorID="UID2353"\x1b[0m
 
 \x1b[36m--All\x1b[0m
-Update all monitors.
+Flag to update all monitors.
 \x1b[2mExample: --All\x1b[0m
 
 \x1b[36m--Set\x1b[0m
@@ -74,6 +79,10 @@ Set brightness percentage.
 \x1b[36m--Offset\x1b[0m
 Adjust brightness percentage.
 \x1b[2mExample: --Offset=-20\x1b[0m
+
+\x1b[36m--Overlay\x1b[0m
+Flag to show brightness levels in the overlay
+\x1b[2mExample: --Overlay\x1b[0m
 `)
         } else {
             console.log("OK")

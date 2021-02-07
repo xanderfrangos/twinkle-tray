@@ -1,3 +1,13 @@
+/*
+
+Hi,
+If you're reading this, you probably want to know how this component works.
+This component is not good. Mistakes were made.
+It's a horrible bowl of spaghetti.
+Run while you still can.
+
+*/
+
 import React, { PureComponent } from "react";
 import Titlebar from './Titlebar'
 import Slider from "./Slider";

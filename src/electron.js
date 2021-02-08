@@ -1734,7 +1734,7 @@ function tryEagerUpdate() {
   const now = Date.now()
   if (now > lastEagerUpdate + 5000) {
     lastEagerUpdate = now
-    refreshMonitors(false, true)
+    refreshMonitors(true, true)
   }
 }
 
@@ -1755,7 +1755,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   }
 
   if (doRefresh && !isOverlay) {
-    refreshMonitors()
+    tryEagerUpdate()
     getThemeRegistry()
     getSettings()
 

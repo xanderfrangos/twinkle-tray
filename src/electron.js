@@ -621,6 +621,10 @@ async function hotkeyOverlayShow() {
     if (monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
   })
 
+  if(monitorCount && settings.linkedLevelsActive) {
+    monitorCount = 1
+  }
+
   canReposition = false
   if (settings.useAcrylic) {
     tryVibrancy(mainWindow, { theme: "#26262601", effect: "blur" })

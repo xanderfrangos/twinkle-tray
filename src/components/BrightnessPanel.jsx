@@ -17,18 +17,35 @@ export default class BrightnessPanel extends PureComponent {
     if (!this.state.monitors || this.numMonitors == 0) {
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {
-      const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
-      return sorted.map((monitor, index) => {
-        if (monitor.type == "none") {
-          return (<div key={monitor.key}></div>)
-        } else {
+
+      if(settings.linkedLevelsActive) {
+        // Combine all monitors
+        for(const key in this.state.monitors) {
+          const monitor = this.state.monitors[key]
           if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
             return (
-              <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+              <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
             )
           }
+          return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
         }
-      })
+      } else {
+        // Show all valid monitors individually
+        const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+        return sorted.map((monitor, index) => {
+          if (monitor.type == "none") {
+            return (<div key={monitor.key}></div>)
+          } else {
+            if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+              return (
+                <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+              )
+            }
+          }
+        })
+      }
+
+
     }
   }
 

@@ -511,6 +511,7 @@ function setKnownBrightness(useCurrentMonitors = false) {
     }
 
   }
+  sendToAllWindows('monitors-updated', monitors);
 }
 
 

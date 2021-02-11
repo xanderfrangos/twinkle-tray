@@ -761,7 +761,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                             <br />Key: <b>{monitor.key}</b>
                             <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
-                            <br />Serial Number: <b>{monitor.serial}</b></p>
+                            <br />Connection Type: <b>{monitor.connector}</b></p>
                     </div>
                 )
 

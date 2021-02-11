@@ -447,13 +447,6 @@ function processSettings(newSettings = {}) {
     settings: settings
   })
 
-  monitorsThread.send({
-    type: "localization",
-    localization: {
-      GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
-    }
-  })
-
   sendToAllWindows('settings-updated', settings)
 }
 
@@ -788,29 +781,40 @@ function getLocalization() {
 
   T = new Translate(localization.desired, localization.default)
   sendToAllWindows("localization-updated", localization)
-  getAllLanguages()
+
+  monitorsThread.send({
+    type: "localization",
+    localization: {
+      GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
+    }
+  })
 
 }
 
-function getAllLanguages() {
-  fs.readdir(path.join(__dirname, `/localization/`), (err, files) => {
-    if (!err) {
-      let languages = []
-      for (let file of files) {
-        try {
-          const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
-          const langName = JSON.parse(langText)["LANGUAGE"]
-          languages.push({
-            id: file.split(".")[0],
-            name: langName
-          })
-        } catch (e) {
-          console.error(`Error reading language from ${file}`)
+async function getAllLanguages() {
+  return new Promise((resolve,reject) => {
+    fs.readdir(path.join(__dirname, `/localization/`), (err, files) => {
+      if (!err) {
+        let languages = []
+        for (let file of files) {
+          try {
+            const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
+            const langName = JSON.parse(langText)["LANGUAGE"]
+            languages.push({
+              id: file.split(".")[0],
+              name: langName
+            })
+          } catch (e) {
+            console.error(`Error reading language from ${file}`)
+          }
         }
+        localization.languages = languages
+        sendToAllWindows("localization-updated", localization)
+        resolve(languages)
+      } else {
+        reject()
       }
-      localization.languages = languages
-      sendToAllWindows("localization-updated", localization)
-    }
+    })
   })
 }
 
@@ -1668,12 +1672,13 @@ function doAnimationStep() {
 
 
 
-app.on("ready", () => {
+app.on("ready", async () => {
+  await getAllLanguages()
   readSettings()
+  getLocalization()
   refreshMonitors(true, true).then(() => {
     if(settings.brightnessAtStartup) setKnownBrightness();
   })
-  getLocalization()
   showIntro()
   createPanel()
   setTimeout(addEventListeners, 2000)

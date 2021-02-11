@@ -175,7 +175,7 @@ refreshNamesWin32 = () => {
                         connector: monitor.outputTechnology,
                         min: 0,
                         max: 100,
-                        hwid: false,
+                        hwid,
                         name: false,
                         serial: false
                     }

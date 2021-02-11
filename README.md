@@ -16,7 +16,7 @@ Twinkle Tray lets you easily manage the brightness levels of multiple monitors. 
 - Seamlessly blends in with Windows 10. Uses your Personalization settings to match your taskbar.
 - Starts up with Windows.
 
-This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [electron-react-parcel-boilerplate](<https://github.com/kumarryogeshh/electron-react-parcel-boilerplate>).
+This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [win32-displayconfig](<https://github.com/djsweet/win32-displayconfig>).
 
 ## Download
 
@@ -52,9 +52,10 @@ For example: `"%LocalAppData%\Programs\twinkle-tray\Twinkle Tray.exe" --MonitorN
 
 - `--MonitorNum` Select monitor by number. Starts at 1. *Example: `--MonitorNum=2`*
 - `--MonitorID` Select monitor by internal ID. Partial or whole matches accepted. *Example: `--MonitorID="UID2353"`*
-- `--All` Select all monitors.
+- `--All` Flag to select all monitors.
 - `--Set` Set brightness percentage. *Example: `--Set=95`*
 - `--Offset` Adjust brightness percentage. *Example: `--Offset=-20`*
+- `--Overlay` Flag to show new brightness levels in the overlay *Example: `--Overlay`*
 
 *This feature is not available on the Windows Store version of Twinkle Tray.*
 

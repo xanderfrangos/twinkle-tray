@@ -262,6 +262,14 @@ const defaultSettings = {
   adjustmentTimeIndividualDisplays: false,
   checkTimeAtStartup: true,
   order: [],
+  features: {
+    luminance: true,
+    brightness: true,
+    gain: false,
+    contrast: false,
+    powerState: false,
+    volume: false
+  },
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
@@ -1016,8 +1024,12 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     console.log("Doing full refresh.")
   }
 
+  // Save old monitors for comparison
+  let oldMonitors = Object.assign({}, monitors)
+  let newMonitors
+
   try {
-    const newMonitors = await refreshMonitorsJob(fullRefresh)
+    newMonitors = await refreshMonitorsJob(fullRefresh)
     monitors = newMonitors
     lastEagerUpdate = Date.now()
   } catch (e) {
@@ -1028,9 +1040,15 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   applyOrder()
   applyRemaps()
   applyHotkeys()
-  setTrayPercent()
-  updateKnownDisplays()
-  sendToAllWindows('monitors-updated', monitors)
+
+  // Only send update if something changed
+  if(JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
+    setTrayPercent()
+    updateKnownDisplays()
+    sendToAllWindows('monitors-updated', monitors)
+  } else {
+    console.log("===--- NO CHANGE ---===")
+  }
 
   if (shouldShowPanel) {
     shouldShowPanel = false
@@ -1253,6 +1271,7 @@ ipcMain.on('update-brightness', function (event, data) {
 })
 
 ipcMain.on('request-monitors', function (event, arg) {
+  sendToAllWindows("monitors-updated", monitors)
   refreshMonitors(false, true)
 })
 
@@ -1730,11 +1749,11 @@ function setTrayPercent() {
 }
 
 let lastEagerUpdate = 0
-function tryEagerUpdate() {
+function tryEagerUpdate(forceRefresh = true) {
   const now = Date.now()
   if (now > lastEagerUpdate + 5000) {
     lastEagerUpdate = now
-    refreshMonitors(true, true)
+    refreshMonitors(forceRefresh, true)
   }
 }
 
@@ -1923,6 +1942,8 @@ function createSettings() {
       require('electron').shell.openExternal(url)
     })
   })
+
+  refreshMonitors(true)
 
   analyticsUsage.OpenedSettings++
 

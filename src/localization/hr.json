@@ -94,5 +94,15 @@
     "PANEL_LABEL_OFF_ON": "Stanje napajanja",
     "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI funkcije",
     "PANEL_LABEL_COLOR_TEMPERATURE": "Temperatura boje",
-    "PANEL_LABEL_CONTRAST": "Kontrast"
+    "PANEL_LABEL_CONTRAST": "Kontrast",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Normalizacija svjetline",
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Maksimalna svjetlina",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Trenutačna svjetlina",
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Način komunikacije",
+    "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "Interno ime",
+    "SETTINGS_MONITORS_DETAILS_NAME": "Ime",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Obnovi zadnju svjetlinu za svaki ekran prilikom pokretanja Twinkle Traya.",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Primijeni svjetlinu pri pokretanju",
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI funkcije",
+    "GENERIC_REFRESH_DISPLAYS": "Aktualiziraj ekrane"
 }

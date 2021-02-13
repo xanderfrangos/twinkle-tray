@@ -1365,7 +1365,8 @@ function createPanel(toggleOnLoad = false) {
     webPreferences: {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true
+      enableRemoteModule: true,
+      contextIsolation: false
     }
   });
 
@@ -1856,7 +1857,8 @@ function showIntro() {
     webPreferences: {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true
+      enableRemoteModule: true,
+      contextIsolation: false
     }
   });
 
@@ -1918,7 +1920,8 @@ function createSettings() {
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true
+      enableRemoteModule: true,
+      contextIsolation: false
     }
   });
 

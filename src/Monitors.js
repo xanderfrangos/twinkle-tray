@@ -282,9 +282,12 @@ refreshDDCCI = async (type = "default") => {
 
                         // If something goes wrong and there are previous values, use those
                         if (!brightnessValues) {
-                            if (monitors[hwid[2]].brightnessRaw && monitors[hwid[2]].brightnessMax) {
-                                brightnessValues = [monitors[hwid[2]].brightnessRaw, monitors[hwid[2]].brightnessMax]
+                            console.log("\x1b[41mNO BRIGHTNESS VALUES AVAILABLE\x1b[0m")
+                            if (monitors[hwid[2]].brightness !== undefined && monitors[hwid[2]].brightnessMax !== undefined) {
+                                brightnessValues = [normalizeBrightness(monitors[hwid[2]].brightness, false, ddcciInfo.min, ddcciInfo.max), monitors[hwid[2]].brightnessMax]
                             } else {
+                                console.log("CATASTROPHIC FAILURE",
+                                monitors[hwid[2]])
                                 // Catastrophic failure. Revert to defaults.
                                 brightnessValues = [50, 100]
                             }
@@ -401,8 +404,12 @@ refreshWMI = async () => {
 function setBrightness(brightness, id) {
     try {
         if (id) {
+            let monitor = Object.values(monitors).find(mon => mon.id == id)
+            monitor.brightness = brightness
             ddcci.setBrightness(id, brightness)
         } else {
+            let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
+            monitor.brightness = brightness
             exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})`)
         }
     } catch (e) {

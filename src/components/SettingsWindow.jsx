@@ -261,13 +261,13 @@ export default class SettingsWindow extends PureComponent {
     }
 
     startupChanged = (event) => {
-        const openAtLogin = (this.state.openAtLogin ? true : false)
+        const openAtLogin = (this.state.openAtLogin ? false : true)
         this.setState({ openAtLogin })
         window.sendSettings({ openAtLogin })
     }
 
     startupBrightnessChanged = (event) => {
-        const brightnessAtStartup = (this.state.brightnessAtStartup ? true : false)
+        const brightnessAtStartup = (this.state.brightnessAtStartup ? false : true)
         this.setState({ brightnessAtStartup })
         window.sendSettings({ brightnessAtStartup })
     }
@@ -803,6 +803,8 @@ export default class SettingsWindow extends PureComponent {
     // Update settings
     recievedSettings = (e) => {
         const settings = e.detail
+        const openAtLogin = settings.openAtLogin
+        const brightnessAtStartup = settings.brightnessAtStartup
         const linkedLevelsActive = (settings.linkedLevelsActive || false)
         const updateInterval = (settings.updateInterval || 500) * 1
         const remaps = (settings.remaps || {})
@@ -821,6 +823,8 @@ export default class SettingsWindow extends PureComponent {
         const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
+            openAtLogin,
+            brightnessAtStartup,
             linkedLevelsActive,
             remaps,
             updateInterval,
@@ -882,7 +886,7 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
                             <div style={{ display: (window.isAppX ? "none" : "block") }}>
                                 <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
-                                <input onChange={this.startupChanged} checked={window.settings.openAtLogin || false} data-checked={window.settings.openAtLogin || false} type="checkbox" />
+                                <input onChange={this.startupChanged} checked={this.state.rawSettings.openAtLogin} data-checked={this.state.rawSettings.openAtLogin} type="checkbox" />
                                 <br /><br />
                             </div>
                             <div>

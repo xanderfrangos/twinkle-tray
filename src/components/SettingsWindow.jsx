@@ -873,7 +873,7 @@ export default class SettingsWindow extends PureComponent {
         return (
             <div className="window-base" data-theme={window.settings.theme || "default"}>
                 <Titlebar title={T.t("SETTINGS_TITLE")} />
-                <div class="window-base-inner">
+                <div className="window-base-inner">
                     <div id="sidebar">
                         {this.getSidebar()}
                     </div>
@@ -915,10 +915,10 @@ export default class SettingsWindow extends PureComponent {
                             <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
                             <div className="icons-row">
-                                <div class="icon-option" data-active={this.isIcon("icon")} onClick={() => window.sendSettings({ icon: "icon" })}>
+                                <div className="icon-option" data-active={this.isIcon("icon")} onClick={() => window.sendSettings({ icon: "icon" })}>
                                     <img src={DefaultIcon} />
                                 </div>
-                                <div class="icon-option" data-active={this.isIcon("mdl2")} onClick={() => window.sendSettings({ icon: "mdl2" })}>
+                                <div className="icon-option" data-active={this.isIcon("mdl2")} onClick={() => window.sendSettings({ icon: "mdl2" })}>
                                     <img src={MDL2Icon} />
                                 </div>
                             </div>

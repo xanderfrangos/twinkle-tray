@@ -805,6 +805,11 @@ async function getAllLanguages() {
           try {
             const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
             const langName = JSON.parse(langText)["LANGUAGE"]
+
+            if(!langName || langName.length === 0) {
+              throw("Invalid language.")
+            }
+
             languages.push({
               id: file.split(".")[0],
               name: langName

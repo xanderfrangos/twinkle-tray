@@ -121,6 +121,8 @@ export default class BrightnessPanel extends PureComponent {
       })
     }
 
+    window.pauseMonitorUpdates()
+
     this.forceUpdate()
   }
 

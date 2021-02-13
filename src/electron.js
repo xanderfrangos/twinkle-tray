@@ -84,6 +84,8 @@ try {
           hotkeyOverlayStart()
         }
 
+        pauseMonitorUpdates() // Pause monitor updates to prevent judder
+
       }
     } catch (e) {
       console.error(e)
@@ -576,6 +578,8 @@ const doHotkey = (hotkey) => {
         for (let key in monitors) {
           updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
         }
+        pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
+
       } else if (hotkey.monitor == "turn_off_displays") {
         showOverlay = false
         sleepDisplays()
@@ -587,6 +591,7 @@ const doHotkey = (hotkey) => {
             monitors[monitor.key].brightness = normalizedAdjust
             sendToAllWindows('monitors-updated', monitors);
             updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
+            pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
           }
         }
       }
@@ -1005,6 +1010,11 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
+  if(pausedMonitorUpdates) {
+    console.log("Sorry, no updates right now!")
+    return monitors
+  }
+
   // Don't do 2+ refreshes at once
   if (!fullRefresh && isRefreshing) {
     console.log(`Already refreshing. Aborting.`)
@@ -1061,6 +1071,13 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
   return monitors;
+}
+
+
+let pausedMonitorUpdates = false
+function pauseMonitorUpdates() {
+  if(pausedMonitorUpdates) clearTimeout(pausedMonitorUpdates);
+  pausedMonitorUpdates = setTimeout(() => pausedMonitorUpdates = false, settings.updateInterval * 2)
 }
 
 
@@ -1287,6 +1304,7 @@ ipcMain.on('open-settings', createSettings)
 
 ipcMain.on('log', (e, msg) => console.log(msg))
 
+ipcMain.on('pause-updates', pauseMonitorUpdates)
 
 ipcMain.on('open-url', (event, url) => {
   require("electron").shell.openExternal(url)

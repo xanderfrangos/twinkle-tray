@@ -91,6 +91,10 @@ function sendHeight(height) {
     ipc.send('panel-height', height)
 }
 
+function pauseMonitorUpdates() {
+    ipc.send('pause-updates')
+}
+
 function panelAnimationDone() {
     if (showPanel === false) {
         ipc.send('panel-hidden')
@@ -267,6 +271,7 @@ window.requestMonitors = requestMonitors
 window.openSettings = openSettings
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.pauseMonitorUpdates = pauseMonitorUpdates
 window.installUpdate = installUpdate
 window.dismissUpdate = dismissUpdate
 window.sendHeight = sendHeight

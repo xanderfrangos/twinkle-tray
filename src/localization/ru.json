@@ -94,5 +94,14 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Цветовая температура",
     "PANEL_LABEL_OFF_ON": "Состояние питания",
     "PANEL_LABEL_CONTRAST": "Контрастность",
-    "PANEL_LABEL_BRIGHTNESS": "Яркость"
+    "PANEL_LABEL_BRIGHTNESS": "Яркость",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Нормализация яркости",
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Максимальная яркость",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Текущая яркость",
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Способ связи",
+    "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "Внутреннее название",
+    "SETTINGS_MONITORS_DETAILS_NAME": "Название",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Применять яркость при запуске",
+    "SETTINGS_SIDEBAR_FEATURES": "Функции DDC/CI",
+    "GENERIC_REFRESH_DISPLAYS": "Обновить дисплеи"
 }

@@ -94,5 +94,6 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Fargetemperatur",
     "PANEL_LABEL_OFF_ON": "Effekttilstand",
     "PANEL_LABEL_CONTRAST": "Kontrast",
-    "PANEL_LABEL_BRIGHTNESS": "Lysstyrke"
+    "PANEL_LABEL_BRIGHTNESS": "Lysstyrke",
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI-funksjoner"
 }

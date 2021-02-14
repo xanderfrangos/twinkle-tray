@@ -94,5 +94,6 @@
     "PANEL_LABEL_OFF_ON": "전원 상태",
     "PANEL_LABEL_CONTRAST": "대비",
     "PANEL_LABEL_BRIGHTNESS": "밝기",
-    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "밝기 패널에서 특정 DDC/CI 기능을 사용하거나 사용하지 않도록 설정합니다. 모니터가 밝기 패널에 나타나려면 적어도 하나의 기능이 켜져 있어야 합니다. 랩톱/태블릿 디스플레이와 같은 일부 디스플레이는 이러한 기능을 지원하지 않습니다."
+    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "밝기 패널에서 특정 DDC/CI 기능을 사용하거나 사용하지 않도록 설정합니다. 모니터가 밝기 패널에 나타나려면 적어도 하나의 기능이 켜져 있어야 합니다. 랩톱/태블릿 디스플레이와 같은 일부 디스플레이는 이러한 기능을 지원하지 않습니다.",
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI 기능"
 }

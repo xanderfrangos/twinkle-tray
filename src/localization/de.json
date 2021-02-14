@@ -94,5 +94,6 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Farbtemperatur",
     "PANEL_LABEL_OFF_ON": "Energiezustand",
     "PANEL_LABEL_CONTRAST": "Kontrast",
-    "PANEL_LABEL_BRIGHTNESS": "Helligkeit"
+    "PANEL_LABEL_BRIGHTNESS": "Helligkeit",
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI-Funktionen"
 }

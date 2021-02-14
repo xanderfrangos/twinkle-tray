@@ -94,5 +94,6 @@
     "SETTINGS_MONITORS_FEATURES_TITLE": "DDC/CI Functies",
     "PANEL_LABEL_COLOR_TEMPERATURE": "Kleurtemperatuur",
     "PANEL_LABEL_CONTRAST": "Contrast",
-    "PANEL_LABEL_BRIGHTNESS": "Helderheid"
+    "PANEL_LABEL_BRIGHTNESS": "Helderheid",
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI Functies"
 }

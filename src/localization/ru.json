@@ -103,5 +103,6 @@
     "SETTINGS_MONITORS_DETAILS_NAME": "Название",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Применять яркость при запуске",
     "SETTINGS_SIDEBAR_FEATURES": "Функции DDC/CI",
-    "GENERIC_REFRESH_DISPLAYS": "Обновить дисплеи"
+    "GENERIC_REFRESH_DISPLAYS": "Обновить дисплеи",
+    "PANEL_LABEL_VOLUME": "Громкость"
 }

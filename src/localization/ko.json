@@ -95,5 +95,15 @@
     "PANEL_LABEL_CONTRAST": "대비",
     "PANEL_LABEL_BRIGHTNESS": "밝기",
     "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "밝기 패널에서 특정 DDC/CI 기능을 사용하거나 사용하지 않도록 설정합니다. 모니터가 밝기 패널에 나타나려면 적어도 하나의 기능이 켜져 있어야 합니다. 랩톱/태블릿 디스플레이와 같은 일부 디스플레이는 이러한 기능을 지원하지 않습니다.",
-    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI 기능"
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI 기능",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "밝기 정규화",
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "최대 밝기",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "현재 밝기",
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "통신 방법",
+    "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "별명",
+    "SETTINGS_MONITORS_DETAILS_NAME": "이름",
+    "GENERIC_REFRESH_DISPLAYS": "디스플레이 새로고침",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Twinkle Tray가 시작될 때 이전에 지정했던 밝기를 복원합니다.",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "시작할 때 밝기 적용",
+    "PANEL_LABEL_VOLUME": "볼륨"
 }

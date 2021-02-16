@@ -95,5 +95,14 @@
     "PANEL_LABEL_OFF_ON": "Energiezustand",
     "PANEL_LABEL_CONTRAST": "Kontrast",
     "PANEL_LABEL_BRIGHTNESS": "Helligkeit",
-    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI-Funktionen"
+    "SETTINGS_SIDEBAR_FEATURES": "DDC/CI-Funktionen",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Helligkeits-Normalisierung",
+    "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "Interner Name",
+    "SETTINGS_MONITORS_DETAILS_NAME": "Name",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Zuletzt bekannte Helligkeit für jeden Monitor wiederherstellen, wenn Twinkle Tray startet.",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Helligkeit beim Start anwenden",
+    "GENERIC_REFRESH_DISPLAYS": "Monitore aktualisieren",
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Kommunikationsmethode",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Aktuelle Helligkeit",
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Maximale Helligkeit"
 }

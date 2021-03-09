@@ -94,5 +94,6 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Temperatura de Color",
     "PANEL_LABEL_OFF_ON": "Estado de Energía",
     "PANEL_LABEL_CONTRAST": "Contraste",
-    "PANEL_LABEL_BRIGHTNESS": "Brillo"
+    "PANEL_LABEL_BRIGHTNESS": "Brillo",
+    "SETTINGS_SIDEBAR_FEATURES": "Funciones DDC/CI"
 }

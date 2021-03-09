@@ -94,5 +94,6 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Température de couleur",
     "PANEL_LABEL_OFF_ON": "État de l'alimentation",
     "PANEL_LABEL_CONTRAST": "Contraste",
-    "PANEL_LABEL_BRIGHTNESS": "Luminosité"
+    "PANEL_LABEL_BRIGHTNESS": "Luminosité",
+    "SETTINGS_SIDEBAR_FEATURES": "Fonctionnalités DDC/CI"
 }

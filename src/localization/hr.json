@@ -104,5 +104,7 @@
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Obnovi zadnju svjetlinu za svaki ekran prilikom pokretanja Twinkle Traya.",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Primijeni svjetlinu pri pokretanju",
     "SETTINGS_SIDEBAR_FEATURES": "DDC/CI funkcije",
-    "GENERIC_REFRESH_DISPLAYS": "Aktualiziraj ekrane"
+    "GENERIC_REFRESH_DISPLAYS": "Aktualiziraj ekrane",
+    "SETTINGS_FEATURES_DESCRIPTION": "Aktiviraj ili deaktiviraj određene DDC/CI funkcije na ploči svjetline. Barem jedna funkcija mora biti aktivirana, da bi se tvoj monitor prikazao na ploči svjetline. Ove funkcije ne podržavaju svi ekrani, kao što su ekrani prijenosnih računala/tableta.",
+    "PANEL_LABEL_VOLUME": "Jačina"
 }

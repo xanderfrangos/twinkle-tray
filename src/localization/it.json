@@ -90,5 +90,6 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Temperatura del colore",
     "SETTINGS_MONITORS_FEATURES_TITLE": "Funzionalità DDC/CI",
     "SETTINGS_GENERAL_SCROLL_DESC": "Cambia la luminosità di tutti gli schermi in una volta sola scorrendo l'icona nella barra delle notifiche. Questa funzione non funziona con alcuni trackpad.",
-    "SETTINGS_GENERAL_ACRYLIC_DESC": "Attiva o disattiva la sfocatura dietro sfondi trasparenti in Twinkle Tray."
+    "SETTINGS_GENERAL_ACRYLIC_DESC": "Attiva o disattiva la sfocatura dietro sfondi trasparenti in Twinkle Tray.",
+    "SETTINGS_SIDEBAR_FEATURES": "Funzionalità DDC/CI"
 }

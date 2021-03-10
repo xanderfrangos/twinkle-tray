@@ -1806,7 +1806,11 @@ function createTray() {
   })
   nativeTheme.on('updated', () => {
     getThemeRegistry()
-    tray.setImage(getTrayIconPath())
+    try {
+      tray.setImage(getTrayIconPath())
+    } catch(e) {
+      debug.log("Couldn't update tray icon!", e)
+    }
   })
 }
 

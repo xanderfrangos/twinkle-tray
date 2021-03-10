@@ -370,7 +370,7 @@ export default class SettingsWindow extends PureComponent {
     getUpdate = () => {
         if (window.isAppX) {
             return (
-                <p><a onClick={() => { window.openURL("ms-windows-store://pdp/?productid=9PLJWWSV01LK") }}>{T.t("SETTINGS_UPDATES_MS_STORE")}</a></p>
+                <p><a onClick={() => { window.openURL("ms-store") }}>{T.t("SETTINGS_UPDATES_MS_STORE")}</a></p>
             )
         } else {
             if (this.state.latest && this.state.latest != window.version) {
@@ -929,7 +929,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
-                            <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'https://twinkletray.com/privacy-policy.html\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
+                            <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
                             <input onChange={this.analyticsChanged} checked={window.settings.analytics || false} data-checked={window.settings.analytics || false} type="checkbox" />
                             <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>

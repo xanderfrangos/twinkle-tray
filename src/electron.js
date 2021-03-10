@@ -1342,7 +1342,11 @@ ipcMain.on('log', (e, msg) => console.log(msg))
 ipcMain.on('pause-updates', pauseMonitorUpdates)
 
 ipcMain.on('open-url', (event, url) => {
-  require("electron").shell.openExternal(url)
+  if(url === "ms-store") {
+    require("electron").shell.openExternal("ms-windows-store://pdp/?productid=9PLJWWSV01LK")
+  } else if(url === "privacy-policy") {
+    require("electron").shell.openExternal("https://twinkletray.com/privacy-policy.html")
+  }
 })
 
 ipcMain.on('get-update', (event, version) => {

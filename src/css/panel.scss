@@ -331,4 +331,9 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             display: none;
         }
     }
+    &[data-fluent-icons="true"][data-mode="normal"] {
+        .monitor-item .name-row {
+            margin-bottom: 2px;
+        }
+    }
 }

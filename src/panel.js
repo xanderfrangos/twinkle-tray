@@ -8,7 +8,6 @@ window.ipc.send('request-localization')
 
 ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
 
-
 // Demo mode
 window.addEventListener("enableDemoMode", () => {
     window.allMonitors = [{
@@ -46,3 +45,8 @@ window.document.addEventListener('keydown', (e) => {
         window.thisWindow.blur()
     }
 })
+
+// Detect new Fluent Icons (Windows build 21327+)
+if(document.fonts.check("12px Segoe Fluent Icons")) {
+    window.document.getElementById("root").dataset.fluentIcons = true
+}

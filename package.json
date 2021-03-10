@@ -102,6 +102,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.13.8",
+    "@babel/preset-env": "7.13.8",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
     "@babel/preset-react": "^7.12.13",
     "concurrently": "^5.3.0",
@@ -109,7 +110,7 @@
     "electron": "^11.2.3",
     "electron-builder": "^22.9.1",
     "electron-is-dev": "^1.2.0",
-    "parcel-bundler": "1.12.3",
+    "parcel-bundler": "1.12.4",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "16.13.1",

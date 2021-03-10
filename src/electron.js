@@ -906,6 +906,36 @@ function getThemeRegistry() {
     }
 
   })
+
+  // Taskbar position
+  // For use only if auto-hide is on
+  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', function (err, results) {
+    let taskbarPos = false
+    if(err) {
+      debug.error(`Couldn't find taskbar settings.`, err)
+    } else {
+      try {
+        if(results)
+        for(let result in results) {
+          if(results[result].values.Settings) {
+            taskbarPos = results[result].values.Settings.value[12] * 1
+            detectedTaskbarHeight = results[result].values.Settings.value[20] * 1
+            detectedTaskbarHide = (results[result].values.Settings.value[8] * 1 === 3 ? true : false) // 3 = auto-hide
+          }
+        }
+      } catch(e) {
+        debug.error(`Couldn't read taskbar settings.`, e)
+      }
+    }
+    if(taskbarPos !== false) {
+      switch(taskbarPos) {
+        case 0: detectedTaskbarPos = "LEFT"; break;
+        case 1: detectedTaskbarPos = "TOP"; break;
+        case 2: detectedTaskbarPos = "RIGHT"; break;
+        case 3: detectedTaskbarPos = "BOTTOM"; break;
+      }
+    }
+  })
 }
 
 function getTrayIconPath() {
@@ -1442,6 +1472,9 @@ function restartPanel() {
   }
 }
 
+let detectedTaskbarPos = false
+let detectedTaskbarHeight = false
+let detectedTaskbarHide = false
 let canReposition = true
 function repositionPanel() {
   if (!canReposition) {
@@ -1478,6 +1511,15 @@ function repositionPanel() {
       position = "BOTTOM"
       gap = bounds.height - workArea.height
     }
+
+    // Use taskbar position from registry if auto-hide is on
+    if(detectedTaskbarHide) {
+      position = detectedTaskbarPos 
+      if(position === "TOP" || position === "BOTTOM") {
+        gap = detectedTaskbarHeight
+      }
+    }
+
     return { position, gap }
   }
 
@@ -1499,6 +1541,14 @@ function repositionPanel() {
         height: panelSize.height,
         x: primaryDisplay.workArea.width - panelSize.width,
         y: taskbar.gap
+      })
+    } else if(detectedTaskbarHide && taskbar.position == "BOTTOM") {
+      // Edge case for auto-hide taskbar
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height,
+        x: primaryDisplay.workArea.width - panelSize.width,
+        y: primaryDisplay.workArea.height - panelSize.height - taskbar.gap
       })
     } else {
       mainWindow.setBounds({

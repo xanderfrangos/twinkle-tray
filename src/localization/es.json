@@ -95,5 +95,16 @@
     "PANEL_LABEL_OFF_ON": "Estado de Energía",
     "PANEL_LABEL_CONTRAST": "Contraste",
     "PANEL_LABEL_BRIGHTNESS": "Brillo",
-    "SETTINGS_SIDEBAR_FEATURES": "Funciones DDC/CI"
+    "SETTINGS_SIDEBAR_FEATURES": "Funciones DDC/CI",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Restaurar el último brillo conocido para cada pantalla cuando se inicia Twinkle Tray.",
+    "SETTINGS_FEATURES_DESCRIPTION": "Activar o desactivar características específicas de DDC/CI en el panel de brillo. Al menos una característica tiene que estar activa en el monitor para que aparezca en el panel de brillo. No todas las pantallas tienen soporte para estas características, como las pantallas de portátiles y tablets.",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Normalización del brillo",
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Brillo máximo",
+    "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Brillo actual",
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Método de comunicación",
+    "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "Nombre interno",
+    "SETTINGS_MONITORS_DETAILS_NAME": "Nombre",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Aplicar brillo al inicio",
+    "PANEL_LABEL_VOLUME": "Volumen",
+    "GENERIC_REFRESH_DISPLAYS": "Actualizar las pantallas"
 }

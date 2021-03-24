@@ -1476,6 +1476,27 @@ function restartPanel() {
   }
 }
 
+
+function getPrimaryDisplay() {
+  let displays = screen.getAllDisplays()
+  let primaryDisplay = displays.find((display) => {
+    return display.bounds.x == 0 || display.bounds.y == 0
+  })
+
+  if(tray) {
+    try {
+      let trayBounds = tray.getBounds()
+      let foundDisplay = displays.find(d => {
+        return (trayBounds.x >= d.bounds.x && trayBounds.x <= d.bounds.x + d.bounds.width && trayBounds.y >= d.bounds.y && trayBounds.y <= d.bounds.y + d.bounds.height)
+      })
+      if(foundDisplay) primaryDisplay = foundDisplay;
+    } catch(e) { }
+  }
+  return primaryDisplay
+}
+
+
+
 let detectedTaskbarPos = false
 let detectedTaskbarHeight = false
 let detectedTaskbarHide = false
@@ -1488,16 +1509,11 @@ function repositionPanel() {
     })
     return false
   }
-  let displays = screen.getAllDisplays()
-  let primaryDisplay = displays.find((display) => {
-    return display.bounds.x == 0 && display.bounds.y == 0
-  })
+  let primaryDisplay = getPrimaryDisplay()
 
   function taskbarPosition() {
-    let displays = screen.getAllDisplays()
-    let primaryDisplay = displays.find((display) => {
-      return display.bounds.x == 0 || display.bounds.y == 0
-    })
+    let primaryDisplay = getPrimaryDisplay()
+
     const bounds = primaryDisplay.bounds
     const workArea = primaryDisplay.workArea
     let gap = 0
@@ -1536,30 +1552,30 @@ function repositionPanel() {
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
-        x: taskbar.gap,
-        y: primaryDisplay.workArea.height - panelSize.height
+        x: primaryDisplay.bounds.x + taskbar.gap,
+        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
       })
     } else if (taskbar.position == "TOP") {
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
-        x: primaryDisplay.workArea.width - panelSize.width,
-        y: taskbar.gap
+        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+        y: primaryDisplay.bounds.y + taskbar.gap
       })
     } else if(detectedTaskbarHide && taskbar.position == "BOTTOM") {
       // Edge case for auto-hide taskbar
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
-        x: primaryDisplay.workArea.width - panelSize.width,
-        y: primaryDisplay.workArea.height - panelSize.height - taskbar.gap
+        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height - taskbar.gap
       })
     } else {
       mainWindow.setBounds({
         width: panelSize.width,
         height: panelSize.height,
-        x: primaryDisplay.workArea.width - panelSize.width,
-        y: primaryDisplay.workArea.height - panelSize.height
+        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
       })
     }
     panelSize.base = mainWindow.getBounds().y

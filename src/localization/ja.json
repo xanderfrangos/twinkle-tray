@@ -97,7 +97,7 @@
     "PANEL_LABEL_CONTRAST": "コントラスト",
     "SETTINGS_SIDEBAR_FEATURES": "DDC/CI 機能",
     "GENERIC_REFRESH_DISPLAYS": "ディスプレイを更新",
-    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Twinkle Tray の起動時に、一番最近取得した各ディスプライの明るさを復元します。",
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Twinkle Tray の起動時に、一番最近取得した各ディスプレイの明るさを復元します。",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "現在の明るさ",
     "SETTINGS_FEATURES_DESCRIPTION": "明るさパネル内の個々の DDC/CI 機能を有効または無効にします。1つ以上の機能が有効であれば、ディスプレイが明るさパネルに表示されます。ノート/タブレットのモニタなど、すべてのディスプレイがこれらの機能に対応するわけではありません。",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "明るさの標準化",

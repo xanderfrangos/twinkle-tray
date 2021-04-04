@@ -33,23 +33,34 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
     const startTime = process.hrtime()
 
     try {
-        // Get info on all displays
-        const namesPromise = refreshNamesWin32()
-        namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
-        monitorNames = await namesPromise
+        let doWMI = true
+        let doDDCCI = true
+        if (settings.useRefreshNamesWin32) {
 
-        // Determine if WMI or DDC/CI checks are needed based off of connectors used
-        let doWMI = false
-        let doDDCCI = false
-        for (const hwid in monitors) {
-            if (monitors[hwid].connector && monitors[hwid].connector.indexOf("internal") >= 0) {
-                // Is internal
-                doWMI = true;
-            } else if (monitors[hwid].connector && monitors[hwid].connector.indexOf("internal") === -1) {
-                // Is external
-                doDDCCI = true;
+            // Get info on all displays
+            const namesPromise = refreshNamesWin32()
+            monitorNames = await namesPromise
+            namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+
+            // Determine if WMI or DDC/CI checks are needed based off of connectors used
+            let doWMI = false
+            let doDDCCI = false
+            for (const hwid in monitors) {
+                if (monitors[hwid].connector && monitors[hwid].connector.indexOf("internal") >= 0) {
+                    // Is internal
+                    doWMI = true;
+                } else if (monitors[hwid].connector && monitors[hwid].connector.indexOf("internal") === -1) {
+                    // Is external
+                    doDDCCI = true;
+                }
+                if (doWMI && doDDCCI) break;
             }
-            if (doWMI && doDDCCI) break;
+
+        } else {
+            // Get info on all displays
+            const namesPromise = refreshNames()
+            monitorNames = await namesPromise
+            namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
         }
 
         let wmiPromise
@@ -287,7 +298,7 @@ refreshDDCCI = async (type = "default") => {
                                 brightnessValues = [normalizeBrightness(monitors[hwid[2]].brightness, false, ddcciInfo.min, ddcciInfo.max), monitors[hwid[2]].brightnessMax]
                             } else {
                                 console.log("CATASTROPHIC FAILURE",
-                                monitors[hwid[2]])
+                                    monitors[hwid[2]])
                                 // Catastrophic failure. Revert to defaults.
                                 brightnessValues = [50, 100]
                             }
@@ -420,16 +431,16 @@ function setBrightness(brightness, id) {
 
 let vcpCache = {}
 function checkVCPIfEnabled(monitor, code, setting = "feature_name", skipCache = false) {
-    if(settings.features[setting]) {
+    if (settings.features[setting]) {
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
-        if(!skipCache && vcpCache[monitor] && vcpCache[monitor][setting]) return vcpCache[monitor][setting];
+        if (!skipCache && vcpCache[monitor] && vcpCache[monitor][setting]) return vcpCache[monitor][setting];
 
         const vcpResult = checkVCP(monitor, code)
 
-        if(!vcpCache[monitor]) vcpCache[monitor] = {};
+        if (!vcpCache[monitor]) vcpCache[monitor] = {};
         vcpCache[monitor][setting] = vcpResult;
-        
+
         return vcpResult
     }
     return false
@@ -497,8 +508,8 @@ function applyRemap(monitor) {
             }
         }
     }
-    if(typeof monitor.min === "undefined") monitor.min = 0;
-    if(typeof monitor.max === "undefined") monitor.max = 100;
+    if (typeof monitor.min === "undefined") monitor.min = 0;
+    if (typeof monitor.max === "undefined") monitor.max = 100;
     return monitor
 }
 

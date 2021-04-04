@@ -927,7 +927,7 @@ function getThemeRegistry() {
         debug.error(`Couldn't read taskbar settings.`, e)
       }
     }
-    if(taskbarPos !== false) {
+    if(taskbarPos !== false || settings.useTaskbarRegistry) {
       switch(taskbarPos) {
         case 0: detectedTaskbarPos = "LEFT"; break;
         case 1: detectedTaskbarPos = "TOP"; break;

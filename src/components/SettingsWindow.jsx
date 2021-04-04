@@ -1092,6 +1092,10 @@ export default class SettingsWindow extends PureComponent {
                             <p>
                                 <a className="button" onClick={() => { window.sendSettings({ useNativeAnimation: !this.state.rawSettings.useNativeAnimation }) }}>Toggle Use Native Animation ({(this.state.rawSettings && this.state.rawSettings.useNativeAnimation !== undefined ? this.state.rawSettings.useNativeAnimation.toString() : "?")})</a>
                             </p>
+                            <br />
+                            <p>
+                                <a className="button" onClick={() => { window.sendSettings({ useTaskbarRegistry: !this.state.rawSettings.useTaskbarRegistry }) }}>Toggle Use Taskbar Registry ({(this.state.rawSettings && this.state.rawSettings.useTaskbarRegistry !== undefined ? this.state.rawSettings.useTaskbarRegistry.toString() : "?")})</a>
+                            </p>
 
                         </div>
 

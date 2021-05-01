@@ -399,10 +399,6 @@ function processSettings(newSettings = {}) {
           el: app.name
         }).event({
           ec: "Session Information",
-          ea: "Platform",
-          el: os.platform()
-        }).event({
-          ec: "Session Information",
           ea: "OS Version",
           el: os.release()
         }).event({
@@ -415,7 +411,7 @@ function processSettings(newSettings = {}) {
 
         analyticsInterval = setInterval(() => {
           try {
-            getSettingsAnalytics()
+            //getSettingsAnalytics()
             if (analytics && analyticsQueue) {
               console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
               analyticsQueue.send()

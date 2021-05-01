@@ -2314,12 +2314,13 @@ function handleMonitorChange(e, d) {
   // Defer actions for a moment just in case of repeat events
   if(!handleChangeTimeout) {
     handleChangeTimeout = setTimeout(() => {
-      // If displays not shown, refresh mainWindow
-      if (!panelSize.visible)
-        restartPanel()
 
       // Reset all known displays
-      refreshMonitors(true, true)
+      refreshMonitors(true, true).then(() => {
+        // If displays not shown, refresh mainWindow
+        if (!panelSize.visible)
+        restartPanel()
+      })
 
       handleChangeTimeout = false
     }, 1500)

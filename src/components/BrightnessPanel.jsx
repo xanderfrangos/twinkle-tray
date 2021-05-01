@@ -22,7 +22,7 @@ export default class BrightnessPanel extends PureComponent {
         // Combine all monitors
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          if(monitor.type == "wmi" || monitor.type == "ddcci") {
             return (
               <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
             )
@@ -36,7 +36,7 @@ export default class BrightnessPanel extends PureComponent {
           if (monitor.type == "none") {
             return (<div key={monitor.key}></div>)
           } else {
-            if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            if(monitor.type == "wmi" || monitor.type == "ddcci") {
               return (
                 <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
               )
@@ -137,7 +137,7 @@ export default class BrightnessPanel extends PureComponent {
     this.lastLevels = []
     let numMonitors = 0
     for (let key in newMonitors) {
-      if (newMonitors[key].type != "none" && !(newMonitors[key].type == "ddcci" && !newMonitors[key].brightnessType)) numMonitors++;
+      if (newMonitors[key].type != "none") numMonitors++;
     }
     this.numMonitors = numMonitors
     // Reset panel height so it's recalculated

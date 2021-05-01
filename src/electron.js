@@ -506,13 +506,14 @@ function setKnownBrightness(useCurrentMonitors = false) {
 
   const known = getKnownDisplays(useCurrentMonitors)
   for(const hwid in known) {
-    const monitor = known[hwid]
+    try {
+      const monitor = known[hwid]
 
-    // Apply brightness to valid display types
-    if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-      updateBrightness(monitor.id, monitor.brightness, true)
-    }
-
+      // Apply brightness to valid display types
+      if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        updateBrightness(monitor.id, monitor.brightness, true)
+      }
+    } catch(e) { console.log("Couldn't set brightness for known display!") }
   }
   sendToAllWindows('monitors-updated', monitors);
 }
@@ -1331,8 +1332,12 @@ ipcMain.on('request-monitors', function (event, arg) {
   refreshMonitors(false, true)
 })
 
-ipcMain.on('full-refresh', function (event, arg) {
-  refreshMonitors(true, true)
+ipcMain.on('full-refresh', function (event, forceUpdate = false) {
+  refreshMonitors(true, true).then(() => {
+    if(forceUpdate) {
+      sendToAllWindows('monitors-updated', monitors)
+    }
+  })
 })
 
 ipcMain.on('open-settings', createSettings)
@@ -1378,6 +1383,8 @@ ipcMain.on('show-acrylic', () => {
   }
   sendToAllWindows("set-acrylic-show")
 })
+
+ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', sleepDisplays)
 
@@ -1464,6 +1471,12 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.webContents.once('dom-ready', () => {
     sendToAllWindows('monitors-updated', monitors)
+    // Kill me
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 1000)
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3000)
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 5000)
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 8000)
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 11000)
   })
 
 }
@@ -2306,6 +2319,8 @@ powerMonitor.on("resume", () => {
       refreshMonitors().then(() => {
         // Set brightness to last known settings
         setKnownBrightness()
+
+        setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 500)
 
         // Check if time adjustments should apply
         handleBackgroundUpdate()

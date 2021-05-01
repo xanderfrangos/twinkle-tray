@@ -363,6 +363,7 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.language !== undefined) {
       getLocalization()
+      restartTray()
     }
 
     if (newSettings.useAcrylic !== undefined) {
@@ -1846,6 +1847,13 @@ function createTray() {
   })
 }
 
+function restartTray() {
+  if (!tray) return false;
+  tray.destroy()
+  tray = null
+  createTray()
+}
+
 function setTrayPercent() {
   try {
     if (tray) {
@@ -2288,6 +2296,7 @@ function addEventListeners() {
 function handleAccentChange() {
   sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
+  restartTray()
 }
 
 let skipFirstMonChange = false
@@ -2324,6 +2333,8 @@ powerMonitor.on("resume", () => {
       refreshMonitors().then(() => {
         // Set brightness to last known settings
         setKnownBrightness()
+
+        restartTray()
 
         setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
 

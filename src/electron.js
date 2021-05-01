@@ -86,7 +86,7 @@ function enableMouseEvents() {
 
           // If panel isn't open, use the overlay
           if (panelState !== "visible") {
-            hotkeyOverlayStart()
+            hotkeyOverlayStart(undefined, true)
           }
 
           pauseMonitorUpdates() // Pause monitor updates to prevent judder
@@ -605,7 +605,7 @@ const doHotkey = (hotkey) => {
       // Show brightness overlay, if applicable
       // If panel isn't open, use the overlay
       if (showOverlay && panelState !== "visible") {
-        hotkeyOverlayStart()
+        hotkeyOverlayStart(undefined, true)
       }
 
     } catch (e) {
@@ -617,12 +617,12 @@ const doHotkey = (hotkey) => {
   }
 }
 
-function hotkeyOverlayStart(timeout = 3000) {
+function hotkeyOverlayStart(timeout = 3000, force = false) {
   if (canReposition) {
     hotkeyOverlayShow()
   }
   clearTimeout(hotkeyOverlayTimeout)
-  hotkeyOverlayTimeout = setTimeout(hotkeyOverlayHide, timeout)
+  hotkeyOverlayTimeout = setTimeout(() => hotkeyOverlayHide(force), timeout)
 }
 
 async function hotkeyOverlayShow() {

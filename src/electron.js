@@ -1787,11 +1787,13 @@ app.on("ready", async () => {
   await getAllLanguages()
   readSettings()
   getLocalization()
+
   refreshMonitors(true, true).then(() => {
     if(settings.brightnessAtStartup) setKnownBrightness();
+    showIntro()
+    createPanel()
   })
-  showIntro()
-  createPanel()
+
   setTimeout(addEventListeners, 2000)
 })
 

@@ -50,3 +50,6 @@ window.document.addEventListener('keydown', (e) => {
 if(document.fonts.check("12px Segoe Fluent Icons")) {
     window.document.getElementById("root").dataset.fluentIcons = true
 }
+
+allMonitors = {}
+window.ipc.send('full-refresh', true)

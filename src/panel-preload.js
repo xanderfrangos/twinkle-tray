@@ -152,12 +152,16 @@ ipc.on("panelBlur", (e) => {
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
-    if (JSON.stringify(window.allMonitors) == JSON.stringify(monitors)) return false;
+    if (JSON.stringify(window.allMonitors) === JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
     window.dispatchEvent(new CustomEvent('monitorsUpdated', {
         detail: monitors
     }))
+})
+ipc.on("force-refresh-monitors", (e) => {
+    window.allMonitors = {}
+    ipc.send('full-refresh', true)
 })
 
 // Accent colors recieved

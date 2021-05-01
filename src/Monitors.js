@@ -35,6 +35,9 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
     try {
         let doWMI = true
         let doDDCCI = true
+
+        if(refreshWMI) monitors = {};
+
         if (settings.useRefreshNamesWin32) {
 
             // Get info on all displays

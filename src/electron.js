@@ -1177,8 +1177,8 @@ function updateBrightness(index, level, useCap = true) {
     monitor = monitors[index]
   }
 
-  const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
   try {
+    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
     monitor.brightness = level
 
     if (monitor.type == "ddcci") {

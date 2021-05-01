@@ -1471,12 +1471,10 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.webContents.once('dom-ready', () => {
     sendToAllWindows('monitors-updated', monitors)
-    // Kill me
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 1000)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3000)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 5000)
+    // Do full refreshes shortly after startup in case Windows isn't ready.
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 8000)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 11000)
+    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
   })
 
 }
@@ -2320,7 +2318,7 @@ powerMonitor.on("resume", () => {
         // Set brightness to last known settings
         setKnownBrightness()
 
-        setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 500)
+        setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
 
         // Check if time adjustments should apply
         handleBackgroundUpdate()

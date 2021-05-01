@@ -64,58 +64,67 @@ const debug = {
 
 if (!isDev) console.log = () => { };
 
-
 // Mouse wheel scrolling
+let mouseEventsActive = false
 let bounds
-let mouseEvents
-try {
-  mouseEvents = require("global-mouse-events");
-  mouseEvents.on('mousewheel', event => {
-    if (!settings.scrollShortcut) return false;
-    try {
-      if (!bounds) return false;
-      if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-        const amount = Math.round(event.delta) * 2;
 
-        updateAllBrightness(amount)
+function enableMouseEvents() {
+  if (mouseEventsActive) return false;
+  mouseEventsActive = true;
 
-        // If panel isn't open, use the overlay
-        if (panelState !== "visible") {
-          hotkeyOverlayStart()
+  let mouseEvents
+  try {
+    mouseEvents = require("global-mouse-events");
+    mouseEvents.on('mousewheel', event => {
+      if (!settings.scrollShortcut) return false;
+      try {
+        if (!bounds) return false;
+        if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
+          const amount = Math.round(event.delta) * 2;
+
+          updateAllBrightness(amount)
+
+          // If panel isn't open, use the overlay
+          if (panelState !== "visible") {
+            hotkeyOverlayStart()
+          }
+
+          pauseMonitorUpdates() // Pause monitor updates to prevent judder
+
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    });
+
+
+    // Handle edge cases where "blur" event doesn't properly fire
+    mouseEvents.on("mousedown", (e) => {
+      if (panelSize.visible || !canReposition) {
+
+        // Check if clicking outside of panel/overlay
+        const pBounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
+        if (e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height) {
+          if (!canReposition) {
+            // Overlay is displayed
+            hotkeyOverlayHide(true)
+          } else {
+            // Panel is displayed
+            sendToAllWindows("panelBlur")
+            showPanel(false)
+          }
         }
 
-        pauseMonitorUpdates() // Pause monitor updates to prevent judder
-
       }
-    } catch (e) {
-      console.error(e)
-    }
-  });
+    })
 
+  } catch (e) {
+    console.error(e)
+  }
 
-  // Handle edge cases where "blur" event doesn't properly fire
-  mouseEvents.on("mousedown", (e) => {
-    if (panelSize.visible || !canReposition) {
-
-      // Check if clicking outside of panel/overlay
-      const pBounds = screen.dipToScreenRect(mainWindow, mainWindow.getBounds())
-      if (e.x < pBounds.x || e.x > pBounds.x + pBounds.width || e.y < pBounds.y || e.y > pBounds.y + pBounds.height) {
-        if (!canReposition) {
-          // Overlay is displayed
-          hotkeyOverlayHide(true)
-        } else {
-          // Panel is displayed
-          sendToAllWindows("panelBlur")
-          showPanel(false)
-        }
-      }
-
-    }
-  })
-
-} catch (e) {
-  console.error(e)
 }
+
+
 
 
 // Analytics
@@ -2266,6 +2275,8 @@ function addEventListeners() {
   systemPreferences.on('color-changed', handleAccentChange)
 
   addDisplayChangeListener(handleMonitorChange)
+
+  enableMouseEvents()
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;

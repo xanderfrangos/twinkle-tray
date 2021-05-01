@@ -1057,6 +1057,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <p>
                                 <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
+                                <a className="button" onClick={() => {window.ipc("apply-last-known-monitors") }}>Apply Last Known Brightness</a>
                             </p>
                             {this.getDebugMonitors()}
                         </div>
@@ -1096,6 +1097,9 @@ export default class SettingsWindow extends PureComponent {
                             <p>
                                 <a className="button" onClick={() => { window.sendSettings({ useTaskbarRegistry: !this.state.rawSettings.useTaskbarRegistry }) }}>Toggle Use Taskbar Registry ({(this.state.rawSettings && this.state.rawSettings.useTaskbarRegistry !== undefined ? this.state.rawSettings.useTaskbarRegistry.toString() : "?")})</a>
                             </p>
+
+                            <div className="sectionTitle">Raw Monitor Data</div>
+                            <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(window.allMonitors, undefined, 2)}</pre>
 
                         </div>
 

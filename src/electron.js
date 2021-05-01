@@ -2424,64 +2424,70 @@ function handleCommandLine(event, commandLine) {
   let type
   let brightness
 
-  if (commandLine.length <= 2 && mainWindow) {
-    toggleTray()
-  }
-  if (commandLine.length > 2) {
+  try {
 
-    commandLine.forEach(arg => {
-
-      // Get display by index
-      if (arg.indexOf("--monitornum=") === 0) {
-        display = Object.values(monitors)[(arg.substring(13) * 1) - 1]
+    if (commandLine.length <= 2 && mainWindow) {
+      toggleTray()
+    }
+    if (commandLine.length > 2) {
+  
+      commandLine.forEach(arg => {
+  
+        // Get display by index
+        if (arg.indexOf("--monitornum=") === 0) {
+          display = Object.values(monitors)[(arg.substring(13) * 1) - 1]
+        }
+  
+        // Get display by ID (partial or whole)
+        if (arg.indexOf("--monitorid=") === 0) {
+          const monID = Object.keys(monitors).find(id => {
+            return id.indexOf(arg.substring(12)) >= 0
+          })
+          display = monitors[monID]
+        }
+  
+        // Run on all displays
+        if (arg.indexOf("--all") === 0 && arg.length === 5) {
+          display = "all"
+        }
+  
+        // Use absolute brightness
+        if (arg.indexOf("--set=") === 0) {
+          brightness = (arg.substring(6) * 1)
+          type = "set"
+        }
+  
+        // Use relative brightness
+        if (arg.indexOf("--offset=") === 0) {
+          brightness = (arg.substring(9) * 1)
+          type = "offset"
+        }
+  
+        // Show overlay
+        if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
+          hotkeyOverlayStart()
+        }
+  
+      })
+  
+      // If value input, update brightness
+      if (display && type && brightness) {
+  
+        if (display === "all") {
+          console.log(`Setting brightness via command line: All @ ${brightness}%`);
+          updateAllBrightness(brightness, type)
+        } else {
+          const newBrightness = minMax(type === "set" ? brightness : display.brightness + brightness)
+          console.log(`Setting brightness via command line: Display #${display.num} (${display.name}) @ ${newBrightness}%`);
+          updateBrightnessThrottle(display.id, newBrightness, true)
+        }
+  
       }
-
-      // Get display by ID (partial or whole)
-      if (arg.indexOf("--monitorid=") === 0) {
-        const monID = Object.keys(monitors).find(id => {
-          return id.indexOf(arg.substring(12)) >= 0
-        })
-        display = monitors[monID]
-      }
-
-      // Run on all displays
-      if (arg.indexOf("--all") === 0 && arg.length === 5) {
-        display = "all"
-      }
-
-      // Use absolute brightness
-      if (arg.indexOf("--set=") === 0) {
-        brightness = (arg.substring(6) * 1)
-        type = "set"
-      }
-
-      // Use relative brightness
-      if (arg.indexOf("--offset=") === 0) {
-        brightness = (arg.substring(9) * 1)
-        type = "offset"
-      }
-
-      // Show overlay
-      if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
-        hotkeyOverlayStart()
-      }
-
-    })
-
-    // If value input, update brightness
-    if (display && type && brightness) {
-
-      if (display === "all") {
-        console.log(`Setting brightness via command line: All @ ${brightness}%`);
-        updateAllBrightness(brightness, type)
-      } else {
-        const newBrightness = minMax(type === "set" ? brightness : display.brightness + brightness)
-        console.log(`Setting brightness via command line: Display #${display.num} (${display.name}) @ ${newBrightness}%`);
-        updateBrightnessThrottle(display.id, newBrightness, true)
-      }
-
+  
     }
 
+  } catch(e) {
+    console.log(e)
   }
 
 }

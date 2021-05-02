@@ -1826,7 +1826,7 @@ app.on('quit', () => {
 function createTray() {
   if (tray != null) return false;
 
-  tray = new Tray(getTrayIconPath())
+  tray = new Tray(getTrayIconPath(), "8dcc89ce-312e-45bf-9b4d-125adc526cc3")
   const contextMenu = Menu.buildFromTemplate([
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }

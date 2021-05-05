@@ -82,6 +82,7 @@ function enableMouseEvents() {
         if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
           const amount = Math.round(event.delta) * 2;
 
+          refreshMonitors()
           updateAllBrightness(amount)
 
           // If panel isn't open, use the overlay

@@ -364,7 +364,7 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.language !== undefined) {
       getLocalization()
-      restartTray()
+      setTrayMenu()
     }
 
     if (newSettings.useAcrylic !== undefined) {
@@ -1833,20 +1833,16 @@ app.on('quit', () => {
 function createTray() {
   if (tray != null) return false;
 
-  tray = new Tray(getTrayIconPath(), "8dcc89ce-312e-45bf-9b4d-125adc526cc3")
-  const contextMenu = Menu.buildFromTemplate([
-    { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
-    { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
-  ])
+  tray = new Tray(getTrayIconPath())
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
-  tray.setContextMenu(contextMenu)
-  tray.on("click", () => toggleTray(true))
-  tray.on('mouse-move', () => {
+  setTrayMenu()
+  tray.on("click", async () => toggleTray(true))
+  tray.on('mouse-move', async () => {
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
   })
-  nativeTheme.on('updated', () => {
+  nativeTheme.on('updated', async () => {
     getThemeRegistry()
     try {
       tray.setImage(getTrayIconPath())
@@ -1856,11 +1852,14 @@ function createTray() {
   })
 }
 
-function restartTray() {
-  if (!tray) return false;
-  tray.destroy()
-  tray = null
-  createTray()
+function setTrayMenu() {
+  if (tray === null) return false;
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
+  ])
+  tray.setContextMenu(contextMenu)
 }
 
 function setTrayPercent() {
@@ -2305,7 +2304,6 @@ function addEventListeners() {
 function handleAccentChange() {
   sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
-  restartTray()
 }
 
 let skipFirstMonChange = false
@@ -2343,10 +2341,7 @@ powerMonitor.on("resume", () => {
       refreshMonitors().then(() => {
         // Set brightness to last known settings
         setKnownBrightness()
-
-        restartTray()
-
-        setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
+        restartPanel()
 
         // Check if time adjustments should apply
         handleBackgroundUpdate()

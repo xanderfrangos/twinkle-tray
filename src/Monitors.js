@@ -298,7 +298,11 @@ refreshDDCCI = async (type = "default") => {
                         if (!brightnessValues) {
                             console.log("\x1b[41mNO BRIGHTNESS VALUES AVAILABLE\x1b[0m")
                             if (monitors[hwid[2]].brightness !== undefined && monitors[hwid[2]].brightnessMax !== undefined) {
+                                console.log("\x1b[41mUSING PREVIOUS VALUES\x1b[0m")
                                 brightnessValues = [normalizeBrightness(monitors[hwid[2]].brightness, false, ddcciInfo.min, ddcciInfo.max), monitors[hwid[2]].brightnessMax]
+                            } else if(vcpCache[monitor] && vcpCache[monitor]["vcp_" + 0x10]) {
+                                console.log("\x1b[41mUSING VCP CACHE\x1b[0m")
+                                brightnessValues = vcpCache[monitor]["vcp_" + 0x10];
                             } else {
                                 console.log("CATASTROPHIC FAILURE",
                                     monitors[hwid[2]])
@@ -433,25 +437,31 @@ function setBrightness(brightness, id) {
 }
 
 let vcpCache = {}
-function checkVCPIfEnabled(monitor, code, setting = "feature_name", skipCache = false) {
-    if (settings.features[setting]) {
+function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
+    try {
+        if (settings.features[setting]) {
 
-        // If we previously saw that a feature was supported, we shouldn't have to check again.
-        if (!skipCache && vcpCache[monitor] && vcpCache[monitor][setting]) return vcpCache[monitor][setting];
-
-        const vcpResult = checkVCP(monitor, code)
-
-        if (!vcpCache[monitor]) vcpCache[monitor] = {};
-        vcpCache[monitor][setting] = vcpResult;
-
-        return vcpResult
+            // If we previously saw that a feature was supported, we shouldn't have to check again.
+            if (!skipCache && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
+    
+            const vcpResult = checkVCP(monitor, code)
+            return vcpResult
+        }
+        return false
+    } catch(e) {
+        console.log(e)
+        return false
     }
-    return false
 }
 
-function checkVCP(monitor, code) {
+function checkVCP(monitor, code, skipCacheWrite = false) {
     try {
-        return ddcci._getVCP(monitor, code)
+        let result = ddcci._getVCP(monitor, code)
+        if(!skipCacheWrite) {
+            if(!vcpCache[monitor]) vcpCache[monitor] = {};
+            vcpCache[monitor]["vcp_" + code] = result
+        }
+        return result
     } catch (e) {
         return false
     }

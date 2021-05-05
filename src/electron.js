@@ -2463,7 +2463,8 @@ function handleCommandLine(event, commandLine) {
   try {
 
     if (commandLine.length <= 2 && mainWindow) {
-      toggleTray()
+      app.relaunch()
+      app.quit()
     }
     if (commandLine.length > 2) {
 

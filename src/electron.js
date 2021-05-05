@@ -1087,7 +1087,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   try {
     newMonitors = await refreshMonitorsJob(fullRefresh)
-    monitors = newMonitors
+    if(newMonitors) monitors = newMonitors;
     lastEagerUpdate = Date.now()
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)

@@ -29,7 +29,14 @@ let monitorNames = []
 let settings = { order: [] }
 let localization = {}
 
+let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
+    if((busyLevel > 0 && !fullRefresh) || (busyLevel > 1 && fullRefresh)) {
+        console.log("Thread busy. Cancelling refresh.")
+        return false
+    }
+    busyLevel = (fullRefresh ? 2 : 1)
+
     const startTime = process.hrtime()
 
     try {
@@ -90,6 +97,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
     } catch (e) {
         console.log(e)
     }
+    busyLevel = 0
 
     console.log(`Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     return monitors;

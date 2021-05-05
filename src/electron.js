@@ -1436,7 +1436,13 @@ function createPanel(toggleOnLoad = false) {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
-      contextIsolation: false
+      contextIsolation: false,
+      webgl: false,
+      plugins: false,
+      backgroundThrottling: false,
+      spellcheck: false,
+      enableWebSQL: false,
+      v8CacheOptions: "none"
     }
   });
 

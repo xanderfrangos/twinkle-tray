@@ -465,21 +465,21 @@ let updateKnownDisplaysTimeout
 async function updateKnownDisplays() {
 
   // Reset timeout
-  if(updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
+  if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
   // Wait a moment
   updateKnownDisplaysTimeout = setTimeout(async () => {
     try {
 
       // Get from file
       let known = getKnownDisplays()
-  
+
       // Merge with existing displays
       Object.assign(known, monitors)
-  
+
       // Write back to file
       fs.writeFileSync(knownDisplaysPath, JSON.stringify(known))
       console.log(`\x1b[36mSaved known displays!\x1b[0m`)
-    } catch(e) {
+    } catch (e) {
       console.error("Couldn't update known displays file.")
     }
   }, 3000)
@@ -493,15 +493,15 @@ function getKnownDisplays(useCurrentMonitors) {
     // Load known displays DB
     known = fs.readFileSync(knownDisplaysPath)
     known = JSON.parse(known)
-  } catch(e) {
+  } catch (e) {
     known = {}
-   }
+  }
 
   // Merge with existing displays
-  if(useCurrentMonitors) {
+  if (useCurrentMonitors) {
     Object.assign(known, monitors)
   }
-  
+
   return known
 }
 
@@ -511,15 +511,15 @@ function setKnownBrightness(useCurrentMonitors = false) {
   console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`)
 
   const known = getKnownDisplays(useCurrentMonitors)
-  for(const hwid in known) {
+  for (const hwid in known) {
     try {
       const monitor = known[hwid]
 
       // Apply brightness to valid display types
-      if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+      if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
         updateBrightness(monitor.id, monitor.brightness, true)
       }
-    } catch(e) { console.log("Couldn't set brightness for known display!") }
+    } catch (e) { console.log("Couldn't set brightness for known display!") }
   }
   sendToAllWindows('monitors-updated', monitors);
 }
@@ -531,7 +531,7 @@ function applyHotkeys() {
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
         // Only apply if found
-        if(hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitors).find(m => m.id == hotkey.monitor)) {
+        if (hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitors).find(m => m.id == hotkey.monitor)) {
           hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
             doHotkey(hotkey)
           })
@@ -635,7 +635,7 @@ async function hotkeyOverlayShow() {
     if (monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
   })
 
-  if(monitorCount && settings.linkedLevelsActive) {
+  if (monitorCount && settings.linkedLevelsActive) {
     monitorCount = 1
   }
 
@@ -804,7 +804,7 @@ function getLocalization() {
 }
 
 async function getAllLanguages() {
-  return new Promise((resolve,reject) => {
+  return new Promise((resolve, reject) => {
     fs.readdir(path.join(__dirname, `/localization/`), (err, files) => {
       if (!err) {
         let languages = []
@@ -813,8 +813,8 @@ async function getAllLanguages() {
             const langText = fs.readFileSync(path.join(__dirname, `/localization/`, file))
             const langName = JSON.parse(langText)["LANGUAGE"]
 
-            if(!langName || langName.length === 0) {
-              throw("Invalid language.")
+            if (!langName || langName.length === 0) {
+              throw ("Invalid language.")
             }
 
             languages.push({
@@ -892,8 +892,8 @@ function getThemeRegistry() {
               themeSettings[value] = themeSettings[value].value
             }
             themeSettings["UseAcrylic"] = settings.useAcrylic
-            if(themeSettings.ColorPrevalence) {
-              if(settings.theme == "dark" || settings.theme == "light") {
+            if (themeSettings.ColorPrevalence) {
+              if (settings.theme == "dark" || settings.theme == "light") {
                 themeSettings.ColorPrevalence = false
               }
             }
@@ -918,24 +918,24 @@ function getThemeRegistry() {
   // For use only if auto-hide is on
   regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', function (err, results) {
     let taskbarPos = false
-    if(err) {
+    if (err) {
       debug.error(`Couldn't find taskbar settings.`, err)
     } else {
       try {
-        if(results)
-        for(let result in results) {
-          if(results[result].values.Settings) {
-            taskbarPos = results[result].values.Settings.value[12] * 1
-            detectedTaskbarHeight = results[result].values.Settings.value[20] * 1
-            detectedTaskbarHide = (results[result].values.Settings.value[8] * 1 === 3 ? true : false) // 3 = auto-hide
+        if (results)
+          for (let result in results) {
+            if (results[result].values.Settings) {
+              taskbarPos = results[result].values.Settings.value[12] * 1
+              detectedTaskbarHeight = results[result].values.Settings.value[20] * 1
+              detectedTaskbarHide = (results[result].values.Settings.value[8] * 1 === 3 ? true : false) // 3 = auto-hide
+            }
           }
-        }
-      } catch(e) {
+      } catch (e) {
         debug.error(`Couldn't read taskbar settings.`, e)
       }
     }
-    if(taskbarPos !== false || settings.useTaskbarRegistry) {
-      switch(taskbarPos) {
+    if (taskbarPos !== false || settings.useTaskbarRegistry) {
+      switch (taskbarPos) {
         case 0: detectedTaskbarPos = "LEFT"; break;
         case 1: detectedTaskbarPos = "TOP"; break;
         case 2: detectedTaskbarPos = "RIGHT"; break;
@@ -1052,7 +1052,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
-  if(pausedMonitorUpdates) {
+  if (pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
     return monitors
   }
@@ -1098,7 +1098,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   applyHotkeys()
 
   // Only send update if something changed
-  if(JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
+  if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
     setTrayPercent()
     updateKnownDisplays()
     sendToAllWindows('monitors-updated', monitors)
@@ -1118,7 +1118,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
 let pausedMonitorUpdates = false
 function pauseMonitorUpdates() {
-  if(pausedMonitorUpdates) clearTimeout(pausedMonitorUpdates);
+  if (pausedMonitorUpdates) clearTimeout(pausedMonitorUpdates);
   pausedMonitorUpdates = setTimeout(() => pausedMonitorUpdates = false, settings.updateInterval * 2)
 }
 
@@ -1340,7 +1340,7 @@ ipcMain.on('request-monitors', function (event, arg) {
 
 ipcMain.on('full-refresh', function (event, forceUpdate = false) {
   refreshMonitors(true, true).then(() => {
-    if(forceUpdate) {
+    if (forceUpdate) {
       sendToAllWindows('monitors-updated', monitors)
     }
   })
@@ -1353,9 +1353,9 @@ ipcMain.on('log', (e, msg) => console.log(msg))
 ipcMain.on('pause-updates', pauseMonitorUpdates)
 
 ipcMain.on('open-url', (event, url) => {
-  if(url === "ms-store") {
+  if (url === "ms-store") {
     require("electron").shell.openExternal("ms-windows-store://pdp/?productid=9PLJWWSV01LK")
-  } else if(url === "privacy-policy") {
+  } else if (url === "privacy-policy") {
     require("electron").shell.openExternal("https://twinkletray.com/privacy-policy.html")
   }
 })
@@ -1500,14 +1500,14 @@ function getPrimaryDisplay() {
     return display.bounds.x == 0 || display.bounds.y == 0
   })
 
-  if(tray) {
+  if (tray) {
     try {
       let trayBounds = tray.getBounds()
       let foundDisplay = displays.find(d => {
         return (trayBounds.x >= d.bounds.x && trayBounds.x <= d.bounds.x + d.bounds.width && trayBounds.y >= d.bounds.y && trayBounds.y <= d.bounds.y + d.bounds.height)
       })
-      if(foundDisplay) primaryDisplay = foundDisplay;
-    } catch(e) { }
+      if (foundDisplay) primaryDisplay = foundDisplay;
+    } catch (e) { }
   }
   return primaryDisplay
 }
@@ -1550,9 +1550,9 @@ function repositionPanel() {
     }
 
     // Use taskbar position from registry if auto-hide is on
-    if(detectedTaskbarHide) {
-      position = detectedTaskbarPos 
-      if(position === "TOP" || position === "BOTTOM") {
+    if (detectedTaskbarHide) {
+      position = detectedTaskbarPos
+      if (position === "TOP" || position === "BOTTOM") {
         gap = detectedTaskbarHeight
       }
     }
@@ -1579,7 +1579,7 @@ function repositionPanel() {
         x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
         y: primaryDisplay.bounds.y + taskbar.gap
       })
-    } else if(detectedTaskbarHide && taskbar.position == "BOTTOM") {
+    } else if (detectedTaskbarHide && taskbar.position == "BOTTOM") {
       // Edge case for auto-hide taskbar
       mainWindow.setBounds({
         width: panelSize.width,
@@ -1789,7 +1789,7 @@ app.on("ready", async () => {
   getLocalization()
 
   refreshMonitors(true, true).then(() => {
-    if(settings.brightnessAtStartup) setKnownBrightness();
+    if (settings.brightnessAtStartup) setKnownBrightness();
     showIntro()
     createPanel()
   })
@@ -1843,7 +1843,7 @@ function createTray() {
     getThemeRegistry()
     try {
       tray.setImage(getTrayIconPath())
-    } catch(e) {
+    } catch (e) {
       debug.log("Couldn't update tray icon!", e)
     }
   })
@@ -2305,21 +2305,21 @@ let skipFirstMonChange = false
 let handleChangeTimeout
 function handleMonitorChange(e, d) {
 
-    // Skip event that happens at startup
-    if (!skipFirstMonChange) {
-      skipFirstMonChange = true
-      return false
-    }
+  // Skip event that happens at startup
+  if (!skipFirstMonChange) {
+    skipFirstMonChange = true
+    return false
+  }
 
   // Defer actions for a moment just in case of repeat events
-  if(!handleChangeTimeout) {
+  if (!handleChangeTimeout) {
     handleChangeTimeout = setTimeout(() => {
 
       // Reset all known displays
       refreshMonitors(true, true).then(() => {
         // If displays not shown, refresh mainWindow
         if (!panelSize.visible)
-        restartPanel()
+          restartPanel()
       })
 
       handleChangeTimeout = false
@@ -2464,14 +2464,14 @@ function handleCommandLine(event, commandLine) {
       toggleTray()
     }
     if (commandLine.length > 2) {
-  
+
       commandLine.forEach(arg => {
-  
+
         // Get display by index
         if (arg.indexOf("--monitornum=") === 0) {
           display = Object.values(monitors)[(arg.substring(13) * 1) - 1]
         }
-  
+
         // Get display by ID (partial or whole)
         if (arg.indexOf("--monitorid=") === 0) {
           const monID = Object.keys(monitors).find(id => {
@@ -2479,34 +2479,34 @@ function handleCommandLine(event, commandLine) {
           })
           display = monitors[monID]
         }
-  
+
         // Run on all displays
         if (arg.indexOf("--all") === 0 && arg.length === 5) {
           display = "all"
         }
-  
+
         // Use absolute brightness
         if (arg.indexOf("--set=") === 0) {
           brightness = (arg.substring(6) * 1)
           type = "set"
         }
-  
+
         // Use relative brightness
         if (arg.indexOf("--offset=") === 0) {
           brightness = (arg.substring(9) * 1)
           type = "offset"
         }
-  
+
         // Show overlay
         if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
           hotkeyOverlayStart()
         }
-  
+
       })
-  
+
       // If value input, update brightness
       if (display && type && brightness) {
-  
+
         if (display === "all") {
           console.log(`Setting brightness via command line: All @ ${brightness}%`);
           updateAllBrightness(brightness, type)
@@ -2515,12 +2515,12 @@ function handleCommandLine(event, commandLine) {
           console.log(`Setting brightness via command line: Display #${display.num} (${display.name}) @ ${newBrightness}%`);
           updateBrightnessThrottle(display.id, newBrightness, true)
         }
-  
+
       }
-  
+
     }
 
-  } catch(e) {
+  } catch (e) {
     console.log(e)
   }
 

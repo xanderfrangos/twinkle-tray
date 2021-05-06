@@ -114,7 +114,7 @@
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Brightness level adjustment",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "How much the brightness should be adjusted when using hotkeys.",
     "SETTINGS_HOTKEYS_TOD_TITLE": "Turn Off Displays action",
-    "SETTINGS_HOTKEYS_TOD_DESC": "Customize the signal sent when using the Turn Off Displays feature. The software signal will display a black screen until input (ex. mouse or keyboard) is detected by Windows. The hardware signal will turn off power to the monitors.",
+    "SETTINGS_HOTKEYS_TOD_DESC": "Customize the signal sent when using the Turn Off Displays hotkey or icon. The software signal will display a black screen until input (ex. mouse or keyboard) is detected by Windows. The hardware signal will turn off power to the monitors.",
     "SETTINGS_HOTKEYS_TOD_NONE": "None (hide icon)",
     "SETTINGS_HOTKEYS_TOD_SOFT": "Software signal (default)",
     "SETTINGS_HOTKEYS_TOD_HARD": "Hardware* signal (DDC/CI only)",

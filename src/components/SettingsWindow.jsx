@@ -290,6 +290,11 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings({ scrollShortcut })
     }
 
+    hotkeysBreakLinkedLevelsChanged = (event) => {
+        const hotkeysBreakLinkedLevels = (this.state.rawSettings.hotkeysBreakLinkedLevels ? false : true)
+        window.sendSettings({ hotkeysBreakLinkedLevels})
+    }
+
     sleepActionChanged = (event) => {
         window.sendSettings({ sleepAction: event.target.value })
     }
@@ -1021,7 +1026,7 @@ export default class SettingsWindow extends PureComponent {
 
                         </div>
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                            <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</div>
+                            <label>{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</label>
                             <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
                             <select value={this.state.hotkeyPercent} onChange={(e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) }}>
                                 <option value="5">5%</option>
@@ -1031,6 +1036,12 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="25">25%</option>
                                 <option value="30">30%</option>
                             </select>
+                        </div>
+
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <label>{T.t("SETTINGS_HOTKEYS_BREAK_TITLE")}</label>
+                            <p>{T.t("SETTINGS_HOTKEYS_BREAK_DESC")}</p>
+                            <input onChange={this.hotkeysBreakLinkedLevelsChanged} checked={window.settings.hotkeysBreakLinkedLevels ?? true} data-checked={window.settings.hotkeysBreakLinkedLevels ?? true} type="checkbox" />
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>

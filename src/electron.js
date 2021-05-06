@@ -292,6 +292,7 @@ const defaultSettings = {
   useAcrylic: false,
   useNativeAnimation: false,
   sleepAction: "ps",
+  hotkeysBreakLinkedLevels: true,
   uuid: uuid(),
   branch: "master"
 }
@@ -563,7 +564,7 @@ const doHotkey = (hotkey) => {
     try {
       //refreshMonitors(false)
       analyticsUsage.UsedHotkeys++
-      if (hotkey.monitor === "all" || (settings.linkedLevelsActive && hotkey.monitor != "turn_off_displays")) {
+      if (hotkey.monitor === "all" || ((settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels) && hotkey.monitor != "turn_off_displays")) {
 
         let linkedLevelVal = false
         for (let key in monitors) {
@@ -601,6 +602,12 @@ const doHotkey = (hotkey) => {
             sendToAllWindows('monitors-updated', monitors);
             updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
             pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
+
+            // Break linked levels
+            if(settings.hotkeysBreakLinkedLevels && settings.linkedLevelsActive) {
+              console.log("Breaking linked levels due to hotkey.")
+              writeSettings({linkedLevelsActive: false})
+            } 
           }
         }
       }

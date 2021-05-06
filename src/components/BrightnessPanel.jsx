@@ -18,7 +18,7 @@ export default class BrightnessPanel extends PureComponent {
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {
 
-      if(settings.linkedLevelsActive) {
+      if(this.state.linkedLevelsActive) {
         // Combine all monitors
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
@@ -191,7 +191,7 @@ export default class BrightnessPanel extends PureComponent {
   // Update settings
   recievedSettings = (e) => {
     const settings = e.detail
-    const linkedLevelsActive = (settings.linkedLevelsActive || false)
+    const linkedLevelsActive = (settings.linkedLevelsActive ?? false)
     const sleepAction = (settings.sleepAction ?? "none")
     const updateInterval = (settings.updateInterval || 500) * 1
     const remaps = (settings.remaps || {})

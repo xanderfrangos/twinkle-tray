@@ -120,6 +120,8 @@
     "SETTINGS_HOTKEYS_TOD_HARD": "Hardware* signal (DDC/CI only)",
     "SETTINGS_HOTKEYS_TOD_BOTH": "Hardware* & software signal",
     "SETTINGS_HOTKEYS_TOD_NOTE": "*Note: Not all DDC/CI monitors support this feature.",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "Hotkeys break linked levels",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "When using a hotkey for a single display and \"linked levels\" is active, it will be deactivated.",
 
 
     "SETTINGS_UPDATES_TITLE": "Updates",

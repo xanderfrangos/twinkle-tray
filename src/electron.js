@@ -291,6 +291,7 @@ const defaultSettings = {
   scrollShortcut: true,
   useAcrylic: false,
   useNativeAnimation: false,
+  sleepAction: "ps",
   uuid: uuid(),
   branch: "master"
 }
@@ -590,7 +591,7 @@ const doHotkey = (hotkey) => {
 
       } else if (hotkey.monitor == "turn_off_displays") {
         showOverlay = false
-        sleepDisplays()
+        sleepDisplays(settings.sleepAction)
       } else {
         if (Object.keys(monitors).length) {
           const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
@@ -1304,11 +1305,35 @@ function transitionBrightness(level, eventMonitors = []) {
   }, settings.updateInterval * 1)
 }
 
-function sleepDisplays() {
-  analyticsUsage.UsedSleep++
-  setTimeout(() => {
-    exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
-  }, 333)
+function sleepDisplays(mode = "ps") {
+  try {
+
+    analyticsUsage.UsedSleep++
+    setTimeout(() => {
+  
+      if(mode === "ddcci" || mode === "ps_ddcci") {
+        for(let monitorID in monitors) {
+          const monitor = monitors[monitorID]
+          if(monitor.type === "ddcci") {
+            monitorsThread.send({
+              type: "vcp",
+              monitor: monitor.id,
+              code: 0xD6,
+              value: 5
+            })
+          }
+        }
+      }
+  
+      if(mode === "ps" || mode === "ps_ddcci") {
+        exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+      }
+      
+    }, 333)
+
+  } catch(e) {
+    console.log(e)
+  }
 }
 
 
@@ -1393,7 +1418,7 @@ ipcMain.on('show-acrylic', () => {
 
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
-ipcMain.on('sleep-displays', sleepDisplays)
+ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
 
 
 //

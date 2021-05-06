@@ -58,6 +58,14 @@ export default class BrightnessPanel extends PureComponent {
     }
   }
 
+  getSleepIcon = () => {
+    if(window.settings.sleepAction !== "none") {
+      return (
+        <div title={T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")} className="off" onClick={window.turnOffDisplays}>&#xF71D;</div>
+      )
+    }
+  }
+
   getMonitorName = (monitor, renames) => {
     if (Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
       return renames[monitor.id]
@@ -192,7 +200,8 @@ export default class BrightnessPanel extends PureComponent {
       linkedLevelsActive,
       remaps,
       names,
-      updateInterval
+      updateInterval,
+      sleepAction
     }, () => {
       this.resetBrightnessInterval()
       this.updateMinMax()
@@ -317,7 +326,7 @@ export default class BrightnessPanel extends PureComponent {
             <div className="title">{T.t("PANEL_TITLE")}</div>
             <div className="icons">
               {this.getLinkIcon()}
-              <div title={T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")} className="off" onClick={window.turnOffDisplays}>&#xF71D;</div>
+              {this.getSleepIcon()}
               <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
             </div>
           </div>

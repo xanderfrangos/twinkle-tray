@@ -290,6 +290,10 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings({ scrollShortcut })
     }
 
+    sleepActionChanged = (event) => {
+        window.sendSettings({ sleepAction: event.target.value })
+    }
+
     ramChanged = (event) => {
         const killWhenIdle = (this.state.killWhenIdle ? false : true)
         this.setState({ killWhenIdle })
@@ -716,7 +720,7 @@ export default class SettingsWindow extends PureComponent {
                 let brightness = monitor.brightness
                 let brightnessMax = monitor.brightnessMax
 
-                if(monitor.type == "ddcci" && !monitor.brightnessType) {
+                if (monitor.type == "ddcci" && !monitor.brightnessType) {
                     brightness = "???"
                     brightnessMax = "???"
                 }
@@ -903,14 +907,14 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
                                 {this.getLanguages()}
                             </select>
-                            <br />	
                             <br />
-                            <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>	
-                            <select value={window.settings.theme} onChange={this.themeChanged}>	
-                                <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>	
-                                <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>	
-                                <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>	
-                            </select>	
+                            <br />
+                            <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
+                            <select value={window.settings.theme} onChange={this.themeChanged}>
+                                <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
+                                <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>
+                                <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
+                            </select>
                             <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
                             <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
@@ -931,10 +935,6 @@ export default class SettingsWindow extends PureComponent {
                             <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
                             <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
                             <input onChange={this.analyticsChanged} checked={window.settings.analytics || false} data-checked={window.settings.analytics || false} type="checkbox" />
-                            <br /><br />
-                            <label>{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</label>
-                            <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
-                            <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
                         </div>
                         <div className="pageSection" data-active={this.isSection("general")}>
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>
@@ -1033,7 +1033,23 @@ export default class SettingsWindow extends PureComponent {
                             </select>
                         </div>
 
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</div>
+                            <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
+                            <input onChange={this.scrollShortcutChanged} checked={window.settings.scrollShortcut ?? true} data-checked={window.settings.scrollShortcut ?? true} type="checkbox" />
+                        </div>
 
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TOD_TITLE")}</div>
+                            <p>{T.t("SETTINGS_HOTKEYS_TOD_DESC")}</p>
+                            <select value={this.state.rawSettings.sleepAction} onChange={this.sleepActionChanged}>
+                                <option value="none">{T.t("SETTINGS_HOTKEYS_TOD_NONE")}</option>
+                                <option value="ps">{T.t("SETTINGS_HOTKEYS_TOD_SOFT")}</option>
+                                <option value="ddcci">{T.t("SETTINGS_HOTKEYS_TOD_HARD")}</option>
+                                <option value="ps_ddcci">{T.t("SETTINGS_HOTKEYS_TOD_BOTH")}</option>
+                            </select>
+                            <p><i>{T.t("SETTINGS_HOTKEYS_TOD_NOTE")}</i></p>
+                        </div>
 
 
                         <div className="pageSection" data-active={this.isSection("updates")}>
@@ -1057,7 +1073,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <p>
                                 <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
-                                <a className="button" onClick={() => {window.ipc("apply-last-known-monitors") }}>Apply Last Known Brightness</a>
+                                <a className="button" onClick={() => { window.ipc("apply-last-known-monitors") }}>Apply Last Known Brightness</a>
                             </p>
                             {this.getDebugMonitors()}
                         </div>

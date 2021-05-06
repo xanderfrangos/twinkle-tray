@@ -16,6 +16,8 @@ process.on('message', (data) => {
         settings = data.settings
     } else if (data.type === "localization") {
         localization = data.localization
+    } else if(data.type === "vcp") {
+        setVCP(data.monitor, data.code, data.value)
     }
 })
 
@@ -470,6 +472,14 @@ function checkVCP(monitor, code, skipCacheWrite = false) {
             vcpCache[monitor]["vcp_" + code] = result
         }
         return result
+    } catch (e) {
+        return false
+    }
+}
+
+function setVCP(monitor, code, value) {
+    try {
+        return ddcci._setVCP(monitor, code, value)
     } catch (e) {
         return false
     }

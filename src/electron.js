@@ -1837,11 +1837,17 @@ function createTray() {
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   setTrayMenu()
   tray.on("click", async () => toggleTray(true))
+
+  let lastMouseMove = Date.now()
   tray.on('mouse-move', async () => {
+    const now = Date.now()
+    if(lastMouseMove + 500 > now) return false;
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
+    lastMouseMove = now
   })
+
   nativeTheme.on('updated', async () => {
     getThemeRegistry()
     try {
@@ -1850,6 +1856,7 @@ function createTray() {
       debug.log("Couldn't update tray icon!", e)
     }
   })
+
 }
 
 function setTrayMenu() {

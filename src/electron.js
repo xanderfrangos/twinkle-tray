@@ -3,6 +3,10 @@ const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 
+// Expose GC
+app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
+require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
+
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
@@ -1475,7 +1479,8 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: false,
       spellcheck: false,
       enableWebSQL: false,
-      v8CacheOptions: "none"
+      v8CacheOptions: "none",
+      additionalArguments: "--expose_gc"
     }
   });
 
@@ -1504,6 +1509,7 @@ function createPanel(toggleOnLoad = false) {
       sendToAllWindows("panelBlur")
       showPanel(false)
     }
+    global.gc()
   })
 
   mainWindow.on('move', (e) => {
@@ -1874,10 +1880,11 @@ function createTray() {
   tray.on('mouse-move', async () => {
     const now = Date.now()
     if(lastMouseMove + 500 > now) return false;
+    lastMouseMove = now
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate()
-    lastMouseMove = now
+    sendToAllWindows('panel-unsleep')
   })
 
   nativeTheme.on('updated', async () => {

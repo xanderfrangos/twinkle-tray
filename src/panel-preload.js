@@ -31,6 +31,10 @@ function setPanelVisibility(visible) {
         if (window.isAcrylic) {
             window.isAcrylic = false
         }
+        setTimeout(() => { if(!window.showPanel && window.sleep) window.thisWindow.setBounds({width:0})}, 1000)
+        window.dispatchEvent(new CustomEvent('sleepUpdated', {
+            detail: true
+        }))
     }
 
 
@@ -140,6 +144,7 @@ ipc.on('tray-clicked', () => {
 })
 
 ipc.on("panelBlur", (e) => {
+    global.gc()
     // Update browser var to avoid Electron bugs
     browser = remote.getCurrentWindow()
     if (!browser.webContents.isDevToolsOpened()) {
@@ -148,6 +153,12 @@ ipc.on("panelBlur", (e) => {
         // Keep interactive if devTools open
         browser.moveTop()
     }
+})
+
+ipc.on("panel-unsleep", () => {
+    window.dispatchEvent(new CustomEvent('sleepUpdated', {
+        detail: false
+    }))
 })
 
 // Monitor info updated

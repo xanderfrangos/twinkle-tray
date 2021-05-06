@@ -192,6 +192,7 @@ export default class BrightnessPanel extends PureComponent {
   recievedSettings = (e) => {
     const settings = e.detail
     const linkedLevelsActive = (settings.linkedLevelsActive || false)
+    const sleepAction = (settings.sleepAction ?? "none")
     const updateInterval = (settings.updateInterval || 500) * 1
     const remaps = (settings.remaps || {})
     const names = (settings.names || {})

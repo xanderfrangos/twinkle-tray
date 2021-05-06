@@ -10,7 +10,7 @@ body {
     background: var(--page-background);
     background: none;
     color: var(--tray-text);
-    font-family: 'Segoe UI';
+    font-family: 'Segoe UI Variable Text', 'Segoe UI';
     position: absolute;
     top: 0;
     left: 0;
@@ -188,7 +188,7 @@ input {
     padding: 8px;
     line-height: 1;
     font-size: 14px;
-    font-family: 'Segoe UI';
+    font-family: 'Segoe UI Variable Text', 'Segoe UI';;
     font-weight: 400;
     margin-top: 10px;
     margin-bottom: 15px;

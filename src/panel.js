@@ -51,5 +51,10 @@ if(document.fonts.check("12px Segoe Fluent Icons")) {
     window.document.getElementById("root").dataset.fluentIcons = true
 }
 
+// Detect new system font (Windows build 21376+)
+if(document.fonts.check("12px Segoe UI Variable Text")) {
+    window.document.getElementById("root").dataset.segoeUIVariable = true
+}
+
 allMonitors = {}
 window.ipc.send('full-refresh', true)

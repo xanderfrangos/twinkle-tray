@@ -17,6 +17,7 @@ import TranslateReact from "../TranslateReact"
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
+import FluentIcon from "../assets/tray-icons/dark/fluent@4x.png"
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -933,6 +934,9 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                                 <div className="icon-option" data-active={this.isIcon("mdl2")} onClick={() => window.sendSettings({ icon: "mdl2" })}>
                                     <img src={MDL2Icon} />
+                                </div>
+                                <div className="icon-option" data-active={this.isIcon("fluent")} onClick={() => window.sendSettings({ icon: "fluent" })}>
+                                    <img src={FluentIcon} />
                                 </div>
                             </div>
                             <br />

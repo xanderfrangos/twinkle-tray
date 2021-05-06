@@ -961,7 +961,7 @@ function getThemeRegistry() {
 function getTrayIconPath() {
   const themeDir = (lastTheme && lastTheme.SystemUsesLightTheme ? 'light' : 'dark')
   let icon = "icon";
-  if (settings.icon === "mdl2") {
+  if (settings.icon === "mdl2" || settings.icon === "fluent") {
     icon = settings.icon
   }
   return path.join(__dirname, `assets/tray-icons/${themeDir}/${icon}.ico`)

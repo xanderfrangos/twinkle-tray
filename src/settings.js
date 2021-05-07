@@ -8,10 +8,10 @@ ReactDOM.render(<SettingsWindow theme={window.settings.theme} />, document.getEl
 
 // Detect new Fluent Icons (Windows build 21327+)
 if(document.fonts.check("12px Segoe Fluent Icons")) {
-    window.document.getElementById("root").dataset.fluentIcons = true
+    window.document.body.dataset.fluentIcons = true
 }
 
 // Detect new system font (Windows build 21376+)
 if(document.fonts.check("12px Segoe UI Variable Text")) {
-    window.document.getElementById("root").dataset.segoeUIVariable = true
+    window.document.body.dataset.segoeUIVariable = true
 }

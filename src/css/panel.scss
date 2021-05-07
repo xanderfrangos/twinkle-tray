@@ -116,7 +116,7 @@ body[data-use-native-animation="false"] {
 
     .icons {
         display: flex;
-        font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+        font-family: "Segoe MDL2 Assets";
         font-size: 22px;
 
         div {
@@ -210,7 +210,7 @@ body[data-use-native-animation="false"] {
 }
 
 .icon {
-    font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+    font-family: "Segoe MDL2 Assets";
 }
 
 .monitor-item {
@@ -331,9 +331,32 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             display: none;
         }
     }
-    &[data-fluent-icons="true"][data-mode="normal"] {
+}
+
+// Sun Valley tweaks
+#root[data-fluent-icons="true"] {
+
+    .titlebar .icons, .icon {
+        font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+    }
+
+    &[data-mode="normal"] {
         .monitor-item .name-row {
             margin-bottom: 2px;
+            .icon {
+                margin-bottom: -2px;
+                margin-top: -1px;
+            }
+        }
+        .titlebar .title {
+            font-family: "Segoe UI Variable Small";
+            font-weight: 300;
+            font-size: 13.5px;
+        }
+        .monitor-item .name-row .title {
+            font-family: "Segoe UI Variable Small";
+            font-weight: 300;
+            font-size: 14.5px;
         }
     }
 }

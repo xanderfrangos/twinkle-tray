@@ -134,10 +134,19 @@
         }
 
         .icon {
-            font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+            font-family: "Segoe MDL2 Assets";
             font-size: 22px;
             margin-right: 10px;
             margin-bottom: -3px;
         }
     }
+}
+
+// Sun Valley tweaks
+#root[data-fluent-icons="true"] {
+
+    .monitor-item .name-row .icon {
+        font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+    }
+
 }

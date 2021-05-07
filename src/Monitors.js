@@ -3,21 +3,25 @@ const w32disp = require("win32-displayconfig");
 
 
 process.on('message', (data) => {
-    if (data.type === "refreshMonitors") {
-        refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
-            process.send({
-                type: 'refreshMonitors',
-                monitors: results
+    try {
+        if (data.type === "refreshMonitors") {
+            refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
+                process.send({
+                    type: 'refreshMonitors',
+                    monitors: results
+                })
             })
-        })
-    } else if (data.type === "brightness") {
-        setBrightness(data.brightness, data.id)
-    } else if (data.type === "settings") {
-        settings = data.settings
-    } else if (data.type === "localization") {
-        localization = data.localization
-    } else if(data.type === "vcp") {
-        setVCP(data.monitor, data.code, data.value)
+        } else if (data.type === "brightness") {
+            setBrightness(data.brightness, data.id)
+        } else if (data.type === "settings") {
+            settings = data.settings
+        } else if (data.type === "localization") {
+            localization = data.localization
+        } else if(data.type === "vcp") {
+            setVCP(data.monitor, data.code, data.value)
+        }
+    } catch(e) {
+        console.log(e)
     }
 })
 

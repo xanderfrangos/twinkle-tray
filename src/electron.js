@@ -137,7 +137,7 @@ function enableMouseEvents() {
 let analytics = false
 let analyticsQueue = false
 let analyticsInterval = false
-let analyticsFrequency = 1000 * 60 * 10 // 10 minutes
+let analyticsFrequency = 1000 * 60 * 59 // 59 minutes
 let analyticsUsage = {}
 
 function analyticsResetUsage() {
@@ -408,20 +408,8 @@ function processSettings(newSettings = {}) {
         analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
         analytics.event({
           ec: "Session Information",
-          ea: "Version",
-          el: "v" + app.getVersion()
-        }).event({
-          ec: "Session Information",
-          ea: "App Name",
-          el: app.name
-        }).event({
-          ec: "Session Information",
           ea: "OS Version",
           el: os.release()
-        }).event({
-          ec: "Session Information",
-          ea: "CPU Model",
-          el: os.cpus()[0].model
         }).send()
 
         analyticsResetUsage()
@@ -431,6 +419,7 @@ function processSettings(newSettings = {}) {
             //getSettingsAnalytics()
             if (analytics && analyticsQueue) {
               console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
+              analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
               analyticsQueue.send()
               analyticsQueue = false
             }

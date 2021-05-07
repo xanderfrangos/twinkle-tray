@@ -297,6 +297,7 @@ const defaultSettings = {
   useNativeAnimation: false,
   sleepAction: "ps",
   hotkeysBreakLinkedLevels: true,
+  enableSunValley: true,
   uuid: uuid(),
   branch: "master"
 }

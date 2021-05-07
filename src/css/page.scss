@@ -354,7 +354,7 @@ a {
 
 
 .icon {
-    font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+    font-family: "Segoe MDL2 Assets";
 
     &.red {
         color: red;
@@ -633,6 +633,9 @@ body[data-fluent-icons="true"] {
         .window-minimize {
             -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M.55,5.5a.46.46,0,0,1-.21,0,.55.55,0,0,1-.3-.3A.46.46,0,0,1,0,5a.52.52,0,0,1,0-.21.71.71,0,0,1,.12-.18.57.57,0,0,1,.18-.12.46.46,0,0,1,.21,0h9.9a.46.46,0,0,1,.21,0,.57.57,0,0,1,.18.12.71.71,0,0,1,.12.18A.52.52,0,0,1,11,5a.46.46,0,0,1,0,.21.55.55,0,0,1-.3.3.46.46,0,0,1-.21,0Z'/%3E%3C/svg%3E") no-repeat 50% 50%
         }
+    }
+    .icon {
+        font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
     }
 }
 body[data-segoe-u-i-variable="true"] {

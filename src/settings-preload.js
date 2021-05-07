@@ -53,6 +53,21 @@ function resetSettings() {
     ipc.send('reset-settings')
 }
 
+function detectSunValley() {
+    // Detect new Fluent Icons (Windows build 21327+)
+    if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
+        window.document.body.dataset.fluentIcons = true
+    } else {
+        window.document.body.dataset.fluentIcons = false
+    }
+    // Detect new system font (Windows build 21376+)
+    if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
+        window.document.body.dataset.segoeUIVariable = true
+    } else {
+        window.document.body.dataset.segoeUIVariable = false
+    }
+}
+
 function openURL(url) {
     ipc.send('open-url', url)
 }
@@ -107,6 +122,7 @@ ipc.on('update-colors', (event, data) => {
 
 ipc.on('settings-updated', (event, settings) => {
     window.settings = settings
+    detectSunValley()
     window.dispatchEvent(new CustomEvent('settingsUpdated', {
         detail: settings
     }))

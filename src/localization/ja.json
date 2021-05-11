@@ -106,5 +106,14 @@
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "起動時に輝度を反映",
     "SETTINGS_MONITORS_DETAILS_NAME": "名前",
     "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "内部名",
-    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "通信方法"
+    "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "通信方法",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "* 注: DDC/CI ディスプレイの一部はこの機能に対応しません。",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "個別のディスプレイ用のショートカットキーを使用し、「すべて同時に設定」が有効の場合にこれを無効化します。",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "ショートカットキーでは同時設定しない",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "ハードウェア*とソフトウェア信号",
+    "SETTINGS_HOTKEYS_TOD_HARD": "ハードウェア*信号 (DDC/CI でのみ)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "ソフトウェア信号 (標準)",
+    "SETTINGS_HOTKEYS_TOD_NONE": "なし (アイコンなし)",
+    "SETTINGS_HOTKEYS_TOD_DESC": "「ディスプレイの電源を切る」のショートカットキーやアイコンを押した際に、送信される信号を選択できます。ソフトウェア信号では、Windows が入力 (マウス・キーボードなど) を検出するまでの間、黒い画面となります。ハードウェア信号は、ディスプレイの電源を切ります。",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "ディスプレイの電源を切る際の動作"
 }

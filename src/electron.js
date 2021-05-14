@@ -625,7 +625,7 @@ function hotkeyOverlayStart(timeout = 3000, force = false) {
   if (canReposition) {
     hotkeyOverlayShow()
   }
-  clearTimeout(hotkeyOverlayTimeout)
+  if(hotkeyOverlayTimeout) clearTimeout(hotkeyOverlayTimeout);
   hotkeyOverlayTimeout = setTimeout(() => hotkeyOverlayHide(force), timeout)
 }
 
@@ -1358,6 +1358,11 @@ ipcMain.on('request-colors', () => {
 ipcMain.on('update-brightness', function (event, data) {
   console.log(`Update brightness recieved: ${data.index} - ${data.level}`)
   updateBrightness(data.index, data.level)
+
+  // If overlay is visible, keep it open
+  if(hotkeyOverlayTimeout) {
+    hotkeyOverlayStart()
+  }
 })
 
 ipcMain.on('request-monitors', function (event, arg) {

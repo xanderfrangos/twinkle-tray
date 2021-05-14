@@ -49,7 +49,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         let doWMI = true
         let doDDCCI = true
 
-        if(refreshWMI) monitors = {};
+        if(fullRefresh) monitors = {};
 
         if (settings.useRefreshNamesWin32) {
 

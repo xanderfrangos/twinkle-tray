@@ -106,5 +106,14 @@
     "SETTINGS_SIDEBAR_FEATURES": "DDC/CI funkcije",
     "GENERIC_REFRESH_DISPLAYS": "Aktualiziraj ekrane",
     "SETTINGS_FEATURES_DESCRIPTION": "Aktiviraj ili deaktiviraj određene DDC/CI funkcije na ploči svjetline. Barem jedna funkcija mora biti aktivirana, da bi se tvoj monitor prikazao na ploči svjetline. Ove funkcije ne podržavaju svi ekrani, kao što su ekrani prijenosnih računala/tableta.",
-    "PANEL_LABEL_VOLUME": "Jačina"
+    "PANEL_LABEL_VOLUME": "Jačina",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "Kad se koristi prečac za jedan ekran i kad je „povezane razine” aktivirano, deaktivirat će se.",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "Prečaci prekidaju povezane razine",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "* Napomena: Neki DDC/CI monitori ne podržavaju ovu funkciju.",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "Hardverski* i softverski signal",
+    "SETTINGS_HOTKEYS_TOD_HARD": "Hardverski* signal (samo DDC/CI)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "Softverski signal (standardno)",
+    "SETTINGS_HOTKEYS_TOD_NONE": "Ništa (sakrij ikonu)",
+    "SETTINGS_HOTKEYS_TOD_DESC": "Prilagodi signal koji se šalje prilikom upotrebe prečaca ili ikone za isključivanje ekrana. Softverski signal će prikazati crni ekran sve dok Windows ne otkrije unos (npr. mišem ili tipkovnicom). Hardverski signal će isključiti monitore.",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "Radnja isključivanja ekrana"
 }

@@ -4,7 +4,7 @@ const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, global
 const Utils = require("./Utils")
 
 // Expose GC
-app.commandLine.appendSwitch('in-process-gpu','js-flags', '--expose_gc --max-old-space-size=128')
+app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
 // Handle multiple instances before continuing

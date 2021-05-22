@@ -106,5 +106,12 @@
     "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "通信方式",
     "SETTINGS_MONITORS_DETAILS_NAME": "名称",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "在Twinkle Tray启动时，恢复到上次关闭时所应用的亮度。",
-    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "开机时应用亮度"
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "开机时应用亮度",
+    "SETTINGS_HOTKEYS_TOD_DESC": "您可以在按下“关闭显示器”快捷键或图标时选择要发送的信号。直到Windows检测到输入（鼠标，键盘等）时，软件信号才会使显示器黑屏。如果选择硬件信号，则将直接关闭显示器。",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "硬件*和软件信号",
+    "SETTINGS_HOTKEYS_TOD_HARD": "硬件*信号（仅限DDC/CI显示器）",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "软件信号（默认）",
+    "SETTINGS_HOTKEYS_TOD_NONE": "无（隐藏图标）",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "关闭显示器电源时的操作",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*注意：不是所有DDC/CI显示器都支持该功能。"
 }

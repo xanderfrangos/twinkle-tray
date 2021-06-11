@@ -104,5 +104,6 @@
     "GENERIC_REFRESH_DISPLAYS": "Monitore aktualisieren",
     "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Kommunikationsmethode",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Aktuelle Helligkeit",
-    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Maximale Helligkeit"
+    "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Maximale Helligkeit",
+    "PANEL_LABEL_VOLUME": "Lautstärke"
 }

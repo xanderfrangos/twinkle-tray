@@ -28,7 +28,7 @@
     "SETTINGS_SIDEBAR_GENERAL": "Общие",
     "SETTINGS_SIDEBAR_MONITORS": "Настройки монитора",
     "SETTINGS_SIDEBAR_TIME": "Корректировки времени",
-    "SETTINGS_SIDEBAR_HOTKEYS": "Сочетание клавиш",
+    "SETTINGS_SIDEBAR_HOTKEYS": "Сочетание клавиш и команды",
     "SETTINGS_SIDEBAR_UPDATES": "Обновления",
     "SETTINGS_GENERAL_TITLE": "Общие",
     "SETTINGS_GENERAL_STARTUP": "Запускать при запуске системы",
@@ -104,5 +104,10 @@
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Применять яркость при запуске",
     "SETTINGS_SIDEBAR_FEATURES": "Функции DDC/CI",
     "GENERIC_REFRESH_DISPLAYS": "Обновить дисплеи",
-    "PANEL_LABEL_VOLUME": "Громкость"
+    "PANEL_LABEL_VOLUME": "Громкость",
+    "SETTINGS_HOTKEYS_TOD_NONE": "Не использовать (скрыть значок)",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "* Примечание: не все мониторы DDC/CI поддерживают эту функцию.",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "Аппаратный* и программный сигнал",
+    "SETTINGS_HOTKEYS_TOD_HARD": "Аппаратный* сигнал (только DDC/CI)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "Программный сигнал (default)"
 }

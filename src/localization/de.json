@@ -107,5 +107,5 @@
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Maximale Helligkeit",
     "PANEL_LABEL_VOLUME": "Lautstärke",
     "SETTINGS_HOTKEYS_TOD_NOTE": "*Nicht alle DDC/CI Monitore unterstützen dieses Feature.",
-    "SETTINGS_FEATURES_DESCRIPTION": "Aktiviere oder Deaktiviere bestimmte DDC/CI Features für die Helligkeitseinstellungen. Zumindest ein Feature muss aktiviert sein, damit ein Monitor in den Helligkeitseinstellungen verfügbar ist. Nicht alle Bildschirme unterstützen diese Features, beispielsweise Laptop- oder Tabletbildschirme"
+    "SETTINGS_FEATURES_DESCRIPTION": "Aktiviere oder Deaktiviere bestimmte DDC/CI Features für die Helligkeitseinstellungen. Zumindest ein Feature muss aktiviert sein, damit ein Monitor in den Helligkeitseinstellungen verfügbar ist. Nicht alle Bildschirme unterstützen diese Features, beispielsweise Laptopbildschirme oder Tablets."
 }

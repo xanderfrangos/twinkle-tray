@@ -104,5 +104,13 @@
     "SETTINGS_UPDATES_AVAILABLE": "新版本的Twinkle Tray上市了!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "處於最新版本，新版本的特性如下：",
     "SETTINGS_UPDATES_DOWNLOADING": "正在下载更新…",
-    "SETTINGS_UPDATES_DOWNLOAD": "下載并安裝{{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "下載并安裝{{1}}",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "熱鍵無視同步亮度",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*注意：並非所有 DDC/CI 監視器都支援此功能。",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "硬件* 和軟體信號",
+    "SETTINGS_HOTKEYS_TOD_HARD": "硬件*信號（僅限 DDC/CI）",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "軟體訊號 （預設值）",
+    "SETTINGS_HOTKEYS_TOD_NONE": "無（隱藏圖標）",
+    "SETTINGS_HOTKEYS_TOD_DESC": "自定義使用關閉顯示熱鍵或圖標時發送的信號。軟件信號將顯示黑屏，直到 Windows 檢測到輸入（例如鼠標或鍵盤）。硬件信號將關閉顯示器的電源。",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "關閉監視器的動作"
 }

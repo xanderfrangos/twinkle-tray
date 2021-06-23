@@ -45,7 +45,7 @@
     "SETTINGS_GENERAL_ANALYTICS_DESC": "发送使用数据以帮助改进Twinkle Tray。不会发送个人信息。{{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "了解更多",
     "SETTINGS_GENERAL_SCROLL_TITLE": "托盘图标的鼠标滚轮快捷操作",
-    "SETTINGS_GENERAL_SCROLL_DESC": "通过在系统托盘图标使用鼠标滚轮，一次调整所有显示器的亮度。但这对某些触控板不起作用。",
+    "SETTINGS_GENERAL_SCROLL_DESC": "通过在系统托盘图标使用鼠标滚轮，一次调整所有显示器的亮度。可能不兼容某些触控板。",
     "SETTINGS_MONITORS_RATE_TITLE": "亮度更新速度",
     "SETTINGS_MONITORS_RATE_DESC": "调整显示器的亮度值时，显示器亮度的更新速度。如果显示器闪烁，请延长亮度更新时间。",
     "SETTINGS_MONITORS_RATE_0": "非常快",

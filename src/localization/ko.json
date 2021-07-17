@@ -105,5 +105,15 @@
     "GENERIC_REFRESH_DISPLAYS": "디스플레이 새로고침",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Twinkle Tray가 시작될 때 이전에 지정했던 밝기를 복원합니다.",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "시작할 때 밝기 적용",
-    "PANEL_LABEL_VOLUME": "볼륨"
+    "PANEL_LABEL_VOLUME": "볼륨",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "바로 가기 키로 연결 수준 해제",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "디스플레이 액션 끄기",
+    "SETTINGS_FEATURES_DESCRIPTION": "밝기 패널에서 특정 DDC/CI 기능을 활성화하거나 비활성화합니다. 모니터가 밝기 패널에 표시되도록 하려면 하나 이상의 기능을 활성화해야 합니다. 일부 디스플레이는 노트북/태블릿 디스플레이와 같은 기능을 지원하지 않습니다.",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "단일 디스플레이에 바로 가기 키를 사용하고 \"링크 레벨\"이 활성화되면 해당 디스플레이가 비활성화됩니다.",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*모든 DDC/CI 모니터가 이 기능을 지원하지는 않습니다.",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "하드웨어* 및 소프트웨어 신호 사용",
+    "SETTINGS_HOTKEYS_TOD_HARD": "하드웨어* 신호(DDC/CI만 사용)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "소프트웨어 신호(기본값)",
+    "SETTINGS_HOTKEYS_TOD_NONE": "없음(아이콘 숨기기)",
+    "SETTINGS_HOTKEYS_TOD_DESC": "디스플레이 끄기 바로 가기 키 또는 아이콘을 사용할 때 전송되는 신호를 사용자 지정합니다. Windows에서 입력(예: 마우스 또는 키보드)이 감지될 때까지 소프트웨어 신호에 검은색 화면이 표시됩니다. 하드웨어 신호가 모니터의 전원을 끌 것입니다."
 }

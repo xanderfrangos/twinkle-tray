@@ -22,12 +22,18 @@ export default class Slider extends Component {
         }
     }
 
+    toggleMonitor = () => {
+        console.log('id', this.props.id);
+        window.toggleMonitor(this.props.id);
+    }
+
     getName = () => {
         if (this.props.name) {
             return (
                 <div className="name-row">
                     <div className="icon">{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                     <div className="title">{this.props.name}</div>
+                    { this.props.monitortype == "ddcci" ? <div className="right-icon" onClick={this.toggleMonitor}><span>&#xE711;</span></div> : <span /> } 
                 </div>
             )
         }

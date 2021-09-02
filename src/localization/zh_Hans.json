@@ -106,5 +106,14 @@
     "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "通信方式",
     "SETTINGS_MONITORS_DETAILS_NAME": "名称",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "在Twinkle Tray启动时，恢复到上次关闭时所应用的亮度。",
-    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "开机时应用亮度"
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "开机时应用亮度",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "关闭显示器方式",
+    "SETTINGS_HOTKEYS_TOD_DESC": "可以自定义使用快捷键或图标操作“关闭显示器”的执行方式。“软件信号关闭”方式指显示空白屏幕，直至 Windows 检测到输入（如：鼠标、键盘）；“硬件信号关闭”方式则会关闭显示器电源。",
+    "SETTINGS_HOTKEYS_TOD_NONE": "无（隐藏关闭显示器图标）",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "软件信号关闭（默认）",
+    "SETTINGS_HOTKEYS_TOD_HARD": "硬件*信号关闭（只支持 DDC/CI）",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "硬件*与软件信号关闭共同执行",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*注：并非所有 DDC/CI 显示器都支持此功能",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "快捷键调整后是否禁用同步",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "此项开启后，在“同步调整”启用时，若使用快捷键单独调整某一显示器亮度，“同步调整”功能会自动关闭。"
 }

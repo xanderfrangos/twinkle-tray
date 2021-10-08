@@ -210,7 +210,7 @@ class vBrowserWindow extends eBrowserWindow {
                 // Establishing the display configuration can fail; we can't
                 // just block forever if that happens. Instead, establish
                 // a fallback polling rate and hope for the best.
-                sleep(2000).then(() => {
+                sleep(2100).then(() => {
                     pollingRate = pollingRate || 30;
                 })
             ]);

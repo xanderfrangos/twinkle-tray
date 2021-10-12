@@ -40,6 +40,6 @@
   },
   "devDependencies": {
     "node-gyp": "^7.1.0",
-    "electron": "^10.1.1"
+    "electron": "^11.5.0"
   }
 }

@@ -97,7 +97,7 @@
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Nível de ajuste de brilho",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "Quanto o brilho deve ser ajustado ao usar as teclas de atalho.",
     "SETTINGS_UPDATES_TITLE": "Atualizações",
-    "SETTINGS_UPDATES_VERSION": "Você tem Twinkle Tray {{1}.",
+    "SETTINGS_UPDATES_VERSION": "Você tem Twinkle Tray {{1}}.",
     "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Verificação automática de novas versões",
     "SETTINGS_UPDATES_AUTOMATIC_DESC": "Quando houver uma nova versão, ela será mostrada no painel de brilho.",
     "SETTINGS_UPDATES_MS_STORE": "Para verificar novas versões, visite a Microsoft Store.",

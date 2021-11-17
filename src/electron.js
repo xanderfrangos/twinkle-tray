@@ -1029,26 +1029,30 @@ let shouldShowPanel = false
 
 refreshMonitorsJob = async (fullRefresh = false) => {
   return await new Promise((resolve, reject) => {
-    monitorsThread.send({
-      type: "refreshMonitors",
-      fullRefresh
-    })
-
-    let timeout = setTimeout(() => {
-      reject("Monitor thread timed out.")
-    }, 10000)
-
-    function listen(resolve) {
-      monitorsThread.once("message", data => {
-        if (data.type === "refreshMonitors") {
-          clearTimeout(timeout)
-          resolve(data.monitors)
-        } else {
-          listen(resolve)
-        }
+    try {
+      monitorsThread.send({
+        type: "refreshMonitors",
+        fullRefresh
       })
+
+      let timeout = setTimeout(() => {
+        reject("Monitor thread timed out.")
+      }, 10000)
+
+      function listen(resolve) {
+        monitorsThread.once("message", data => {
+          if (data.type === "refreshMonitors") {
+            clearTimeout(timeout)
+            resolve(data.monitors)
+          } else {
+            listen(resolve)
+          }
+        })
+      }
+      listen(resolve)
+    } catch(e) {
+      reject("Monitor thread failed to send.")
     }
-    listen(resolve)
   })
 }
 
@@ -2574,8 +2578,30 @@ function handleCommandLine(event, commandLine) {
 // Monitors thread
 // Handles WMI + DDC/CI activity
 
-let monitorsThread
+let monitorsThread = {
+  send: function(data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsThreadReal.send(data)
+    } catch(e) {
+      console.log("Couldn't communicate with Monitor thread.", e)
+    }
+  },
+  once: function (message, data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsThreadReal.once(message, data)
+    } catch (e) {
+      console.log("Couldn't listen to Monitor thread.", e)
+    }
+  }
+}
+let monitorsThreadReal
 function startMonitorThread() {
-  monitorsThread = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
 }
 startMonitorThread()

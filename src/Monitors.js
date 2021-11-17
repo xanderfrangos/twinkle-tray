@@ -1,4 +1,5 @@
 const { exec } = require('child_process');
+const fs = require('fs');
 const w32disp = require("win32-displayconfig");
 
 
@@ -83,7 +84,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         let ddcciPromise
 
         // WMI (internal display)
-        if (doWMI) {
+        if (doWMI && wmi) {
             wmiPromise = refreshWMI()
             wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
         }
@@ -115,11 +116,17 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 //    Get monitor names
 //
 //
+let namesCache = {};
 
 refreshNames = () => {
 
     return new Promise((resolve, reject) => {
-        getWMI();
+        const wmiOK = getWMI();
+        if (!wmiOK) {
+            settings.useRefreshNamesWin32 = true;
+            resolve(false);
+            return false;
+        }
         wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
             let foundMonitors = []
             if (err != null) {
@@ -152,9 +159,11 @@ refreshNames = () => {
                         }
                     }
 
-                    if (monitor.UserFriendlyName !== null)
+                    if (monitor.UserFriendlyName !== null) {
                         wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
-
+                        namesCache[hwid[2]] = parseWMIString(monitor.UserFriendlyName)
+                    }
+                        
                     Object.assign(monitors[hwid[2]], wmiInfo)
 
                 }
@@ -167,7 +176,6 @@ refreshNames = () => {
     })
 
 }
-
 
 
 refreshNamesWin32 = () => {
@@ -209,8 +217,10 @@ refreshNamesWin32 = () => {
                     }
                 }
 
-                if (monitor.monitorFriendlyDeviceName.length > 0)
+                if (monitor.monitorFriendlyDeviceName.length > 0) {
                     monitors[hwid[2]].name = monitor.monitorFriendlyDeviceName;
+                    namesCache[hwid[2]] = monitor.monitorFriendlyDeviceName;
+                }
 
             }
 
@@ -249,15 +259,15 @@ refreshDDCCI = async (type = "default") => {
 
                 try {
 
+                    const hwid = monitor.split("#")
                     let ddcciInfo = {
-                        name: makeName(monitor, `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
+                        name: makeName(hwid[2], `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
                         id: monitor,
                         num: local,
                         localID: local,
-                        type: 'ddcci'
+                        type: 'none'
                     }
 
-                    const hwid = monitor.split("#")
                     if (monitors[hwid[2]] == undefined) {
                         // Monitor not in list
                         monitors[hwid[2]] = {
@@ -330,6 +340,11 @@ refreshDDCCI = async (type = "default") => {
                         ddcciInfo.brightnessRaw = ddcciInfo.brightness // Raw value from DDC/CI. Not normalized or adjusted.
                         ddcciInfo.brightnessType = brightnessType
 
+                        // Only display as DDC/CI display if brightness support is detected
+                        if(ddcciInfo.brightnessType) {
+                            ddcciInfo.type = 'ddcci';
+                        }
+
                         // Get normalization info
                         ddcciInfo = applyRemap(ddcciInfo)
                         // Unnormalize brightness
@@ -364,7 +379,11 @@ refreshWMI = async () => {
         let local = 0
         let wmiList = []
         try {
-            getWMI();
+            const wmiOK = getWMI();
+            if (!wmiOK) {
+                resolve(false);
+                return false;
+            }
             wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
                 if (err != null) {
                     resolve([])
@@ -372,8 +391,11 @@ refreshWMI = async () => {
 
                     for (let monitor of result) {
 
+                        let hwid = readInstanceName(monitor.InstanceName)
+                        hwid[2] = hwid[2].split("_")[0]
+
                         let wmiInfo = {
-                            name: makeName(monitor.InstanceName, `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
+                            name: makeName(hwid[2], `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
                             id: monitor.InstanceName,
                             num: local,
                             localID: local,
@@ -386,8 +408,6 @@ refreshWMI = async () => {
                         }
                         local++
 
-                        let hwid = readInstanceName(monitor.InstanceName)
-                        hwid[2] = hwid[2].split("_")[0]
                         if (monitors[hwid[2]] == undefined) {
                             monitors[hwid[2]] = {
                                 id: monitor.InstanceName,
@@ -491,7 +511,10 @@ function setVCP(monitor, code, value) {
 
 
 function makeName(monitorDevice, fallback) {
-    if (monitorNames[monitorDevice] !== undefined) {
+    console.log("makeName: " + monitorDevice)
+    if(namesCache[monitorDevice] !== undefined) {
+        return namesCache[monitorDevice]
+    } else if (monitorNames[monitorDevice] !== undefined) {
         return monitorNames[monitorDevice]
     } else {
         return fallback;
@@ -502,7 +525,7 @@ function getCleanList(fullList, filterKeys) {
     let monitors = Object.assign(fullList, {})
     // Delete disconnected displays
     for (let key in monitors) {
-        if (!filterKeys.includes(key)) delete monitors[key];
+        if (filterKeys && !filterKeys.includes(key)) delete monitors[key];
     }
     return monitors
 }
@@ -585,6 +608,7 @@ let wmi = false
 function getWMI() {
     if (wmi) return true;
     let WmiClient = false
+    if (!fs.existsSync("%SystemRoot%\\System32\\Wbem\\WMIC.exe")) return false;
     try {
         if (isDev) {
             WmiClient = require('wmi-client');

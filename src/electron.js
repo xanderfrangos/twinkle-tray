@@ -2380,7 +2380,7 @@ function handleMonitorChange(e, d) {
 
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
-
+  console.log("Resuming......")
   setTimeout(
     () => {
       refreshMonitors().then(() => {
@@ -2392,7 +2392,7 @@ powerMonitor.on("resume", () => {
         handleBackgroundUpdate()
       })
     },
-    1500 // Give Windows a few seconds to... you know... wake up.
+    1900 // Give Windows a few seconds to... you know... wake up.
   )
 
 })

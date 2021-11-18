@@ -1194,6 +1194,11 @@ function updateBrightness(index, level, useCap = true) {
     monitor = monitors[index]
   }
 
+  if(!monitor) {
+    console.log(`Monitor does not exist: ${index}`)
+    return false
+  }
+
   try {
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
     monitor.brightness = level

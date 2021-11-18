@@ -608,7 +608,7 @@ function getWMI() {
     if (wmi) return true;
     let WmiClient = false
     if (!fs.existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
-        console.log(`WARNING: WMIC unavailable!`);
+        console.log("\x1b[41mWARNING: WMIC unavailable!\x1b[0m")
         return false;
     }
     try {

@@ -511,7 +511,6 @@ function setVCP(monitor, code, value) {
 
 
 function makeName(monitorDevice, fallback) {
-    console.log("makeName: " + monitorDevice)
     if(namesCache[monitorDevice] !== undefined) {
         return namesCache[monitorDevice]
     } else if (monitorNames[monitorDevice] !== undefined) {
@@ -608,7 +607,10 @@ let wmi = false
 function getWMI() {
     if (wmi) return true;
     let WmiClient = false
-    if (!fs.existsSync("%SystemRoot%\\System32\\Wbem\\WMIC.exe")) return false;
+    if (!fs.existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
+        console.log(`WARNING: WMIC unavailable!`);
+        return false;
+    }
     try {
         if (isDev) {
             WmiClient = require('wmi-client');

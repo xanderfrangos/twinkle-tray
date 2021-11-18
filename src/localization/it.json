@@ -50,7 +50,7 @@
     "SETTINGS_MONITORS_RATE_1": "Veloce (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "Normale (500 ms)",
     "SETTINGS_MONITORS_RATE_3": "Lento (1 secondo)",
-    "SETTINGS_MONITORS_RATE_4": "Molto veloce (2 secondi)",
+    "SETTINGS_MONITORS_RATE_4": "Molto lento (2 secondi)",
     "SETTINGS_MONITORS_RENAME_TITLE": "Rinomina Schermi",
     "SETTINGS_MONITORS_RENAME_DESC": "Se preferisci assegnare un nome diverso a ciascuno schermo (es \"Schermo sinistro\", \"Schermo Centrale\"), puoi inserirlo qui sotto. Lasciando il campo vuoto verrà ripristinato il nome originale.",
     "SETTINGS_MONITORS_ENTER_NAME": "Inserisci il nome",
@@ -105,5 +105,14 @@
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Icone del vassoio",
     "SETTINGS_GENERAL_ACRYLIC_TITLE": "Sfocatura acrilica",
     "PANEL_LABEL_VOLUME": "Volume",
-    "GENERIC_REFRESH_DISPLAYS": "Aggiorna schermi"
+    "GENERIC_REFRESH_DISPLAYS": "Aggiorna schermi",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "I tasti di scelta rapida interrompono i livelli collegati",
+    "SETTINGS_HOTKEYS_TOD_DESC": "Personalizza il segnale inviato quando si utilizza il tasto di scelta rapida o l'icona Spegni display. Il segnale del software visualizzerà uno schermo nero finché l'input (es. mouse o tastiera) non viene rilevato da Windows. Il segnale hardware disattiverà l'alimentazione dei monitor.",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "Azione Disattiva display",
+    "SETTINGS_HOTKEYS_BREAK_DESC": "Quando si utilizza un tasto di scelta rapida per un singolo display e \"livelli collegati\" è attivo, verrà disattivato.",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*Nota: non tutti i monitor DDC/CI supportano questa funzione.",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "Segnale hardware* e software",
+    "SETTINGS_HOTKEYS_TOD_HARD": "Segnale hardware* (solo DDC/CI)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "Segnale software (predefinito)",
+    "SETTINGS_HOTKEYS_TOD_NONE": "Nessuna (nascondi icona)"
 }

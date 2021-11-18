@@ -1033,6 +1033,7 @@ export default class SettingsWindow extends PureComponent {
                             <label>{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</label>
                             <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
                             <select value={this.state.hotkeyPercent} onChange={(e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) }}>
+                                <option value="1">1%</option>
                                 <option value="5">5%</option>
                                 <option value="10">10%</option>
                                 <option value="15">15%</option>

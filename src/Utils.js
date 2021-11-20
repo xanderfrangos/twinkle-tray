@@ -47,11 +47,11 @@ module.exports = {
     handleProcessedArgs(args = {}) {
 
         let failed
-        if (!(args.MonitorID || args.MonitorNum || args.All)) {
+        if (!(args.MonitorID !== undefined || args.MonitorNum !== undefined || args.All)) {
             console.log("\x1b[41mMissing monitor argument.\x1b[0m")
             failed = true
         }
-        if (!(args.Brightness)) {
+        if (!(args.Brightness !== undefined)) {
             console.log("\x1b[41mMissing brightness argument.\x1b[0m")
             failed = true
         }

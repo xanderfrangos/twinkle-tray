@@ -2558,7 +2558,7 @@ function handleCommandLine(event, commandLine) {
       })
 
       // If value input, update brightness
-      if (display && type && brightness) {
+      if (display && type && brightness !== undefined) {
 
         if (display === "all") {
           console.log(`Setting brightness via command line: All @ ${brightness}%`);

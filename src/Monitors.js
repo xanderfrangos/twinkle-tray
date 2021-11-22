@@ -1,6 +1,7 @@
 const { exec } = require('child_process');
 const fs = require('fs');
 const w32disp = require("win32-displayconfig");
+const wmibridge = require("wmi-bridge");
 
 
 process.on('message', (data) => {
@@ -84,7 +85,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         let ddcciPromise
 
         // WMI (internal display)
-        if (doWMI && wmi) {
+        if (doWMI) {
             wmiPromise = refreshWMI()
             wmiPromise.then(() => { console.log(`WMI done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
         }
@@ -121,58 +122,52 @@ let namesCache = {};
 refreshNames = () => {
 
     return new Promise((resolve, reject) => {
-        const wmiOK = getWMI();
-        if (!wmiOK) {
-            settings.useRefreshNamesWin32 = true;
-            resolve(false);
-            return false;
-        }
-        wmi.query('SELECT * FROM WmiMonitorID', function (err, result) {
+
+        const wmiMonitors = wmibridge.getMonitors();
+
+        if(wmiMonitors.failed) {
+            // Something went wrong
+            resolve([])
+        } else {
+            // Apply names
             let foundMonitors = []
-            if (err != null) {
-                resolve([])
-            } else if (result) {
-                // Apply names
-
-                for (let monitor of result) {
-                    let hwid = readInstanceName(monitor.InstanceName)
-                    hwid[2] = hwid[2].split("_")[0]
-                    const wmiInfo = {
-                        hwid: hwid,
-                        serial: parseWMIString(monitor.SerialNumberID)
-                    }
-
-                    foundMonitors.push(hwid[2])
-
-                    if (monitors[hwid[2]] == undefined) {
-                        monitors[hwid[2]] = {
-                            id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
-                            key: hwid[2],
-                            num: false,
-                            brightness: 50,
-                            type: 'none',
-                            min: 0,
-                            max: 100,
-                            hwid: false,
-                            name: false,
-                            serial: false
-                        }
-                    }
-
-                    if (monitor.UserFriendlyName !== null) {
-                        wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
-                        namesCache[hwid[2]] = parseWMIString(monitor.UserFriendlyName)
-                    }
-                        
-                    Object.assign(monitors[hwid[2]], wmiInfo)
-
+            for (let monitorHWID in wmiMonitors) {
+                const monitor = wmiMonitors[monitorHWID]
+                let hwid = readInstanceName(monitor.InstanceName)
+                hwid[2] = hwid[2].split("_")[0]
+                const wmiInfo = {
+                    hwid: hwid,
+                    serial: monitor.SerialNumberID
                 }
 
-                resolve(foundMonitors)
-            } else {
-                resolve(foundMonitors)
+                foundMonitors.push(hwid[2])
+
+                if (monitors[hwid[2]] == undefined) {
+                    monitors[hwid[2]] = {
+                        id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                        key: hwid[2],
+                        num: false,
+                        brightness: 50,
+                        type: 'none',
+                        min: 0,
+                        max: 100,
+                        hwid: false,
+                        name: false,
+                        serial: false
+                    }
+                }
+
+                if (monitor.UserFriendlyName !== null && monitor.UserFriendlyName !== "") {
+                    wmiInfo.name = monitor.UserFriendlyName
+                    namesCache[hwid[2]] = monitor.UserFriendlyName
+                }
+
+                Object.assign(monitors[hwid[2]], wmiInfo)
+
             }
-        });
+
+            resolve(foundMonitors)
+        }
     })
 
 }
@@ -340,19 +335,19 @@ refreshDDCCI = async (type = "default") => {
                         ddcciInfo.brightnessRaw = ddcciInfo.brightness // Raw value from DDC/CI. Not normalized or adjusted.
                         ddcciInfo.brightnessType = brightnessType
 
-                        // Only display as DDC/CI display if brightness support is detected
-                        if(ddcciInfo.brightnessType) {
-                            ddcciInfo.type = 'ddcci';
-                        }
-
                         // Get normalization info
                         ddcciInfo = applyRemap(ddcciInfo)
                         // Unnormalize brightness
                         ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightness, true, ddcciInfo.min, ddcciInfo.max)
                     }
 
+                    // Only display as DDC/CI display if brightness support is detected
+                    if(ddcciInfo.brightnessType) {
+                        ddcciInfo.type = 'ddcci';
+                        Object.assign(monitors[hwid[2]], ddcciInfo)
+                    }
+
                     ddcciList.push(ddcciInfo)
-                    Object.assign(monitors[hwid[2]], ddcciInfo)
 
                     local++
                 } catch (e) {
@@ -374,76 +369,64 @@ refreshDDCCI = async (type = "default") => {
 
 refreshWMI = async () => {
     // Request WMI monitors.
-
     return new Promise((resolve, reject) => {
         let local = 0
         let wmiList = []
         try {
-            const wmiOK = getWMI();
-            if (!wmiOK) {
-                resolve(false);
-                return false;
-            }
-            wmi.query('SELECT * FROM WmiMonitorBrightness', function (err, result) {
-                if (err != null) {
-                    resolve([])
-                } else if (result) {
+            const monitor = wmibridge.getBrightness();
+            if (monitor.failed) {
+                // Something went wrong
+                resolve([])
+            } else {
+                let hwid = readInstanceName(monitor.InstanceName)
+                hwid[2] = hwid[2].split("_")[0]
 
-                    for (let monitor of result) {
-
-                        let hwid = readInstanceName(monitor.InstanceName)
-                        hwid[2] = hwid[2].split("_")[0]
-
-                        let wmiInfo = {
-                            name: makeName(hwid[2], `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
-                            id: monitor.InstanceName,
-                            num: local,
-                            localID: local,
-                            brightness: monitor.CurrentBrightness,
-                            brightnessMax: 100,
-                            brightnessRaw: -1,
-                            type: 'wmi',
-                            min: 0,
-                            max: 100
-                        }
-                        local++
-
-                        if (monitors[hwid[2]] == undefined) {
-                            monitors[hwid[2]] = {
-                                id: monitor.InstanceName,
-                                key: hwid[2],
-                                num: false,
-                                brightness: 50,
-                                brightnessMax: 100,
-                                brightnessRaw: 50,
-                                type: 'none',
-                                min: 0,
-                                max: 100,
-                                hwid: false,
-                                name: "Unknown Display",
-                                serial: false
-                            }
-                        } else {
-                            if (monitors[hwid[2]].name)
-                                wmiInfo.name = monitors[hwid[2]].name
-                        }
-
-                        // Get normalization info
-                        wmiInfo = applyRemap(wmiInfo)
-                        // Unnormalize brightness
-                        wmiInfo.brightnessRaw = wmiInfo.brightness
-                        wmiInfo.brightness = normalizeBrightness(wmiInfo.brightness, true, wmiInfo.min, wmiInfo.max)
-
-                        wmiList.push(wmiInfo)
-                        Object.assign(monitors[hwid[2]], wmiInfo)
-
-                    }
-                    resolve(wmiList)
-                } else {
-                    reject(wmiList)
+                let wmiInfo = {
+                    name: makeName(hwid[2], `${localization.GENERIC_DISPLAY_SINGLE} ${local + 1}`),
+                    id: monitor.InstanceName,
+                    num: local,
+                    localID: local,
+                    brightness: monitor.Brightness,
+                    brightnessMax: 100,
+                    brightnessRaw: -1,
+                    type: 'wmi',
+                    min: 0,
+                    max: 100
                 }
-            });
+                local++
 
+                if (monitors[hwid[2]] == undefined) {
+                    monitors[hwid[2]] = {
+                        id: monitor.InstanceName,
+                        key: hwid[2],
+                        num: false,
+                        brightness: 50,
+                        brightnessMax: 100,
+                        brightnessRaw: 50,
+                        type: 'none',
+                        min: 0,
+                        max: 100,
+                        hwid: false,
+                        name: "Unknown Display",
+                        serial: false
+                    }
+                } else {
+                    if (monitors[hwid[2]].name) {
+                        wmiInfo.name = monitors[hwid[2]].name
+                    }
+                        
+                }
+
+                // Get normalization info
+                wmiInfo = applyRemap(wmiInfo)
+                // Unnormalize brightness
+                wmiInfo.brightnessRaw = wmiInfo.brightness
+                wmiInfo.brightness = normalizeBrightness(wmiInfo.brightness, true, wmiInfo.min, wmiInfo.max)
+
+                wmiList.push(wmiInfo)
+                Object.assign(monitors[hwid[2]], wmiInfo)
+                resolve(wmiList)
+            }
         } catch (e) {
             debug.log(e)
             resolve([])
@@ -462,7 +445,7 @@ function setBrightness(brightness, id) {
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness
-            exec(`powershell.exe (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})`)
+            wmibridge.setBrightness(brightness);
         }
     } catch (e) {
         console.log("Couldn't update brightness!");
@@ -601,31 +584,3 @@ function getDDCCI() {
     }
 }
 getDDCCI();
-
-
-let wmi = false
-function getWMI() {
-    if (wmi) return true;
-    let WmiClient = false
-    if (!fs.existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
-        console.log("\x1b[41mWARNING: WMIC unavailable!\x1b[0m")
-        return false;
-    }
-    try {
-        if (isDev) {
-            WmiClient = require('wmi-client');
-        } else {
-            let path = process.argv.find((val) => { return (val.indexOf("--apppath=") >= 0) }).substring(10)
-            WmiClient = require(require('path').join(path, '../node_modules/wmi-client'));
-        }
-        wmi = new WmiClient({
-            host: 'localhost',
-            namespace: '\\\\root\\WMI'
-        });
-        return true;
-    } catch (e) {
-        console.log('Couldn\'t start WMI', e);
-        return false;
-    }
-}
-getWMI();

@@ -16,7 +16,7 @@ Twinkle Tray lets you easily manage the brightness levels of multiple monitors. 
 - Seamlessly blends in with Windows 10. Uses your Personalization settings to match your taskbar.
 - Starts up with Windows.
 
-This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), [wmi-client](https://github.com/R-Vision/wmi-client), and [win32-displayconfig](<https://github.com/djsweet/win32-displayconfig>).
+This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), and [win32-displayconfig](<https://github.com/djsweet/win32-displayconfig>).
 
 ## Download
 

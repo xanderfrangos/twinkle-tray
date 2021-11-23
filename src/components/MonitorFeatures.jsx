@@ -1,0 +1,80 @@
+import React, { useState } from "react"
+import Slider from "./Slider"
+import TranslateReact from "../TranslateReact"
+let T = new TranslateReact({}, {})
+
+export default function MonitorFeatures(props) {
+    const { monitor, name, monitorFeatures } = props
+    const [contrast, setContrast] = useState(monitor.features.contrast ? monitor.features.contrast[0] : 50)
+    const [volume, setVolume] = useState(monitor.features.volume ? monitor.features.volume[0] : 50)
+    const [powerState, setPowerState] = useState(monitor.features.powerState ? monitor.features.powerState[0] : 50)
+
+    let extraHTML = []
+
+    if(Object.keys(monitor.features).length > 0) {
+
+        if (monitor.features.contrast) {
+            const enabled = monitorFeatures?.contrast;
+            extraHTML.push(
+                <div className="feature-toggle-row">
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "contrast")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE793;</span><span>Contrast</span></div>
+                </div>
+            )
+        }
+    
+        if (monitor.features.volume) {
+            const enabled = monitorFeatures?.volume;
+            extraHTML.push(
+                <div className="feature-toggle-row">
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "volume")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE767;</span><span>Volume</span></div>
+                </div>
+            )
+        }
+    
+        if (monitor.features.powerState) {
+            const enabled = monitorFeatures?.powerState;
+            extraHTML.push(
+                <div className="feature-toggle-row">
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "powerState")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>Power state</span></div>
+                </div>
+            )
+        }
+
+    } else {
+        extraHTML.push(<p>This monitor does not support DDC/CI features.</p>)
+    }
+
+    return (
+        <div key={monitor.key}>
+            <br />
+            <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
+            <div class="feature-toggle-list">{extraHTML}</div>
+            <br />
+        </div>
+    )
+}
+
+function setVCP(monitor, code, value) {
+    window.dispatchEvent(new CustomEvent("setVCP", {
+        detail: {
+            monitor,
+            code,
+            value
+        }
+    }))
+}
+
+function getDebugMonitorType(type) {
+    if (type == "none") {
+        return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
+    } else if (type == "ddcci") {
+        return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else if (type == "wmi") {
+        return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else {
+        return (<><b>Unknown ({type})</b> <span className="icon red vfix">&#xEB90;</span></>)
+    }
+}

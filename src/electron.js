@@ -38,6 +38,7 @@ const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
+const { electron } = require('process');
 
 app.allowRendererProcessReuse = true
 
@@ -278,14 +279,7 @@ const defaultSettings = {
   adjustmentTimeIndividualDisplays: false,
   checkTimeAtStartup: true,
   order: [],
-  features: {
-    luminance: true,
-    brightness: true,
-    gain: false,
-    contrast: false,
-    powerState: false,
-    volume: false
-  },
+  monitorFeatures: {},
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
@@ -1134,7 +1128,7 @@ function pauseMonitorUpdates() {
 
 //
 //
-//    Brightness updates
+//    Brightness (and VCP) updates
 //
 //
 
@@ -1142,18 +1136,19 @@ function pauseMonitorUpdates() {
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 let lastBrightnessTimes = []
-function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
+function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
   let idx = updateBrightnessQueue.length
   const found = updateBrightnessQueue.findIndex(item => item.id === id)
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
-    useCap
+    useCap,
+    vcp
   }
   const now = Date.now()
   if (lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
     lastBrightnessTimes[id] = now
-    updateBrightness(id, level, useCap)
+    updateBrightness(id, level, useCap, vcp)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
   } else if (!updateBrightnessTimeout) {
@@ -1163,7 +1158,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
       for (let bUpdate of updateBrightnessQueueCopy) {
         if (bUpdate) {
           try {
-            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap)
+            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
           } catch (e) {
             console.error(e)
           }
@@ -1179,7 +1174,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
 
 
 
-function updateBrightness(index, level, useCap = true) {
+function updateBrightness(index, level, useCap = true, vcp = "brightness") {
 
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
@@ -1201,15 +1196,23 @@ function updateBrightness(index, level, useCap = true) {
 
   try {
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
-    monitor.brightness = level
 
-    if (monitor.type == "ddcci") {
+    if (monitor.type == "ddcci" && vcp === "brightness") {
+      monitor.brightness = level
       monitorsThread.send({
         type: "brightness",
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
         id: monitor.id
       })
+    } else if(monitor.type == "ddcci") {
+      monitorsThread.send({
+        type: "vcp",
+        code: vcp,
+        value: level,
+        monitor: monitor.id
+      })
     } else if (monitor.type == "wmi") {
+      monitor.brightness = level
       monitorsThread.send({
         type: "brightness",
         brightness: normalized
@@ -1365,7 +1368,6 @@ ipcMain.on('request-colors', () => {
 })
 
 ipcMain.on('update-brightness', function (event, data) {
-  console.log(`Update brightness recieved: ${data.index} - ${data.level}`)
   updateBrightness(data.index, data.level)
 
   // If overlay is visible, keep it open
@@ -1434,6 +1436,9 @@ ipcMain.on('show-acrylic', () => {
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
+ipcMain.on('set-vcp', (e, values) => {
+  updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
+})
 
 
 //
@@ -2378,6 +2383,9 @@ function handleMonitorChange(e, d) {
       })
 
       handleChangeTimeout = false
+
+      const {Notification} = require("electron")
+      new Notification({title: "Monitors changed!"}).show()
     }, 1500)
   }
 

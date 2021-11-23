@@ -130,8 +130,12 @@ function panelAnimationDone() {
 
 function shouldSendHeightUpdate() {
     setTimeout(() => {
-        const height = window.document.getElementById("panel").offsetHeight
-        window.sendHeight(height)
+        try {
+            const height = window.document.getElementById("panel").offsetHeight
+            window.sendHeight(height)
+        } catch(e) {
+            console.error(e)
+        }
     }, 99)
 }
 
@@ -293,6 +297,12 @@ browser.webContents.once('dom-ready', () => {
     requestSettings()
     //requestMonitors()
     requestAccent()
+})
+
+// VCP code handling
+window.addEventListener("setVCP", e => {
+    const { monitor, code, value } = e.detail
+    ipc.send("set-vcp", { monitor, code, value })
 })
 
 window.ipc = ipc

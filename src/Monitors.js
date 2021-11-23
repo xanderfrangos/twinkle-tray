@@ -56,9 +56,9 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         if (settings.useRefreshNamesWin32) {
 
             // Get info on all displays
-            const namesPromise = refreshNamesWin32()
-            monitorNames = await namesPromise
-            namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+            const namesPromiseWin32 = refreshNamesWin32()
+            monitorNames = await namesPromiseWin32
+            namesPromise.then(() => { console.log(`NAMES_WIN32 done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
 
             // Determine if WMI or DDC/CI checks are needed based off of connectors used
             let doWMI = false
@@ -76,6 +76,10 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 
         } else {
             // Get info on all displays
+            const namesPromiseWin32 = refreshNamesWin32()
+            await namesPromiseWin32
+            namesPromiseWin32.then(() => { console.log(`NAMES_WIN32 done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
+
             const namesPromise = refreshNames()
             monitorNames = await namesPromise
             namesPromise.then(() => { console.log(`NAMES done in ${process.hrtime(startTime)[1] / 1000000}ms`) })
@@ -456,15 +460,11 @@ function setBrightness(brightness, id) {
 let vcpCache = {}
 function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     try {
-        if (settings.features[setting]) {
+        // If we previously saw that a feature was supported, we shouldn't have to check again.
+        if (!skipCache && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
 
-            // If we previously saw that a feature was supported, we shouldn't have to check again.
-            if (!skipCache && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
-    
-            const vcpResult = checkVCP(monitor, code)
-            return vcpResult
-        }
-        return false
+        const vcpResult = checkVCP(monitor, code)
+        return vcpResult
     } catch(e) {
         console.log(e)
         return false

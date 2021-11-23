@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
+import DDCCISliders from "./DDCCISliders"
 import TranslateReact from "../TranslateReact"
 
 const monitorSort = (a, b) => {
@@ -20,9 +21,9 @@ export default class BrightnessPanel extends PureComponent {
 
       if(this.state.linkedLevelsActive) {
         // Combine all monitors
-        for(const key in this.state.monitors) {
+        for (const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "ddcci") {
+          if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
             return (
               <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
             )
@@ -36,10 +37,57 @@ export default class BrightnessPanel extends PureComponent {
           if (monitor.type == "none") {
             return (<div key={monitor.key}></div>)
           } else {
+            /*
             if(monitor.type == "wmi" || monitor.type == "ddcci") {
               return (
                 <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+              
               )
+            */
+            if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+
+              let hasFeatures = true
+              let featureCount = 0
+              const monitorFeatures = window.settings?.monitorFeatures?.[monitor.hwid[1]]
+              const features = ["contrast", "volume", "powerState"]
+              if (monitor.features) {
+                features.forEach(f => {
+                  // Check monitor features
+                  if (monitor.features[f] && monitor.features[f].length > 1) {
+                    // Check that user has enabled feature
+                    if(monitorFeatures && monitorFeatures[f]) {
+                      // Track feature
+                      hasFeatures = true
+                      featureCount++
+                    }
+                  }
+                })
+              }
+
+              if (hasFeatures === false) {
+                return (
+                  <div className="monitor-sliders">
+                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+                  </div>
+                )
+              } else {
+                return (
+                  <div className="monitor-sliders">
+                    <div class="monitor-item" style={{ height: "auto", paddingBottom: "15px" }}>
+                      <div className="name-row">
+                        <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
+                        <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
+                      </div>
+                    </div>
+                    <div className="feature-row">
+                      <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
+                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+                    </div>
+                    <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} />
+                  </div>
+                )
+              }
+
             }
           }
         })

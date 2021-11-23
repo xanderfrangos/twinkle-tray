@@ -14,6 +14,8 @@ import Slider from "./Slider";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Markdown from 'markdown-to-jsx';
 import TranslateReact from "../TranslateReact"
+import MonitorInfo from "./MonitorInfo"
+import MonitorFeatures from "./MonitorFeatures"
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
@@ -111,7 +113,12 @@ export default class SettingsWindow extends PureComponent {
             analytics: false,
             useAcrylic: true,
             scrollShortcut: true,
-            updateProgress: 0
+            updateProgress: 0,
+            extendedDDCCI: {
+                contrast: 50,
+                volume: 50,
+                powerState: 0
+            }
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -337,6 +344,11 @@ export default class SettingsWindow extends PureComponent {
                 id: "monitors",
                 label: T.t("SETTINGS_SIDEBAR_MONITORS"),
                 icon: "&#xE7F4;"
+            },
+            {
+                id: "features",
+                label: T.t("SETTINGS_SIDEBAR_FEATURES"),
+                icon: "&#xE9E9;"
             },
             {
                 id: "time",
@@ -757,26 +769,33 @@ export default class SettingsWindow extends PureComponent {
             return Object.values(this.state.monitors).map((monitor, index) => {
 
                 return (
-                    <div key={monitor.key}>
-                        <br />
-                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                        <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
-                            <br />Internal name: <b>{monitor.hwid[1]}</b>
-                            <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
-                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
-                            <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
-                            <br />Raw Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightnessRaw)}</b>
-                            <br />Features: <b>{(monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported")}</b>
-                            <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
-                            <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
-                            <br />Key: <b>{monitor.key}</b>
-                            <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
-                            <br />Connection Type: <b>{monitor.connector ?? "Not Available"}</b></p>
-                    </div>
+                    <MonitorInfo key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} debug={true} />
                 )
 
             })
         }
+    }
+
+    getFeaturesMonitors = () => {
+        if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+            return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+        } else {
+            return Object.values(this.state.monitors).map((monitor, index) => {
+                const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
+                return (
+                    <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} />
+                )
+
+            })
+        }
+    }
+
+    toggleFeature = (monitor, feature) => {
+        const newFeatures = Object.assign({}, this.state.rawSettings.monitorFeatures)
+        if(!newFeatures[monitor]) newFeatures[monitor] = {};
+        newFeatures[monitor][feature] = (newFeatures[monitor][feature] ? false : true);
+
+        window.sendSettings({ monitorFeatures: newFeatures })
     }
 
     getDebugMonitorType = (type) => {
@@ -1017,6 +1036,20 @@ export default class SettingsWindow extends PureComponent {
                                 {this.getInfoMonitors()}
                             </div>
                         </div>
+
+
+
+
+                        <div className="pageSection" data-active={this.isSection("features")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_SIDEBAR_FEATURES")}</div>
+                            <p>{T.t("SETTINGS_FEATURES_DESCRIPTION")}</p>
+                            {this.getFeaturesMonitors()}
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("features")}>
+                            
+                        </div>
+
+
 
 
 

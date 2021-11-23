@@ -218,7 +218,7 @@ body[data-use-native-animation="false"] {
     height: 73px;
 
     .input--range {
-        padding-bottom: 15px;
+        //padding-bottom: 15px;
     }
 }
 
@@ -359,4 +359,62 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
             font-size: 14.5px;
         }
     }
+}
+//
+// DDC/CI Features 
+//
+.feature-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 34px;
+    margin-top: -10px;
+    padding-bottom: 10px;
+    .monitor-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        height: auto;
+        .input--range {
+            padding: 0;
+
+            .val {
+                font-size: 16px;
+            }
+        }
+    }
+}
+.feature-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    padding-right: 18px;
+}
+
+
+.monitor-sliders {
+    & + .monitor-sliders {
+        &:before {
+            content: '';
+            display: block;
+            height: 1px;
+            width: 100%;
+            margin: 10px 0 25px;
+            //background-color: #6a6a6a;
+            margin-bottom: 0;
+        }
+    }
+}
+
+.feature-row.large .feature-icon {
+    font-size: 32px;
+}
+
+.feature-row.large .monitor-item .input--range .val {
+    font-size: 22px;
+}
+
+.feature-row.large {
+    height: 42px;
 }

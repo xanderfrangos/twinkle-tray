@@ -507,6 +507,40 @@ a {
     }
 }
 
+// DDC/CI Features 
+.feature-row {
+    display: flex;
+    justify-content: flex-start;
+    .monitor-item {
+        flex: 1;
+    }
+}
+.feature-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    padding-right: 18px;
+}
+.feature-toggle-list {
+    padding-top: 1px;
+}
+.feature-toggle-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 6px 0;
+    input {
+        margin: 0;
+    }
+}
+.feature-toggle-label {
+    padding-left: 15px;
+    .icon {
+        margin-right: 8px
+    }
+}
+
 
 // Sidebar
 #sidebar {

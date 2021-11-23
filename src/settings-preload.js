@@ -157,6 +157,12 @@ browser.webContents.once('dom-ready', () => {
     requestAccent()
 })
 
+// VCP code handling
+window.addEventListener("setVCP", e => {
+    const { monitor, code, value } = e.detail
+    ipc.send("set-vcp", { monitor, code, value })
+})
+
 window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors

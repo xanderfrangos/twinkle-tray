@@ -1332,6 +1332,12 @@ function sleepDisplays(mode = "ps") {
               type: "vcp",
               monitor: monitor.id,
               code: 0xD6,
+              value: 4
+            })
+            monitorsThread.send({
+              type: "vcp",
+              monitor: monitor.id,
+              code: 0xD6,
               value: 5
             })
           }

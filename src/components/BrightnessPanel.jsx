@@ -71,12 +71,35 @@ export default class BrightnessPanel extends PureComponent {
                   </div>
                 )
               } else {
+                const powerOff = () => {
+                  window.dispatchEvent(new CustomEvent("setVCP", {
+                    detail: {
+                        monitor: monitor.id,
+                        code: 0xD6,
+                        value: 4
+                    }
+                  }))
+                  window.dispatchEvent(new CustomEvent("setVCP", {
+                    detail: {
+                      monitor: monitor.id,
+                        code: 0xD6,
+                        value: 5
+                    }
+                  }))
+                }
+                const showPowerButton = () => {
+                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                    return (<div className="feature-power-icon" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
+                  }
+                }
+
                 return (
                   <div className="monitor-sliders">
                     <div class="monitor-item" style={{ height: "auto", paddingBottom: "15px" }}>
                       <div className="name-row">
                         <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                         <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
+                        { showPowerButton() }
                       </div>
                     </div>
                     <div className="feature-row">

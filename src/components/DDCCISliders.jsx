@@ -37,15 +37,6 @@ export default function DDCCISliders(props) {
         )
     }
 
-    if (monitor.features.powerState && monitorFeatures?.powerState) {
-        extraHTML.push(
-            <div className="feature-row">
-                <div className="feature-icon"><span className="icon vfix">&#xE7E8;</span></div>
-                <Slider type="powerState" monitorID={monitor.id} level={powerState} monitorName={monitor.name} max={monitor.features.powerState[1]} monitortype={monitor.type} onChange={val => { setPowerState(val); setVCP(monitor.id, 0xD6, val) }} scrolling={false} />
-            </div>
-        )
-    }
-
     return (
         <>
         {extraHTML}

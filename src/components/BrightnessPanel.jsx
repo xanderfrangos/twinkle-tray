@@ -33,17 +33,20 @@ export default class BrightnessPanel extends PureComponent {
       } else {
         // Show all valid monitors individually
         const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+        let useFeatures = false
+
+        // Check if we should use the extended DDC/CI layout or simple layout
+        for(const {hwid} of sorted) {
+          const monitorFeatures = window.settings?.monitorFeatures?.[hwid[1]]
+          if(monitorFeatures?.contrast || monitorFeatures?.volume) {
+            useFeatures = true
+          }
+        }
+
         return sorted.map((monitor, index) => {
           if (monitor.type == "none") {
             return (<div key={monitor.key}></div>)
           } else {
-            /*
-            if(monitor.type == "wmi" || monitor.type == "ddcci") {
-              return (
-                <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
-              
-              )
-            */
             if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
 
               let hasFeatures = true
@@ -64,10 +67,15 @@ export default class BrightnessPanel extends PureComponent {
                 })
               }
 
-              if (hasFeatures === false) {
+              if (!useFeatures || !hasFeatures) {
+                const showPowerButton = () => {
+                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                    return (<div className="feature-power-icon simple"><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
+                  }
+                }
                 return (
                   <div className="monitor-sliders">
-                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} />
                   </div>
                 )
               } else {
@@ -94,7 +102,7 @@ export default class BrightnessPanel extends PureComponent {
                 }
 
                 return (
-                  <div className="monitor-sliders">
+                  <div className="monitor-sliders extended">
                     <div class="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
                       <div className="name-row">
                         <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>

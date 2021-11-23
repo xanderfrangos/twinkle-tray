@@ -28,6 +28,7 @@ export default class Slider extends Component {
                 <div className="name-row">
                     <div className="icon">{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                     <div className="title">{this.props.name}</div>
+                    {this.props.afterName}
                 </div>
             )
         }

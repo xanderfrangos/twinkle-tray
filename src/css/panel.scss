@@ -404,6 +404,10 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
     opacity: 0.7;
     font-size: 14px;
 
+    &.simple {
+        margin: -8px 0 -4px auto;
+    }
+
     &:hover, &:focus {
         opacity: 1;
     }
@@ -417,15 +421,14 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
 }
 
 
-.monitor-sliders {
-    & + .monitor-sliders {
+.monitor-sliders.extended {
+    & + .monitor-sliders.extended {
         &:before {
             content: '';
             display: block;
             height: 1px;
             width: 100%;
             margin: 10px 0 25px;
-            //background-color: #6a6a6a;
             margin-bottom: 0;
         }
     }

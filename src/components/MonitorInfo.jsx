@@ -3,15 +3,15 @@ import Slider from "./Slider"
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
-    const [contrast, setContrast] = useState(monitor.features.contrast ? monitor.features.contrast[0] : 50)
-    const [volume, setVolume] = useState(monitor.features.volume ? monitor.features.volume[0] : 50)
-    const [powerState, setPowerState] = useState(monitor.features.powerState ? monitor.features.powerState[0] : 50)
+    const [contrast, setContrast] = useState(monitor.features?.contrast ? monitor.features.contrast[0] : 50)
+    const [volume, setVolume] = useState(monitor.features?.volume ? monitor.features.volume[0] : 50)
+    const [powerState, setPowerState] = useState(monitor.features?.powerState ? monitor.features.powerState[0] : 50)
 
     let extraHTML = []
 
     if (props.debug === true) {
         extraHTML.push(
-            <>
+            <div key="debug">
                 <br />Raw Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightnessRaw)}</b>
                 <br />Features: <b>{(monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported")}</b>
                 <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
@@ -19,31 +19,31 @@ export default function MonitorInfo(props) {
                 <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
                 <br />Connection Type: <b>{monitor.connector}</b>
                 <br /><br />
-            </>
+            </div>
         )
     }
 
-    if (monitor.features.contrast) {
+    if (monitor?.features?.contrast) {
         extraHTML.push(
-            <div className="feature-row">
+            <div className="feature-row" key="contrast">
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
                 <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features.contrast[1] / 100)) }} scrolling={false} />
             </div>
         )
     }
 
-    if (monitor.features.volume) {
+    if (monitor?.features?.volume) {
         extraHTML.push(
-            <div className="feature-row">
+            <div className="feature-row" key="volume">
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
                 <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} scrolling={false} />
             </div>
         )
     }
 
-    if (monitor.features.powerState) {
+    if (monitor?.features?.powerState) {
         extraHTML.push(
-            <div className="feature-row">
+            <div className="feature-row" key="powerState">
                 <div className="feature-icon"><span className="icon vfix">&#xE7E8;</span></div>
                 <Slider type="powerState" monitorID={monitor.id} level={powerState} monitorName={monitor.name} max={monitor.features.powerState[1]} monitortype={monitor.type} onChange={val => { setPowerState(val); setVCP(monitor.id, 0xD6, val) }} scrolling={false} />
             </div>
@@ -60,8 +60,8 @@ export default function MonitorInfo(props) {
                 <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
                 <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
                 <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
-                {extraHTML}
             </p>
+            {extraHTML}
         </div>
     )
 }

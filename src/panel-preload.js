@@ -75,12 +75,6 @@ function updateBrightness(index, level) {
     })
 }
 
-function toggleMonitor(id) {
-    ipc.send('toggle-monitor', {
-        id
-    })
-}
-
 function detectSunValley() {
     // Detect new Fluent Icons (Windows build 21327+)
     if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
@@ -314,7 +308,6 @@ window.addEventListener("setVCP", e => {
 window.ipc = ipc
 window.thisWindow = browser
 window.updateBrightness = updateBrightness
-window.toggleMonitor = toggleMonitor
 window.requestMonitors = requestMonitors
 window.openSettings = openSettings
 window.sendSettings = sendSettings

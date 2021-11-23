@@ -1171,9 +1171,8 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   return false
 }
 
-function toggleMonitor(id){
-  sleepDisplayDDCCI(id);
-}
+
+
 
 function updateBrightness(index, level, useCap = true, vcp = "brightness") {
 
@@ -1319,18 +1318,6 @@ function transitionBrightness(level, eventMonitors = []) {
   }, settings.updateInterval * 1)
 }
 
-function sleepDisplayDDCCI(id){
-  const monitor = Object.values(monitors).find(mon => mon.id == id);
-  if(monitor.type === "ddcci" || mode === "ps_ddcci") {
-    monitorsThread.send({
-      type: "vcp",
-      monitor: monitor.id,
-      code: 0xD6,
-      value: 5
-    })
-  }
-}
-
 function sleepDisplays(mode = "ps") {
   try {
 
@@ -1384,11 +1371,6 @@ function readInstanceName(insName) {
 
 ipcMain.on('request-colors', () => {
   sendToAllWindows('update-colors', getAccentColors())
-})
-
-ipcMain.on('toggle-monitor', function (event, data) {
-  console.log(`Toggle monitor received: ${data.id}`)
-  toggleMonitor(data.id);
 })
 
 ipcMain.on('update-brightness', function (event, data) {

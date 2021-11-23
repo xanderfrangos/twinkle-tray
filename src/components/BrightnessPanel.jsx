@@ -95,7 +95,7 @@ export default class BrightnessPanel extends PureComponent {
 
                 return (
                   <div className="monitor-sliders">
-                    <div class="monitor-item" style={{ height: "auto", paddingBottom: "15px" }}>
+                    <div class="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
                       <div className="name-row">
                         <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                         <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>

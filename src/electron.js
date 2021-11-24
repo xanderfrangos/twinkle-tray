@@ -1483,7 +1483,7 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: false,
       spellcheck: false,
       enableWebSQL: false,
-      v8CacheOptions: "none",
+      //v8CacheOptions: "none",
       additionalArguments: "--expose_gc"
     }
   });

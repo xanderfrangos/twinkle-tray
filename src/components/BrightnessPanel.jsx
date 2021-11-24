@@ -20,15 +20,20 @@ export default class BrightnessPanel extends PureComponent {
 
       if(this.state.linkedLevelsActive) {
         // Combine all monitors
+        let lastValidMonitor
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
           if(monitor.type == "wmi" || monitor.type == "ddcci") {
-            return (
-              <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
-            )
+           lastValidMonitor = monitor 
           }
-          return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
         }
+        if(lastValidMonitor) {
+          const monitor = lastValidMonitor
+          return (
+            <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+          )
+        }
+        return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
       } else {
         // Show all valid monitors individually
         const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)

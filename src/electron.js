@@ -2346,7 +2346,7 @@ function addEventListeners() {
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
-    setTimeout(handleBackgroundUpdate, 2500)
+    setTimeout(() => handleBackgroundUpdate(), 2500)
   }
   restartBackgroundUpdate()
 }
@@ -2375,6 +2375,7 @@ function handleMonitorChange(e, d) {
     // Reset all known displays
     refreshMonitors(true, true).then(() => {
       setKnownBrightness() // Re-apply known brightness
+      handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
       if (!panelSize.visible)
@@ -2398,10 +2399,10 @@ powerMonitor.on("resume", () => {
         restartPanel()
 
         // Check if time adjustments should apply
-        handleBackgroundUpdate()
+        handleBackgroundUpdate(true)
       })
     },
-    1900 // Give Windows a few seconds to... you know... wake up.
+    3000 // Give Windows a few seconds to... you know... wake up.
   )
 
 })
@@ -2412,7 +2413,7 @@ function restartBackgroundUpdate() {
     restartBackgroundUpdateThrottle = setTimeout(() => {
       restartBackgroundUpdateThrottle = false
       clearInterval(backgroundInterval)
-      backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 8000 : 60000 * 1))
+      backgroundInterval = setInterval(() => handleBackgroundUpdate(), (isDev ? 8000 : 60000 * 1))
       handleBackgroundUpdate()
     }, 3000)
   } else {
@@ -2427,7 +2428,7 @@ let lastTimeEvent = {
   minute: new Date().getMinutes(),
   day: new Date().getDate()
 }
-function handleBackgroundUpdate() {
+function handleBackgroundUpdate(force = false) {
 
   try {
     // Time of Day Adjustments
@@ -2437,8 +2438,8 @@ function handleBackgroundUpdate() {
       const minute = date.getMinutes()
 
       // Reset on new day
-      if (lastTimeEvent && lastTimeEvent.day != date.getDate()) {
-        console.log("New day, resettings lastTimeEvent")
+      if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
+        console.log("New day (or forced), resettings lastTimeEvent")
         lastTimeEvent = false
       }
 
@@ -2472,7 +2473,7 @@ function handleBackgroundUpdate() {
     console.error(e)
   }
 
-  checkForUpdates()
+  if(!force) checkForUpdates(); // Ignore when forced update, since it should just be about fixing brightness.
 
 }
 

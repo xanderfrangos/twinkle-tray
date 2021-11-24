@@ -772,7 +772,20 @@ const localization = {
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
   // Detect language
-  localization.detected = (settings.language == "system" ? app.getLocale().split("-")[0] : settings.language)
+  let detected = app.getLocale()
+
+  if(detected === "zh-CN") {
+    detected = "zh_Hans"
+  } else if(detected === "zh-TW" || detected === "zh-HK" || detected === "zh-MO") {
+    detected = "zh-Hant"
+  } else if(detected?.split("-")[0] === "pt") {
+    detected = app.getLocale()
+  } else {
+    detected = detected?.split("-")[0]
+  }
+
+  // Use detected if user has not selected one
+  localization.detected = (settings.language == "system" ? detected : settings.language)
 
   // Get default localization file
   try {

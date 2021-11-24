@@ -2449,7 +2449,7 @@ function handleBackgroundUpdate(force = false) {
         const eventHour = (event.hour * 1) + (event.am == "PM" && (event.hour * 1) != 12 ? 12 : (event.am == "AM" && (event.hour * 1) == 12 ? -12 : 0))
         const eventMinute = event.minute * 1
         // Check if event is not later than current time, last event time, or last found time
-        if (hour >= eventHour || (hour == eventHour && minute >= eventMinute)) {
+        if (hour > eventHour || (hour == eventHour && minute >= eventMinute)) {
           // Check if found event is greater than last found event
           if (foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
             foundEvent = Object.assign({}, event)

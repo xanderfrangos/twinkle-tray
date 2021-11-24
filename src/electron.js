@@ -2367,19 +2367,23 @@ function handleMonitorChange(e, d) {
   }
 
   // Defer actions for a moment just in case of repeat events
-  if (!handleChangeTimeout) {
-    handleChangeTimeout = setTimeout(() => {
-
-      // Reset all known displays
-      refreshMonitors(true, true).then(() => {
-        // If displays not shown, refresh mainWindow
-        if (!panelSize.visible)
-          restartPanel()
-      })
-
-      handleChangeTimeout = false
-    }, 1500)
+  if (handleChangeTimeout) {
+    clearTimeout(handleChangeTimeout)
   }
+  handleChangeTimeout = setTimeout(() => {
+
+    // Reset all known displays
+    refreshMonitors(true, true).then(() => {
+      setKnownBrightness() // Re-apply known brightness
+
+      // If displays not shown, refresh mainWindow
+      if (!panelSize.visible)
+        restartPanel()
+    })
+
+    handleChangeTimeout = false
+  }, 3000)
+  
 
 }
 

@@ -368,6 +368,10 @@ function processSettings(newSettings = {}) {
       setTrayMenu()
     }
 
+    if (newSettings.order !== undefined) {
+      restartPanel()
+    }
+
     if (newSettings.useAcrylic !== undefined) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
       handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)

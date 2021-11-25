@@ -66,6 +66,8 @@ function detectSunValley() {
     } else {
         window.document.body.dataset.segoeUIVariable = false
     }
+    // Detect Windows 11
+    window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
 }
 
 function openURL(url) {

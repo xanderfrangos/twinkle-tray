@@ -313,6 +313,7 @@ function readSettings() {
   // Overrides
   settings.isDev = isDev
   settings.killWhenIdle = false
+  settings.isWin11 = (os.release()?.split(".")[2] * 1) >= 22000
 
   processSettings()
 }

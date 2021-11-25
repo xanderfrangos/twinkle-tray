@@ -766,7 +766,20 @@ const localization = {
 let T = new Translate(localization.desired, localization.default)
 function getLocalization() {
   // Detect language
-  localization.detected = (settings.language == "system" ? app.getLocale().split("-")[0] : settings.language)
+  let detected = app.getLocale()
+
+  if(detected === "zh-CN") {
+    detected = "zh_Hans"
+  } else if(detected === "zh-TW" || detected === "zh-HK" || detected === "zh-MO") {
+    detected = "zh-Hant"
+  } else if(detected?.split("-")[0] === "pt") {
+    detected = app.getLocale()
+  } else {
+    detected = detected?.split("-")[0]
+  }
+
+  // Use detected if user has not selected one
+  localization.detected = (settings.language == "system" ? detected : settings.language)
 
   // Get default localization file
   try {
@@ -1493,7 +1506,7 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: false,
       spellcheck: false,
       enableWebSQL: false,
-      v8CacheOptions: "none",
+      //v8CacheOptions: "none",
       additionalArguments: "--expose_gc"
     }
   });
@@ -2356,7 +2369,7 @@ function addEventListeners() {
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
-    setTimeout(handleBackgroundUpdate, 2500)
+    setTimeout(() => handleBackgroundUpdate(), 2500)
   }
   restartBackgroundUpdate()
 }
@@ -2377,22 +2390,24 @@ function handleMonitorChange(e, d) {
   }
 
   // Defer actions for a moment just in case of repeat events
-  if (!handleChangeTimeout) {
-    handleChangeTimeout = setTimeout(() => {
-
-      // Reset all known displays
-      refreshMonitors(true, true).then(() => {
-        // If displays not shown, refresh mainWindow
-        if (!panelSize.visible)
-          restartPanel()
-      })
-
-      handleChangeTimeout = false
-
-      const {Notification} = require("electron")
-      new Notification({title: "Monitors changed!"}).show()
-    }, 1500)
+  if (handleChangeTimeout) {
+    clearTimeout(handleChangeTimeout)
   }
+  handleChangeTimeout = setTimeout(() => {
+
+    // Reset all known displays
+    refreshMonitors(true, true).then(() => {
+      setKnownBrightness() // Re-apply known brightness
+      handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
+
+      // If displays not shown, refresh mainWindow
+      if (!panelSize.visible)
+        restartPanel()
+    })
+
+    handleChangeTimeout = false
+  }, 3000)
+  
 
 }
 
@@ -2407,10 +2422,10 @@ powerMonitor.on("resume", () => {
         restartPanel()
 
         // Check if time adjustments should apply
-        handleBackgroundUpdate()
+        handleBackgroundUpdate(true)
       })
     },
-    1900 // Give Windows a few seconds to... you know... wake up.
+    3000 // Give Windows a few seconds to... you know... wake up.
   )
 
 })
@@ -2421,7 +2436,7 @@ function restartBackgroundUpdate() {
     restartBackgroundUpdateThrottle = setTimeout(() => {
       restartBackgroundUpdateThrottle = false
       clearInterval(backgroundInterval)
-      backgroundInterval = setInterval(handleBackgroundUpdate, (isDev ? 8000 : 60000 * 1))
+      backgroundInterval = setInterval(() => handleBackgroundUpdate(), (isDev ? 8000 : 60000 * 1))
       handleBackgroundUpdate()
     }, 3000)
   } else {
@@ -2436,7 +2451,7 @@ let lastTimeEvent = {
   minute: new Date().getMinutes(),
   day: new Date().getDate()
 }
-function handleBackgroundUpdate() {
+function handleBackgroundUpdate(force = false) {
 
   try {
     // Time of Day Adjustments
@@ -2446,8 +2461,8 @@ function handleBackgroundUpdate() {
       const minute = date.getMinutes()
 
       // Reset on new day
-      if (lastTimeEvent && lastTimeEvent.day != date.getDate()) {
-        console.log("New day, resettings lastTimeEvent")
+      if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
+        console.log("New day (or forced), resettings lastTimeEvent")
         lastTimeEvent = false
       }
 
@@ -2457,7 +2472,7 @@ function handleBackgroundUpdate() {
         const eventHour = (event.hour * 1) + (event.am == "PM" && (event.hour * 1) != 12 ? 12 : (event.am == "AM" && (event.hour * 1) == 12 ? -12 : 0))
         const eventMinute = event.minute * 1
         // Check if event is not later than current time, last event time, or last found time
-        if (hour >= eventHour || (hour == eventHour && minute >= eventMinute)) {
+        if (hour > eventHour || (hour == eventHour && minute >= eventMinute)) {
           // Check if found event is greater than last found event
           if (foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
             foundEvent = Object.assign({}, event)
@@ -2481,7 +2496,7 @@ function handleBackgroundUpdate() {
     console.error(e)
   }
 
-  checkForUpdates()
+  if(!force) checkForUpdates(); // Ignore when forced update, since it should just be about fixing brightness.
 
 }
 

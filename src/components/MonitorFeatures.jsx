@@ -11,7 +11,7 @@ export default function MonitorFeatures(props) {
 
     let extraHTML = []
 
-    if(monitor?.features && Object.keys(monitor.features).length > 0) {
+    if(monitor.type === "ddcci" && monitor?.features && Object.keys(monitor.features).length > 0) {
 
         if (monitor.features.contrast) {
             const enabled = monitorFeatures?.contrast;

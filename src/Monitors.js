@@ -49,10 +49,16 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         monitors = await getAllMonitors()
     } else {
         const startTime = process.hrtime()
+        // DDC/CI
         for(const hwid2 in monitors) {
             if(monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
                 monitors[hwid2] = await getBrightnessDDC(monitors[hwid2])
             }
+        }
+        // WMI
+        const wmiBrightness = await getBrightnessWMI()
+        if (wmiBrightness) {
+            updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
         }
         console.log(`Refresh Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     }
@@ -73,20 +79,19 @@ getAllMonitors = async () => {
     const featuresList = await getFeaturesDDC()
     const wmiBrightness = await getBrightnessWMI()
 
+    // List via WMI
     for(const hwid2 in monitorsWMI) {
         const monitor = monitorsWMI[hwid2]
         updateDisplay(foundMonitors, hwid2, monitor)
     }
 
+    // List via Win32 (more details)
     for(const hwid2 in monitorsWin32) {
         const monitor = monitorsWin32[hwid2]
         updateDisplay(foundMonitors, hwid2, monitor)
     }
 
-    if(wmiBrightness) {
-        updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
-    }
-
+    // DDC/CI Brightness + Features
     for(const hwid2 in featuresList) {
         const monitor = featuresList[hwid2]
         const { features, id } = monitor
@@ -108,6 +113,19 @@ getAllMonitors = async () => {
         // Unnormalize brightness
         ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightnessRaw, true, ddcciInfo.min, ddcciInfo.max)
         updateDisplay(foundMonitors, hwid2, ddcciInfo) 
+    }
+
+    // WMI Brightness
+    if (wmiBrightness) {
+        updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
+    }
+
+    // Finally, fix names/num
+    let idx = 0
+    for(const hwid2 in foundMonitors) {
+        if (!foundMonitors[hwid2].name) foundMonitors[hwid2].name = `${localization.GENERIC_DISPLAY_SINGLE} ${idx + 1}`;
+        foundMonitors[hwid2].num = idx;
+        idx++
     }
 
     console.log(`getAllMonitors() total: ${process.hrtime(startTime)[1] / 1000000}ms`)
@@ -359,7 +377,7 @@ updateDisplay = (monitors, hwid2, info = {}) => {
             min: 0,
             max: 100,
             hwid: [],
-            name: "Unknown Display",
+            name: null,
             serial: null
         }
     }

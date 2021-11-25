@@ -387,8 +387,11 @@ function setBrightness(brightness, id) {
 let vcpCache = {}
 function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     try {
+        const hwid = monitor.split("#")
+        const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[setting]
+
         // If we previously saw that a feature was supported, we shouldn't have to check again.
-        if (!skipCache && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
+        if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
 
         const vcpResult = checkVCP(monitor, code)
         return vcpResult

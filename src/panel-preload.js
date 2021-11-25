@@ -301,6 +301,7 @@ browser.webContents.once('dom-ready', () => {
 
 // VCP code handling
 window.addEventListener("setVCP", e => {
+    if(!window.showPanel) return false;
     const { monitor, code, value } = e.detail
     ipc.send("set-vcp", { monitor, code, value })
 })

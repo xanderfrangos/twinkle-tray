@@ -6,6 +6,7 @@ export default class Slider extends Component {
 
     firingEvent = false
     handleChange = (event) => {
+        if(event.target.value !== this.props.level)
         this.setState({ level: this.cap(event.target.value) }, this.fireChange)
     }
 
@@ -58,7 +59,7 @@ export default class Slider extends Component {
         this.state = {
             level: this.cap((this.props.level === undefined ? 50 : this.props.level)),
         }
-        this.fireChange()
+        //this.fireChange()
     }
 
     componentDidUpdate(oldProps) {

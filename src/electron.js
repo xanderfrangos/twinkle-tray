@@ -1175,11 +1175,10 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 function updateBrightness(index, level, useCap = true, vcp = "brightness") {
-
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
     monitor = Object.values(monitors).find((display) => {
-      return display.id.indexOf(index) === 0
+      return display?.id?.indexOf(index) === 0
     })
   } else {
     if (index >= Object.keys(monitors).length) {
@@ -1209,7 +1208,7 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness") {
         type: "vcp",
         code: vcp,
         value: level,
-        monitor: monitor.id
+        monitor: monitor.hwid.join("#")
       })
     } else if (monitor.type == "wmi") {
       monitor.brightness = level
@@ -1330,15 +1329,15 @@ function sleepDisplays(mode = "ps") {
           if(monitor.type === "ddcci") {
             monitorsThread.send({
               type: "vcp",
-              monitor: monitor.id,
+              monitor: monitor.hwid.join("#"),
               code: 0xD6,
-              value: 4
+              value: 5
             })
             monitorsThread.send({
               type: "vcp",
-              monitor: monitor.id,
+              monitor: monitor.hwid.join("#"),
               code: 0xD6,
-              value: 5
+              value: 4
             })
           }
         }
@@ -1898,7 +1897,7 @@ function createTray() {
     lastMouseMove = now
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
-    tryEagerUpdate()
+    tryEagerUpdate(false)
     sendToAllWindows('panel-unsleep')
   })
 
@@ -1970,7 +1969,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   }
 
   if (doRefresh && !isOverlay) {
-    tryEagerUpdate()
+    tryEagerUpdate(false)
     getThemeRegistry()
     getSettings()
 
@@ -1989,7 +1988,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
         hotkeyOverlayHide()
         setTimeout(() => {
           sendToAllWindows("display-mode", "normal")
-          toggleTray(doRefresh, isOverlay)
+          //toggleTray(doRefresh, isOverlay)
         }, 300)
         return false
       }
@@ -2402,7 +2401,7 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   setTimeout(
     () => {
-      refreshMonitors().then(() => {
+      refreshMonitors(true).then(() => {
         // Set brightness to last known settings
         setKnownBrightness()
         restartPanel()

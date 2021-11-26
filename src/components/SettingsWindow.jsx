@@ -861,8 +861,6 @@ export default class SettingsWindow extends PureComponent {
         if(sentVal === "on") value = true;
         if(sentVal === "off") value = false;
 
-        console.log(sentVal)
-
         const newState = {}
         newState[setting] = value
         this.setState(newState)
@@ -914,6 +912,13 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
                                 <option value="dark">{T.t("SETTINGS_GENERAL_THEME_DARK")}</option>
                                 <option value="light">{T.t("SETTINGS_GENERAL_THEME_LIGHT")}</option>
+                            </select>
+                            <br /><br />
+                            <label>Windows UI Style</label>
+                            <select value={window.settings.windowsStyle} onChange={(e) => this.setSetting("windowsStyle", e.target.value)}>
+                                <option value="system">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
+                                <option value="win10">Windows 10</option>
+                                <option value="win11">Windows 11</option>
                             </select>
                             <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>

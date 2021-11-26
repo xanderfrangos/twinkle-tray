@@ -119,7 +119,6 @@ function enableMouseEvents() {
           } else {
             // Panel is displayed
             sendToAllWindows("panelBlur")
-            showPanel(false)
           }
         }
 
@@ -1550,6 +1549,7 @@ function createPanel(toggleOnLoad = false) {
     console.log("Panel ready!")
     mainWindow.show()
     createTray()
+    sendMicaWallpaper()
 
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
@@ -1558,7 +1558,6 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if (canReposition) {
       sendToAllWindows("panelBlur")
-      showPanel(false)
     }
     global.gc()
   })
@@ -2184,6 +2183,8 @@ function createSettings() {
       e.preventDefault()
       require('electron').shell.openExternal(url)
     })
+
+    sendMicaWallpaper()
   })
 
   refreshMonitors(true)
@@ -2410,6 +2411,7 @@ function addEventListeners() {
 function handleAccentChange() {
   sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
+  sendMicaWallpaper()
 }
 
 let skipFirstMonChange = false
@@ -2672,14 +2674,24 @@ function startMonitorThread() {
 }
 startMonitorThread()
 
-setInterval(() => {
-  console.log(getWallpaperPath())
-  sendToAllWindows("mica-wallpaper", getWallpaperPath())
-},3111)
-
-
+let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+let currentWallpaperTime = false;
 function getWallpaperPath() {
-  const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
-  const exists = fs.existsSync(wallPath)
-  return (exists ? wallPath : false)
+  try {
+    const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
+    const file = fs.statSync(wallPath)
+
+    if(file?.mtime && file.mtime !== currentWallpaperTime) {
+      currentWallpaper = "file://" + wallPath + "?" + Date.now()
+    }
+    
+    return currentWallpaper
+  } catch(e) {
+    console.log("Wallpaper file not found or unavailable.")
+    return currentWallpaper
+  }
+}
+
+function sendMicaWallpaper() {
+  sendToAllWindows("mica-wallpaper", getWallpaperPath())
 }

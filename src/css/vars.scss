@@ -175,11 +175,15 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
         --page-section-bg: #ffffff0a;
         --tray-background: #242424 !important;
         --tray-background-transparent: #242424 !important;
-        --tray-titlebar-bg: rgba(0,0,0,0.24);
+        --tray-titlebar-bg: rgba(0,0,0,0.18);
         --slider-track-color: #9b9b9b;
         --slider-thumb-border: #313131;
         --button-background: #373737;
         --button-background: var(--system-accent-medium);
         --input-border: #6f6f6f;
+
+        &[data-use-mica="false"] {
+            --tray-titlebar-bg: rgba(0,0,0,0.24);
+        }
     }
 }

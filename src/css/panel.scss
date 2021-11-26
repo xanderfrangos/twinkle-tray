@@ -478,10 +478,10 @@ body[data-is-win11="true"] {
         .titlebar {
             position: relative;
             order: 100;
-            background: var(--tray-titlebar-bg);
             margin: 5px 0 1px -19px;
             padding: 20px;
             width: calc(100% - 2px);
+            backdrop-filter: brightness(0.9) saturate(1.15);
 
             &:before {
                 content: "";
@@ -491,12 +491,18 @@ body[data-is-win11="true"] {
                 left: 0;
                 width: 100%;
                 height: 1px;
-                background-color: #202020;
-                opacity: 0.12;
+                background-color: #000000;
+                opacity: 0.14;
+                mix-blend-mode: color;
+                z-index: 2;
             }
 
             .icons {
                 font-size: 18px;
+            }
+            & > {
+                position: relative;
+                z-index: 2;
             }
         }
 
@@ -512,5 +518,13 @@ body[data-is-win11="true"] {
             transform: translateX(220px);
         }
 
+    }
+
+    #mica {
+        backdrop-filter: brightness(1.15) saturate(1.1);
+        mix-blend-mode: color;
+        .displays .blur {
+            //opacity: 0.6;
+        }
     }
 }

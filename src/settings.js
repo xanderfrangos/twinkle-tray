@@ -14,6 +14,14 @@ window.thisWindow.on("move", (e) => {
     updateMicaPosition(thisWindow.getPosition())
 })
 
+window.thisWindow.on("blur", () => {
+    document.body.dataset.focused = "false"
+})
+
+window.thisWindow.on("focus", () => {
+    document.body.dataset.focused = "true"
+})
+
 updateMicaPosition(thisWindow.getPosition())
 
 ReactDOM.render(<SettingsWindow theme={window.settings.theme} />, document.getElementById("settings"));

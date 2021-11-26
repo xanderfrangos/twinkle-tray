@@ -312,9 +312,9 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
         window.micaState.visibility = "hidden"
     } else {
         window.micaState.visibility = "visible"
-        window.micaState.src = "file://" + wallpaper + "?" + Date.now()
+        window.micaState.src = wallpaper
         mica.style.visibility = "visible"
-        micaIMG.src = "file://" + wallpaper + "?" + Date.now()
+        micaIMG.src = wallpaper
     }
 })
 

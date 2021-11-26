@@ -604,7 +604,7 @@ a {
         }
 
         &:hover {
-            background: var(--tray-border);
+            background: var(--sidebar-item-hover);
         }
 
         &:active {}
@@ -620,12 +620,14 @@ a {
             transform-origin: 0 50%;
             transform: scaleX(0);
             background: var(--system-accent-color);
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0;
         }
 
         &[data-active='true'] {
             &:before {
                 transform: scaleX(1);
+                opacity: 1;
             }
         }
     }
@@ -674,18 +676,128 @@ body[data-fluent-icons="true"] {
 }
 body[data-segoe-u-i-variable="true"] {
     .window-titlebar .window-title {
-        font-family: "Segoe UI Variable Small", "Segoe UI";
-        font-weight: 300;
-        font-size: 10.5px;
+        font-family: "Segoe UI Variable", "Segoe UI";
+        font-weight: 400;
+        font-size: 12px;
     }
     #sidebar .item .label {
-        font-family: "Segoe UI Variable Small", "Segoe UI";
-        font-size: 12.5px;
-        font-weight: 300;
+        font-family: "Segoe UI Variable", "Segoe UI";
+        font-size: 13px;
+        font-weight: 400;
     }
     .sectionTitle {
-        font-weight: 350;
+        font-weight: 500;
         font-family: "Segoe UI Variable Display", "Segoe UI";
-        font-size: 27.5px;
+        font-size: 28px;
+    }
+}
+
+// Windows 11 style
+body[data-is-win11="true"] {
+    #settings > .window-base {
+        background-color: var(--page-background);
+    }
+    #sidebar, #page {
+        background: none !important;
+    }
+    #sidebar {
+        padding: 45px 0 15px 15px;
+        padding-top: 45px;
+        height: calc(100vh - 2px - 60px);
+        .item {
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 4px 0;
+            line-height: 1;
+
+            &:before {
+                border-radius: 10px;
+                left: -10px;
+            }
+
+            &[data-active='true'] {
+                background: var(--sidebar-item-hover);
+            }
+
+            &[data-type="debug"] {
+                margin-top: auto;
+            }
+        }
+    }
+    #page {
+        padding-top: 19px;
+    }
+    .button {
+        background: var(--button-background);
+        color: white;
+        border-radius: 6px;
+        border: 0;
+        box-shadow: inset 0 0.25px 0 0.5px rgba(255, 255, 255, 0.068), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
+        &:hover {
+            background: var(--input-border);
+        }
+    }
+    .window-titlebar .window-title {
+        position: relative;
+        top: 8px;
+        left: 10px;
+    }
+    input, select {
+        border-radius: 5px;
+        border-width: 1.5px;
+    }
+    input[type="checkbox"] {
+        width: 44px;
+        border-width: 1.5px;
+        border-radius: 50px;
+
+        &::before {
+            background-color: var(--input-border);
+            transform-origin: center;
+            transform: translateY(-0.2px);
+        }
+
+        &:hover {
+            &:before {
+                transform: translateY(-0.2px) scale(1.2);
+            }
+        }
+
+        &[data-checked="true"] {  
+            &:before {
+                transform: translateX(24px) translateY(-0.2px);
+                background-color: var(--page-background);  
+            }
+            &:hover {
+                &:before {
+                    transform: translateX(22px) translateY(-0.2px) scale(1.2);
+                }
+            }
+        }
+    }
+    .reorderList {
+        border-color: var(--input-border);
+        border-width: 1.5px;
+        border-radius: 5px;
+    }
+    .pageSection {
+        padding-bottom: 40px;
+        max-width: 800px;
+        background: var(--page-section-bg);
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+    .pageSection[data-active=true] {
+        animation: pageSectionIn 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
+        @keyframes pageSectionIn {
+            0% { opacity: 0; transform: translateY(90px); }
+            80% { opacity: 1; }
+            100% { transform: translateY(0px); }
+        }
+    }
+    ::-webkit-scrollbar-thumb {
+        border-radius: 20px;
     }
 }

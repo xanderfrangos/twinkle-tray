@@ -446,3 +446,62 @@ $overlayBarWidthOff: $overlayBarWidth * -0.5;
 .feature-row.large {
     height: 42px;
 }
+
+
+
+// Windows 11 style
+body[data-is-win11="true"] {
+
+    #root > .window-base {
+        display: flex;
+        flex-direction: column;
+        box-shadow: none;
+        border: 1px solid var(--tray-border);
+        border-radius: 8px;
+        overflow: hidden;
+        top: 12px;
+        left: 12px;
+        width: calc(100vw - 24px);
+        padding: 20px;
+        padding-bottom: 0;
+        transform: translateX(220px);
+
+        .titlebar {
+            position: relative;
+            order: 100;
+            background: var(--tray-titlebar-bg);
+            width: 100%;
+            margin: 5px -20px 0px;
+            padding: 20px;
+
+            &:before {
+                content: "";
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 1px;
+                background-color: #202020;
+                opacity: 0.12;
+            }
+
+            .icons {
+                font-size: 18px;
+            }
+        }
+
+        &[data-position="TOP"]>.window-base {
+            transform: translateX(220px);
+        }
+
+        &[data-position="LEFT"]>.window-base {
+            transform: translateX(-220px);
+        }
+
+        &[data-position="RIGHT"]>.window-base {
+            transform: translateX(220px);
+        }
+
+    }
+}

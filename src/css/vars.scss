@@ -23,6 +23,8 @@
     --page-text: #000;
     --page-text-mid: #333;
 
+    --sidebar-item-hover: #16161626;
+
     --window-border: #ddd;
 
     --titlebar-icon: #888;
@@ -48,6 +50,8 @@
         --page-background: #030303;
         --page-text: #fff;
         --page-text-mid: #bbb;
+        
+        --sidebar-item-hover: #ffffff26;
 
         --window-border: #222;
 
@@ -146,5 +150,34 @@ body[data-colored-taskbar="true"] {
 body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"] {
     div#panel {
         --tray-background: var(--system-accent-transparent) !important;
+    }
+}
+
+
+
+// Windows 11 style
+body[data-is-win11="true"] #root, body[data-is-win11="true"] #settings {
+
+    --page-background: #f1f3f9;
+    --page-section-bg: #ffffffaf;
+    --tray-background: #f2f2f2;
+    --tray-titlebar-bg: #eeeeee;
+    --slider-track-color: #868686;
+    --slider-thumb-border: #ffffff;
+    --button-background: #ffffff;
+    --button-background: var(--system-accent-medium);
+    --input-border: rgb(194, 194, 194);
+
+    @media screen and (prefers-color-scheme: dark) {
+
+        --page-background: #202020;
+        --page-section-bg: #ffffff0a;
+        --tray-background: #242424;
+        --tray-titlebar-bg: #1f1f1f;
+        --slider-track-color: #9b9b9b;
+        --slider-thumb-border: #313131;
+        --button-background: #373737;
+        --button-background: var(--system-accent-medium);
+        --input-border: #6f6f6f;
     }
 }

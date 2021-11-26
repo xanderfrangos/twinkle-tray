@@ -1021,7 +1021,7 @@ function tryVibrancy(window, value = null) {
   if (!window) return false;
   try {
     window.getBounds()
-    window.setVibrancy(value)
+    window.setVibrancy(value, { useCustomWindowRefreshMethod: false })
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -1432,7 +1432,8 @@ ipcMain.on('get-update', (event, version) => {
 })
 
 ipcMain.on('panel-height', (event, height) => {
-  panelSize.height = height
+  panelSize.height = height + (settings?.isWin11 ? 24 : 0)
+  panelSize.width = 356 + (settings?.isWin11 ? 24 : 0)
   if (panelSize.visible && !isAnimatingPanel) {
     repositionPanel()
   }
@@ -2124,6 +2125,12 @@ function createSettings() {
     backgroundColor: "#00000000",
     frame: false,
     icon: './src/assets/logo.ico',
+    vibrancy: {
+      theme: false,
+      disableOnBlur: false,
+      useCustomWindowRefreshMethod: false,
+      effect: 'blur'
+    },
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,

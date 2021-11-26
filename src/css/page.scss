@@ -387,6 +387,20 @@ a {
     }
 }
 
+.inputToggle-generic {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+
+    .text {
+        font-size: 14px;
+        line-height: 1;
+        margin-top: -5px;
+        margin-left: 8px;
+    }
+}
+
 
 .reorderList {
     max-width: 360px;

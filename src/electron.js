@@ -292,6 +292,10 @@ const defaultSettings = {
   sleepAction: "ps",
   hotkeysBreakLinkedLevels: true,
   enableSunValley: true,
+  isWin11: (os.release()?.split(".")[2] * 1) >= 22000,
+  windowsStyle: "system",
+  hideClosedLid: false,
+  getDDCBrightnessUpdates: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -313,7 +317,6 @@ function readSettings() {
   // Overrides
   settings.isDev = isDev
   settings.killWhenIdle = false
-  settings.isWin11 = (os.release()?.split(".")[2] * 1) >= 22000
 
   processSettings()
 }
@@ -377,6 +380,16 @@ function processSettings(newSettings = {}) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
       handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
       sendToAllWindows('theme-settings', lastTheme)
+    }
+
+    if(newSettings.windowsStyle !== undefined) {
+      if(newSettings.windowsStyle === "win11") {
+        settings.isWin11 = true
+      } else if(newSettings.windowsStyle === "win10") {
+        settings.isWin11 = false
+      } else {
+        settings.isWin11 = (os.release()?.split(".")[2] * 1) >= 22000
+      }
     }
 
     if (newSettings.icon !== undefined) {

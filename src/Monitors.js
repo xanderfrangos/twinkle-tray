@@ -19,8 +19,8 @@ process.on('message', (data) => {
             localization = data.localization
         } else if(data.type === "vcp") {
             setVCP(data.monitor, data.code, data.value)
-        } else if (data.type === "test") {
-            
+        } else if (data.type === "flushvcp") {
+            vcpCache = [];
         }
     } catch(e) {
         console.log(e)
@@ -49,18 +49,25 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         monitors = await getAllMonitors()
     } else {
         const startTime = process.hrtime()
+
         // DDC/CI
-        for(const hwid2 in monitors) {
-            if(monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
-                monitors[hwid2] = await getBrightnessDDC(monitors[hwid2])
+        if(settings?.getDDCBrightnessUpdates) {
+            for(const hwid2 in monitors) {
+                if(monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
+                    monitors[hwid2] = await getBrightnessDDC(monitors[hwid2])
+                }
             }
+            console.log(`Refresh DDC/CI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
         }
+
         // WMI
         const wmiBrightness = await getBrightnessWMI()
         if (wmiBrightness) {
-            updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
+            if(!settings?.hideClosedLid || !(monitors[wmiBrightness.hwid[2]]?.type === "none")) {
+                updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
+            }
         }
-        console.log(`Refresh Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+        console.log(`Refresh WMI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     }
 
     busyLevel = 0
@@ -75,9 +82,13 @@ getAllMonitors = async () => {
     const startTime = process.hrtime()
 
     const monitorsWMI = await getMonitorsWMI()
+    console.log(`getMonitorsWMI() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     const monitorsWin32 = await getMonitorsWin32()
+    console.log(`getMonitorsWin32() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     const featuresList = await getFeaturesDDC()
+    console.log(`getFeaturesDDC() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
     const wmiBrightness = await getBrightnessWMI()
+    console.log(`getBrightnessWMI() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
 
     // List via WMI
     for(const hwid2 in monitorsWMI) {
@@ -118,6 +129,11 @@ getAllMonitors = async () => {
     // WMI Brightness
     if (wmiBrightness) {
         updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
+
+        // If Win32 doesn't find the internal display, hide it.
+        if(settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+            updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
+        }
     }
 
     // Finally, fix names/num
@@ -329,7 +345,7 @@ getBrightnessDDC = (monitorObj) => {
 
             // If something goes wrong and there are previous values, use those
             if (!brightnessValues) {
-                console.log("\x1b[41mNO BRIGHTNESS VALUES AVAILABLE\x1b[0m")
+                console.log(`\x1b[41mNO BRIGHTNESS VALUES AVAILABLE FOR ${monitorObj.hwid[1]}\x1b[0m`)
                 if (monitor.brightnessRaw !== undefined && monitor.brightnessMax !== undefined) {
                     console.log("\x1b[41mUSING PREVIOUS VALUES\x1b[0m")
                     brightnessValues = [monitor.brightnessRaw, monitor.brightnessMax]

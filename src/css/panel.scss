@@ -472,15 +472,16 @@ body[data-is-win11="true"] {
         padding: 20px;
         padding-bottom: 0;
         transform: translateX(220px);
-        box-shadow: 0 5px 15px -5px rgb(0 0 0 / 35%);
+        box-shadow: inset 0 0 0 1px #c5c5c547, 0 8px 15px -5px rgb(0 0 0 / 75%);
+        border: none;
 
         .titlebar {
             position: relative;
             order: 100;
             background: var(--tray-titlebar-bg);
-            width: 100%;
-            margin: 5px -20px 0px;
+            margin: 5px 0 1px -19px;
             padding: 20px;
+            width: calc(100% - 2px);
 
             &:before {
                 content: "";

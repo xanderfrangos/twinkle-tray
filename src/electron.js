@@ -40,6 +40,8 @@ const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-lau
 const Translate = require('./Translate');
 const { electron } = require('process');
 
+const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
+
 app.allowRendererProcessReuse = true
 
 // Logging
@@ -292,7 +294,7 @@ const defaultSettings = {
   sleepAction: "ps",
   hotkeysBreakLinkedLevels: true,
   enableSunValley: true,
-  isWin11: (os.release()?.split(".")[2] * 1) >= 22000,
+  isWin11: isReallyWin11,
   windowsStyle: "system",
   hideClosedLid: false,
   getDDCBrightnessUpdates: false,
@@ -376,20 +378,21 @@ function processSettings(newSettings = {}) {
       restartPanel()
     }
 
-    if (newSettings.useAcrylic !== undefined) {
-      lastTheme["UseAcrylic"] = newSettings.useAcrylic
-      handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
-      sendToAllWindows('theme-settings', lastTheme)
-    }
-
     if(newSettings.windowsStyle !== undefined) {
       if(newSettings.windowsStyle === "win11") {
         settings.isWin11 = true
       } else if(newSettings.windowsStyle === "win10") {
         settings.isWin11 = false
       } else {
-        settings.isWin11 = (os.release()?.split(".")[2] * 1) >= 22000
+        settings.isWin11 = isReallyWin11
       }
+      newSettings.useAcrylic = settings.useAcrylic
+    }
+
+    if (newSettings.useAcrylic !== undefined) {
+      lastTheme["UseAcrylic"] = newSettings.useAcrylic
+      handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
+      sendToAllWindows('theme-settings', lastTheme)
     }
 
     if (newSettings.icon !== undefined) {
@@ -1031,10 +1034,10 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
-  if (!window) return false;
+  if (!window || settings.isWin11) return false;
   try {
     window.getBounds()
-    window.setVibrancy(value, { useCustomWindowRefreshMethod: false })
+    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow && !isReallyWin11) })
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -2141,7 +2144,7 @@ function createSettings() {
     vibrancy: {
       theme: false,
       disableOnBlur: false,
-      useCustomWindowRefreshMethod: false,
+      useCustomWindowRefreshMethod: !isReallyWin11,
       effect: 'blur'
     },
     webPreferences: {

@@ -119,6 +119,7 @@ function enableMouseEvents() {
           } else {
             // Panel is displayed
             sendToAllWindows("panelBlur")
+            if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
           }
         }
 
@@ -1558,6 +1559,7 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if (canReposition) {
       sendToAllWindows("panelBlur")
+      if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
     }
     global.gc()
   })

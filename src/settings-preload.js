@@ -152,6 +152,17 @@ ipc.on('theme-settings', (event, theme) => {
     }
 })
 
+ipc.on('mica-wallpaper', (event, wallpaper) => {
+    const mica = document.querySelector("#mica .displays")
+    const micaIMG = document.querySelector("#mica img")
+    if(!wallpaper) {
+        mica.style.visibility = "hidden"
+    } else {
+        mica.style.visibility = "visible"
+        micaIMG.src = "file://" + wallpaper + "?" + Date.now()
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()

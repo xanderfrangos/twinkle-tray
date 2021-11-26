@@ -708,8 +708,14 @@ body[data-segoe-u-i-variable="true"] {
 
 // Windows 11 style
 body[data-is-win11="true"] {
+    background-color: var(--page-background);
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+
     #settings > .window-base {
         background-color: var(--page-background);
+        background: none;
     }
     #sidebar, #page {
         background: none !important;
@@ -740,6 +746,7 @@ body[data-is-win11="true"] {
     }
     #page {
         padding-top: 19px;
+        border-top-color: transparent;
     }
     .button {
         background: var(--button-background);

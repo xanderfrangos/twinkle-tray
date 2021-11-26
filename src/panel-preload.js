@@ -26,6 +26,12 @@ function setPanelVisibility(visible) {
                 }
             }, 500)
         }
+        const pos = browser.getPosition()
+        if(settings.isWin11) {
+            pos[0] += 12
+            pos[1] += 12
+        }
+        window.updateMica?.(pos)
     } else {
         window.document.body.dataset["acrylicShow"] = false
         if (window.isAcrylic) {
@@ -292,6 +298,24 @@ ipc.on('closePanelAnimation', () => {
 
 ipc.on('set-acrylic-show', () => {
     window.document.body.dataset["acrylicShow"] = true
+})
+
+window.micaState = {
+    visibility: "hidden",
+    src: "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D"
+}
+ipc.on('mica-wallpaper', (event, wallpaper) => {
+    const mica = document.querySelector("#mica .displays")
+    const micaIMG = document.querySelector("#mica img")
+    if(!wallpaper) {
+        mica.style.visibility = "hidden"
+        window.micaState.visibility = "hidden"
+    } else {
+        window.micaState.visibility = "visible"
+        window.micaState.src = "file://" + wallpaper + "?" + Date.now()
+        mica.style.visibility = "visible"
+        micaIMG.src = "file://" + wallpaper + "?" + Date.now()
+    }
 })
 
 // Request startup data

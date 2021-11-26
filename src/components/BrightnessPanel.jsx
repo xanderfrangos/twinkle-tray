@@ -417,10 +417,24 @@ export default class BrightnessPanel extends PureComponent {
           </div>
           {this.getMonitors()}
           {this.getUpdateBar()}
+          {this.renderMica()}
         </div>
       );
     }
 
+  }
+
+  renderMica() {
+    return(
+      <div id="mica">
+        <div class="displays" style={{visibility: window.micaState.visibility}}>
+          <div class="blur">
+            <img alt="" src={window.micaState.src} width="2560" height="1440" />
+          </div>
+        </div>
+        <div class="noise"></div>
+      </div>
+    )
   }
 
 

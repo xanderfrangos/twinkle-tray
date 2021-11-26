@@ -1529,7 +1529,9 @@ function createPanel(toggleOnLoad = false) {
       spellcheck: false,
       enableWebSQL: false,
       //v8CacheOptions: "none",
-      additionalArguments: "--expose_gc"
+      additionalArguments: "--expose_gc",
+      allowRunningInsecureContent: true,
+      webSecurity: false
     }
   });
 
@@ -2144,14 +2146,17 @@ function createSettings() {
     vibrancy: {
       theme: false,
       disableOnBlur: false,
-      useCustomWindowRefreshMethod: !isReallyWin11,
+      //useCustomWindowRefreshMethod: !isReallyWin11,
+      useCustomWindowRefreshMethod: false,
       effect: 'blur'
     },
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
-      contextIsolation: false
+      contextIsolation: false,
+      allowRunningInsecureContent: true,
+      webSecurity: false
     }
   });
 
@@ -2666,3 +2671,15 @@ function startMonitorThread() {
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
 }
 startMonitorThread()
+
+setInterval(() => {
+  console.log(getWallpaperPath())
+  sendToAllWindows("mica-wallpaper", getWallpaperPath())
+},3111)
+
+
+function getWallpaperPath() {
+  const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
+  const exists = fs.existsSync(wallPath)
+  return (exists ? wallPath : false)
+}

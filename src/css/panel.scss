@@ -35,6 +35,13 @@ body {
         transform: translate(0px, 0px);
         opacity: 1;
         pointer-events: none;
+
+        & > div {
+            z-index: 2;
+            &#mica {
+                z-index: 1;
+            }
+        }
     }
 
     &[data-visible="true"]>.window-base {
@@ -465,6 +472,7 @@ body[data-is-win11="true"] {
         padding: 20px;
         padding-bottom: 0;
         transform: translateX(220px);
+        box-shadow: 0 5px 15px -5px rgb(0 0 0 / 35%);
 
         .titlebar {
             position: relative;

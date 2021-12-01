@@ -2678,22 +2678,24 @@ startMonitorThread()
 
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
-function getWallpaperPath() {
+let currentScreenSize = {width: 1280, height: 720}
+function getWallpaper() {
   try {
     const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
+    currentScreenSize = screen.getPrimaryDisplay().workAreaSize
 
     if(file?.mtime && file.mtime !== currentWallpaperTime) {
       currentWallpaper = "file://" + wallPath + "?" + Date.now()
     }
     
-    return currentWallpaper
+    return { path: currentWallpaper, size: currentScreenSize }
   } catch(e) {
     console.log("Wallpaper file not found or unavailable.")
-    return currentWallpaper
+    return { path: currentWallpaper, size: currentScreenSize }
   }
 }
 
 function sendMicaWallpaper() {
-  sendToAllWindows("mica-wallpaper", getWallpaperPath())
+  sendToAllWindows("mica-wallpaper", getWallpaper())
 }

@@ -38,7 +38,7 @@ const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
-const { electron } = require('process');
+const sharp = require('sharp');
 
 const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
 
@@ -1560,9 +1560,9 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     panelReady = true
     console.log("Panel ready!")
+    sendMicaWallpaper()
     mainWindow.show()
     createTray()
-    sendMicaWallpaper()
 
     if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
   })
@@ -2185,6 +2185,7 @@ function createSettings() {
 
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
+      sendMicaWallpaper()
       settingsWindow.show()
       if (settings.useAcrylic) {
         tryVibrancy(settingsWindow, determineTheme(settings.theme))
@@ -2197,8 +2198,6 @@ function createSettings() {
       e.preventDefault()
       require('electron').shell.openExternal(url)
     })
-
-    sendMicaWallpaper()
   })
 
   refreshMonitors(true)
@@ -2734,7 +2733,7 @@ startMonitorThread()
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentScreenSize = {width: 1280, height: 720}
-function getWallpaper() {
+async function getWallpaper() {
   try {
     const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
@@ -2742,15 +2741,29 @@ function getWallpaper() {
 
     if(file?.mtime && file.mtime !== currentWallpaperTime) {
       currentWallpaper = "file://" + wallPath + "?" + Date.now()
+      const wallpaperImage = sharp(wallPath)
+      //const wallpaperInfo = await wallpaperImage.metadata()
+      const image = await sharp({
+        create: {
+          width: currentScreenSize.width,
+          height: currentScreenSize.height,
+          channels: 4,
+          background: "#202020FF"
+        }
+      }).composite([{ input: await wallpaperImage.resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(200).toBuffer(), blend: "overlay" }]).flatten().webp({ quality: 100, nearLossless: true }).toBuffer().then((data) => data.toString('base64'))
+      //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
+      currentWallpaper = "data:image/png;base64," + image
+      currentWallpaperTime = file.mtime
     }
     
     return { path: currentWallpaper, size: currentScreenSize }
   } catch(e) {
-    console.log("Wallpaper file not found or unavailable.")
+    console.log("Wallpaper file not found or unavailable.", e)
     return { path: currentWallpaper, size: currentScreenSize }
   }
 }
 
-function sendMicaWallpaper() {
-  sendToAllWindows("mica-wallpaper", getWallpaper())
+async function sendMicaWallpaper() {
+  console.log("(((((((( SENDING MICA ))))))))")
+  sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

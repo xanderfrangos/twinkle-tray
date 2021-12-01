@@ -475,6 +475,20 @@ body[data-is-win11="true"] {
         box-shadow: inset 0 0 0 1px #c5c5c547, 0 8px 15px -5px rgb(0 0 0 / 75%);
         border: none;
 
+        &:before {
+            pointer-events: none;
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 0 1px #c5c5c528;
+            z-index: 111;
+            border-radius: 8px;
+        }
+
         .titlebar {
             position: relative;
             order: 100;
@@ -521,8 +535,8 @@ body[data-is-win11="true"] {
     }
 
     #mica {
-        backdrop-filter: brightness(1.15) saturate(1.1);
-        mix-blend-mode: color;
+        backdrop-filter: brightness(1.15) saturate(1);
+        //mix-blend-mode: color;
         .displays .blur {
             //opacity: 0.6;
         }

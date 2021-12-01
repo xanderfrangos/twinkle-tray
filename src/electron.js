@@ -298,6 +298,7 @@ const defaultSettings = {
   windowsStyle: "system",
   hideClosedLid: false,
   getDDCBrightnessUpdates: false,
+  detectIdleTime: 0,
   uuid: uuid(),
   branch: "master"
 }
@@ -320,7 +321,7 @@ function readSettings() {
   settings.isDev = isDev
   settings.killWhenIdle = false
 
-  processSettings()
+  processSettings({isReadSettings: true})
 }
 
 let writeSettingsTimeout = false
@@ -376,6 +377,14 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.order !== undefined) {
       restartPanel()
+    }
+
+    if(newSettings.detectIdleTime || newSettings.isReadSettings) {
+      if(settings.detectIdleTime * 1 > 0) {
+        startIdleDetection()
+      } else {
+        stopIdleDetection()
+      }
     }
 
     if(newSettings.windowsStyle !== undefined) {
@@ -474,7 +483,10 @@ const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${
 let updateKnownDisplaysTimeout
 
 // Save all known displays to disk for future use
-async function updateKnownDisplays() {
+async function updateKnownDisplays(force = false) {
+
+  // Skip when idle
+  if(!force && isUserIdle) return false;
 
   // Reset timeout
   if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
@@ -2483,6 +2495,49 @@ function restartBackgroundUpdate() {
   }
 }
 
+
+// Idle detection
+let isUserIdle = false
+let userIdleInterval = false // Check if idle
+let userCheckingForActiveInterval = false // Check if came back
+
+function startIdleDetection() {
+  clearInterval(userIdleInterval)
+  userIdleInterval = setInterval(checkUserIdle, (settings.detectIdleTime * 1000) / 10)
+}
+
+function stopIdleDetection() {
+  clearInterval(userIdleInterval)
+  checkUserActive(true)
+}
+
+function checkUserIdle() {
+  // Check if user is idle
+  const idleTime = powerMonitor.getSystemIdleTime()
+  console.log(`Idle for: ${idleTime}s`)
+  if (settings.detectIdleTime && !isUserIdle && idleTime >= settings.detectIdleTime) {
+    console.log(`\x1b[36mUser idle. Dimming displays.!\x1b[0m`)
+    isUserIdle = true
+    Object.values(monitors)?.forEach((monitor) => {
+      updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+    })
+    userCheckingForActiveInterval = setInterval(checkUserActive, 1000)
+  }
+}
+
+function checkUserActive(force = false) {
+  const idleTime = powerMonitor.getSystemIdleTime()
+  if ((force && isUserIdle) || (idleTime < settings.detectIdleTime && isUserIdle)) {
+    console.log(`\x1b[36mUser active. Restoring displays.\x1b[0m`)
+    isUserIdle = false
+    setKnownBrightness() // Restore last brightness
+    handleBackgroundUpdate() // Apply ToD adjustments, if needed
+    clearInterval(userCheckingForActiveInterval)
+  }
+}
+
+
+
 let lastTimeEvent = {
   hour: new Date().getHours(),
   minute: new Date().getMinutes(),
@@ -2492,7 +2547,7 @@ function handleBackgroundUpdate(force = false) {
 
   try {
     // Time of Day Adjustments
-    if (settings.adjustmentTimes.length > 0) {
+    if (settings.adjustmentTimes.length > 0 && !isUserIdle) {
       const date = new Date()
       const hour = date.getHours()
       const minute = date.getMinutes()

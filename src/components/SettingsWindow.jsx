@@ -972,6 +972,17 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_TIME_STARTUP_DESC")}</p>
                             { this.renderToggle("checkTimeAtStartup") }
                         </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>Idle Detection</label>
+                            <p>When no input has been detected for a period of time, the brightness of all displays will be reduced.</p>                            
+                            <select value={window.settings.detectIdleTime} onChange={(e) => this.setSetting("detectIdleTime", e.target.value)}>
+                                <option value="0">Off</option>
+                                <option value="60">60 seconds</option>
+                                <option value="300">3 minutes</option>
+                                <option value="600">10 minutes</option>
+                                <option value="1800">30 minutes</option>
+                            </select>
+                        </div>
 
 
 

@@ -2750,7 +2750,7 @@ async function getWallpaper() {
           channels: 4,
           background: "#202020FF"
         }
-      }).composite([{ input: await wallpaperImage.resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(200).toBuffer(), blend: "overlay" }]).flatten().webp({ quality: 100, nearLossless: true }).toBuffer().then((data) => data.toString('base64'))
+      }).composite([{ input: await wallpaperImage.resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "over" }]).flatten().webp({ quality: 100, nearLossless: true }).toBuffer().then((data) => data.toString('base64'))
       //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
       currentWallpaper = "data:image/png;base64," + image
       currentWallpaperTime = file.mtime

@@ -495,7 +495,7 @@ body[data-is-win11="true"] {
             margin: 5px 0 1px -19px;
             padding: 20px;
             width: calc(100% - 2px);
-            backdrop-filter: brightness(0.9) saturate(1.15);
+            backdrop-filter: brightness(0.8) saturate(1.15);
 
             &:before {
                 content: "";
@@ -538,7 +538,7 @@ body[data-is-win11="true"] {
         backdrop-filter: brightness(1.15) saturate(1);
         //mix-blend-mode: color;
         .displays .blur {
-            //opacity: 0.6;
+            opacity: 0.55;
         }
     }
 }

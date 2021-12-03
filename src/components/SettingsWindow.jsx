@@ -991,7 +991,7 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RATE_TITLE")}</div>
                             <p>{T.t("SETTINGS_MONITORS_RATE_DESC")}</p>
                             <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
-                                <option value="999">{T.t("SETTINGS_MONITORS_RATE_0")}</option>
+                                <option value="100">{T.t("SETTINGS_MONITORS_RATE_0")}</option>
                                 <option value="250">{T.t("SETTINGS_MONITORS_RATE_1")}</option>
                                 <option value="500">{T.t("SETTINGS_MONITORS_RATE_2")}</option>
                                 <option value="1000">{T.t("SETTINGS_MONITORS_RATE_3")}</option>

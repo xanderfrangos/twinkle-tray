@@ -320,6 +320,7 @@ function readSettings() {
   // Overrides
   settings.isDev = isDev
   settings.killWhenIdle = false
+  if(settings.updateInterval === 999) settings.updateInterval = 100;
 
   processSettings({isReadSettings: true})
 }

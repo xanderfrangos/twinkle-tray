@@ -12,7 +12,7 @@ using namespace std;
 
 #pragma comment(lib, "wbemuuid.lib")
 
-HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+HRESULT hRes;
 IWbemServices *pService = NULL;
 bool wmiConnected = false;
 

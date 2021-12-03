@@ -39,14 +39,15 @@ let localization = {}
 
 let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
-    if((busyLevel > 0 && !fullRefresh) || (busyLevel > 1 && fullRefresh)) {
+    if((busyLevel > 0 && !fullRefresh) || (busyLevel > 0 && fullRefresh)) {
         console.log("Thread busy. Cancelling refresh.")
         return false
     }
     busyLevel = (fullRefresh ? 2 : 1)
 
     if(!monitors || fullRefresh) {
-        monitors = await getAllMonitors()
+        const foundMonitors = await getAllMonitors()
+        monitors = foundMonitors
     } else {
         const startTime = process.hrtime()
 
@@ -78,84 +79,124 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 
 getAllMonitors = async () => {
     const foundMonitors = {}
-
-    const startTime = process.hrtime()
-
-    const monitorsWMI = await getMonitorsWMI()
-    console.log(`getMonitorsWMI() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
-    const monitorsWin32 = await getMonitorsWin32()
-    console.log(`getMonitorsWin32() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
-    const featuresList = await getFeaturesDDC()
-    console.log(`getFeaturesDDC() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
-    const wmiBrightness = await getBrightnessWMI()
-    console.log(`getBrightnessWMI() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
-
+    let startTime = process.hrtime.bigint()
+    let fullStartTime = process.hrtime.bigint()
+    
     // List via WMI
-    for(const hwid2 in monitorsWMI) {
-        const monitor = monitorsWMI[hwid2]
-        updateDisplay(foundMonitors, hwid2, monitor)
+    if(!wmiFailed) {
+        try {
+            const monitorsWMI = await getMonitorsWMI()
+            console.log(`getMonitorsWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+            for (const hwid2 in monitorsWMI) {
+                const monitor = monitorsWMI[hwid2]
+                updateDisplay(foundMonitors, hwid2, monitor)
+            }
+        } catch (e) {
+            console.log("\x1b[41m" + "getMonitorsWMI() failed!" + "\x1b[0m", e)
+        }
+    } else {
+        console.log("getMonitorsWMI() skipped due to previous failure.")
     }
 
     // List via Win32 (more details)
-    for(const hwid2 in monitorsWin32) {
-        const monitor = monitorsWin32[hwid2]
-        updateDisplay(foundMonitors, hwid2, monitor)
+    if(!win32Failed) {
+        try {
+            startTime = process.hrtime.bigint()
+            const monitorsWin32 = await getMonitorsWin32()
+            console.log(`getMonitorsWin32() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+    
+            for (const hwid2 in monitorsWin32) {
+                const monitor = monitorsWin32[hwid2]
+                updateDisplay(foundMonitors, hwid2, monitor)
+            }
+        } catch (e) {
+            console.log("\x1b[41m" + "getMonitorsWin32() failed!" + "\x1b[0m", e)
+        }
+    } else {
+        console.log("getMonitorsWin32() skipped due to previous failure.")
     }
 
     // DDC/CI Brightness + Features
-    for(const hwid2 in featuresList) {
-        const monitor = featuresList[hwid2]
-        const { features, id } = monitor
-        let ddcciInfo = {
-            id: id,
-            features: features,
-            type: "ddcci",
-            min: 0,
-            max: 100,
-            brightnessType: (features.luminance ? 0x10 : (features.brightness ? 0x13 : 0x00)),
-            brightnessValues: (features.luminance ? features.luminance : (features.brightness ? features.brightness : [50,100]))
+    try {
+        startTime = process.hrtime.bigint()
+        const featuresList = await getFeaturesDDC()
+        console.log(`getFeaturesDDC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+
+        for (const hwid2 in featuresList) {
+            const monitor = featuresList[hwid2]
+            const { features, id, hwid } = monitor
+            let ddcciInfo = {
+                id: id,
+                key: hwid2,
+                hwid,
+                features: features,
+                type: "ddcci",
+                min: 0,
+                max: 100,
+                brightnessType: (features.luminance ? 0x10 : (features.brightness ? 0x13 : 0x00)),
+                brightnessValues: (features.luminance ? features.luminance : (features.brightness ? features.brightness : [50, 100]))
+            }
+            ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
+            ddcciInfo.brightnessMax = ddcciInfo.brightnessValues[1]
+
+            // Get normalization info
+            ddcciInfo = applyRemap(ddcciInfo)
+
+            // Unnormalize brightness
+            ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightnessRaw, true, ddcciInfo.min, ddcciInfo.max)
+            updateDisplay(foundMonitors, hwid2, ddcciInfo)
         }
-        ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
-        ddcciInfo.brightnessMax = ddcciInfo.brightnessValues[1]
-
-        // Get normalization info
-        ddcciInfo = applyRemap(ddcciInfo)
-
-        // Unnormalize brightness
-        ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightnessRaw, true, ddcciInfo.min, ddcciInfo.max)
-        updateDisplay(foundMonitors, hwid2, ddcciInfo) 
+    } catch (e) {
+        console.log("\x1b[41m" + "getFeaturesDDC() failed!" + "\x1b[0m", e)
     }
 
     // WMI Brightness
-    if (wmiBrightness) {
-        updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
+    try {
+        startTime = process.hrtime.bigint()
+        const wmiBrightness = await getBrightnessWMI()
+        console.log(`getBrightnessWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
-        // If Win32 doesn't find the internal display, hide it.
-        if(settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
-            updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
+        if (wmiBrightness) {
+            updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
+
+            // If Win32 doesn't find the internal display, hide it.
+            if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+                updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
+            }
         }
+    } catch (e) {
+        console.log("\x1b[41m" + "getBrightnessWMI() failed!" + "\x1b[0m", e)
     }
 
     // Finally, fix names/num
-    let idx = 0
-    for(const hwid2 in foundMonitors) {
-        if (!foundMonitors[hwid2].name) foundMonitors[hwid2].name = `${localization.GENERIC_DISPLAY_SINGLE} ${idx + 1}`;
-        foundMonitors[hwid2].num = idx;
-        idx++
+    try {
+        let idx = 0
+        for (const hwid2 in foundMonitors) {
+            if (!foundMonitors[hwid2].name) foundMonitors[hwid2].name = `${localization.GENERIC_DISPLAY_SINGLE} ${idx + 1}`;
+            foundMonitors[hwid2].num = idx;
+            idx++
+        }
+    } catch (e) {
+        console.log("\x1b[41m" + "Fixing names failed!" + "\x1b[0m", e)
     }
 
-    console.log(`getAllMonitors() total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+    console.log(`getAllMonitors() total: ${(fullStartTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
     return foundMonitors
 }
 
+let wmiFailed = false
 getMonitorsWMI = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const foundMonitors = {}
         try {
+            const timeout = setTimeout(() => { wmiFailed = true; console.log("getMonitorsWMI Timed out."); reject({}) }, 2000 )
             const wmiMonitors = wmibridge.getMonitors();
+
             if(wmiMonitors.failed) {
                 // Something went wrong
-                resolve([])
+                console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
+                clearTimeout(timeout)
+                resolve(foundMonitor)
             } else {
                 // Sort through results
                 for (let monitorHWID in wmiMonitors) {
@@ -177,6 +218,7 @@ getMonitorsWMI = () => {
     
                     foundMonitors[hwid[2]] = wmiInfo
                 }
+                clearTimeout(timeout)
             }
         } catch(e) {
             console.log(`getMonitorsWMI: Failed to get all monitors.`)
@@ -186,11 +228,15 @@ getMonitorsWMI = () => {
     })
 }
 
+let win32Failed = false
 getMonitorsWin32 = () => {
     let foundDisplays = {}
-    return w32disp.queryDisplayConfig().then((config) => {
+    return new Promise(async (resolve, reject) => {
         try {
+            const timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 2000 )
             let displays = []
+            let config = await w32disp.queryDisplayConfig()
+            
             // Filter results
             for(const display of config.nameArray) {
                 if (display.monitorDevicePath) {
@@ -220,16 +266,13 @@ getMonitorsWin32 = () => {
             }
     
             // Return prepared results
-            return foundDisplays
+            clearTimeout(timeout)
+            resolve(foundDisplays)
         } catch(e) {
             console.log(`getMonitorsWin32: Failed to get all monitors. (L2)`)
             console.log(e)
-            return foundDisplays
+            resolve(foundDisplays)
         }
-    }).catch((e) => {
-        console.log(`getMonitorsWin32: Failed to get all monitors. (L1)`)
-        console.log(e)
-        return foundDisplays
     })
 }
 
@@ -237,6 +280,7 @@ getFeaturesDDC = () => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
+            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 12000 )
             getDDCCI()
             ddcci._refresh()
             const ddcciMonitors = ddcci.getMonitorList()
@@ -251,9 +295,11 @@ getFeaturesDDC = () => {
     
                 monitorFeatures[hwid[2]] = {
                     id:  `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                    hwid,
                     features
                 }
             }
+            clearTimeout(timeout)
         } catch(e) {
             console.log(`getFeaturesDDC: Failed to get features.`)
             console.log(e)
@@ -292,9 +338,11 @@ getBrightnessWMI = () => {
     // Request WMI monitors.
     return new Promise((resolve, reject) => {
         try {
+            const timeout = setTimeout(() => { console.log("getBrightnessWMI Timed out."); reject(false) }, 2000 )
             const monitor = wmibridge.getBrightness();
             if (monitor.failed) {
                 // Something went wrong
+                clearTimeout(timeout)
                 resolve(false)
             } else {
                 let hwid = readInstanceName(monitor.InstanceName)
@@ -315,6 +363,7 @@ getBrightnessWMI = () => {
                 // Unnormalize brightness
                 wmiInfo.brightnessRaw = monitor.Brightness
                 wmiInfo.brightness = normalizeBrightness(wmiInfo.brightness, true, wmiInfo.min, wmiInfo.max)
+                clearTimeout(timeout)
 
                 resolve(wmiInfo)
             }
@@ -332,10 +381,12 @@ getBrightnessDDC = (monitorObj) => {
         let monitor = Object.assign({}, monitorObj)
 
         try {
+            const timeout = setTimeout(() => { console.log("getBrightnessDDC Timed out."); reject({}) }, 8000 )
             const ddcciPath = monitor.hwid.join("#")
 
             // If brightness is not supported, stop
             if(!monitor?.brightnessType) {
+                clearTimeout(timeout)
                 resolve(monitor)
                 return false
             }
@@ -368,6 +419,7 @@ getBrightnessDDC = (monitorObj) => {
             monitor = applyRemap(monitor)
             // Unnormalize brightness
             monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+            clearTimeout(timeout)
             resolve(monitor)
 
         } catch(e) {
@@ -404,7 +456,7 @@ updateDisplay = (monitors, hwid2, info = {}) => {
 function setBrightness(brightness, id) {
     try {
         if (id) {
-            let monitor = Object.values(monitors).find(mon => mon.id == id)
+            let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             monitor.brightness = brightness
             setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
         } else {
@@ -413,7 +465,8 @@ function setBrightness(brightness, id) {
             wmibridge.setBrightness(brightness);
         }
     } catch (e) {
-        console.log("Couldn't update brightness!");
+        console.log(`Couldn't update brightness! [${id}]`);
+        console.log(monitors)
         console.log(e)
     }
 }
@@ -519,3 +572,12 @@ function getDDCCI() {
     }
 }
 getDDCCI();
+
+// For testing timeouts
+function wait2s() {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(true);
+      }, 2000);
+    });
+  }

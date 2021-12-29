@@ -2761,9 +2761,11 @@ function handleCommandLine(event, commandLine) {
 
 
 
+// Mica features
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentScreenSize = {width: 1280, height: 720}
+const micaWallpaperPath = path.join(app.getPath("userData"), `\\mica${(isDev ? "-dev" : "")}.webp`)
 async function getWallpaper() {
   try {
     const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
@@ -2781,9 +2783,9 @@ async function getWallpaper() {
           channels: 4,
           background: "#202020FF"
         }
-      }).composite([{ input: await wallpaperImage.resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "over" }]).flatten().webp({ quality: 100, nearLossless: true }).toBuffer().then((data) => data.toString('base64'))
+      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "soft-light" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
       //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
-      currentWallpaper = "data:image/png;base64," + image
+      currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
       currentWallpaperTime = file.mtime
     }
     

@@ -2783,7 +2783,7 @@ async function getWallpaper() {
           channels: 4,
           background: "#202020FF"
         }
-      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "soft-light" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
+      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
       //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
       currentWallpaperTime = file.mtime

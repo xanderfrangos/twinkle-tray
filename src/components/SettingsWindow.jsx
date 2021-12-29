@@ -1145,6 +1145,15 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <p>Use Taskbar Registry</p>
                             { this.renderToggle("useTaskbarRegistry") }
+                            <br />
+                            <p>Disable WMIC (requires restart)</p>
+                            { this.renderToggle("disableWMIC") }
+                            <br />
+                            <p>Disable WMI (requires restart)</p>
+                            { this.renderToggle("disableWMI") }
+                            <br />
+                            <p>Disable Win32 (requires restart)</p>
+                            { this.renderToggle("disableWin32") }
 
                             <div className="sectionTitle">Raw Monitor Data</div>
                             <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(window.allMonitors, undefined, 2)}</pre>

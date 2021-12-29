@@ -3,29 +3,25 @@ const addon = require("bindings")("wmi_bridge");
 
 class WMIBridge {
     constructor() {}
-    setBrightness(level = 50) {
+    setBrightness = async (level = 50) => {
         let ok = false
         try {
             ok = addon.setBrightness(level)
-        } catch(e) {
-            console.log("\x1b[41m" + "setBrightness() failed!" + "\x1b[0m", e)
-         }
+        } catch(e) { console.log(e) }
         return ok
     }
-    getBrightness() {
+    getBrightness = async () => {
         let brightness = { failed: true }
         try {
             brightness = addon.getBrightness()
-        } catch(e) {
-            console.log("\x1b[41m" + "getBrightness() failed!" + "\x1b[0m", e)
-         }
+        } catch (e) { console.log(e) }
         return brightness
     }
-    getMonitors() {
+    getMonitors = async () => {
         try {
             return addon.getMonitors()
         } catch(e) {
-            console.log("\x1b[41m" + "getMonitors() failed!" + "\x1b[0m", e)
+            console.log(e)
             return { failed: true }
         }
     }

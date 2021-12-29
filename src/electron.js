@@ -39,6 +39,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
 const sharp = require('sharp');
+const { EventEmitter } = require('stream');
 
 const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
 
@@ -69,7 +70,57 @@ const debug = {
   error: log
 }
 
-if (!isDev) console.log = () => { };
+if (false && !isDev) console.log = () => { };
+
+
+
+
+
+
+
+// Monitors thread
+// Handles WMI + DDC/CI activity
+
+let monitorsThread = {
+  send: function(data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsThreadReal.send(data)
+    } catch(e) {
+      console.log("Couldn't communicate with Monitor thread.", e)
+    }
+  },
+  once: function (message, data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsEventEmitter.once(message, data)
+    } catch (e) {
+      console.log("Couldn't listen to Monitor thread.", e)
+    }
+  }
+}
+let monitorsThreadReal
+let monitorsEventEmitter = new EventEmitter()
+function startMonitorThread() {
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+  monitorsThreadReal.on("message", (data) => {
+    if(data?.type) {
+      monitorsEventEmitter.emit(data.type, data)
+      if(data.type === "ready") {
+        monitorsThreadReal.send({
+          type: "settings",
+          settings
+        })
+      }
+    }
+  })
+}
+startMonitorThread()
+
 
 // Mouse wheel scrolling
 let mouseEventsActive = false
@@ -299,6 +350,10 @@ const defaultSettings = {
   hideClosedLid: false,
   getDDCBrightnessUpdates: false,
   detectIdleTime: 0,
+  disableWMIC: false,
+  disableWMI: false,
+  disableWin32: false,
+  autoDisabledWMI: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -312,7 +367,7 @@ function readSettings() {
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
-    debug.log('Settings loaded:', settings)
+    //debug.log('Settings loaded:', settings)
   } catch (e) {
     debug.error("Couldn't load settings", e)
   }
@@ -320,6 +375,7 @@ function readSettings() {
   // Overrides
   settings.isDev = isDev
   settings.killWhenIdle = false
+
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
   processSettings({isReadSettings: true})
@@ -1078,17 +1134,20 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
       let timeout = setTimeout(() => {
         reject("Monitor thread timed out.")
+
+        // Attempt to fix common issue with wmi-bridge by relying only on Win32
+        // However, if user re-enables WMI, don't disable it again
+        if(!settings.autoDisabledWMI) {
+          settings.autoDisabledWMI = true
+          settings.disableWMI = true
+        }
       }, 10000)
 
       function listen(resolve) {
-        monitorsThread.once("message", data => {
-          if (data.type === "refreshMonitors") {
-            clearTimeout(timeout)
+        monitorsThread.once("refreshMonitors", data => {
+          clearTimeout(timeout)
             resolve(data.monitors)
-          } else {
-            listen(resolve)
-          }
-        })
+          })
       }
       listen(resolve)
     } catch(e) {
@@ -1430,7 +1489,7 @@ ipcMain.on('update-brightness', function (event, data) {
 
 ipcMain.on('request-monitors', function (event, arg) {
   sendToAllWindows("monitors-updated", monitors)
-  refreshMonitors(false, true)
+  //refreshMonitors(false, true)
 })
 
 ipcMain.on('full-refresh', function (event, forceUpdate = false) {
@@ -2700,36 +2759,7 @@ function handleCommandLine(event, commandLine) {
 }
 
 
-// Monitors thread
-// Handles WMI + DDC/CI activity
 
-let monitorsThread = {
-  send: function(data) {
-    try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
-        startMonitorThread()
-      }
-      monitorsThreadReal.send(data)
-    } catch(e) {
-      console.log("Couldn't communicate with Monitor thread.", e)
-    }
-  },
-  once: function (message, data) {
-    try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
-        startMonitorThread()
-      }
-      monitorsThreadReal.once(message, data)
-    } catch (e) {
-      console.log("Couldn't listen to Monitor thread.", e)
-    }
-  }
-}
-let monitorsThreadReal
-function startMonitorThread() {
-  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
-}
-startMonitorThread()
 
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;

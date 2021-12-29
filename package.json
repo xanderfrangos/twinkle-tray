@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.13.11",
+  "version": "1.14.0-preview8",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -38,7 +38,8 @@
     "sharp": "^0.29.3",
     "universal-analytics": "^0.4.23",
     "win32-displayconfig": "^0.1.0",
-    "wmi-bridge": "file:src/modules/wmi-bridge"
+    "wmi-bridge": "file:src/modules/wmi-bridge",
+    "wmi-client": "^0.5.0"
   },
   "build": {
     "productName": "Twinkle Tray",
@@ -79,6 +80,9 @@
       "!node_modules/**/*.filters"
     ],
     "extraResources": [
+      "node_modules\\regedit\\vbs\\*",
+      "node_modules\\wmi-client\\**\\*",
+      "!node_modules\\wmi-client\\bin",
       "node_modules\\regedit\\vbs\\*"
     ],
     "win": {

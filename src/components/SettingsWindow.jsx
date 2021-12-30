@@ -889,13 +889,13 @@ export default class SettingsWindow extends PureComponent {
                             <div style={{ display: (window.isAppX ? "none" : "block") }}>
                                 <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
                                 { this.renderToggle("openAtLogin") }
-                                <br /><br />
+                                <br />
                             </div>
                             <div>
                                 <label>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")}</label>
                                 <p>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")}</p>
                                 { this.renderToggle("brightnessAtStartup") }
-                                <br /><br />
+                                <br />
                             </div>
                             <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>
                             <select value={window.settings.language} onChange={(e) => {
@@ -905,8 +905,7 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="system">{T.t("SETTINGS_GENERAL_LANGUAGE_SYSTEM")}</option>
                                 {this.getLanguages()}
                             </select>
-                            <br />
-                            <br />
+                            <br /><br />
                             <label>{T.t("SETTINGS_GENERAL_THEME_TITLE")}</label>
                             <select value={window.settings.theme} onChange={this.themeChanged}>
                                 <option value="default">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
@@ -925,7 +924,7 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
                             { this.renderToggle("useAcrylic") }
 
-                            <br /><br />
+                            <br />
                             <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
                             <div className="icons-row">
                                 <div className="icon-option" data-active={this.isIcon("icon")} onClick={() => window.sendSettings({ icon: "icon" })}>
@@ -938,7 +937,6 @@ export default class SettingsWindow extends PureComponent {
                                     <img src={FluentIcon} />
                                 </div>
                             </div>
-                            <br />
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
                             <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>

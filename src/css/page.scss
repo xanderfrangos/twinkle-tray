@@ -352,6 +352,9 @@ a {
     }
 }
 
+select {
+    appearance: auto;
+}
 
 .icon {
     font-family: "Segoe MDL2 Assets";
@@ -468,13 +471,19 @@ a {
         width: 32px;
         padding: 10px;
         background: #333;
+        background-color: var(--system-accent-dark2);
         border: 2px solid #333;
+        border-color: var(--system-accent-dark1);
+        filter: saturate(0);
     }
 
     &[data-active="true"] {
         img {
             background: var(--system-accent-medium);
             border-color: var(--system-accent-medium-dark);
+            background-color: var(--system-accent-dark1);
+            border-color: var(--system-accent-light2);
+            filter: saturate(1);
         }
     }
 }
@@ -731,7 +740,10 @@ body[data-is-win11="true"] {
             line-height: 1;
 
             &:before {
-                background-color: var(--system-accent-light2);
+                background-color: var(--system-accent-dark2);
+                @media screen and (prefers-color-scheme: dark) {
+                    background-color: var(--system-accent-light2);
+                }
                 border-radius: 10px;
                 left: -10px;
             }
@@ -751,12 +763,12 @@ body[data-is-win11="true"] {
     }
     .button {
         background: var(--button-background);
-        color: white;
+        color: var(--page-text);
         border-radius: 6px;
         border: 0;
         box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
         &:hover {
-            background: var(--input-border);
+            background: var(--button-border);
         }
     }
     .window-titlebar .window-title {
@@ -768,11 +780,21 @@ body[data-is-win11="true"] {
         border-radius: 5px;
         border-width: 1.5px;
         background-color: var(--page-section-bg);
+        border-color: var(--button-border);
+
+        &[type="text"] {
+            border-bottom: 1px solid var(--page-text-mid);
+        }
+    }
+    option {
+        background: white;
+        color: black;
     }
     input[type="checkbox"] {
         width: 44px;
         border-width: 1.5px;
         border-radius: 50px;
+        border-color: var(--input-border);
 
         &::before {
             background-color: var(--input-border);
@@ -787,8 +809,12 @@ body[data-is-win11="true"] {
         }
 
         &[data-checked="true"] {  
-            background-color: var(--system-accent-light2);
-            border-color: var(--system-accent-light2);
+            background-color: var(--system-accent-dark2);
+            border-color: var(--system-accent-dark2);
+            @media screen and (prefers-color-scheme: dark) {
+                background-color: var(--system-accent-light2);
+                border-color: var(--system-accent-light2);
+            }
             &:before {
                 transform: translateX(24px) translateY(-0.2px);
                 background-color: var(--page-background);  

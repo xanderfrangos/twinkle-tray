@@ -5,7 +5,7 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: #2f2f2f;
+    background: var(--mica-base-color);
 
     .displays {
         width: 100vw;
@@ -44,7 +44,7 @@ body[data-focused="false"] {
     }
 }
 
-body[data-use-mica="false"], body[data-is-win11="false"] {
+body[data-use-mica="false"], body[data-is-win11="false"], body[data-transparent="false"] {
     #mica {
         display: none;
     }

@@ -166,8 +166,8 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
     --slider-track-color: #868686;
     --slider-thumb-border: #ffffff;
     --button-background: #ffffff;
-    --button-background: var(--system-accent-medium);
-    --input-border: rgb(194, 194, 194);
+    --button-background: var(--system-accent-light1);
+    --input-border: rgba(0, 0, 0, 0.77);
 
     @media screen and (prefers-color-scheme: dark) {
 
@@ -179,8 +179,10 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
         --slider-track-color: #9b9b9b;
         --slider-thumb-border: #313131;
         --button-background: #373737;
-        --button-background: var(--system-accent-medium);
-        --input-border: #6f6f6f;
+        --button-border: #404040;
+        --button-color-background: var(--system-accent-light2);
+        --button-color-border: var(--system-accent-light3);
+        --input-border: rgba(255, 255, 255, 0.77);
 
         &[data-use-mica="false"] {
             --tray-titlebar-bg: rgba(0,0,0,0.24);

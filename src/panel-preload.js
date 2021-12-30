@@ -204,13 +204,20 @@ ipc.on("force-refresh-monitors", (e) => {
 
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
-    window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.document.body.style.setProperty("--system-accent-color", data.accent.hex)
     window.document.body.style.setProperty("--system-accent-lighter", data.lighter)
     window.document.body.style.setProperty("--system-accent-light", data.light)
     window.document.body.style.setProperty("--system-accent-medium", data.medium)
     window.document.body.style.setProperty("--system-accent-medium-dark", data.mediumDark)
     window.document.body.style.setProperty("--system-accent-transparent", data.transparent)
     window.document.body.style.setProperty("--system-accent-dark", data.dark)
+
+    window.document.body.style.setProperty("--system-accent-dark1", data.accentDark1.hex)
+    window.document.body.style.setProperty("--system-accent-dark2", data.accentDark2.hex)
+    window.document.body.style.setProperty("--system-accent-dark3", data.accentDark3.hex)
+    window.document.body.style.setProperty("--system-accent-light1", data.accentLight1.hex)
+    window.document.body.style.setProperty("--system-accent-light2", data.accentLight2.hex)
+    window.document.body.style.setProperty("--system-accent-light3", data.accentLight3.hex)
 })
 
 // Taskbar position recieved

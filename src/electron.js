@@ -29,6 +29,8 @@ const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
 
+const AccentColors = require("windows-accent-colors")
+
 let isDev = false
 try {
   isDev = require("electron-is-dev");
@@ -1056,6 +1058,7 @@ function getTrayIconPath() {
 
 function getAccentColors() {
   let detectedAccent = "0078d7"
+  const colors = AccentColors.getAccentColors()
   try {
     if (systemPreferences.getAccentColor().length == 8)
       detectedAccent = systemPreferences.getAccentColor().substr(0, 6)
@@ -1069,15 +1072,22 @@ function getAccentColors() {
   let adjustedAccent = accent
   if (accent.hsl().color[2] > 60) adjustedAccent = matchLumi(accent, 0.6);
   if (accent.hsl().color[2] < 40) adjustedAccent = matchLumi(accent, 0.4);
-  return {
+
+  // Start w/ old format
+  let outColors = {
     accent: adjustedAccent.hex(),
     lighter: matchLumi(accent, 0.85).hex(),
     light: matchLumi(accent, 0.52).hex(),
     medium: matchLumi(accent, 0.48).hex(),
     mediumDark: matchLumi(accent, 0.33).desaturate(0.1).hex(),
     dark: matchLumi(accent, 0.275).desaturate(0.1).hex(),
-    transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string()
+    transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string(),
   }
+
+  // Merge in new format
+  outColors = Object.assign(outColors, colors)
+  
+  return outColors
 }
 
 // 0 = off
@@ -1661,7 +1671,6 @@ function restartPanel() {
     createPanel()
   }
 }
-
 
 function getPrimaryDisplay() {
   let displays = screen.getAllDisplays()
@@ -2605,6 +2614,9 @@ let lastTimeEvent = {
 function handleBackgroundUpdate(force = false) {
 
   try {
+    // Wallpaper updates
+    sendMicaWallpaper()
+
     // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0 && !isUserIdle) {
       const date = new Date()

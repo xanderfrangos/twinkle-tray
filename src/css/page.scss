@@ -731,6 +731,7 @@ body[data-is-win11="true"] {
             line-height: 1;
 
             &:before {
+                background-color: var(--system-accent-light2);
                 border-radius: 10px;
                 left: -10px;
             }
@@ -753,7 +754,7 @@ body[data-is-win11="true"] {
         color: white;
         border-radius: 6px;
         border: 0;
-        box-shadow: inset 0 0.25px 0 0.5px rgba(255, 255, 255, 0.068), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
+        box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
         &:hover {
             background: var(--input-border);
         }
@@ -766,6 +767,7 @@ body[data-is-win11="true"] {
     input, select {
         border-radius: 5px;
         border-width: 1.5px;
+        background-color: var(--page-section-bg);
     }
     input[type="checkbox"] {
         width: 44px;
@@ -785,6 +787,8 @@ body[data-is-win11="true"] {
         }
 
         &[data-checked="true"] {  
+            background-color: var(--system-accent-light2);
+            border-color: var(--system-accent-light2);
             &:before {
                 transform: translateX(24px) translateY(-0.2px);
                 background-color: var(--page-background);  

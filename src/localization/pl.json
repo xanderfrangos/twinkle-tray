@@ -104,5 +104,8 @@
     "SETTINGS_UPDATES_AVAILABLE": "Nowa wersja Twinkle Tray już dostępna!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Program jest aktualny. Ta wersja zawiera następujące zmiany:",
     "SETTINGS_UPDATES_DOWNLOADING": "Pobieranie aktualizacji…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Pobierz i zainstaluj {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Pobierz i zainstaluj {{1}}",
+    "SETTINGS_HOTKEYS_TOD_NONE": "Brak (ukryj ikonę)",
+    "SETTINGS_HOTKEYS_TOD_TITLE": "Akcja wyłączania monitora",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*Uwaga: Nie wszystkie monitory DDC/CI wspierają tę funkcję."
 }

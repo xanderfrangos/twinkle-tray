@@ -973,10 +973,10 @@ export default class SettingsWindow extends PureComponent {
                             { this.renderToggle("checkTimeAtStartup") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
-                            <label>Idle Detection</label>
-                            <p>When no input has been detected for a period of time, the brightness of all displays will be reduced.</p>                            
+                            <label>{T.t("SETTINGS_TIME_IDLE_TITLE")}</label>
+                            <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>                            
                             <select value={window.settings.detectIdleTime} onChange={(e) => this.setSetting("detectIdleTime", e.target.value)}>
-                                <option value="0">Off</option>
+                                <option value="0">{T.t("GENERIC_OFF")}</option>
                                 <option value="60">60 seconds</option>
                                 <option value="300">3 minutes</option>
                                 <option value="600">10 minutes</option>
@@ -999,8 +999,8 @@ export default class SettingsWindow extends PureComponent {
                             </select>
                         </div>
                         <div className="pageSection" data-active={this.isSection("monitors")}>
-                            <div className="sectionTitle">Hide Internal Display</div>
-                            <p>When the lid is closed or the internal display has been disabled in Windows, hide the brightness slider in the panel.</p>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_DESC")}</p>
                             { this.renderToggle("hideClosedLid") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("monitors")}>
@@ -1038,8 +1038,8 @@ export default class SettingsWindow extends PureComponent {
                             {this.getFeaturesMonitors()}
                         </div>
                         <div className="pageSection" data-active={this.isSection("features")}>
-                        <div className="sectionTitle">Get Current Brightness</div>
-                            <p>Always get the latest brightness level from the monitor when opening the brightness page. Enable this if the brightness is frequently change from outside of Twinkle Tray (ex. another application).</p>
+                        <div className="sectionTitle">{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE")}</div>
+                            <p>{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC")}</p>
                             { this.renderToggle("getDDCBrightnessUpdates") }
                         </div>
 

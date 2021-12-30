@@ -2784,7 +2784,8 @@ async function getWallpaper() {
     const file = fs.statSync(wallPath)
     currentScreenSize = screen.getPrimaryDisplay().workAreaSize
 
-    if(file?.mtime && file.mtime !== currentWallpaperTime) {
+    // If time on file changed, render new wallpaper
+    if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
       currentWallpaper = "file://" + wallPath + "?" + Date.now()
       const wallpaperImage = sharp(wallPath)
       //const wallpaperInfo = await wallpaperImage.metadata()
@@ -2798,7 +2799,7 @@ async function getWallpaper() {
       }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
       //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
-      currentWallpaperTime = file.mtime
+      currentWallpaperTime = file.mtime.getTime()
     }
     
     return { path: currentWallpaper, size: currentScreenSize }

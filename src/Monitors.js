@@ -83,11 +83,11 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                     console.log(`getBrightnessWMIC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
             
                     if (wmiBrightness) {
-                        updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
+                        updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
             
                         // If Win32 doesn't find the internal display, hide it.
                         if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
-                            updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
+                            updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
                         }
                     }
                 } catch (e) {
@@ -104,7 +104,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 
                         // If Win32 doesn't find the internal display, hide it.
                         if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
-                            updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
+                            updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
                         }
                     }
                     console.log(`Refresh WMI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)

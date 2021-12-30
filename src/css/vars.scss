@@ -124,7 +124,7 @@ body[data-colored-taskbar="true"] {
     div#panel {
         --tray-background-base: #1f1f1f;
         --tray-background-transparent: var(--system-accent-transparent);
-        --tray-background: var(--system-accent-dark2) !important;
+        --tray-background: var(--system-accent-dark1) !important;
         --tray-background-blur: rgba(41, 41, 41, 0);
         --tray-background-blur-start: rgba(41, 41, 41, 1);
         --tray-text: white;
@@ -157,7 +157,7 @@ body[data-colored-taskbar="true"] {
     }
 }
 
-body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"] {
+body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"], html body[data-is-win11="true"][data-colored-taskbar="true"] {
     div#panel {
         --tray-background: var(--system-accent-transparent) !important;
         --tray-background: var(--system-accent-dark2) !important;

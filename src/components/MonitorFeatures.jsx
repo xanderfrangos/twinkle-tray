@@ -1,10 +1,8 @@
 import React, { useState } from "react"
 import Slider from "./Slider"
-import TranslateReact from "../TranslateReact"
-let T = new TranslateReact({}, {})
 
 export default function MonitorFeatures(props) {
-    const { monitor, name, monitorFeatures } = props
+    const { monitor, name, monitorFeatures, T } = props
     const [contrast, setContrast] = useState(monitor.features?.contrast ? monitor.features.contrast[0] : 50)
     const [volume, setVolume] = useState(monitor.features?.volume ? monitor.features.volume[0] : 50)
     const [powerState, setPowerState] = useState(monitor.features?.powerState ? monitor.features.powerState[0] : 50)
@@ -18,7 +16,7 @@ export default function MonitorFeatures(props) {
             extraHTML.push(
                 <div className="feature-toggle-row" key="contrast">
                     <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "contrast")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span className="icon vfix">&#xE793;</span><span>Contrast</span></div>
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE793;</span><span>{T.t("PANEL_LABEL_CONTRAST")}</span></div>
                 </div>
             )
         }
@@ -28,7 +26,7 @@ export default function MonitorFeatures(props) {
             extraHTML.push(
                 <div className="feature-toggle-row" key="volume">
                     <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "volume")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span className="icon vfix">&#xE767;</span><span>Volume</span></div>
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE767;</span><span>{T.t("PANEL_LABEL_VOLUME")}</span></div>
                 </div>
             )
         }
@@ -38,13 +36,13 @@ export default function MonitorFeatures(props) {
             extraHTML.push(
                 <div className="feature-toggle-row" key="powerState">
                     <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "powerState")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>Power state</span></div>
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_OFF_ON")}</span></div>
                 </div>
             )
         }
 
     } else {
-        extraHTML.push(<p key="none">This monitor does not support DDC/CI features.</p>)
+        extraHTML.push(<p key="none">{T.t("SETTINGS_FEATURES_UNSUPPORTED")}</p>)
     }
 
     return (

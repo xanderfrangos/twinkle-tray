@@ -75,7 +75,7 @@ export default class BrightnessPanel extends PureComponent {
               if (!useFeatures || !hasFeatures) {
                 const showPowerButton = () => {
                   if(monitorFeatures?.powerState && monitor.features?.powerState) {
-                    return (<div className="feature-power-icon simple"><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
+                    return (<div className="feature-power-icon simple"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
                   }
                 }
                 return (

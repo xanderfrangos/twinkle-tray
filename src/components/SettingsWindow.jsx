@@ -737,7 +737,7 @@ export default class SettingsWindow extends PureComponent {
             return Object.values(this.state.monitors).map((monitor, index) => {
                 const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
                 return (
-                    <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} />
+                    <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} />
                 )
 
             })

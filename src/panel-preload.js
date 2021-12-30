@@ -279,7 +279,7 @@ ipc.on('theme-settings', (event, theme) => {
     try {
         window.theme = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
-        window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
+        window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 || theme.UseAcrylic == 0 ? "false" : "true")
         window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 || settings?.isWin11 ? "false" : "true")
         window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
         window.document.body.dataset["useNativeAnimation"] = (settings.useNativeAnimation == false ? "false" : "true")

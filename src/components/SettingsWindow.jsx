@@ -920,8 +920,10 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="win11">Windows 11</option>
                             </select>
                             <br /><br />
-                            <label>{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
-                            <p>{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
+                            <label className="win10only">{T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")}</label>
+                            <p className="win10only">{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
+                            <label className="win11only">{T.t("SETTINGS_GENERAL_MICA_TITLE")}</label>
+                            <p className="win11only">{T.t("SETTINGS_GENERAL_MICA_DESC")}</p>
                             { this.renderToggle("useAcrylic") }
 
                             <br />

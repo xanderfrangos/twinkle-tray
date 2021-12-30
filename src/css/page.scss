@@ -856,3 +856,15 @@ body[data-is-win11="true"] {
 #mica {
     background: none !important;
 }
+
+body[data-is-win11="false"] {
+    .win11only {
+        display: none;
+    }
+}
+
+body[data-is-win11="true"] {
+    .win10only {
+        display: none;
+    }
+}

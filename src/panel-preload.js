@@ -26,6 +26,12 @@ function setPanelVisibility(visible) {
                 }
             }, 500)
         }
+        const pos = browser.getPosition()
+        if(settings.isWin11) {
+            pos[0] += 12
+            pos[1] += 12
+        }
+        window.updateMica?.(pos)
     } else {
         window.document.body.dataset["acrylicShow"] = false
         if (window.isAcrylic) {
@@ -88,6 +94,8 @@ function detectSunValley() {
     } else {
         window.document.getElementById("root").dataset.segoeUIVariable = false
     }
+    // Detect Windows 11
+    window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
 }
 
 function openSettings() {
@@ -130,8 +138,12 @@ function panelAnimationDone() {
 
 function shouldSendHeightUpdate() {
     setTimeout(() => {
-        const height = window.document.getElementById("panel").offsetHeight
-        window.sendHeight(height)
+        try {
+            const height = window.document.getElementById("panel").offsetHeight
+            window.sendHeight(height)
+        } catch(e) {
+            console.error(e)
+        }
     }, 99)
 }
 
@@ -192,13 +204,20 @@ ipc.on("force-refresh-monitors", (e) => {
 
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
-    window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.document.body.style.setProperty("--system-accent-color", data.accent.hex)
     window.document.body.style.setProperty("--system-accent-lighter", data.lighter)
     window.document.body.style.setProperty("--system-accent-light", data.light)
     window.document.body.style.setProperty("--system-accent-medium", data.medium)
     window.document.body.style.setProperty("--system-accent-medium-dark", data.mediumDark)
     window.document.body.style.setProperty("--system-accent-transparent", data.transparent)
     window.document.body.style.setProperty("--system-accent-dark", data.dark)
+
+    window.document.body.style.setProperty("--system-accent-dark1", data.accentDark1.hex)
+    window.document.body.style.setProperty("--system-accent-dark2", data.accentDark2.hex)
+    window.document.body.style.setProperty("--system-accent-dark3", data.accentDark3.hex)
+    window.document.body.style.setProperty("--system-accent-light1", data.accentLight1.hex)
+    window.document.body.style.setProperty("--system-accent-light2", data.accentLight2.hex)
+    window.document.body.style.setProperty("--system-accent-light3", data.accentLight3.hex)
 })
 
 // Taskbar position recieved
@@ -261,7 +280,7 @@ ipc.on('theme-settings', (event, theme) => {
         window.theme = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 ? "false" : "true")
-        window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 ? "false" : "true")
+        window.document.body.dataset["acrylic"] = (theme.UseAcrylic == 0 || settings?.isWin11 ? "false" : "true")
         window.document.body.dataset["coloredTaskbar"] = (theme.ColorPrevalence == 0 ? "false" : "true")
         window.document.body.dataset["useNativeAnimation"] = (settings.useNativeAnimation == false ? "false" : "true")
         isTransparent = theme.EnableTransparency
@@ -288,11 +307,38 @@ ipc.on('set-acrylic-show', () => {
     window.document.body.dataset["acrylicShow"] = true
 })
 
+window.micaState = {
+    visibility: "hidden",
+    src: "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D"
+}
+ipc.on('mica-wallpaper', (event, wallpaper) => {
+    const mica = document.querySelector("#mica .displays")
+    const micaIMG = document.querySelector("#mica img")
+    if(!wallpaper) {
+        mica.style.visibility = "hidden"
+        window.micaState.visibility = "hidden"
+    } else {
+        window.micaState.visibility = "visible"
+        window.micaState.src = wallpaper.path
+        mica.style.visibility = "visible"
+        micaIMG.src = wallpaper.path
+        micaIMG.width = wallpaper.size?.width
+        micaIMG.height = wallpaper.size?.height
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()
     //requestMonitors()
     requestAccent()
+})
+
+// VCP code handling
+window.addEventListener("setVCP", e => {
+    if(!window.showPanel) return false;
+    const { monitor, code, value } = e.detail
+    ipc.send("set-vcp", { monitor, code, value })
 })
 
 window.ipc = ipc

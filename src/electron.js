@@ -29,6 +29,8 @@ const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
 
+const AccentColors = require("windows-accent-colors")
+
 let isDev = false
 try {
   isDev = require("electron-is-dev");
@@ -38,6 +40,10 @@ const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
+const sharp = require('sharp');
+const { EventEmitter } = require('stream');
+
+const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
 
 app.allowRendererProcessReuse = true
 
@@ -66,7 +72,57 @@ const debug = {
   error: log
 }
 
-if (!isDev) console.log = () => { };
+if (false && !isDev) console.log = () => { };
+
+
+
+
+
+
+
+// Monitors thread
+// Handles WMI + DDC/CI activity
+
+let monitorsThread = {
+  send: function(data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsThreadReal.send(data)
+    } catch(e) {
+      console.log("Couldn't communicate with Monitor thread.", e)
+    }
+  },
+  once: function (message, data) {
+    try {
+      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+        startMonitorThread()
+      }
+      monitorsEventEmitter.once(message, data)
+    } catch (e) {
+      console.log("Couldn't listen to Monitor thread.", e)
+    }
+  }
+}
+let monitorsThreadReal
+let monitorsEventEmitter = new EventEmitter()
+function startMonitorThread() {
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+  monitorsThreadReal.on("message", (data) => {
+    if(data?.type) {
+      monitorsEventEmitter.emit(data.type, data)
+      if(data.type === "ready") {
+        monitorsThreadReal.send({
+          type: "settings",
+          settings
+        })
+      }
+    }
+  })
+}
+startMonitorThread()
+
 
 // Mouse wheel scrolling
 let mouseEventsActive = false
@@ -116,7 +172,7 @@ function enableMouseEvents() {
           } else {
             // Panel is displayed
             sendToAllWindows("panelBlur")
-            showPanel(false)
+            if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
           }
         }
 
@@ -278,14 +334,7 @@ const defaultSettings = {
   adjustmentTimeIndividualDisplays: false,
   checkTimeAtStartup: true,
   order: [],
-  features: {
-    luminance: true,
-    brightness: true,
-    gain: false,
-    contrast: false,
-    powerState: false,
-    volume: false
-  },
+  monitorFeatures: {},
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
@@ -298,6 +347,15 @@ const defaultSettings = {
   sleepAction: "ps",
   hotkeysBreakLinkedLevels: true,
   enableSunValley: true,
+  isWin11: isReallyWin11,
+  windowsStyle: "system",
+  hideClosedLid: false,
+  getDDCBrightnessUpdates: false,
+  detectIdleTime: 0,
+  disableWMIC: false,
+  disableWMI: false,
+  disableWin32: false,
+  autoDisabledWMI: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -311,7 +369,7 @@ function readSettings() {
     } else {
       fs.writeFileSync(settingsPath, JSON.stringify({}))
     }
-    debug.log('Settings loaded:', settings)
+    //debug.log('Settings loaded:', settings)
   } catch (e) {
     debug.error("Couldn't load settings", e)
   }
@@ -320,7 +378,9 @@ function readSettings() {
   settings.isDev = isDev
   settings.killWhenIdle = false
 
-  processSettings()
+  if(settings.updateInterval === 999) settings.updateInterval = 100;
+
+  processSettings({isReadSettings: true})
 }
 
 let writeSettingsTimeout = false
@@ -376,6 +436,25 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.order !== undefined) {
       restartPanel()
+    }
+
+    if(newSettings.detectIdleTime || newSettings.isReadSettings) {
+      if(settings.detectIdleTime * 1 > 0) {
+        startIdleDetection()
+      } else {
+        stopIdleDetection()
+      }
+    }
+
+    if(newSettings.windowsStyle !== undefined) {
+      if(newSettings.windowsStyle === "win11") {
+        settings.isWin11 = true
+      } else if(newSettings.windowsStyle === "win10") {
+        settings.isWin11 = false
+      } else {
+        settings.isWin11 = isReallyWin11
+      }
+      newSettings.useAcrylic = settings.useAcrylic
     }
 
     if (newSettings.useAcrylic !== undefined) {
@@ -463,7 +542,10 @@ const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${
 let updateKnownDisplaysTimeout
 
 // Save all known displays to disk for future use
-async function updateKnownDisplays() {
+async function updateKnownDisplays(force = false) {
+
+  // Skip when idle
+  if(!force && isUserIdle) return false;
 
   // Reset timeout
   if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
@@ -976,6 +1058,7 @@ function getTrayIconPath() {
 
 function getAccentColors() {
   let detectedAccent = "0078d7"
+  const colors = AccentColors.getAccentColors()
   try {
     if (systemPreferences.getAccentColor().length == 8)
       detectedAccent = systemPreferences.getAccentColor().substr(0, 6)
@@ -989,15 +1072,22 @@ function getAccentColors() {
   let adjustedAccent = accent
   if (accent.hsl().color[2] > 60) adjustedAccent = matchLumi(accent, 0.6);
   if (accent.hsl().color[2] < 40) adjustedAccent = matchLumi(accent, 0.4);
-  return {
+
+  // Start w/ old format
+  let outColors = {
     accent: adjustedAccent.hex(),
     lighter: matchLumi(accent, 0.85).hex(),
     light: matchLumi(accent, 0.52).hex(),
     medium: matchLumi(accent, 0.48).hex(),
     mediumDark: matchLumi(accent, 0.33).desaturate(0.1).hex(),
     dark: matchLumi(accent, 0.275).desaturate(0.1).hex(),
-    transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string()
+    transparent: matchLumi(accent, 0.275).desaturate(0.1).rgb().string(),
   }
+
+  // Merge in new format
+  outColors = Object.assign(outColors, colors)
+  
+  return outColors
 }
 
 // 0 = off
@@ -1023,10 +1113,10 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
-  if (!window) return false;
+  if (!window || settings.isWin11) return false;
   try {
     window.getBounds()
-    window.setVibrancy(value)
+    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow && !isReallyWin11) })
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -1054,17 +1144,20 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
       let timeout = setTimeout(() => {
         reject("Monitor thread timed out.")
+
+        // Attempt to fix common issue with wmi-bridge by relying only on Win32
+        // However, if user re-enables WMI, don't disable it again
+        if(!settings.autoDisabledWMI) {
+          settings.autoDisabledWMI = true
+          settings.disableWMI = true
+        }
       }, 10000)
 
       function listen(resolve) {
-        monitorsThread.once("message", data => {
-          if (data.type === "refreshMonitors") {
-            clearTimeout(timeout)
+        monitorsThread.once("refreshMonitors", data => {
+          clearTimeout(timeout)
             resolve(data.monitors)
-          } else {
-            listen(resolve)
-          }
-        })
+          })
       }
       listen(resolve)
     } catch(e) {
@@ -1151,7 +1244,7 @@ function pauseMonitorUpdates() {
 
 //
 //
-//    Brightness updates
+//    Brightness (and VCP) updates
 //
 //
 
@@ -1159,18 +1252,19 @@ function pauseMonitorUpdates() {
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 let lastBrightnessTimes = []
-function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
+function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
   let idx = updateBrightnessQueue.length
   const found = updateBrightnessQueue.findIndex(item => item.id === id)
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
-    useCap
+    useCap,
+    vcp
   }
   const now = Date.now()
   if (lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
     lastBrightnessTimes[id] = now
-    updateBrightness(id, level, useCap)
+    updateBrightness(id, level, useCap, vcp)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
   } else if (!updateBrightnessTimeout) {
@@ -1180,7 +1274,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
       for (let bUpdate of updateBrightnessQueueCopy) {
         if (bUpdate) {
           try {
-            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap)
+            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
           } catch (e) {
             console.error(e)
           }
@@ -1196,12 +1290,11 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true) {
 
 
 
-function updateBrightness(index, level, useCap = true) {
-
+function updateBrightness(index, level, useCap = true, vcp = "brightness") {
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
     monitor = Object.values(monitors).find((display) => {
-      return display.id.indexOf(index) === 0
+      return display?.id?.indexOf(index) === 0
     })
   } else {
     if (index >= Object.keys(monitors).length) {
@@ -1218,15 +1311,23 @@ function updateBrightness(index, level, useCap = true) {
 
   try {
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
-    monitor.brightness = level
 
-    if (monitor.type == "ddcci") {
+    if (monitor.type == "ddcci" && vcp === "brightness") {
+      monitor.brightness = level
       monitorsThread.send({
         type: "brightness",
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
         id: monitor.id
       })
+    } else if(monitor.type == "ddcci") {
+      monitorsThread.send({
+        type: "vcp",
+        code: vcp,
+        value: level,
+        monitor: monitor.hwid.join("#")
+      })
     } else if (monitor.type == "wmi") {
+      monitor.brightness = level
       monitorsThread.send({
         type: "brightness",
         brightness: normalized
@@ -1344,9 +1445,15 @@ function sleepDisplays(mode = "ps") {
           if(monitor.type === "ddcci") {
             monitorsThread.send({
               type: "vcp",
-              monitor: monitor.id,
+              monitor: monitor.hwid.join("#"),
               code: 0xD6,
               value: 5
+            })
+            monitorsThread.send({
+              type: "vcp",
+              monitor: monitor.hwid.join("#"),
+              code: 0xD6,
+              value: 4
             })
           }
         }
@@ -1382,7 +1489,6 @@ ipcMain.on('request-colors', () => {
 })
 
 ipcMain.on('update-brightness', function (event, data) {
-  console.log(`Update brightness recieved: ${data.index} - ${data.level}`)
   updateBrightness(data.index, data.level)
 
   // If overlay is visible, keep it open
@@ -1393,7 +1499,7 @@ ipcMain.on('update-brightness', function (event, data) {
 
 ipcMain.on('request-monitors', function (event, arg) {
   sendToAllWindows("monitors-updated", monitors)
-  refreshMonitors(false, true)
+  //refreshMonitors(false, true)
 })
 
 ipcMain.on('full-refresh', function (event, forceUpdate = false) {
@@ -1424,7 +1530,8 @@ ipcMain.on('get-update', (event, version) => {
 })
 
 ipcMain.on('panel-height', (event, height) => {
-  panelSize.height = height
+  panelSize.height = height + (settings?.isWin11 ? 24 : 0)
+  panelSize.width = 356 + (settings?.isWin11 ? 24 : 0)
   if (panelSize.visible && !isAnimatingPanel) {
     repositionPanel()
   }
@@ -1451,6 +1558,9 @@ ipcMain.on('show-acrylic', () => {
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
+ipcMain.on('set-vcp', (e, values) => {
+  updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
+})
 
 
 //
@@ -1501,7 +1611,9 @@ function createPanel(toggleOnLoad = false) {
       spellcheck: false,
       enableWebSQL: false,
       //v8CacheOptions: "none",
-      additionalArguments: "--expose_gc"
+      additionalArguments: "--expose_gc",
+      allowRunningInsecureContent: true,
+      webSecurity: false
     }
   });
 
@@ -1518,6 +1630,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     panelReady = true
     console.log("Panel ready!")
+    sendMicaWallpaper()
     mainWindow.show()
     createTray()
 
@@ -1528,7 +1641,7 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if (canReposition) {
       sendToAllWindows("panelBlur")
-      showPanel(false)
+      if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
     }
     global.gc()
   })
@@ -1558,7 +1671,6 @@ function restartPanel() {
     createPanel()
   }
 }
-
 
 function getPrimaryDisplay() {
   let displays = screen.getAllDisplays()
@@ -1904,7 +2016,7 @@ function createTray() {
     lastMouseMove = now
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
-    tryEagerUpdate()
+    tryEagerUpdate(false)
     sendToAllWindows('panel-unsleep')
   })
 
@@ -1976,7 +2088,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
   }
 
   if (doRefresh && !isOverlay) {
-    tryEagerUpdate()
+    tryEagerUpdate(false)
     getThemeRegistry()
     getSettings()
 
@@ -1995,7 +2107,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
         hotkeyOverlayHide()
         setTimeout(() => {
           sendToAllWindows("display-mode", "normal")
-          toggleTray(doRefresh, isOverlay)
+          //toggleTray(doRefresh, isOverlay)
         }, 300)
         return false
       }
@@ -2113,11 +2225,20 @@ function createSettings() {
     backgroundColor: "#00000000",
     frame: false,
     icon: './src/assets/logo.ico',
+    vibrancy: {
+      theme: false,
+      disableOnBlur: false,
+      //useCustomWindowRefreshMethod: !isReallyWin11,
+      useCustomWindowRefreshMethod: false,
+      effect: 'blur'
+    },
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
-      contextIsolation: false
+      contextIsolation: false,
+      allowRunningInsecureContent: true,
+      webSecurity: false
     }
   });
 
@@ -2133,6 +2254,7 @@ function createSettings() {
 
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
+      sendMicaWallpaper()
       settingsWindow.show()
       if (settings.useAcrylic) {
         tryVibrancy(settingsWindow, determineTheme(settings.theme))
@@ -2371,6 +2493,7 @@ function addEventListeners() {
 function handleAccentChange() {
   sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
+  sendMicaWallpaper()
 }
 
 let skipFirstMonChange = false
@@ -2410,7 +2533,7 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   setTimeout(
     () => {
-      refreshMonitors().then(() => {
+      refreshMonitors(true).then(() => {
         // Set brightness to last known settings
         setKnownBrightness()
         restartPanel()
@@ -2440,6 +2563,49 @@ function restartBackgroundUpdate() {
   }
 }
 
+
+// Idle detection
+let isUserIdle = false
+let userIdleInterval = false // Check if idle
+let userCheckingForActiveInterval = false // Check if came back
+
+function startIdleDetection() {
+  clearInterval(userIdleInterval)
+  userIdleInterval = setInterval(checkUserIdle, (settings.detectIdleTime * 1000) / 10)
+}
+
+function stopIdleDetection() {
+  clearInterval(userIdleInterval)
+  checkUserActive(true)
+}
+
+function checkUserIdle() {
+  // Check if user is idle
+  const idleTime = powerMonitor.getSystemIdleTime()
+  console.log(`Idle for: ${idleTime}s`)
+  if (settings.detectIdleTime && !isUserIdle && idleTime >= settings.detectIdleTime) {
+    console.log(`\x1b[36mUser idle. Dimming displays.!\x1b[0m`)
+    isUserIdle = true
+    Object.values(monitors)?.forEach((monitor) => {
+      updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+    })
+    userCheckingForActiveInterval = setInterval(checkUserActive, 1000)
+  }
+}
+
+function checkUserActive(force = false) {
+  const idleTime = powerMonitor.getSystemIdleTime()
+  if ((force && isUserIdle) || (idleTime < settings.detectIdleTime && isUserIdle)) {
+    console.log(`\x1b[36mUser active. Restoring displays.\x1b[0m`)
+    isUserIdle = false
+    setKnownBrightness() // Restore last brightness
+    handleBackgroundUpdate() // Apply ToD adjustments, if needed
+    clearInterval(userCheckingForActiveInterval)
+  }
+}
+
+
+
 let lastTimeEvent = {
   hour: new Date().getHours(),
   minute: new Date().getMinutes(),
@@ -2448,8 +2614,11 @@ let lastTimeEvent = {
 function handleBackgroundUpdate(force = false) {
 
   try {
+    // Wallpaper updates
+    sendMicaWallpaper()
+
     // Time of Day Adjustments
-    if (settings.adjustmentTimes.length > 0) {
+    if (settings.adjustmentTimes.length > 0 && !isUserIdle) {
       const date = new Date()
       const hour = date.getHours()
       const minute = date.getMinutes()
@@ -2602,33 +2771,48 @@ function handleCommandLine(event, commandLine) {
 }
 
 
-// Monitors thread
-// Handles WMI + DDC/CI activity
 
-let monitorsThread = {
-  send: function(data) {
-    try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
-        startMonitorThread()
-      }
-      monitorsThreadReal.send(data)
-    } catch(e) {
-      console.log("Couldn't communicate with Monitor thread.", e)
+
+// Mica features
+let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
+let currentWallpaperTime = false;
+let currentScreenSize = {width: 1280, height: 720}
+const micaWallpaperPath = path.join(app.getPath("userData"), `\\mica${(isDev ? "-dev" : "")}.webp`)
+async function getWallpaper() {
+  try {
+    const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
+    const file = fs.statSync(wallPath)
+    currentScreenSize = screen.getPrimaryDisplay().workAreaSize
+
+    // If time on file changed, render new wallpaper
+    if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
+      currentWallpaper = "file://" + wallPath + "?" + Date.now()
+      const wallpaperImage = sharp(wallPath)
+      //const wallpaperInfo = await wallpaperImage.metadata()
+      const image = await sharp({
+        create: {
+          width: currentScreenSize.width,
+          height: currentScreenSize.height,
+          channels: 4,
+          background: "#202020FF"
+        }
+      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
+      //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
+      currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
+      currentWallpaperTime = file.mtime.getTime()
     }
-  },
-  once: function (message, data) {
-    try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
-        startMonitorThread()
-      }
-      monitorsThreadReal.once(message, data)
-    } catch (e) {
-      console.log("Couldn't listen to Monitor thread.", e)
-    }
+    
+    return { path: currentWallpaper, size: currentScreenSize }
+  } catch(e) {
+    console.log("Wallpaper file not found or unavailable.", e)
+    return { path: currentWallpaper, size: currentScreenSize }
   }
 }
-let monitorsThreadReal
-function startMonitorThread() {
-  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+
+async function sendMicaWallpaper() {
+  // Skip if Win10
+  if(!settings?.isWin11) return false;
+  
+  console.log("(((((((( SENDING MICA ))))))))")
+  sendToAllWindows("mica-wallpaper", await getWallpaper())
 }
-startMonitorThread()

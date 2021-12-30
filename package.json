@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.13.11",
+  "version": "1.14.0-preview8",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -35,9 +35,12 @@
     "node-fetch": "^2.6.1",
     "regedit": "^3.0.3",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
+    "sharp": "^0.29.3",
     "universal-analytics": "^0.4.23",
     "win32-displayconfig": "^0.1.0",
-    "wmi-bridge": "file:src/modules/wmi-bridge"
+    "windows-accent-colors": "^1.0.0",
+    "wmi-bridge": "file:src/modules/wmi-bridge",
+    "wmi-client": "^0.5.0"
   },
   "build": {
     "productName": "Twinkle Tray",
@@ -65,6 +68,7 @@
       "!node_modules/global-mouse-events/node_modules",
       "!node_modules/electron-acrylic-window/node_modules",
       "!node_modules/setwindowpos-binding/node_modules",
+      "!node_modules/windows-accent-colors/node_modules",
       "!node_modules/**/node-gyp/*",
       "!node_modules/**/*.ipdb",
       "!node_modules/**/*.iobj",
@@ -78,6 +82,9 @@
       "!node_modules/**/*.filters"
     ],
     "extraResources": [
+      "node_modules\\regedit\\vbs\\*",
+      "node_modules\\wmi-client\\**\\*",
+      "!node_modules\\wmi-client\\bin",
       "node_modules\\regedit\\vbs\\*"
     ],
     "win": {

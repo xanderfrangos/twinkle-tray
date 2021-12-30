@@ -1,0 +1,51 @@
+#mica {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--mica-base-color);
+
+    .displays {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        overflow: visible;
+        mix-blend-mode: color;
+        visibility: hidden;
+
+        .blur {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+            //filter: blur(100px);
+        }
+
+        img {
+            display: block;
+        }
+    }
+    .noise {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: url(../assets/noise.png) 0 0 repeat;
+        width: 100vw;
+        height: 100vh;
+        opacity: 0.017;
+    }
+}
+
+body[data-focused="false"] {
+    #mica .blur {
+        //opacity: 0;
+    }
+}
+
+body[data-use-mica="false"], body[data-is-win11="false"], body[data-transparent="false"] {
+    #mica {
+        display: none;
+    }
+}

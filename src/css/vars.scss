@@ -23,6 +23,8 @@
     --page-text: #000;
     --page-text-mid: #333;
 
+    --sidebar-item-hover: #16161626;
+
     --window-border: #ddd;
 
     --titlebar-icon: #888;
@@ -48,6 +50,8 @@
         --page-background: #030303;
         --page-text: #fff;
         --page-text-mid: #bbb;
+        
+        --sidebar-item-hover: #ffffff26;
 
         --window-border: #222;
 
@@ -120,6 +124,7 @@ body[data-colored-taskbar="true"] {
     div#panel {
         --tray-background-base: #1f1f1f;
         --tray-background-transparent: var(--system-accent-transparent);
+        --tray-background: var(--system-accent-dark1) !important;
         --tray-background-blur: rgba(41, 41, 41, 0);
         --tray-background-blur-start: rgba(41, 41, 41, 1);
         --tray-text: white;
@@ -140,11 +145,64 @@ body[data-colored-taskbar="true"] {
     
         --slider-track-color: rgba(255, 255, 255, 0.42);
         --slider-track-color-focus: rgba(255, 255, 255, 0.65);
+
+        #mica {
+            background-color: transparent !important;
+            .displays {
+                .blur {
+                    opacity: 0.3 !important;
+                }
+            }
+        }
     }
 }
 
-body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"] {
+body[data-colored-taskbar="true"][data-transparent="false"][data-acrylic="false"], html body[data-is-win11="true"][data-colored-taskbar="true"] {
     div#panel {
         --tray-background: var(--system-accent-transparent) !important;
+        --tray-background: var(--system-accent-dark2) !important;
+    }
+}
+
+
+
+// Windows 11 style
+html body[data-is-win11="true"], html body[data-is-win11="true"] {
+
+    --page-background: #f1f3f9 !important;
+    --page-section-bg: #ffffff98;
+    --tray-background: #f2f2f2 !important;
+    --tray-background-transparent: #f2f2f2 !important;
+    --tray-titlebar-bg: #eeeeee;
+    --slider-track-color: #868686;
+    --slider-thumb-border: #ffffff;
+    --button-background: #ffffff2b;
+    --button-border: #5c5c5c2b;
+    --button-color-background: var(--system-accent-light2);
+    --button-color-border: var(--system-accent-light3);
+    --input-border: rgba(0, 0, 0, 0.77);
+
+    --mica-base-color: #f1f1f1;
+
+    @media screen and (prefers-color-scheme: dark) {
+
+        --page-background: #202020 !important;
+        --page-section-bg: #ffffff0a;
+        --tray-background: #242424 !important;
+        --tray-background-transparent: #242424 !important;
+        --tray-titlebar-bg: rgba(0,0,0,0.18);
+        --slider-track-color: #9b9b9b;
+        --slider-thumb-border: #414141;
+        --button-background: #8a8a8a2b;
+        --button-border: #9797972b;
+        --button-color-background: var(--system-accent-light2);
+        --button-color-border: var(--system-accent-light3);
+        --input-border: rgba(255, 255, 255, 0.77);
+
+        --mica-base-color: #2f2f2f;
+
+        &[data-use-mica="false"] {
+            --tray-titlebar-bg: rgba(0,0,0,0.24);
+        }
     }
 }

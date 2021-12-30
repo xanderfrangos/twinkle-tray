@@ -66,6 +66,8 @@ function detectSunValley() {
     } else {
         window.document.body.dataset.segoeUIVariable = false
     }
+    // Detect Windows 11
+    window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
 }
 
 function openURL(url) {
@@ -110,14 +112,21 @@ ipc.on("monitors-updated", (e, monitors) => {
 
 // Accent colors recieved
 ipc.on('update-colors', (event, data) => {
-    window.document.body.style.setProperty("--system-accent-color", data.accent)
+    window.document.body.style.setProperty("--system-accent-color", data.accent.hex)
     window.document.body.style.setProperty("--system-accent-lighter", data.lighter)
     window.document.body.style.setProperty("--system-accent-light", data.light)
     window.document.body.style.setProperty("--system-accent-medium", data.medium)
     window.document.body.style.setProperty("--system-accent-medium-dark", data.mediumDark)
     window.document.body.style.setProperty("--system-accent-transparent", data.transparent)
     window.document.body.style.setProperty("--system-accent-dark", data.dark)
-    window.accent = data.accent
+
+    window.document.body.style.setProperty("--system-accent-dark1", data.accentDark1.hex)
+    window.document.body.style.setProperty("--system-accent-dark2", data.accentDark2.hex)
+    window.document.body.style.setProperty("--system-accent-dark3", data.accentDark3.hex)
+    window.document.body.style.setProperty("--system-accent-light1", data.accentLight1.hex)
+    window.document.body.style.setProperty("--system-accent-light2", data.accentLight2.hex)
+    window.document.body.style.setProperty("--system-accent-light3", data.accentLight3.hex)
+    window.accent = data.accent.hex
 })
 
 ipc.on('settings-updated', (event, settings) => {
@@ -150,11 +159,30 @@ ipc.on('theme-settings', (event, theme) => {
     }
 })
 
+ipc.on('mica-wallpaper', (event, wallpaper) => {
+    const mica = document.querySelector("#mica .displays")
+    const micaIMG = document.querySelector("#mica img")
+    if(!wallpaper) {
+        mica.style.visibility = "hidden"
+    } else {
+        mica.style.visibility = "visible"
+        micaIMG.src = wallpaper.path
+        micaIMG.width = wallpaper.size?.width
+        micaIMG.height = wallpaper.size?.height
+    }
+})
+
 // Request startup data
 browser.webContents.once('dom-ready', () => {
     requestSettings()
     requestMonitors()
     requestAccent()
+})
+
+// VCP code handling
+window.addEventListener("setVCP", e => {
+    const { monitor, code, value } = e.detail
+    ipc.send("set-vcp", { monitor, code, value })
 })
 
 window.ipc = ipc

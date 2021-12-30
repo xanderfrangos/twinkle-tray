@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
+import DDCCISliders from "./DDCCISliders"
 import TranslateReact from "../TranslateReact"
 
 const monitorSort = (a, b) => {
@@ -23,7 +24,7 @@ export default class BrightnessPanel extends PureComponent {
         let lastValidMonitor
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "ddcci") {
+          if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
            lastValidMonitor = monitor 
           }
         }
@@ -37,14 +38,92 @@ export default class BrightnessPanel extends PureComponent {
       } else {
         // Show all valid monitors individually
         const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+        let useFeatures = false
+
+        // Check if we should use the extended DDC/CI layout or simple layout
+        for(const {hwid} of sorted) {
+          const monitorFeatures = window.settings?.monitorFeatures?.[hwid[1]]
+          if(monitorFeatures?.contrast || monitorFeatures?.volume) {
+            useFeatures = true
+          }
+        }
+
         return sorted.map((monitor, index) => {
           if (monitor.type == "none") {
             return (<div key={monitor.key}></div>)
           } else {
-            if(monitor.type == "wmi" || monitor.type == "ddcci") {
-              return (
-                <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
-              )
+            if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+
+              let hasFeatures = true
+              let featureCount = 0
+              const monitorFeatures = window.settings?.monitorFeatures?.[monitor.hwid[1]]
+              const features = ["contrast", "volume", "powerState"]
+              if (monitor.features) {
+                features.forEach(f => {
+                  // Check monitor features
+                  if (monitor.features[f] && monitor.features[f].length > 1) {
+                    // Check that user has enabled feature
+                    if(monitorFeatures && monitorFeatures[f]) {
+                      // Track feature
+                      hasFeatures = true
+                      featureCount++
+                    }
+                  }
+                })
+              }
+
+              if (!useFeatures || !hasFeatures) {
+                const showPowerButton = () => {
+                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                    return (<div className="feature-power-icon simple"><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
+                  }
+                }
+                return (
+                  <div className="monitor-sliders">
+                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} />
+                  </div>
+                )
+              } else {
+                const powerOff = () => {
+                  window.dispatchEvent(new CustomEvent("setVCP", {
+                    detail: {
+                        monitor: monitor.id,
+                        code: 0xD6,
+                        value: 4
+                    }
+                  }))
+                  window.dispatchEvent(new CustomEvent("setVCP", {
+                    detail: {
+                      monitor: monitor.id,
+                        code: 0xD6,
+                        value: 5
+                    }
+                  }))
+                }
+                const showPowerButton = () => {
+                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                    return (<div className="feature-power-icon" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
+                  }
+                }
+
+                return (
+                  <div className="monitor-sliders extended">
+                    <div class="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
+                      <div className="name-row">
+                        <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
+                        <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
+                        { showPowerButton() }
+                      </div>
+                    </div>
+                    <div className="feature-row">
+                      <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
+                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+                    </div>
+                    <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} />
+                  </div>
+                )
+              }
+
             }
           }
         })
@@ -338,10 +417,24 @@ export default class BrightnessPanel extends PureComponent {
           </div>
           {this.getMonitors()}
           {this.getUpdateBar()}
+          {this.renderMica()}
         </div>
       );
     }
 
+  }
+
+  renderMica() {
+    return(
+      <div id="mica">
+        <div class="displays" style={{visibility: window.micaState.visibility}}>
+          <div class="blur">
+            <img alt="" src={window.micaState.src} width="2560" height="1440" />
+          </div>
+        </div>
+        <div class="noise"></div>
+      </div>
+    )
   }
 
 

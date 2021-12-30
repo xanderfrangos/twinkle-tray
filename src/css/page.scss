@@ -352,6 +352,9 @@ a {
     }
 }
 
+select {
+    appearance: auto;
+}
 
 .icon {
     font-family: "Segoe MDL2 Assets";
@@ -384,6 +387,20 @@ a {
 
     &:hover {
         border-color: var(--input-border);
+    }
+}
+
+.inputToggle-generic {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+
+    .text {
+        font-size: 14px;
+        line-height: 1;
+        margin-top: -5px;
+        margin-left: 8px;
     }
 }
 
@@ -454,13 +471,19 @@ a {
         width: 32px;
         padding: 10px;
         background: #333;
+        background-color: var(--system-accent-dark2);
         border: 2px solid #333;
+        border-color: var(--system-accent-dark1);
+        filter: saturate(0);
     }
 
     &[data-active="true"] {
         img {
             background: var(--system-accent-medium);
             border-color: var(--system-accent-medium-dark);
+            background-color: var(--system-accent-dark1);
+            border-color: var(--system-accent-light2);
+            filter: saturate(1);
         }
     }
 }
@@ -504,6 +527,40 @@ a {
         @extend .button;
         padding: 8px;
         line-height: 1;
+    }
+}
+
+// DDC/CI Features 
+.feature-row {
+    display: flex;
+    justify-content: flex-start;
+    .monitor-item {
+        flex: 1;
+    }
+}
+.feature-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    padding-right: 18px;
+}
+.feature-toggle-list {
+    padding-top: 1px;
+}
+.feature-toggle-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 6px 0;
+    input {
+        margin: 0;
+    }
+}
+.feature-toggle-label {
+    padding-left: 15px;
+    .icon {
+        margin-right: 8px
     }
 }
 
@@ -570,7 +627,7 @@ a {
         }
 
         &:hover {
-            background: var(--tray-border);
+            background: var(--sidebar-item-hover);
         }
 
         &:active {}
@@ -586,12 +643,14 @@ a {
             transform-origin: 0 50%;
             transform: scaleX(0);
             background: var(--system-accent-color);
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0;
         }
 
         &[data-active='true'] {
             &:before {
                 transform: scaleX(1);
+                opacity: 1;
             }
         }
     }
@@ -640,18 +699,160 @@ body[data-fluent-icons="true"] {
 }
 body[data-segoe-u-i-variable="true"] {
     .window-titlebar .window-title {
-        font-family: "Segoe UI Variable Small", "Segoe UI";
-        font-weight: 300;
-        font-size: 10.5px;
+        font-family: "Segoe UI Variable", "Segoe UI";
+        font-weight: 400;
+        font-size: 12px;
     }
     #sidebar .item .label {
-        font-family: "Segoe UI Variable Small", "Segoe UI";
-        font-size: 12.5px;
-        font-weight: 300;
+        font-family: "Segoe UI Variable", "Segoe UI";
+        font-size: 13px;
+        font-weight: 400;
     }
     .sectionTitle {
-        font-weight: 350;
+        font-weight: 500;
         font-family: "Segoe UI Variable Display", "Segoe UI";
-        font-size: 27.5px;
+        font-size: 28px;
     }
+}
+
+// Windows 11 style
+body[data-is-win11="true"] {
+    background-color: var(--page-background);
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+
+    #settings > .window-base {
+        background-color: var(--page-background);
+        background: none;
+    }
+    #sidebar, #page {
+        background: none !important;
+    }
+    #sidebar {
+        padding: 45px 0 15px 15px;
+        padding-top: 45px;
+        height: calc(100vh - 2px - 60px);
+        .item {
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 4px 0;
+            line-height: 1;
+
+            &:before {
+                background-color: var(--system-accent-dark2);
+                @media screen and (prefers-color-scheme: dark) {
+                    background-color: var(--system-accent-light2);
+                }
+                border-radius: 10px;
+                left: -10px;
+            }
+
+            &[data-active='true'] {
+                background: var(--sidebar-item-hover);
+            }
+
+            &[data-type="debug"] {
+                margin-top: auto;
+            }
+        }
+    }
+    #page {
+        padding-top: 19px;
+        border-top-color: transparent;
+    }
+    .button {
+        background: var(--button-background);
+        color: var(--page-text);
+        border-radius: 6px;
+        border: 0;
+        box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
+        &:hover {
+            background: var(--button-border);
+        }
+    }
+    .window-titlebar .window-title {
+        position: relative;
+        top: 8px;
+        left: 10px;
+    }
+    input, select {
+        border-radius: 5px;
+        border-width: 1.5px;
+        background-color: var(--page-section-bg);
+        border-color: var(--button-border);
+
+        &[type="text"] {
+            border-bottom: 1px solid var(--page-text-mid);
+        }
+    }
+    option {
+        background: white;
+        color: black;
+    }
+    input[type="checkbox"] {
+        width: 44px;
+        border-width: 1.5px;
+        border-radius: 50px;
+        border-color: var(--input-border);
+
+        &::before {
+            background-color: var(--input-border);
+            transform-origin: center;
+            transform: translateY(-0.2px);
+        }
+
+        &:hover {
+            &:before {
+                transform: translateY(-0.2px) scale(1.2);
+            }
+        }
+
+        &[data-checked="true"] {  
+            background-color: var(--system-accent-dark2);
+            border-color: var(--system-accent-dark2);
+            @media screen and (prefers-color-scheme: dark) {
+                background-color: var(--system-accent-light2);
+                border-color: var(--system-accent-light2);
+            }
+            &:before {
+                transform: translateX(24px) translateY(-0.2px);
+                background-color: var(--page-background);  
+            }
+            &:hover {
+                &:before {
+                    transform: translateX(22px) translateY(-0.2px) scale(1.2);
+                }
+            }
+        }
+    }
+    .reorderList {
+        border-color: var(--input-border);
+        border-width: 1.5px;
+        border-radius: 5px;
+    }
+    .pageSection {
+        padding-bottom: 40px;
+        max-width: 800px;
+        background: var(--page-section-bg);
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+    .pageSection[data-active=true] {
+        animation: pageSectionIn 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
+        @keyframes pageSectionIn {
+            0% { opacity: 0; transform: translateY(90px); }
+            80% { opacity: 1; }
+            100% { transform: translateY(0px); }
+        }
+    }
+    ::-webkit-scrollbar-thumb {
+        border-radius: 20px;
+    }
+}
+
+#mica {
+    background: none !important;
 }

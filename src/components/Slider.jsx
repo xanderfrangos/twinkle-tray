@@ -6,6 +6,7 @@ export default class Slider extends Component {
 
     firingEvent = false
     handleChange = (event) => {
+        if(event.target.value !== this.props.level)
         this.setState({ level: this.cap(event.target.value) }, this.fireChange)
     }
 
@@ -28,6 +29,7 @@ export default class Slider extends Component {
                 <div className="name-row">
                     <div className="icon">{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                     <div className="title">{this.props.name}</div>
+                    {this.props.afterName}
                 </div>
             )
         }
@@ -57,7 +59,7 @@ export default class Slider extends Component {
         this.state = {
             level: this.cap((this.props.level === undefined ? 50 : this.props.level)),
         }
-        this.fireChange()
+        //this.fireChange()
     }
 
     componentDidUpdate(oldProps) {

@@ -8,6 +8,12 @@ window.ipc.send('request-localization')
 
 ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
 
+window.updateMica = (pos = [0, 0]) => {
+    const micaDisplays = document.querySelector("#mica .displays")
+    micaDisplays.style.transform = `translate(${pos[0] * -1}px, ${pos[1] * -1}px)`
+
+}
+
 // Demo mode
 window.addEventListener("enableDemoMode", () => {
     window.allMonitors = [{

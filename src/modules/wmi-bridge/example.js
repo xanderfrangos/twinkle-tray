@@ -1,7 +1,16 @@
 const WMIBridgeTest = require("./index");
 
-const brightness = WMIBridgeTest.getBrightness();
-const ok = WMIBridgeTest.setBrightness(100);
-const monitors = WMIBridgeTest.getMonitors();
+setInterval(() => {
+    console.log("==== TESTING WMIBRIDGE ====")
+    const monitors = WMIBridgeTest.getMonitors();
+    console.log(`getMonitors: ${Object.keys(monitors)}`)
 
-console.log(monitors, brightness, ok);
+    const brightness = WMIBridgeTest.getBrightness();
+    console.log(`getBrightness:`, brightness)
+
+    const ok = WMIBridgeTest.setBrightness(100);
+    console.log(`setBrightness: ${ok}`)
+    console.log('===========================')
+    console.log(" ")
+    console.log(" ")
+}, 500)

@@ -107,5 +107,12 @@
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Aplicar brillo al inicio",
     "PANEL_LABEL_VOLUME": "Volumen",
     "GENERIC_REFRESH_DISPLAYS": "Actualizar las pantallas",
-    "SETTINGS_HOTKEYS_TOD_TITLE": "Acción Apagar pantallas"
+    "SETTINGS_HOTKEYS_TOD_TITLE": "Acción Apagar pantallas",
+    "SETTINGS_HOTKEYS_TOD_NONE": "Ninguno (ocultar icono)",
+    "SETTINGS_HOTKEYS_TOD_SOFT": "Señal de software (por defecto)",
+    "SETTINGS_HOTKEYS_TOD_BOTH": "Señal de software y hardware*",
+    "SETTINGS_HOTKEYS_TOD_HARD": "Señal de hardware* (solo DDC/CI)",
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*Nota: No todos los monitores con DDC/CI soportan esta característica.",
+    "SETTINGS_HOTKEYS_BREAK_TITLE": "Las teclas de acceso rápido rompen [linked levels]",
+    "SETTINGS_HOTKEYS_TOD_DESC": "Personaliza la señal enviada cuando se usa el acceso rápido (tecla o icono) para apagar. La señal del programa mostrará una pantalla en negro hasta que Windows reciba una entrada (ej. teclado o ratón). La señal de hardware apagará los monitores."
 }

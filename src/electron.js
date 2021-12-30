@@ -7,6 +7,9 @@ const Utils = require("./Utils")
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
+// Prevent background throttling
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
@@ -1965,6 +1968,9 @@ app.on("ready", async () => {
   await getAllLanguages()
   readSettings()
   getLocalization()
+
+  // Maybe stops hanging after sleep?
+  require("electron").powerSaveBlocker.start('prevent-app-suspension')
 
   refreshMonitors(true, true).then(() => {
     if (settings.brightnessAtStartup) setKnownBrightness();

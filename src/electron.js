@@ -2809,6 +2809,9 @@ async function getWallpaper() {
 }
 
 async function sendMicaWallpaper() {
+  // Skip if Win10
+  if(!settings?.isWin11) return false;
+  
   console.log("(((((((( SENDING MICA ))))))))")
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

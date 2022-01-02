@@ -228,6 +228,11 @@ ipc.on('taskbar', (event, taskbar) => {
 // Set display mode (overlay or normal)
 ipc.on('display-mode', (event, mode) => {
     window.document.getElementById("root").dataset["mode"] = mode
+    if(mode === "overlay") {
+        document.body.classList.add("ignoreWin11")
+    } else {
+        document.body.classList.remove("ignoreWin11")
+    }
     shouldSendHeightUpdate()
 })
 

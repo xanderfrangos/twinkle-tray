@@ -152,7 +152,7 @@
 }
 
 // Windows 11 style
-body[data-is-win11="true"] {
+body[data-is-win11="true"]:not(.ignoreWin11) {
 
     .input--range {
     

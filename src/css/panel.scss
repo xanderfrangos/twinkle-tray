@@ -38,6 +38,7 @@ body {
 
         & > div {
             z-index: 2;
+            position: relative;
             &#mica {
                 z-index: 1;
             }

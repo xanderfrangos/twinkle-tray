@@ -464,6 +464,7 @@ function processSettings(newSettings = {}) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
       handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
       sendToAllWindows('theme-settings', lastTheme)
+      sendMicaWallpaper()
     }
 
     if (newSettings.icon !== undefined) {
@@ -745,7 +746,6 @@ async function hotkeyOverlayShow() {
     x: panelOffset + 10,
     y: panelOffset + 20
   })
-
   mainWindow.setOpacity(1)
 
 }
@@ -1152,6 +1152,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
         // However, if user re-enables WMI, don't disable it again
         if(!settings.autoDisabledWMI) {
           settings.autoDisabledWMI = true
+          settings.disableWMIC = true
           settings.disableWMI = true
         }
       }, 10000)

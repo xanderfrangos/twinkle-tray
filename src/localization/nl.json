@@ -115,5 +115,11 @@
     "SETTINGS_HOTKEYS_TOD_NONE": "Geen (pictogram verbergen)",
     "SETTINGS_HOTKEYS_TOD_DESC": "Pas het signaal aan dat wordt verstuurd bij gebruik van de sneltoets/het pictogram ‘Beeldschermen uitschakelen’. Het softwarematige signaal toont een zwart scherm totdat er invoer wordt vastgesteld (bijv. muis of toetsenbord) - het hardwarematige signaal schakelt de beeldschermen volledig uit.",
     "SETTINGS_HOTKEYS_TOD_TITLE": "Beeldschermen uitschakelen",
-    "SETTINGS_FEATURES_DESCRIPTION": "Schakel specifieke DDC/CI-functies in of uit op het helderheidspaneel. U dient minimaal één functie in te schakelen om het beeldscherm op het paneel te tonen. Niet alle beeldschermen ondersteunen deze functies, zoals laptop- en tabletschermen."
+    "SETTINGS_FEATURES_DESCRIPTION": "Schakel specifieke DDC/CI-functies in of uit op het helderheidspaneel. U dient minimaal één functie in te schakelen om het beeldscherm op het paneel te tonen. Niet alle beeldschermen ondersteunen deze functies, zoals laptop- en tabletschermen.",
+    "GENERIC_SECONDS": "seconden",
+    "GENERIC_MINUTES": "minuten",
+    "PANEL_LABEL_TURN_OFF": "Uitschakelen",
+    "SETTINGS_GENERAL_MICA_TITLE": "Micavervaging",
+    "SETTINGS_GENERAL_MICA_DESC": "Schakel de vervaging achter achtergronden in Twinkle Tray in of uit.",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ingebouwd scherm verbergen"
 }

@@ -32,7 +32,7 @@
     "electron-winstore-auto-launch": "^2.0.6",
     "global-mouse-events": "^1.0.7",
     "markdown-to-jsx": "^6.11.4",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "regedit": "^3.0.3",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "sharp": "^0.29.3",

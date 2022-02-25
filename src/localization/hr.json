@@ -64,7 +64,7 @@
     "SETTINGS_TIME_DESC": "Automatski postavi određenu razinu svjetline na svojim monitorima u željeno vrijeme. Svi će se monitori postaviti na iste, normalizirane razine.",
     "SETTINGS_TIME_ADD": "Dodaj vrijeme",
     "SETTINGS_TIME_REMOVE": "Ukloni vrijeme",
-    "SETTINGS_TIME_INDIVIDUAL_TITLE": "Postavi svjetlinu ekrana pojedinačno",
+    "SETTINGS_TIME_INDIVIDUAL_TITLE": "Postavi svjetlinu za pojedinačne ekrane",
     "SETTINGS_TIME_INDIVIDUAL_DESC": "Postavi svjetlinu ekrana pojedinačno, umjesto za sve ekrane najednom.",
     "SETTINGS_TIME_STARTUP_TITLE": "Provjeri prilikom pokretanja programa",
     "SETTINGS_TIME_STARTUP_DESC": "Prilagodi svjetlinu da odgovara najrelevantnijem vremenu kad se Twinkle Tray pokrene.",
@@ -72,8 +72,8 @@
     "SETTINGS_HOTKEYS_DESC": "Konfiguriraj tipkovničke prečace za podešavanje svjetline jednog ili svih ekrana.",
     "SETTINGS_HOTKEYS_ADD": "Dodaj tipkovnički prečac",
     "SETTINGS_HOTKEYS_REMOVE": "Ukloni tipkovnički prečac",
-    "SETTINGS_HOTKEYS_INCREASE": "Povećaj svjetlinu",
-    "SETTINGS_HOTKEYS_DECREASE": "Smanji svjetlinu",
+    "SETTINGS_HOTKEYS_INCREASE": "Posvijetli",
+    "SETTINGS_HOTKEYS_DECREASE": "Potamni",
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Ovdje pritisni tipke",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Podešavanje razine svjetline",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "Količina podešavanja svjetline kad se koriste tipkovnički prečaci.",
@@ -123,5 +123,9 @@
     "SETTINGS_GENERAL_MICA_TITLE": "Mica zamućenje",
     "SETTINGS_GENERAL_MICA_DESC": "Aktiviraj ili deaktiviraj zamućenost iza pozadina u Twinkle Tray.",
     "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Sakrij interni prikaz",
-    "SETTINGS_TIME_IDLE_TITLE": "Otkrivanje mirovanja"
+    "SETTINGS_TIME_IDLE_TITLE": "Otkrivanje nekativnosti",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Preuzmi trenutačnu svjetlinu",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Kad je poklopac zatvoren ili kad je interni ekran deaktiviran u sustavu Windows, sakrij upravljač svjetline u ploči.",
+    "SETTINGS_TIME_IDLE_DESC": "Kad u određenom vremenskom razdoblju nema unosa, smanjit će se svjetlina svih ekrana.",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Prilikom otvaranja stranice svjetline uvijek preuzmi najnoviju razinu svjetline monitora. Aktiviraj ovu opciju ako se svjetlina često mijenja izvan programa Twinkle Tray (npr. od jednog drugog programa)."
 }

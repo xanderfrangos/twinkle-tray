@@ -94,7 +94,7 @@
     "SETTINGS_TIME_ADD": "Lägg till en tid",
     "SETTINGS_TIME_REMOVE": "Ta bort tid",
     "SETTINGS_TIME_INDIVIDUAL_TITLE": "Ställ in ljusstyrkan för enskilda skärmar",
-    "SETTINGS_TIME_INDIVIDUAL_DESC": "Konfigurera ljusstyrkan per skärm i stället för för alla skärmar samtidigt.",
+    "SETTINGS_TIME_INDIVIDUAL_DESC": "Konfigurera ljusstyrkan per skärm i stället för alla skärmar samtidigt.",
     "SETTINGS_TIME_STARTUP_TITLE": "Kontrollera vid start av appen",
     "SETTINGS_TIME_STARTUP_DESC": "Justera ljusstyrkan för att matcha den mest relevanta tiden när Twinkle Tray startar.",
     "SETTINGS_TIME_IDLE_TITLE": "Detektering av tomgång",

@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
+require('@electron/remote/main').initialize()
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
@@ -1621,6 +1622,7 @@ function createPanel(toggleOnLoad = false) {
     }
   });
 
+  require("@electron/remote/main").enable(mainWindow.webContents);
   mainWindow.setAlwaysOnTop(true, 'modal-panel')
 
   mainWindow.loadURL(
@@ -1970,9 +1972,6 @@ app.on("ready", async () => {
   readSettings()
   getLocalization()
 
-  // Maybe stops hanging after sleep?
-  require("electron").powerSaveBlocker.start('prevent-app-suspension')
-
   refreshMonitors(true, true).then(() => {
     if (settings.brightnessAtStartup) setKnownBrightness();
     showIntro()
@@ -2177,6 +2176,9 @@ function showIntro() {
     }
   });
 
+  
+  require("@electron/remote/main").enable(introWindow.webContents);
+
   introWindow.loadURL(
     isDev
       ? "http://localhost:3000/intro.html"
@@ -2248,6 +2250,9 @@ function createSettings() {
       webSecurity: false
     }
   });
+
+  
+  require("@electron/remote/main").enable(settingsWindow.webContents);
 
   settingsWindow.loadURL(
     isDev

@@ -1,4 +1,5 @@
-const { ipcRenderer: ipc, remote } = require('electron');
+const { ipcRenderer: ipc } = require('electron');
+const remote = require('@electron/remote')
 let browser = remote.getCurrentWindow()
 
 window.closeIntro = () => {

@@ -1119,6 +1119,7 @@ function tryVibrancy(window, value = null) {
   if (!window) return false;
   if(!settings.useAcrylic || settings.isWin11) {
     window.setVibrancy(false)
+    window.setBackgroundColor("#00000000")
     return false
   }
   try {

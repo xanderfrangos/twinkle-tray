@@ -16,7 +16,6 @@ const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
   try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch (e) { }
   app.exit()
-  return false;
 } else {
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
@@ -1117,10 +1116,14 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
-  if (!window || settings.isWin11) return false;
+  if (!window) return false;
+  if(!settings.useAcrylic || settings.isWin11) {
+    window.setVibrancy(false)
+    return false
+  }
   try {
     window.getBounds()
-    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow && !isReallyWin11) })
+    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow) })
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -1556,6 +1559,9 @@ ipcMain.on('show-acrylic', () => {
       console.log(nativeTheme.themeSource)
       tryVibrancy(mainWindow, { theme: (lastTheme && nativeTheme.themeSource === "light" ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     }
+  } else {
+    mainWindow.setVibrancy(false)
+    mainWindow.setBackgroundColor("#00000000")
   }
   sendToAllWindows("set-acrylic-show")
 })
@@ -1631,16 +1637,26 @@ function createPanel(toggleOnLoad = false) {
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
 
-  mainWindow.on("closed", () => (mainWindow = null));
+  mainWindow.on("closed", () => { console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~"); mainWindow = null });
 
   mainWindow.once('ready-to-show', () => {
-    panelReady = true
-    console.log("Panel ready!")
-    sendMicaWallpaper()
-    mainWindow.show()
-    createTray()
+    if(mainWindow) {
 
-    if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
+      panelReady = true
+      console.log("Panel ready!")
+      sendMicaWallpaper()
+      mainWindow.show()
+      createTray()
+
+      setTimeout(() => {
+        if(!settings.useAcrylic || settings.isWin11) {
+          mainWindow.setVibrancy(false)
+          mainWindow.setBackgroundColor("#00000000")
+        }
+      }, 100)
+  
+      if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
+    }
   })
 
   mainWindow.on("blur", () => {
@@ -2238,7 +2254,7 @@ function createSettings() {
       theme: false,
       disableOnBlur: false,
       //useCustomWindowRefreshMethod: !isReallyWin11,
-      useCustomWindowRefreshMethod: false,
+      useCustomWindowRefreshMethod: true,
       effect: 'blur'
     },
     webPreferences: {
@@ -2268,9 +2284,7 @@ function createSettings() {
     setTimeout(() => {
       sendMicaWallpaper()
       settingsWindow.show()
-      if (settings.useAcrylic) {
-        tryVibrancy(settingsWindow, determineTheme(settings.theme))
-      }
+      tryVibrancy(settingsWindow, determineTheme(settings.theme))
     }, 100)
 
     // Prevent links from opening in Electron

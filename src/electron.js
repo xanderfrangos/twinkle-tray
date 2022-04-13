@@ -1604,7 +1604,7 @@ function createPanel(toggleOnLoad = false) {
     resizable: false,
     type: "toolbar",
     vibrancy: {
-      theme: false,
+      theme: "#00000000",
       disableOnBlur: false,
       useCustomWindowRefreshMethod: false,
       effect: 'blur'
@@ -2184,6 +2184,12 @@ function showIntro() {
     frame: false,
     transparent: true,
     icon: './src/assets/logo.ico',
+    vibrancy: {
+      theme: "#00000000",
+      disableOnBlur: false,
+      useCustomWindowRefreshMethod: false,
+      effect: 'blur'
+    },
     webPreferences: {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
@@ -2205,6 +2211,10 @@ function showIntro() {
 
   introWindow.once('ready-to-show', () => {
     introWindow.show()
+    setTimeout(() => {
+      introWindow.setVibrancy(false)
+      introWindow.setBackgroundColor("#00000000")
+    }, 100)
   })
 
 }
@@ -2251,7 +2261,7 @@ function createSettings() {
     frame: false,
     icon: './src/assets/logo.ico',
     vibrancy: {
-      theme: false,
+      theme: "#00000000",
       disableOnBlur: false,
       //useCustomWindowRefreshMethod: !isReallyWin11,
       useCustomWindowRefreshMethod: true,

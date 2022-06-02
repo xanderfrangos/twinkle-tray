@@ -104,5 +104,7 @@
     "SETTINGS_UPDATES_AVAILABLE": "Nova versão do Twinkle Tray disponível!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Atualizado. A versão atual inclui as seguintes alterações:",
     "SETTINGS_UPDATES_DOWNLOADING": "Baixando atualização…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Baixar & Instalar {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Baixar & Instalar {{1}}",
+    "GENERIC_MINUTES": "minutos",
+    "GENERIC_SECONDS": "segundos"
 }

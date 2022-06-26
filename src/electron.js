@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs')
 const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
-require('@electron/remote/main').initialize()
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
@@ -13,15 +12,25 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 
+let isDev = false
+try {
+  isDev = require("electron-is-dev");
+} catch (e) { }
+
+const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
+let updateKnownDisplaysTimeout
+
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()
 if (!singleInstanceLock) {
-  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch (e) { }
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath) } catch (e) { }
   app.exit()
 } else {
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
 }
+
+require('@electron/remote/main').initialize()
 
 const { fork } = require('child_process');
 const { BrowserWindow } = require('electron-acrylic-window')
@@ -33,13 +42,8 @@ const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-
 const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
-
 const AccentColors = require("windows-accent-colors")
 
-let isDev = false
-try {
-  isDev = require("electron-is-dev");
-} catch (e) { }
 const regedit = require('regedit')
 const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
@@ -543,9 +547,6 @@ function processSettings(newSettings = {}) {
 
   sendToAllWindows('settings-updated', settings)
 }
-
-const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
-let updateKnownDisplaysTimeout
 
 // Save all known displays to disk for future use
 async function updateKnownDisplays(force = false) {
@@ -2797,7 +2798,7 @@ Flag to show brightness levels in the overlay
 Example: --Overlay
 
 */
-function handleCommandLine(event, commandLine) {
+function handleCommandLine(event, commandLine, directory, additionalData) {
 
   let display
   let type
@@ -2812,6 +2813,11 @@ function handleCommandLine(event, commandLine) {
     if (commandLine.length > 2) {
 
       commandLine.forEach(arg => {
+
+        // List all displays
+        if (arg.indexOf("--list=") === 0) {
+          
+        }
 
         // Get display by index
         if (arg.indexOf("--monitornum=") === 0) {
@@ -2914,7 +2920,5 @@ async function getWallpaper() {
 async function sendMicaWallpaper() {
   // Skip if Win10
   if(!settings?.isWin11) return false;
-  
-  console.log("(((((((( SENDING MICA ))))))))")
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

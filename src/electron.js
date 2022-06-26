@@ -10,6 +10,8 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 
 // Prevent background throttling
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
 
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock()

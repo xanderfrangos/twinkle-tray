@@ -83,20 +83,24 @@ function updateBrightness(index, level) {
 }
 
 function detectSunValley() {
-    // Detect new Fluent Icons (Windows build 21327+)
-    if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
-        window.document.getElementById("root").dataset.fluentIcons = true
-    } else {
-        window.document.getElementById("root").dataset.fluentIcons = false
+    try {
+        // Detect new Fluent Icons (Windows build 21327+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
+            window.document.getElementById("root").dataset.fluentIcons = true
+        } else {
+            window.document.getElementById("root").dataset.fluentIcons = false
+        }
+        // Detect new system font (Windows build 21376+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
+            window.document.getElementById("root").dataset.segoeUIVariable = true
+        } else {
+            window.document.getElementById("root").dataset.segoeUIVariable = false
+        }
+        // Detect Windows 11
+        window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
+    } catch(e) {
+        console.log("Couldn't test for Sun Valley", e)
     }
-    // Detect new system font (Windows build 21376+)
-    if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
-        window.document.getElementById("root").dataset.segoeUIVariable = true
-    } else {
-        window.document.getElementById("root").dataset.segoeUIVariable = false
-    }
-    // Detect Windows 11
-    window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
 }
 
 function openSettings() {

@@ -1632,7 +1632,7 @@ function createPanel(toggleOnLoad = false) {
   });
 
   require("@electron/remote/main").enable(mainWindow.webContents);
-  mainWindow.setAlwaysOnTop(true, 'modal-panel')
+  mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))
 
   mainWindow.loadURL(
     isDev

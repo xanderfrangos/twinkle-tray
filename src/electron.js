@@ -2060,6 +2060,7 @@ function setTrayMenu() {
   if (tray === null) return false;
 
   const contextMenu = Menu.buildFromTemplate([
+    { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])

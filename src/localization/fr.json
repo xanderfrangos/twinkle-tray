@@ -115,5 +115,17 @@
     "SETTINGS_FEATURES_DESCRIPTION": "Activer ou désactiver certaines fonctionnalités DDC/CI dans le menu de configuration de la luminosité. Au moins une fonctionnalité doit être sélectionnée pour votre moniteur pour pouvoir apparaitre dans le menu de configuration de la luminosité. Ces fonctionnalités ne sont pas supportées par tous les écrans, notamment les ordinateurs portables et les tablettes.",
     "PANEL_LABEL_VOLUME": "Volume",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Restaurer la dernière luminosité connue pour chaque moniteur lorsque Twinkle Tray démarre.",
-    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Appliquer la luminosité au démarrage"
+    "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Appliquer la luminosité au démarrage",
+    "GENERIC_MINUTES": "minutes",
+    "SETTINGS_TIME_IDLE_DESC": "Quand aucune entrée n'est détectée pendant un certain temps, la luminosité de tous les affichages sera réduite.",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Toujours obtenir les derniers niveaux de luminosité des moniteurs à l'ouverture de la page de la luminosité. Activez cette option si la luminosité est souvent changée hors de Twinkle Tray (ex. une autre application).",
+    "SETTINGS_FEATURES_UNSUPPORTED": "Cet écran ne supporte pas les fonctionnalités DDC/CI.",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Récupérer la luminosité actuelle",
+    "PANEL_LABEL_TURN_OFF": "Eteindre",
+    "SETTINGS_TIME_IDLE_TITLE": "Détection d'Inactivité",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Lorsque le capot se ferme ou que l'écran interne a été désactivé par Windows, cacher la jauge de luminosité dans le panneau.",
+    "SETTINGS_GENERAL_MICA_DESC": "Active ou désactive le flou derrière l'arrière-plan dans Twinkle Tray.",
+    "GENERIC_SECONDS": "secondes",
+    "SETTINGS_GENERAL_MICA_TITLE": "Flou Mica",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Cacher l'Affichage Interne"
 }

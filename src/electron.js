@@ -713,7 +713,7 @@ const doHotkey = (hotkey) => {
   }
 }
 
-function hotkeyOverlayStart(timeout = 3000, force = false) {
+function hotkeyOverlayStart(timeout = 3000, force = true) {
   if (canReposition) {
     hotkeyOverlayShow()
   }
@@ -724,6 +724,7 @@ function hotkeyOverlayStart(timeout = 3000, force = false) {
 async function hotkeyOverlayShow() {
   if (!mainWindow) return false;
 
+  setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
@@ -752,7 +753,7 @@ async function hotkeyOverlayShow() {
 
 }
 
-function hotkeyOverlayHide(force = false) {
+function hotkeyOverlayHide(force = true) {
   if (!mainWindow) {
     hotkeyOverlayStart(333)
     return false
@@ -762,6 +763,7 @@ function hotkeyOverlayHide(force = false) {
     return false;
   }
   clearTimeout(hotkeyOverlayTimeout)
+  setAlwaysOnTop(false)
   mainWindow.setOpacity(0)
   canReposition = true
   mainWindow.setIgnoreMouseEvents(true)
@@ -1601,7 +1603,7 @@ function createPanel(toggleOnLoad = false) {
     transparent: true,
     show: false,
     opacity: 0,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
     skipTaskbar: true,
     resizable: false,
     type: "toolbar",
@@ -1631,7 +1633,6 @@ function createPanel(toggleOnLoad = false) {
   });
 
   require("@electron/remote/main").enable(mainWindow.webContents);
-  mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))
 
   mainWindow.loadURL(
     isDev
@@ -1686,6 +1687,17 @@ function createPanel(toggleOnLoad = false) {
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
   })
 
+}
+
+function setAlwaysOnTop(onTop = true) {
+  console.log(`SetAlwaysOnTop: ${onTop}`)
+  if(!mainWindow) return false;
+  if(onTop) {
+    mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))
+  } else {
+    mainWindow.setAlwaysOnTop(false)
+  }
+  return true
 }
 
 function restartPanel() {
@@ -1866,9 +1878,11 @@ function showPanel(show = true, height = 300) {
       mainWindow.setOpacity(1)
     }
 
+    setAlwaysOnTop(true)
 
   } else {
     // Hide panel
+    setAlwaysOnTop(false)
     mainWindow.setOpacity(0)
     panelSize.visible = false
     clearInterval(panelAnimationInterval)

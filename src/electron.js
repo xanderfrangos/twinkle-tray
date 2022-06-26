@@ -1417,7 +1417,7 @@ function transitionBrightness(level, eventMonitors = []) {
     for (let key in monitors) {
       const monitor = monitors[key]
 
-      let normalized = level
+      let normalized = level * 1
       if (settings.adjustmentTimeIndividualDisplays) {
         // If using individual monitor settings
         normalized = (eventMonitors[monitor.id] >= 0 ? eventMonitors[monitor.id] : level)
@@ -1435,7 +1435,7 @@ function transitionBrightness(level, eventMonitors = []) {
         updateBrightness(monitor.id, normalized)
         numDone++
       } else {
-        updateBrightness(monitor.id, ((monitor.brightness * 2) + normalized) / 3)
+        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + 1 : monitor.brightness - 1))
       }
       if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);

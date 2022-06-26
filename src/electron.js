@@ -595,21 +595,35 @@ function getKnownDisplays(useCurrentMonitors) {
 }
 
 // Look up all known displays and re-apply last brightness
-function setKnownBrightness(useCurrentMonitors = false) {
+function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1) {
 
-  console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`)
+  console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`, useCurrentMonitors, useTransition, transitionSpeed)
 
   const known = getKnownDisplays(useCurrentMonitors)
-  for (const hwid in known) {
-    try {
-      const monitor = known[hwid]
-
-      // Apply brightness to valid display types
-      if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-        updateBrightness(monitor.id, monitor.brightness, true)
-      }
-    } catch (e) { console.log("Couldn't set brightness for known display!") }
+  if(useTransition) {
+    // If using smooth transition
+    let transitionMonitors = []
+    for (const hwid in known) {
+      try {
+        const monitor = known[hwid]
+        transitionMonitors[monitor.id] = monitor.brightness
+      } catch (e) { console.log("Couldn't set brightness for known display!") }
+    }
+    transitionBrightness(50, transitionMonitors, transitionSpeed)
+  } else {
+    // If not using a transition
+    for (const hwid in known) {
+      try {
+        const monitor = known[hwid]
+  
+        // Apply brightness to valid display types
+        if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          updateBrightness(monitor.id, monitor.brightness, true)
+        }
+      } catch (e) { console.log("Couldn't set brightness for known display!") }
+    }
   }
+  
   sendToAllWindows('monitors-updated', monitors);
 }
 
@@ -1302,7 +1316,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 
-function updateBrightness(index, level, useCap = true, vcp = "brightness") {
+function updateBrightness(index, level, useCap = true, vcp = "brightness", clearTransition = true) {
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
     monitor = Object.values(monitors).find((display) => {
@@ -1319,6 +1333,11 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness") {
   if(!monitor) {
     console.log(`Monitor does not exist: ${index}`)
     return false
+  }
+  
+  if(clearTransition && currentTransition) {
+    clearInterval(currentTransition)
+    currentTransition = null
   }
 
   try {
@@ -1411,7 +1430,7 @@ function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100
 }
 
 let currentTransition = null
-function transitionBrightness(level, eventMonitors = []) {
+function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
   if (currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
@@ -1427,19 +1446,19 @@ function transitionBrightness(level, eventMonitors = []) {
       if (settings.remaps) {
         for (let remapName in settings.remaps) {
           if (remapName == monitor.name) {
-            let remap = settings.remaps[remapName]
             normalized = normalized
           }
         }
       }
       if (monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
-        updateBrightness(monitor.id, normalized)
+        updateBrightness(monitor.id, normalized, undefined, undefined, false)
         numDone++
       } else {
-        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + 1 : monitor.brightness - 1))
+        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + stepSpeed : monitor.brightness - stepSpeed), undefined, undefined, false)
       }
       if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);
+        currentTransition = null
       }
     }
   }, settings.updateInterval * 1)

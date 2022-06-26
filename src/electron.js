@@ -2596,8 +2596,7 @@ function handleMonitorChange(e, d) {
     })
 
     handleChangeTimeout = false
-  }, 3000)
-  
+  }, 5000)
 
 }
 
@@ -2617,6 +2616,11 @@ powerMonitor.on("resume", () => {
     },
     3000 // Give Windows a few seconds to... you know... wake up.
   )
+  setTimeout(() => {
+    refreshMonitors(true)
+  },
+  10000 // Additional full refresh
+  )
 
 
 })
@@ -2628,6 +2632,7 @@ powerMonitor.on("suspend", () => {  recentlyWokeUp = true })
 powerMonitor.on("lock-screen", () => {  recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
   recentlyWokeUp = true
+  refreshMonitors(true)
     setTimeout(() => {
       recentlyWokeUp = false
     }, 

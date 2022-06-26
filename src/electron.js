@@ -2693,9 +2693,15 @@ function checkUserActive(force = false) {
   const idleTime = powerMonitor.getSystemIdleTime()
   if ((force && isUserIdle) || (idleTime < settings.detectIdleTime && isUserIdle)) {
     console.log(`\x1b[36mUser active. Restoring displays.\x1b[0m`)
-    isUserIdle = false
     setKnownBrightness() // Restore last brightness
-    handleBackgroundUpdate() // Apply ToD adjustments, if needed
+
+    // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
+    setTimeout(() => {
+      setKnownBrightness()
+      isUserIdle = false
+      handleBackgroundUpdate() // Apply ToD adjustments, if needed
+    }, 3000)
+
     clearInterval(userCheckingForActiveInterval)
   }
 }

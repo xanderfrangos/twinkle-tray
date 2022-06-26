@@ -1157,9 +1157,8 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
         // Attempt to fix common issue with wmi-bridge by relying only on Win32
         // However, if user re-enables WMI, don't disable it again
-        if(!settings.autoDisabledWMI) {
+        if(!settings.autoDisabledWMI && !recentlyWokeUp) {
           settings.autoDisabledWMI = true
-          settings.disableWMIC = true
           settings.disableWMI = true
         }
       }, 10000)
@@ -2585,7 +2584,31 @@ powerMonitor.on("resume", () => {
     3000 // Give Windows a few seconds to... you know... wake up.
   )
 
+
 })
+
+
+// Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
+let recentlyWokeUp = false
+powerMonitor.on("suspend", () => {  recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => {  recentlyWokeUp = true })
+powerMonitor.on("unlock-screen", () => {
+  recentlyWokeUp = true
+    setTimeout(() => {
+      recentlyWokeUp = false
+    }, 
+    15000
+    )
+})
+powerMonitor.on("resume", () => {
+    recentlyWokeUp = true
+    setTimeout(() => {
+      recentlyWokeUp = false
+    }, 
+    15000
+    )
+})
+
 
 let restartBackgroundUpdateThrottle = false
 function restartBackgroundUpdate() {

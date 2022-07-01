@@ -44,7 +44,7 @@ const refreshCtx = new VerticalRefreshRateContext();
 const setWindowPos = require("setwindowpos-binding")
 const AccentColors = require("windows-accent-colors")
 
-const regedit = require('regedit')
+const reg = require('native-reg');
 const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
@@ -303,13 +303,6 @@ const panelSize = {
   base: 0,
   visible: false
 }
-
-
-
-// Fix regedit tool path in production
-if (!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
-
-
 
 //
 //
@@ -996,69 +989,47 @@ ipcMain.on('reset-settings', () => {
 })
 
 // Get the user's Windows Personalization settings
-function getThemeRegistry() {
+async function getThemeRegistry() {
 
   if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
 
-  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function (err, results) {
-    try {
-      if (err) {
-        debug.error("Couldn\'t find theme key.", err)
-      } else {
+  const themeSettings = {};
+  try {
+    const key = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', reg.Access.ALL_ACCESS);
 
-        // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
-        if (results)
-          for (let result in results) {
-            let themeSettings = Object.assign(results[result].values, {})
+    themeSettings.AppsUseLightTheme = reg.getValue(key, null, 'AppsUseLightTheme');
+    themeSettings.EnableTransparency = reg.getValue(key, null, 'EnableTransparency');
+    themeSettings.SystemUsesLightTheme = reg.getValue(key, null, 'SystemUsesLightTheme');
+    themeSettings.ColorPrevalence = reg.getValue(key, null, 'ColorPrevalence');
+  } catch(e) {
+    console.log("Couldn't access theme registry", e)
+  }
 
-            // We don't need the type, so dump it
-            for (let value in themeSettings) {
-              themeSettings[value] = themeSettings[value].value
-            }
-            themeSettings["UseAcrylic"] = settings.useAcrylic
-            if (themeSettings.ColorPrevalence) {
-              if (settings.theme == "dark" || settings.theme == "light") {
-                themeSettings.ColorPrevalence = false
-              }
-            }
-
-            // Send it off!
-            sendToAllWindows('theme-settings', themeSettings)
-            lastTheme = themeSettings
-            if (tray) {
-              tray.setImage(getTrayIconPath())
-            }
-            break; // Only the first one is needed
-          }
-
-      }
-    } catch (e) {
-      debug.error("Couldn\'t get theme info.", e)
+  themeSettings.UseAcrylic = settings.useAcrylic
+  if (themeSettings.ColorPrevalence) {
+    if (settings.theme == "dark" || settings.theme == "light") {
+      themeSettings.ColorPrevalence = false
     }
+  }
 
-  })
+  // Send it off!
+  sendToAllWindows('theme-settings', themeSettings)
+  lastTheme = themeSettings
+  if (tray) {
+    tray.setImage(getTrayIconPath())
+  }
 
   // Taskbar position
   // For use only if auto-hide is on
-  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', function (err, results) {
-    let taskbarPos = false
-    if (err) {
-      debug.error(`Couldn't find taskbar settings.`, err)
-    } else {
-      try {
-        if (results)
-          for (let result in results) {
-            if (results[result].values.Settings) {
-              taskbarPos = results[result].values.Settings.value[12] * 1
-              detectedTaskbarHeight = results[result].values.Settings.value[20] * 1
-              detectedTaskbarHide = (results[result].values.Settings.value[8] * 1 === 3 ? true : false) // 3 = auto-hide
-            }
-          }
-      } catch (e) {
-        debug.error(`Couldn't read taskbar settings.`, e)
-      }
-    }
-    if (taskbarPos !== false || settings.useTaskbarRegistry) {
+  try {
+    const key = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', reg.Access.ALL_ACCESS);
+
+    const Settings = reg.getValue(key, null, 'Settings');
+    taskbarPos = Settings[12] * 1
+    detectedTaskbarHeight = Settings[20] * 1
+    detectedTaskbarHide = (Settings[8] * 1 === 3 ? true : false) // 3 = auto-hide
+
+    if (taskbarPos !== null || settings.useTaskbarRegistry) {
       switch (taskbarPos) {
         case 0: detectedTaskbarPos = "LEFT"; break;
         case 1: detectedTaskbarPos = "TOP"; break;
@@ -1066,7 +1037,10 @@ function getThemeRegistry() {
         case 3: detectedTaskbarPos = "BOTTOM"; break;
       }
     }
-  })
+  } catch(e) {
+    console.log("Couldn't access taskbar registry", e)
+  }
+
 }
 
 function getTrayIconPath() {

@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.14.0-beta2",
+  "version": "1.14.0-beta3",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -33,8 +33,8 @@
     "electron-winstore-auto-launch": "^2.0.6",
     "global-mouse-events": "^1.0.7",
     "markdown-to-jsx": "^6.11.4",
+    "native-reg": "^1.0.0",
     "node-fetch": "^2.6.1",
-    "regedit": "^3.0.3",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "sharp": "^0.30.6",
     "universal-analytics": "^0.4.23",
@@ -83,10 +83,8 @@
       "!node_modules/**/*.filters"
     ],
     "extraResources": [
-      "node_modules\\regedit\\vbs\\*",
       "node_modules\\wmi-client\\**\\*",
-      "!node_modules\\wmi-client\\bin",
-      "node_modules\\regedit\\vbs\\*"
+      "!node_modules\\wmi-client\\bin"
     ],
     "win": {
       "target": [

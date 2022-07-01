@@ -1352,6 +1352,9 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
         id: monitor.id
       })
     } else if(monitor.type == "ddcci") {
+      if(Utils.vcpMap[vcp] && monitor.features[Utils.vcpMap[vcp]]) {
+        monitor.features[Utils.vcpMap[vcp]][0] = level
+      }
       monitorsThread.send({
         type: "vcp",
         code: vcp,

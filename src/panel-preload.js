@@ -345,10 +345,20 @@ browser.webContents.once('dom-ready', () => {
 })
 
 // VCP code handling
+const vcpMap = {
+    0x10: "luminance",
+    0x13: "brightness",
+    0x12: "contrast",
+    0xD6: "powerState",
+    0x62: "volume"
+}
 window.addEventListener("setVCP", e => {
     if(!window.showPanel) return false;
     const { monitor, code, value } = e.detail
     ipc.send("set-vcp", { monitor, code, value })
+    if(vcpMap[vcp] && monitor.features[vcpMap[vcp]]) {
+        monitor.features[vcpMap[vcp]][0] = level
+      }
 })
 
 window.ipc = ipc

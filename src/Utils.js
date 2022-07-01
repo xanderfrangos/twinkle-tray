@@ -113,6 +113,13 @@ Flag to show brightness levels in the overlay
         } else {
             console.log("OK")
         }
+    },
+    vcpMap: {
+        0x10: "luminance",
+        0x13: "brightness",
+        0x12: "contrast",
+        0xD6: "powerState",
+        0x62: "volume"
     }
 }
 

@@ -2,6 +2,7 @@ console.log("\x1b[45mMonitor.js starting. If you see this more than once, someth
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const fs = require('fs');
+const { exec } = require('child_process');
 
 
 process.on('message', (data) => {
@@ -549,7 +550,13 @@ function setBrightness(brightness, id) {
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness
-            wmibridge.setBrightness(brightness);
+            if(wmiFailed) {
+                // If native WMI is disabled, fall back to old method
+                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
+            } else {
+                // Set brightness via native WMI
+                wmibridge.setBrightness(brightness);
+            }
         }
     } catch (e) {
         console.log(`Couldn't update brightness! [${id}]`);

@@ -1469,7 +1469,7 @@ function sleepDisplays(mode = "ps") {
       }
   
       if(mode === "ps" || mode === "ps_ddcci") {
-        exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
       }
       
     }, 333)
@@ -2072,6 +2072,7 @@ function setTrayMenu() {
   const contextMenu = Menu.buildFromTemplate([
     { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    { type: 'separator' },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setContextMenu(contextMenu)

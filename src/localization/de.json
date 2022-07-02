@@ -127,5 +127,6 @@
     "SETTINGS_HOTKEYS_BREAK_DESC": "Wenn ein Tastenkürzel für einen einzelnen Monitor verwendet wird und \"verknüpfte Ebenen\" aktiv ist, wird das Tastenkürzel deaktiviert.",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Wenn das Notebook geschlossen ist oder die interne Anzeige deaktiviert wurde, den Helligkeitsregler ausblenden.",
     "SETTINGS_HOTKEYS_TOD_DESC": "Passt das Signal an, das bei Verwendung des Tastenkürzel oder Symbols zum Ausschalten der Anzeige(n) gesendet wird. Das Software Signal zeigt einen schwarzen Bildschirm an, bis eine Eingabe (z.B. Maus oder Tastatur) von Windows erkannt wird. Das Hardwaresignal schaltet die Stromversorgung der Monitore aus.",
-    "SETTINGS_HOTKEYS_TOD_TITLE": "Ausschaltsignal"
+    "SETTINGS_HOTKEYS_TOD_TITLE": "Ausschaltsignal",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Wenn Twinkle Tray beim Klicken auf das Tray-Symbol nicht reagiert oder Ihre Bildschirme nicht erkennt, können Sie versuchen, bestimmte Methoden der Monitorerkennung zu deaktivieren. Starten Sie Twinkle Tray neu, damit die Änderungen wirksam werden. {{1}}"
 }

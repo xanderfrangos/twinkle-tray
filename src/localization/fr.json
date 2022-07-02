@@ -127,5 +127,6 @@
     "SETTINGS_GENERAL_MICA_DESC": "Active ou désactive le flou derrière l'arrière-plan dans Twinkle Tray.",
     "GENERIC_SECONDS": "secondes",
     "SETTINGS_GENERAL_MICA_TITLE": "Flou Mica",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Cacher l'Affichage Interne"
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Cacher l'Affichage Interne",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Si Twinkle Tray ne répond pas lorsque vous cliquez sur l'icône de la barre d'état ou ne détecte pas vos écrans, vous pouvez essayer de désactiver certaines méthodes de détection des écrans. Redémarrez Twinkle Tray pour que les modifications soient prises en compte. {{1}}"
 }

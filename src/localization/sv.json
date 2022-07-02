@@ -125,5 +125,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Ny version av Twinkle Tray är tillgänglig!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Uppdaterad. Den aktuella versionen innehåller följande ändringar:",
     "SETTINGS_UPDATES_DOWNLOADING": "Hämtar uppdatering…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Ladda ner & Installera {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Ladda ner & Installera {{1}}",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Om Twinkle Tray inte reagerar när du klickar på ikonen eller inte känner av dina skärmar kan du försöka inaktivera vissa metoder för bildskärmsidentifiering. Starta om Twinkle Tray för att ändringarna ska träda i kraft. {{1}}"
 }

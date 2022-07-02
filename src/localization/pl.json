@@ -107,5 +107,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Pobierz i zainstaluj {{1}}",
     "SETTINGS_HOTKEYS_TOD_NONE": "Brak (ukryj ikonę)",
     "SETTINGS_HOTKEYS_TOD_TITLE": "Akcja wyłączania monitora",
-    "SETTINGS_HOTKEYS_TOD_NOTE": "*Uwaga: Nie wszystkie monitory DDC/CI wspierają tę funkcję."
+    "SETTINGS_HOTKEYS_TOD_NOTE": "*Uwaga: Nie wszystkie monitory DDC/CI wspierają tę funkcję.",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Jeśli Twinkle Tray nie reaguje po kliknięciu na ikonę zasobnika lub nie wykrywa wyświetlaczy, możesz spróbować wyłączyć niektóre metody wykrywania monitorów. Uruchom ponownie Twinkle Tray, aby zmiany zaczęły obowiązywać. {{1}}"
 }

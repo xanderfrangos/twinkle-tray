@@ -21,7 +21,7 @@ const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${
 let updateKnownDisplaysTimeout
 
 // Handle multiple instances before continuing
-const singleInstanceLock = app.requestSingleInstanceLock()
+const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
 if (!singleInstanceLock) {
   try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath) } catch (e) { }
   app.exit()
@@ -2792,19 +2792,22 @@ Flag to show brightness levels in the overlay
 Example: --Overlay
 
 */
-function handleCommandLine(event, commandLine, directory, additionalData) {
+function handleCommandLine(event, argv, directory, additionalData) {
 
   let display
   let type
   let brightness
+  let commandLine = []
 
   try {
+    // Extract flags
+    additionalData.forEach((flag) => {
+      if(flag.indexOf('--') == 0) {
+        commandLine.push(flag.toLowerCase())
+      }
+    })
 
-    if (commandLine.length <= 2 && mainWindow) {
-      app.relaunch()
-      app.quit()
-    }
-    if (commandLine.length > 2) {
+    if (commandLine.length > 0) {
 
       commandLine.forEach(arg => {
 

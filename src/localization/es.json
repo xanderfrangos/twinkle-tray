@@ -127,5 +127,6 @@
     "SETTINGS_TIME_IDLE_DESC": "Cuando no se detecta ninguna entrada durante un periodo de tiempo, el brillo de todas las pantallas se reduce.",
     "SETTINGS_HOTKEYS_BREAK_DESC": "Cuando se usa una tecla de acceso rápido para una sola pantalla y los \"niveles vinculados\" están activos, se desactivará.",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Cuando la tapa está cerrada o la pantalla interna ha sido desactivada en Windows, oculta el deslizador de brillo en el panel.",
-    "SETTINGS_FEATURES_UNSUPPORTED": "Este monitor no es compatible con las funciones DDC/CI."
+    "SETTINGS_FEATURES_UNSUPPORTED": "Este monitor no es compatible con las funciones DDC/CI.",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Si Twinkle Tray no responde al hacer clic en el icono de la bandeja o no detecta sus pantallas, puede intentar desactivar ciertos métodos de detección de monitores. Reinicie Twinkle Tray para que los cambios surtan efecto. {{1}}"
 }

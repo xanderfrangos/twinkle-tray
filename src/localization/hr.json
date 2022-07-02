@@ -127,5 +127,6 @@
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Preuzmi trenutačnu svjetlinu",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Kad je poklopac zatvoren ili kad je interni ekran deaktiviran u sustavu Windows, sakrij upravljač svjetline u ploči.",
     "SETTINGS_TIME_IDLE_DESC": "Kad u određenom vremenskom razdoblju nema unosa, smanjit će se svjetlina svih ekrana.",
-    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Prilikom otvaranja stranice svjetline uvijek preuzmi najnoviju razinu svjetline monitora. Aktiviraj ovu opciju ako se svjetlina često mijenja izvan programa Twinkle Tray (npr. od jednog drugog programa)."
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Prilikom otvaranja stranice svjetline uvijek preuzmi najnoviju razinu svjetline monitora. Aktiviraj ovu opciju ako se svjetlina često mijenja izvan programa Twinkle Tray (npr. od jednog drugog programa).",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Ako Twinkle Tray ne reagira na klik na ikonu trake ili ne otkriva vaše zaslone, možete pokušati onemogućiti određene metode detekcije monitora. Ponovno pokrenite Twinkle tray kako bi promjene stupile na snagu. {{1}}"
 }

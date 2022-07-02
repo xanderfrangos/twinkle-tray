@@ -65,7 +65,7 @@
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Tray icon",
     "SETTINGS_GENERAL_TROUBLESHOOTING": "Troubleshooting",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Disable monitor detection methods",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "If Twinkle Tray is unresponsive when clicking on the tray icon or not detecting your displays, you can try disabling certain monitor detection methods. {{1}}",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "If Twinkle Tray is unresponsive when clicking on the tray icon or not detecting your displays, you can try disabling certain monitor detection methods. Restart Twinkle Tray for changes to take effect. {{1}}",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Disable overlay",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "If Twinkle Tray's hotkey overlay is interfering with fullscreen applications, you can disable it here.",
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",

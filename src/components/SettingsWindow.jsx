@@ -999,10 +999,10 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>                            
                             <select value={window.settings.detectIdleTime} onChange={(e) => this.setSetting("detectIdleTime", e.target.value)}>
                                 <option value="0">{T.t("GENERIC_OFF")}</option>
-                                <option value="60">60 seconds</option>
-                                <option value="300">3 minutes</option>
-                                <option value="600">10 minutes</option>
-                                <option value="1800">30 minutes</option>
+                                <option value="60">60 {T.t("GENERIC_SECONDS")}</option>
+                                <option value="300">3 {T.t("GENERIC_MINUTES")}</option>
+                                <option value="600">10 {T.t("GENERIC_MINUTES")}</option>
+                                <option value="1800">30 {T.t("GENERIC_MINUTES")}</option>
                             </select>
                         </div>
 

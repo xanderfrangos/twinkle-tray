@@ -127,5 +127,6 @@
     "SETTINGS_GENERAL_MICA_TITLE": "透かし",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "明るさのページを開くときに、ディスプレイから最新の明るさの値を取得します。(他のアプリケーションなど) Twinkle Tray の外部から頻繁に明るさが変更される場合にこの機能を有効にしてください。",
     "SETTINGS_FEATURES_UNSUPPORTED": "このディスプレイは、DDC/CI 機能に対応していません。",
-    "SETTINGS_TIME_IDLE_TITLE": "アイドル状態の検出"
+    "SETTINGS_TIME_IDLE_TITLE": "アイドル状態の検出",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "トレイアイコンをクリックしても反応しない、またはディスプレイが検出されない場合は、特定のモニタ検出方法を無効にしてみてください。変更を有効にするには、Twinkle Trayを再起動してください。{{1}}"
 }

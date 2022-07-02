@@ -945,10 +945,32 @@ export default class SettingsWindow extends PureComponent {
                             { this.renderToggle("analytics") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("general")}>
-                            <div className="sectionTitle">{T.t("SETTINGS_GENERAL_RESET_TITLE")}</div>
-                            <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
+                            <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TROUBLESHOOTING")}</div>
+                            <label>{T.t("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE")}</label>
+                            <p>{T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
+                            <div className="feature-toggle-list">
+                                <div className="feature-toggle-row">
+                                 <input onChange={(e) => {this.setSetting("disableWMIC", e.target.checked)}} checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} type="checkbox" />
+                                    <div className="feature-toggle-label"><span>WMIC</span></div>
+                                </div>
+                                <div className="feature-toggle-row">
+                                    <input onChange={(e) => {this.setSetting("disableWMI", e.target.checked)}} checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} type="checkbox" />
+                                    <div className="feature-toggle-label"><span>WMI-Bridge</span></div>
+                                </div>
+                                <div className="feature-toggle-row">
+                                    <input onChange={(e) => {this.setSetting("disableWin32", e.target.checked)}} checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} type="checkbox" />
+                                    <div className="feature-toggle-label"><span>Win32-DisplayConfig</span></div>
+                                </div>
+                            </div>
                             <br />
-                            <a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>
+                            <label>{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</label>
+                            <p>{T.h("SETTINGS_GENERAL_DIS_OVERLAY_DESC")}</p>
+                            { this.renderToggle("disableOverlay") }
+                            <br />
+                            <label>{T.t("SETTINGS_GENERAL_RESET_TITLE")}</label>
+                            <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
+                            
+                            <div style={{paddingBottom:"8px"}}><a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a></div>
                         </div>
 
 

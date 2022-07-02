@@ -358,6 +358,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   autoDisabledWMI: false,
+  disableOverlay: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -722,6 +723,7 @@ const doHotkey = (hotkey) => {
 }
 
 function hotkeyOverlayStart(timeout = 3000, force = true) {
+  if(settings.disableOverlay) return false;
   if (canReposition) {
     hotkeyOverlayShow()
   }
@@ -730,6 +732,7 @@ function hotkeyOverlayStart(timeout = 3000, force = true) {
 }
 
 async function hotkeyOverlayShow() {
+  if(settings.disableOverlay) return false;
   if (!mainWindow) return false;
 
   setAlwaysOnTop(true)
@@ -778,7 +781,13 @@ function hotkeyOverlayHide(force = true) {
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
-  repositionPanel()
+  //repositionPanel()
+  mainWindow.setBounds({
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0
+  })
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
     tryVibrancy(mainWindow, "#00000000")
   }
@@ -1530,6 +1539,8 @@ ipcMain.on('open-url', (event, url) => {
     require("electron").shell.openExternal("ms-windows-store://pdp/?productid=9PLJWWSV01LK")
   } else if (url === "privacy-policy") {
     require("electron").shell.openExternal("https://twinkletray.com/privacy-policy.html")
+  } else if (url === "troubleshooting-features") {
+    require("electron").shell.openExternal("https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues#disabling-monitor-detection-methods-available-in-v1140")
   }
 })
 

@@ -114,5 +114,6 @@
     "SETTINGS_HOTKEYS_TOD_BOTH": "Segnale hardware* e software",
     "SETTINGS_HOTKEYS_TOD_HARD": "Segnale hardware* (solo DDC/CI)",
     "SETTINGS_HOTKEYS_TOD_SOFT": "Segnale software (predefinito)",
-    "SETTINGS_HOTKEYS_TOD_NONE": "Nessuna (nascondi icona)"
+    "SETTINGS_HOTKEYS_TOD_NONE": "Nessuna (nascondi icona)",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Se Twinkle Tray non risponde quando si fa clic sull'icona della barra o non rileva gli schermi, si può provare a disabilitare alcuni metodi di rilevamento dei monitor. Riavviare Twinkle Tray affinché le modifiche abbiano effetto. {{1}}"
 }

@@ -125,5 +125,6 @@
     "SETTINGS_FEATURES_UNSUPPORTED": "A monitor nem támogat DDC/CI funkciókat.",
     "SETTINGS_TIME_IDLE_DESC": "Ha megadott ideig nincs észlelt bemenet, a kijelzők fényereje lecsökken.",
     "SETTINGS_HOTKEYS_TOD_DESC": "Állítsa be az elküldött jelet a Kijelző kikapcsolása funkció gyorsgomb vagy ikon használata során. A szoftver jel egy fekete képernyőt jelenít meg amíg nincs bemenet észlelve (pl. egér vagy billentyűzet) a Windows által. A hardver jel kikapcsolt állapotba helyezi a kijelzőket.",
-    "SETTINGS_HOTKEYS_TOD_NONE": "Nincs jel (ikon elrejtése)"
+    "SETTINGS_HOTKEYS_TOD_NONE": "Nincs jel (ikon elrejtése)",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Ha a Twinkle Tray nem reagál a tálca ikonjára kattintva, vagy nem észleli a kijelzőit, akkor megpróbálhatja letiltani bizonyos monitorérzékelési módszereket. Indítsa újra a Twinkle Tray-t, hogy a módosítások hatályba lépjenek. {{1}}"
 }

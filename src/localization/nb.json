@@ -127,5 +127,6 @@
     "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Skjul innebygd skjerm",
     "SETTINGS_GENERAL_MICA_TITLE": "Uskarphet",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Når skjermen er lukket eller den innebygde skjermen er slått av i Windows, skjul lysstyrkenivået fra panelet.",
-    "SETTINGS_TIME_IDLE_TITLE": "Oppdag når enheten ikke er i bruk"
+    "SETTINGS_TIME_IDLE_TITLE": "Oppdag når enheten ikke er i bruk",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Hvis Twinkle Tray ikke reagerer når du klikker på skuffikonet eller ikke oppdager skjermene dine, kan du prøve å deaktivere visse monitordeteksjonsmetoder. Start Twinkle Tray på nytt for at endringene skal tre i kraft. {{1}}"
 }

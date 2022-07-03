@@ -125,5 +125,6 @@
     "SETTINGS_HOTKEYS_TOD_NONE": "無（隱藏圖示）",
     "SETTINGS_HOTKEYS_TOD_DESC": "自訂使用快捷鍵或圖示時，送出的「關閉螢幕」訊號類型。軟體訊號會顯示黑畫面，直到偵測滑鼠或鍵盤的動作；硬體訊號將直接關閉顯示器。",
     "SETTINGS_HOTKEYS_TOD_TITLE": "關閉顯示器",
-    "SETTINGS_HOTKEYS_BREAK_DESC": "使用快捷鍵時，同步亮度將被關閉。"
+    "SETTINGS_HOTKEYS_BREAK_DESC": "使用快捷鍵時，同步亮度將被關閉。",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "如果Twinkle Tray在点击托盘图标时没有反应，或者没有检测到你的显示器，你可以尝试禁用某些显示器检测方法。重新启动Twinkle Tray以使改变生效。{{1}}"
 }

@@ -125,5 +125,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Versi terbaru dari Twinkle Tray tersedia!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Terkini. Versi saat ini mencakup perubahan berikut:",
     "SETTINGS_UPDATES_DOWNLOADING": "Mengunduh pembaruan…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Mengunduh & Instal {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Mengunduh & Instal {{1}}",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Jika Twinkle Tray tidak responsif ketika mengklik ikon tray atau tidak mendeteksi tampilan Anda, Anda bisa mencoba menonaktifkan metode deteksi monitor tertentu. Restart Twinkle Tray agar perubahan yang terjadi bisa diterapkan. {{1}}"
 }

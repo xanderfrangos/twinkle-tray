@@ -104,5 +104,8 @@
     "SETTINGS_UPDATES_AVAILABLE": "Nova versão do Twinkle Tray disponível!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Atualizado. A versão atual inclui as seguintes alterações:",
     "SETTINGS_UPDATES_DOWNLOADING": "Baixando atualização…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Baixar & Instalar {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Baixar & Instalar {{1}}",
+    "GENERIC_MINUTES": "minutos",
+    "GENERIC_SECONDS": "segundos",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Se o Twinkle Tray não responder ao clicar no ícone do tabuleiro ou não detectar os seus monitores, pode tentar desactivar certos métodos de detecção de monitores. Reinicie a Twinkle Tray para que as alterações tenham efeito. {{1}}"
 }

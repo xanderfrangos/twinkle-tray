@@ -9,17 +9,28 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 
 // Prevent background throttling
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+
+let isDev = false
+try {
+  isDev = require("electron-is-dev");
+} catch (e) { }
+
+const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
+let updateKnownDisplaysTimeout
 
 // Handle multiple instances before continuing
-const singleInstanceLock = app.requestSingleInstanceLock()
+const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
 if (!singleInstanceLock) {
-  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv)) } catch (e) { }
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath) } catch (e) { }
   app.exit()
-  return false;
 } else {
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
 }
+
+require('@electron/remote/main').initialize()
 
 const { fork } = require('child_process');
 const { BrowserWindow } = require('electron-acrylic-window')
@@ -31,14 +42,9 @@ const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-
 const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
-
 const AccentColors = require("windows-accent-colors")
 
-let isDev = false
-try {
-  isDev = require("electron-is-dev");
-} catch (e) { }
-const regedit = require('regedit')
+const reg = require('native-reg');
 const Color = require('color')
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
@@ -298,13 +304,6 @@ const panelSize = {
   visible: false
 }
 
-
-
-// Fix regedit tool path in production
-if (!isDev) regedit.setExternalVBSLocation(path.join(path.dirname(app.getPath('exe')), '.\\resources\\node_modules\\regedit\\vbs'));
-
-
-
 //
 //
 //    Settings init
@@ -359,6 +358,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   autoDisabledWMI: false,
+  disableOverlay: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -542,9 +542,6 @@ function processSettings(newSettings = {}) {
   sendToAllWindows('settings-updated', settings)
 }
 
-const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
-let updateKnownDisplaysTimeout
-
 // Save all known displays to disk for future use
 async function updateKnownDisplays(force = false) {
 
@@ -593,21 +590,35 @@ function getKnownDisplays(useCurrentMonitors) {
 }
 
 // Look up all known displays and re-apply last brightness
-function setKnownBrightness(useCurrentMonitors = false) {
+function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1) {
 
-  console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`)
+  console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`, useCurrentMonitors, useTransition, transitionSpeed)
 
   const known = getKnownDisplays(useCurrentMonitors)
-  for (const hwid in known) {
-    try {
-      const monitor = known[hwid]
-
-      // Apply brightness to valid display types
-      if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-        updateBrightness(monitor.id, monitor.brightness, true)
-      }
-    } catch (e) { console.log("Couldn't set brightness for known display!") }
+  if(useTransition) {
+    // If using smooth transition
+    let transitionMonitors = []
+    for (const hwid in known) {
+      try {
+        const monitor = known[hwid]
+        transitionMonitors[monitor.id] = monitor.brightness
+      } catch (e) { console.log("Couldn't set brightness for known display!") }
+    }
+    transitionBrightness(50, transitionMonitors, transitionSpeed)
+  } else {
+    // If not using a transition
+    for (const hwid in known) {
+      try {
+        const monitor = known[hwid]
+  
+        // Apply brightness to valid display types
+        if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          updateBrightness(monitor.id, monitor.brightness, true)
+        }
+      } catch (e) { console.log("Couldn't set brightness for known display!") }
+    }
   }
+  
   sendToAllWindows('monitors-updated', monitors);
 }
 
@@ -711,7 +722,8 @@ const doHotkey = (hotkey) => {
   }
 }
 
-function hotkeyOverlayStart(timeout = 3000, force = false) {
+function hotkeyOverlayStart(timeout = 3000, force = true) {
+  if(settings.disableOverlay) return false;
   if (canReposition) {
     hotkeyOverlayShow()
   }
@@ -720,8 +732,10 @@ function hotkeyOverlayStart(timeout = 3000, force = false) {
 }
 
 async function hotkeyOverlayShow() {
+  if(settings.disableOverlay) return false;
   if (!mainWindow) return false;
 
+  setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
@@ -750,7 +764,7 @@ async function hotkeyOverlayShow() {
 
 }
 
-function hotkeyOverlayHide(force = false) {
+function hotkeyOverlayHide(force = true) {
   if (!mainWindow) {
     hotkeyOverlayStart(333)
     return false
@@ -760,13 +774,20 @@ function hotkeyOverlayHide(force = false) {
     return false;
   }
   clearTimeout(hotkeyOverlayTimeout)
+  setAlwaysOnTop(false)
   mainWindow.setOpacity(0)
   canReposition = true
   mainWindow.setIgnoreMouseEvents(true)
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
-  repositionPanel()
+  //repositionPanel()
+  mainWindow.setBounds({
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0
+  })
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
     tryVibrancy(mainWindow, "#00000000")
   }
@@ -977,69 +998,47 @@ ipcMain.on('reset-settings', () => {
 })
 
 // Get the user's Windows Personalization settings
-function getThemeRegistry() {
+async function getThemeRegistry() {
 
   if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
 
-  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', function (err, results) {
-    try {
-      if (err) {
-        debug.error("Couldn\'t find theme key.", err)
-      } else {
+  const themeSettings = {};
+  try {
+    const key = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize', reg.Access.ALL_ACCESS);
 
-        // We only need the first one, but for some reason this module returns it as an object with a key of the registry key's name. So we have to iterate through the object and just get the first one.
-        if (results)
-          for (let result in results) {
-            let themeSettings = Object.assign(results[result].values, {})
+    themeSettings.AppsUseLightTheme = reg.getValue(key, null, 'AppsUseLightTheme');
+    themeSettings.EnableTransparency = reg.getValue(key, null, 'EnableTransparency');
+    themeSettings.SystemUsesLightTheme = reg.getValue(key, null, 'SystemUsesLightTheme');
+    themeSettings.ColorPrevalence = reg.getValue(key, null, 'ColorPrevalence');
+  } catch(e) {
+    console.log("Couldn't access theme registry", e)
+  }
 
-            // We don't need the type, so dump it
-            for (let value in themeSettings) {
-              themeSettings[value] = themeSettings[value].value
-            }
-            themeSettings["UseAcrylic"] = settings.useAcrylic
-            if (themeSettings.ColorPrevalence) {
-              if (settings.theme == "dark" || settings.theme == "light") {
-                themeSettings.ColorPrevalence = false
-              }
-            }
-
-            // Send it off!
-            sendToAllWindows('theme-settings', themeSettings)
-            lastTheme = themeSettings
-            if (tray) {
-              tray.setImage(getTrayIconPath())
-            }
-            break; // Only the first one is needed
-          }
-
-      }
-    } catch (e) {
-      debug.error("Couldn\'t get theme info.", e)
+  themeSettings.UseAcrylic = settings.useAcrylic
+  if (themeSettings.ColorPrevalence) {
+    if (settings.theme == "dark" || settings.theme == "light") {
+      themeSettings.ColorPrevalence = false
     }
+  }
 
-  })
+  // Send it off!
+  sendToAllWindows('theme-settings', themeSettings)
+  lastTheme = themeSettings
+  if (tray) {
+    tray.setImage(getTrayIconPath())
+  }
 
   // Taskbar position
   // For use only if auto-hide is on
-  regedit.list('HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', function (err, results) {
-    let taskbarPos = false
-    if (err) {
-      debug.error(`Couldn't find taskbar settings.`, err)
-    } else {
-      try {
-        if (results)
-          for (let result in results) {
-            if (results[result].values.Settings) {
-              taskbarPos = results[result].values.Settings.value[12] * 1
-              detectedTaskbarHeight = results[result].values.Settings.value[20] * 1
-              detectedTaskbarHide = (results[result].values.Settings.value[8] * 1 === 3 ? true : false) // 3 = auto-hide
-            }
-          }
-      } catch (e) {
-        debug.error(`Couldn't read taskbar settings.`, e)
-      }
-    }
-    if (taskbarPos !== false || settings.useTaskbarRegistry) {
+  try {
+    const key = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StuckRects3', reg.Access.ALL_ACCESS);
+
+    const Settings = reg.getValue(key, null, 'Settings');
+    taskbarPos = Settings[12] * 1
+    detectedTaskbarHeight = Settings[20] * 1
+    detectedTaskbarHide = (Settings[8] * 1 === 3 ? true : false) // 3 = auto-hide
+
+    if (taskbarPos !== null || settings.useTaskbarRegistry) {
       switch (taskbarPos) {
         case 0: detectedTaskbarPos = "LEFT"; break;
         case 1: detectedTaskbarPos = "TOP"; break;
@@ -1047,7 +1046,10 @@ function getThemeRegistry() {
         case 3: detectedTaskbarPos = "BOTTOM"; break;
       }
     }
-  })
+  } catch(e) {
+    console.log("Couldn't access taskbar registry", e)
+  }
+
 }
 
 function getTrayIconPath() {
@@ -1116,10 +1118,15 @@ function handleTransparencyChange(transparent = true, blur = false) {
 }
 
 function tryVibrancy(window, value = null) {
-  if (!window || settings.isWin11) return false;
+  if (!window) return false;
+  if(!settings.useAcrylic || settings.isWin11) {
+    window.setVibrancy(false)
+    window.setBackgroundColor("#00000000")
+    return false
+  }
   try {
     window.getBounds()
-    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow && !isReallyWin11) })
+    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow) })
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -1150,9 +1157,8 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
         // Attempt to fix common issue with wmi-bridge by relying only on Win32
         // However, if user re-enables WMI, don't disable it again
-        if(!settings.autoDisabledWMI) {
+        if(!settings.autoDisabledWMI && !recentlyWokeUp) {
           settings.autoDisabledWMI = true
-          settings.disableWMIC = true
           settings.disableWMI = true
         }
       }, 10000)
@@ -1294,7 +1300,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 
-function updateBrightness(index, level, useCap = true, vcp = "brightness") {
+function updateBrightness(index, level, useCap = true, vcp = "brightness", clearTransition = true) {
   let monitor = false
   if (typeof index == "string" && index * 1 != index) {
     monitor = Object.values(monitors).find((display) => {
@@ -1312,6 +1318,11 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness") {
     console.log(`Monitor does not exist: ${index}`)
     return false
   }
+  
+  if(clearTransition && currentTransition) {
+    clearInterval(currentTransition)
+    currentTransition = null
+  }
 
   try {
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
@@ -1324,6 +1335,9 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness") {
         id: monitor.id
       })
     } else if(monitor.type == "ddcci") {
+      if(Utils.vcpMap[vcp] && monitor.features[Utils.vcpMap[vcp]]) {
+        monitor.features[Utils.vcpMap[vcp]][0] = level
+      }
       monitorsThread.send({
         type: "vcp",
         code: vcp,
@@ -1403,14 +1417,14 @@ function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100
 }
 
 let currentTransition = null
-function transitionBrightness(level, eventMonitors = []) {
+function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
   if (currentTransition !== null) clearInterval(currentTransition);
   currentTransition = setInterval(() => {
     let numDone = 0
     for (let key in monitors) {
       const monitor = monitors[key]
 
-      let normalized = level
+      let normalized = level * 1
       if (settings.adjustmentTimeIndividualDisplays) {
         // If using individual monitor settings
         normalized = (eventMonitors[monitor.id] >= 0 ? eventMonitors[monitor.id] : level)
@@ -1419,19 +1433,19 @@ function transitionBrightness(level, eventMonitors = []) {
       if (settings.remaps) {
         for (let remapName in settings.remaps) {
           if (remapName == monitor.name) {
-            let remap = settings.remaps[remapName]
             normalized = normalized
           }
         }
       }
       if (monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
-        updateBrightness(monitor.id, normalized)
+        updateBrightness(monitor.id, normalized, undefined, undefined, false)
         numDone++
       } else {
-        updateBrightness(monitor.id, ((monitor.brightness * 2) + normalized) / 3)
+        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + stepSpeed : monitor.brightness - stepSpeed), undefined, undefined, false)
       }
       if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);
+        currentTransition = null
       }
     }
   }, settings.updateInterval * 1)
@@ -1464,7 +1478,7 @@ function sleepDisplays(mode = "ps") {
       }
   
       if(mode === "ps" || mode === "ps_ddcci") {
-        exec(`powershell.exe (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
       }
       
     }, 333)
@@ -1525,6 +1539,8 @@ ipcMain.on('open-url', (event, url) => {
     require("electron").shell.openExternal("ms-windows-store://pdp/?productid=9PLJWWSV01LK")
   } else if (url === "privacy-policy") {
     require("electron").shell.openExternal("https://twinkletray.com/privacy-policy.html")
+  } else if (url === "troubleshooting-features") {
+    require("electron").shell.openExternal("https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues#disabling-monitor-detection-methods-available-in-v1140")
   }
 })
 
@@ -1555,6 +1571,9 @@ ipcMain.on('show-acrylic', () => {
       console.log(nativeTheme.themeSource)
       tryVibrancy(mainWindow, { theme: (lastTheme && nativeTheme.themeSource === "light" ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     }
+  } else {
+    mainWindow.setVibrancy(false)
+    mainWindow.setBackgroundColor("#00000000")
   }
   sendToAllWindows("set-acrylic-show")
 })
@@ -1592,12 +1611,12 @@ function createPanel(toggleOnLoad = false) {
     transparent: true,
     show: false,
     opacity: 0,
-    alwaysOnTop: true,
+    alwaysOnTop: false,
     skipTaskbar: true,
     resizable: false,
     type: "toolbar",
     vibrancy: {
-      theme: false,
+      theme: "#00000000",
       disableOnBlur: false,
       useCustomWindowRefreshMethod: false,
       effect: 'blur'
@@ -1621,7 +1640,7 @@ function createPanel(toggleOnLoad = false) {
     }
   });
 
-  mainWindow.setAlwaysOnTop(true, 'modal-panel')
+  require("@electron/remote/main").enable(mainWindow.webContents);
 
   mainWindow.loadURL(
     isDev
@@ -1629,16 +1648,26 @@ function createPanel(toggleOnLoad = false) {
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
 
-  mainWindow.on("closed", () => (mainWindow = null));
+  mainWindow.on("closed", () => { console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~"); mainWindow = null });
 
   mainWindow.once('ready-to-show', () => {
-    panelReady = true
-    console.log("Panel ready!")
-    sendMicaWallpaper()
-    mainWindow.show()
-    createTray()
+    if(mainWindow) {
 
-    if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
+      panelReady = true
+      console.log("Panel ready!")
+      sendMicaWallpaper()
+      mainWindow.show()
+      createTray()
+
+      setTimeout(() => {
+        if(!settings.useAcrylic || settings.isWin11) {
+          mainWindow.setVibrancy(false)
+          mainWindow.setBackgroundColor("#00000000")
+        }
+      }, 100)
+  
+      if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
+    }
   })
 
   mainWindow.on("blur", () => {
@@ -1666,6 +1695,17 @@ function createPanel(toggleOnLoad = false) {
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
   })
 
+}
+
+function setAlwaysOnTop(onTop = true) {
+  console.log(`SetAlwaysOnTop: ${onTop}`)
+  if(!mainWindow) return false;
+  if(onTop) {
+    mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))
+  } else {
+    mainWindow.setAlwaysOnTop(false)
+  }
+  return true
 }
 
 function restartPanel() {
@@ -1846,9 +1886,11 @@ function showPanel(show = true, height = 300) {
       mainWindow.setOpacity(1)
     }
 
+    setAlwaysOnTop(true)
 
   } else {
     // Hide panel
+    setAlwaysOnTop(false)
     mainWindow.setOpacity(0)
     panelSize.visible = false
     clearInterval(panelAnimationInterval)
@@ -1970,9 +2012,6 @@ app.on("ready", async () => {
   readSettings()
   getLocalization()
 
-  // Maybe stops hanging after sleep?
-  require("electron").powerSaveBlocker.start('prevent-app-suspension')
-
   refreshMonitors(true, true).then(() => {
     if (settings.brightnessAtStartup) setKnownBrightness();
     showIntro()
@@ -2042,7 +2081,9 @@ function setTrayMenu() {
   if (tray === null) return false;
 
   const contextMenu = Menu.buildFromTemplate([
+    { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    { type: 'separator' },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setContextMenu(contextMenu)
@@ -2169,6 +2210,12 @@ function showIntro() {
     frame: false,
     transparent: true,
     icon: './src/assets/logo.ico',
+    vibrancy: {
+      theme: "#00000000",
+      disableOnBlur: false,
+      useCustomWindowRefreshMethod: false,
+      effect: 'blur'
+    },
     webPreferences: {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
@@ -2176,6 +2223,9 @@ function showIntro() {
       contextIsolation: false
     }
   });
+
+  
+  require("@electron/remote/main").enable(introWindow.webContents);
 
   introWindow.loadURL(
     isDev
@@ -2187,6 +2237,10 @@ function showIntro() {
 
   introWindow.once('ready-to-show', () => {
     introWindow.show()
+    setTimeout(() => {
+      introWindow.setVibrancy(false)
+      introWindow.setBackgroundColor("#00000000")
+    }, 100)
   })
 
 }
@@ -2233,10 +2287,10 @@ function createSettings() {
     frame: false,
     icon: './src/assets/logo.ico',
     vibrancy: {
-      theme: false,
+      theme: "#00000000",
       disableOnBlur: false,
       //useCustomWindowRefreshMethod: !isReallyWin11,
-      useCustomWindowRefreshMethod: false,
+      useCustomWindowRefreshMethod: true,
       effect: 'blur'
     },
     webPreferences: {
@@ -2248,6 +2302,9 @@ function createSettings() {
       webSecurity: false
     }
   });
+
+  
+  require("@electron/remote/main").enable(settingsWindow.webContents);
 
   settingsWindow.loadURL(
     isDev
@@ -2263,9 +2320,7 @@ function createSettings() {
     setTimeout(() => {
       sendMicaWallpaper()
       settingsWindow.show()
-      if (settings.useAcrylic) {
-        tryVibrancy(settingsWindow, determineTheme(settings.theme))
-      }
+      tryVibrancy(settingsWindow, determineTheme(settings.theme))
     }, 100)
 
     // Prevent links from opening in Electron
@@ -2530,8 +2585,7 @@ function handleMonitorChange(e, d) {
     })
 
     handleChangeTimeout = false
-  }, 3000)
-  
+  }, 5000)
 
 }
 
@@ -2551,8 +2605,38 @@ powerMonitor.on("resume", () => {
     },
     3000 // Give Windows a few seconds to... you know... wake up.
   )
+  setTimeout(() => {
+    refreshMonitors(true)
+  },
+  10000 // Additional full refresh
+  )
+
 
 })
+
+
+// Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
+let recentlyWokeUp = false
+powerMonitor.on("suspend", () => {  recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => {  recentlyWokeUp = true })
+powerMonitor.on("unlock-screen", () => {
+  recentlyWokeUp = true
+  refreshMonitors(true)
+    setTimeout(() => {
+      recentlyWokeUp = false
+    }, 
+    15000
+    )
+})
+powerMonitor.on("resume", () => {
+    recentlyWokeUp = true
+    setTimeout(() => {
+      recentlyWokeUp = false
+    }, 
+    15000
+    )
+})
+
 
 let restartBackgroundUpdateThrottle = false
 function restartBackgroundUpdate() {
@@ -2604,9 +2688,15 @@ function checkUserActive(force = false) {
   const idleTime = powerMonitor.getSystemIdleTime()
   if ((force && isUserIdle) || (idleTime < settings.detectIdleTime && isUserIdle)) {
     console.log(`\x1b[36mUser active. Restoring displays.\x1b[0m`)
-    isUserIdle = false
     setKnownBrightness() // Restore last brightness
-    handleBackgroundUpdate() // Apply ToD adjustments, if needed
+
+    // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
+    setTimeout(() => {
+      setKnownBrightness()
+      isUserIdle = false
+      handleBackgroundUpdate() // Apply ToD adjustments, if needed
+    }, 3000)
+
     clearInterval(userCheckingForActiveInterval)
   }
 }
@@ -2702,21 +2792,29 @@ Flag to show brightness levels in the overlay
 Example: --Overlay
 
 */
-function handleCommandLine(event, commandLine) {
+function handleCommandLine(event, argv, directory, additionalData) {
 
   let display
   let type
   let brightness
+  let commandLine = []
 
   try {
+    // Extract flags
+    additionalData.forEach((flag) => {
+      if(flag.indexOf('--') == 0) {
+        commandLine.push(flag.toLowerCase())
+      }
+    })
 
-    if (commandLine.length <= 2 && mainWindow) {
-      app.relaunch()
-      app.quit()
-    }
-    if (commandLine.length > 2) {
+    if (commandLine.length > 0) {
 
       commandLine.forEach(arg => {
+
+        // List all displays
+        if (arg.indexOf("--list=") === 0) {
+          
+        }
 
         // Get display by index
         if (arg.indexOf("--monitornum=") === 0) {
@@ -2819,7 +2917,5 @@ async function getWallpaper() {
 async function sendMicaWallpaper() {
   // Skip if Win10
   if(!settings?.isWin11) return false;
-  
-  console.log("(((((((( SENDING MICA ))))))))")
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

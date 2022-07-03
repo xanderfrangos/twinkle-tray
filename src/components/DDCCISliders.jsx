@@ -14,7 +14,7 @@ export default function DDCCISliders(props) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features.contrast[1] / 100)) }} scrolling={false} />
+                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features.contrast[1] / 100)) }} />
             </div>
         )
     }
@@ -23,7 +23,7 @@ export default function DDCCISliders(props) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE9CA;</span></div>
-                <Slider type="gain" monitorID={monitor.id} level={gain} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setGain(val); }} scrolling={false} />
+                <Slider type="gain" monitorID={monitor.id} level={gain} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setGain(val); }} />
             </div>
         )
     }
@@ -32,7 +32,7 @@ export default function DDCCISliders(props) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} scrolling={false} />
+                <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} />
             </div>
         )
     }

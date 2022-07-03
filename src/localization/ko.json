@@ -115,5 +115,6 @@
     "SETTINGS_HOTKEYS_TOD_HARD": "하드웨어* 신호(DDC/CI만 사용)",
     "SETTINGS_HOTKEYS_TOD_SOFT": "소프트웨어 신호(기본값)",
     "SETTINGS_HOTKEYS_TOD_NONE": "없음(아이콘 숨기기)",
-    "SETTINGS_HOTKEYS_TOD_DESC": "디스플레이 끄기 바로 가기 키 또는 아이콘을 사용할 때 전송되는 신호를 사용자 지정합니다. Windows에서 입력(예: 마우스 또는 키보드)이 감지될 때까지 소프트웨어 신호에 검은색 화면이 표시됩니다. 하드웨어 신호가 모니터의 전원을 끌 것입니다."
+    "SETTINGS_HOTKEYS_TOD_DESC": "디스플레이 끄기 바로 가기 키 또는 아이콘을 사용할 때 전송되는 신호를 사용자 지정합니다. Windows에서 입력(예: 마우스 또는 키보드)이 감지될 때까지 소프트웨어 신호에 검은색 화면이 표시됩니다. 하드웨어 신호가 모니터의 전원을 끌 것입니다.",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "트레이 아이콘을 클릭할 때 Twinkle Tray가 응답하지 않거나 디스플레이를 감지하지 못하는 경우 특정 모니터 감지 방법을 비활성화할 수 있습니다. 변경 사항을 적용하려면 Twinkle Tray를 다시 시작하십시오. {{1}}"
 }

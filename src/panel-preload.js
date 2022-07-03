@@ -1,4 +1,5 @@
-const { ipcRenderer: ipc, remote } = require('electron');
+const { ipcRenderer: ipc } = require('electron');
+const remote = require('@electron/remote')
 let browser = remote.getCurrentWindow()
 
 // Send logs to main thread
@@ -82,20 +83,24 @@ function updateBrightness(index, level) {
 }
 
 function detectSunValley() {
-    // Detect new Fluent Icons (Windows build 21327+)
-    if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
-        window.document.getElementById("root").dataset.fluentIcons = true
-    } else {
-        window.document.getElementById("root").dataset.fluentIcons = false
+    try {
+        // Detect new Fluent Icons (Windows build 21327+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
+            window.document.getElementById("root").dataset.fluentIcons = true
+        } else {
+            window.document.getElementById("root").dataset.fluentIcons = false
+        }
+        // Detect new system font (Windows build 21376+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
+            window.document.getElementById("root").dataset.segoeUIVariable = true
+        } else {
+            window.document.getElementById("root").dataset.segoeUIVariable = false
+        }
+        // Detect Windows 11
+        window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
+    } catch(e) {
+        console.log("Couldn't test for Sun Valley", e)
     }
-    // Detect new system font (Windows build 21376+)
-    if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
-        window.document.getElementById("root").dataset.segoeUIVariable = true
-    } else {
-        window.document.getElementById("root").dataset.segoeUIVariable = false
-    }
-    // Detect Windows 11
-    window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
 }
 
 function openSettings() {
@@ -340,10 +345,20 @@ browser.webContents.once('dom-ready', () => {
 })
 
 // VCP code handling
+const vcpMap = {
+    0x10: "luminance",
+    0x13: "brightness",
+    0x12: "contrast",
+    0xD6: "powerState",
+    0x62: "volume"
+}
 window.addEventListener("setVCP", e => {
     if(!window.showPanel) return false;
     const { monitor, code, value } = e.detail
     ipc.send("set-vcp", { monitor, code, value })
+    if(vcpMap[vcp] && monitor.features[vcpMap[vcp]]) {
+        monitor.features[vcpMap[vcp]][0] = level
+      }
 })
 
 window.ipc = ipc

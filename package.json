@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.14.0-preview8",
+  "version": "1.14.0-beta3",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "electron-build": "electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
-    "appx-signed": "npm run parcel-build && electron-builder -w appx -c.win.certificateFile=cert.pfx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-signed.${ext}\"",
+    "appx-unsigned": "npm run parcel-build && electron-builder -w appx -c.appx.publisher=\"CN=AppModelSamples, OID.2.25.311729368913984317654407730594956997722=1\" -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-unsigned.${ext}\"",
     "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci",
     "build": "npm run parcel-build && npm run electron-build",
     "start": "concurrently \"npm run parcel\" \"npm run dev\"",
@@ -26,16 +26,17 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
+    "@electron/remote": "^2.0.8",
     "@hensm/ddcci": "^0.1.0",
     "color": "^3.1.3",
-    "electron-acrylic-window": "file:src/modules/electron-acrylic-window",
+    "electron-acrylic-window": "0.5.11",
     "electron-winstore-auto-launch": "^2.0.6",
     "global-mouse-events": "^1.0.7",
     "markdown-to-jsx": "^6.11.4",
+    "native-reg": "^1.0.0",
     "node-fetch": "^2.6.1",
-    "regedit": "^3.0.3",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
-    "sharp": "^0.29.3",
+    "sharp": "^0.30.6",
     "universal-analytics": "^0.4.23",
     "win32-displayconfig": "^0.1.0",
     "windows-accent-colors": "^1.0.0",
@@ -82,10 +83,8 @@
       "!node_modules/**/*.filters"
     ],
     "extraResources": [
-      "node_modules\\regedit\\vbs\\*",
       "node_modules\\wmi-client\\**\\*",
-      "!node_modules\\wmi-client\\bin",
-      "node_modules\\regedit\\vbs\\*"
+      "!node_modules\\wmi-client\\bin"
     ],
     "win": {
       "target": [
@@ -117,8 +116,8 @@
     "@babel/preset-react": "^7.12.13",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
-    "electron": "^13.6.1",
-    "electron-builder": "^22.13.1",
+    "electron": "^19.0.6",
+    "electron-builder": "^23.1.0",
     "electron-is-dev": "^1.2.0",
     "parcel-bundler": "^1.12.5",
     "react": "^16.14.0",

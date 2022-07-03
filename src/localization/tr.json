@@ -113,5 +113,6 @@
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray'in yeni versiyonu mevcut!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Güncel. Geçerli sürüm aşağıdaki değişiklikleri içerir:",
     "SETTINGS_UPDATES_DOWNLOADING": "Güncelleme indiriliyor…",
-    "SETTINGS_UPDATES_DOWNLOAD": "{{1}} İndir ve Yükle"
+    "SETTINGS_UPDATES_DOWNLOAD": "{{1}} İndir ve Yükle",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Twinkle Tray, tepsi simgesine tıklandığında yanıt vermiyorsa veya ekranlarınızı algılamıyorsa, belirli monitör algılama yöntemlerini devre dışı bırakmayı deneyebilirsiniz. Değişikliklerin etkili olması için Twinkle Tray'i yeniden başlatın. {{1}}"
 }

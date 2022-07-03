@@ -5,18 +5,24 @@
 
 <p align="center"><a href="https://github.com/xanderfrangos/twinkle-tray/releases" target="_blank"><img src="https://img.shields.io/github/v/release/xanderfrangos/twinkle-tray" alt="Latest release" /></a> <a href="https://github.com/xanderfrangos/twinkle-tray/releases" target="_blank"><img src="https://img.shields.io/github/downloads/xanderfrangos/twinkle-tray/total" alt="Total downloads" /></a> <a href="https://hosted.weblate.org/projects/twinkle-tray/twinkle-tray/" target="_blank"><img src="https://hosted.weblate.org/widgets/twinkle-tray/-/twinkle-tray/svg-badge.svg" alt="Translations" /></a></p>
 
-Twinkle Tray lets you easily manage the brightness levels of multiple monitors. Even though Windows 10 is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows 10 also lacks any ability to manage the brightness of multiple monitors. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible monitors. 
+Twinkle Tray lets you easily manage the brightness levels of multiple monitors. Even though Windows is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows 10 & 11 also lack any ability to manage the brightness of multiple displays. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible displays. 
 
-<img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/twinkle-tray-screenshot.jpg" alt="Win 10 brightness slider" />
+<img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/tt-screenshot-w11.jpg" alt="Win 10 brightness slider" />
 
-**Features:**
-- Adds brightness sliders to the system tray, similar to the built-in Windows 10 volume panel.
+## Features
+- Adds brightness sliders to the system tray, similar to the built-in Windows volume flyout.
+- Seamlessly blends in with Windows 10 and Windows 11. Uses your Personalization settings to match your taskbar.
+- Can automatically change monitor brightness depending on the time of day or when idle.
+- Bind hotkeys to adjust the brightness of specifical or all displays.
 - Normalize backlight across different monitors.
-- Can automatically change monitor brightness depending on the time of day.
-- Seamlessly blends in with Windows 10. Uses your Personalization settings to match your taskbar.
+- Control DDC/CI features such as contrast.
 - Starts up with Windows.
 
-This app was built with [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), and [win32-displayconfig](<https://github.com/djsweet/win32-displayconfig>).
+### Design & Personalization
+
+Twinkle Tray will automatically adjust the look and feel to match your Windows version and preferences. Additional options are available to select the Windows version and theme of your choice.
+
+<img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/tt-comparison.jpg" alt="Win 11 brightness slider" />
 
 ## Download
 
@@ -28,8 +34,8 @@ This app was built with [Electron](https://electronjs.org/), [Node.js](https://n
 
 - Download from the [Releases page](https://github.com/xanderfrangos/twinkle-tray/releases) and run the installer EXE.
 - Once installation has finished, you should see the Twinkle Tray icon in your system tray. 
-- Click the icon to bring up the Adjust Brightness panel. 
-- Click away to hide the panel.
+- Click the icon to bring up the Adjust Brightness flyout. 
+- Click away to hide the flyout.
 - Right-click the system tray icon to quit.
 
 ## Compatibility
@@ -39,6 +45,7 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitor
 - The AMD Radeon Control Panel can interfere with Twinkle Tray. Ensure "Custom Colors" is not enabled.
 - VGA may not be compatible.
 - USB/Thunderbolt/Surface docks with HDMI or DisplayPort may not be compatible. 
+- DDC/CI features such as brightness control and power state may cause certain models of monitors to behave poorly. This applies to any DDC/CI software, not just Twinkle Tray.
 
 If some of your monitors are not being detected, please see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues) for troubleshooting steps.
 
@@ -50,6 +57,7 @@ For example: `"%LocalAppData%\Programs\twinkle-tray\Twinkle Tray.exe" --MonitorN
 
 ### Supported args:
 
+- `--List` List all displays. *(available in v1.14.0+)*
 - `--MonitorNum` Select monitor by number. Starts at 1. *Example: `--MonitorNum=2`*
 - `--MonitorID` Select monitor by internal ID. Partial or whole matches accepted. *Example: `--MonitorID="UID2353"`*
 - `--All` Flag to select all monitors.
@@ -67,7 +75,7 @@ Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/g
 <img src="https://hosted.weblate.org/widgets/twinkle-tray/-/multi-auto.svg" alt="Translation status" />
 </a>
 
-## Build
+## Build Instructions
 If you wish to run a development build of Twinkly Tray:
 
 - Download or clone.
@@ -76,6 +84,10 @@ If you wish to run a development build of Twinkly Tray:
 - Run `npm run build` to build an executable or `npm start` to run a development build.
 
 Note: For actual development, it's recommended to run `npm run parcel` and `npm run dev` seperately.
+
+## Special Thanks
+
+Twinkle Tray was built using frameworks & libraries such as [Electron](https://electronjs.org/), [Node.js](https://nodejs.org/), [node-ddcci](https://github.com/hensm/node-ddcci), and [win32-displayconfig](<https://github.com/djsweet/win32-displayconfig>). Thanks to Weblate for allowing free use of their service, along with the many contributors to the localizations of Twinkle Tray. The app would not be nearly as popular without all of your help. And thank you for the many donations, small and large, over the years. 
 
 ## License
 

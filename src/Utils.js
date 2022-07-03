@@ -1,3 +1,6 @@
+const path = require('path');
+const fs = require('fs')
+
 module.exports = {
     processArgs: (commandLine) => {
 
@@ -6,6 +9,11 @@ module.exports = {
         commandLine.forEach(argRaw => {
 
             const arg = argRaw.toLowerCase();
+
+            // Get display by index
+            if (arg.indexOf("--list") === 0) {
+                validArgs.List = true
+            }
 
             // Get display by index
             if (arg.indexOf("--monitornum=") === 0) {
@@ -44,21 +52,39 @@ module.exports = {
         return validArgs
     },
 
-    handleProcessedArgs(args = {}) {
+    handleProcessedArgs(args = {}, knownDisplaysPath) {
 
         let failed
-        if (!(args.MonitorID !== undefined || args.MonitorNum !== undefined || args.All)) {
-            console.log("\x1b[41mMissing monitor argument.\x1b[0m")
-            failed = true
-        }
-        if (!(args.Brightness !== undefined)) {
-            console.log("\x1b[41mMissing brightness argument.\x1b[0m")
-            failed = true
+
+        if(args.List) {
+            const displays = getKnownDisplays(knownDisplaysPath)
+            Object.values(displays).forEach(display => {
+                console.log(`
+\x1b[36mMonitorNum:\x1b[0m ${display.num}
+\x1b[36mMonitorID:\x1b[0m ${display.key}
+\x1b[36mName:\x1b[0m ${display.name}
+\x1b[36mBrightness:\x1b[0m ${display.brightness}
+\x1b[36mType:\x1b[0m ${display.type}`)
+            })
+            failed = false;
+            return true;
+        } else {
+            if (!(args.MonitorID !== undefined || args.MonitorNum !== undefined || args.All)) {
+                console.log("\x1b[41mMissing monitor argument.\x1b[0m")
+                failed = true
+            }
+            if (!(args.Brightness !== undefined)) {
+                console.log("\x1b[41mMissing brightness argument.\x1b[0m")
+                failed = true
+            }
         }
 
         if (failed) {
             console.log(`
 Supported args:
+
+\x1b[36m--List\x1b[0m
+List all displays.
 
 \x1b[36m--MonitorNum\x1b[0m
 Select monitor by number. Starts at 1.
@@ -87,5 +113,26 @@ Flag to show brightness levels in the overlay
         } else {
             console.log("OK")
         }
+    },
+    vcpMap: {
+        0x10: "luminance",
+        0x13: "brightness",
+        0x12: "contrast",
+        0xD6: "powerState",
+        0x62: "volume"
     }
 }
+
+// Get known displays from file, along with current displays
+function getKnownDisplays(knownDisplaysPath) {
+    let known
+    try {
+      // Load known displays DB
+      known = fs.readFileSync(knownDisplaysPath)
+      known = JSON.parse(known)
+    } catch (e) {
+      known = {}
+    }
+  
+    return known
+  }

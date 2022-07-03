@@ -71,7 +71,7 @@
     "SETTINGS_HOTKEYS_ADD": "ショートカットキーの追加",
     "SETTINGS_HOTKEYS_REMOVE": "ショートカットキーの削除",
     "SETTINGS_HOTKEYS_INCREASE": "明るさを上げる",
-    "SETTINGS_HOTKEYS_DECREASE": "明るを下げる",
+    "SETTINGS_HOTKEYS_DECREASE": "明るさを下げる",
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "ここでキーを入力",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "明るさ調整の程度",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "ショートカットキー使用時にどのくらい明るさを調整するか。",
@@ -115,5 +115,18 @@
     "SETTINGS_HOTKEYS_TOD_SOFT": "ソフトウェア信号 (標準)",
     "SETTINGS_HOTKEYS_TOD_NONE": "なし (アイコンなし)",
     "SETTINGS_HOTKEYS_TOD_DESC": "「ディスプレイの電源を切る」のショートカットキーやアイコンを押した際に、送信される信号を選択できます。ソフトウェア信号では、Windows が入力 (マウス・キーボードなど) を検出するまでの間、黒い画面となります。ハードウェア信号は、ディスプレイの電源を切ります。",
-    "SETTINGS_HOTKEYS_TOD_TITLE": "ディスプレイの電源を切る際の動作"
+    "SETTINGS_HOTKEYS_TOD_TITLE": "ディスプレイの電源を切る際の動作",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "現在の明るさの取得",
+    "GENERIC_SECONDS": "秒",
+    "GENERIC_MINUTES": "分",
+    "PANEL_LABEL_TURN_OFF": "電源を切る",
+    "SETTINGS_TIME_IDLE_DESC": "一定時間の入力のない状態を検出すると、すべてのディスプレイの明るさを下げます。",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "カバーを閉じたり、Windowsで内臓ディスプレイを無効にしている場合、パネル内のディスプレイの明るさ調整用スライダーを非表示にします。",
+    "SETTINGS_GENERAL_MICA_DESC": "Twinkle Tray の透かし背景を有効・無効にする。",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "内臓ディスプレイを非表示",
+    "SETTINGS_GENERAL_MICA_TITLE": "透かし",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "明るさのページを開くときに、ディスプレイから最新の明るさの値を取得します。(他のアプリケーションなど) Twinkle Tray の外部から頻繁に明るさが変更される場合にこの機能を有効にしてください。",
+    "SETTINGS_FEATURES_UNSUPPORTED": "このディスプレイは、DDC/CI 機能に対応していません。",
+    "SETTINGS_TIME_IDLE_TITLE": "アイドル状態の検出",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "トレイアイコンをクリックしても反応しない、またはディスプレイが検出されない場合は、特定のモニタ検出方法を無効にしてみてください。変更を有効にするには、Twinkle Trayを再起動してください。{{1}}"
 }

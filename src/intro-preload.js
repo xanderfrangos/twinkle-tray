@@ -1,8 +1,30 @@
-const { ipcRenderer: ipc, remote } = require('electron');
+const { ipcRenderer: ipc } = require('electron');
+const remote = require('@electron/remote')
 let browser = remote.getCurrentWindow()
 
 window.closeIntro = () => {
     ipc.send('close-intro')
+}
+
+function detectSunValley() {
+    try {
+        // Detect new Fluent Icons (Windows build 21327+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
+            window.document.body.dataset.fluentIcons = true
+        } else {
+            window.document.body.dataset.fluentIcons = false
+        }
+        // Detect new system font (Windows build 21376+)
+        if(window.settings.enableSunValley && document.fonts.check("12px Segoe UI Variable Text")) {
+            window.document.body.dataset.segoeUIVariable = true
+        } else {
+            window.document.body.dataset.segoeUIVariable = false
+        }
+        // Detect Windows 11
+        window.document.body.dataset.isWin11 = (window.settings.isWin11 ? true : false)
+    } catch(e) {
+        console.log("Couldn't test for Sun Valley", e)
+    }
 }
 
 // Request startup data
@@ -11,6 +33,7 @@ browser.webContents.once('dom-ready', () => {
 })
 browser.webContents.once('did-finish-load', () => {
     ipc.send('request-localization')
+    detectSunValley()
     setTimeout(() => {
         document.getElementById("video").play()
     }, 2400)

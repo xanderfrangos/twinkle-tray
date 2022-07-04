@@ -11,11 +11,12 @@ html, body {
     font-family: "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 15px;
     color: #515151;
+    color: white;
     line-height: 1;
-    background: #482673;
+    background: #06000A;
     
     @include appnav {
-        font-size: 15px;
+        font-size: 14px;
     }
 }
 
@@ -39,15 +40,41 @@ h1 {
     font-size: 48px;
     line-height: 1.1;
     font-weight: bold;
+    margin-top: 0px;
     
     @include tablet {
         font-size: 28px;
+    }
+    
+    @include appnav {
+        font-size: 22px;
+    }
+}
+
+h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 0;
+    
+    @include appnav {
+        font-size: 18px;
+    }
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 0;
+    
+    @include appnav {
+        font-size: 16px;
     }
 }
 
 a {
     color: inherit;
     transition: opacity 0.2s;
+    text-decoration: none;
     &:hover {
         opacity: 0.75;
     }
@@ -56,8 +83,63 @@ a {
     }
 }
 
+p {
+    font-size: 16px;
+    line-height: 1.4;
+    opacity: 0.8;
+    
+    @include appnav {
+        font-size: 15px;
+    }
+    &.big {
+        font-size: 20px;
+    
+        @include appnav {
+            font-size: 17px;
+        }
+    }
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    padding-left: 0px;
+    opacity: 0.8;
+    li {
+        margin: 0;
+        padding: 0;
+        line-height: 1.4;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+
+        &:before {
+            content: '';
+            background: url('/assets/img/check_circle_black_24dp.svg') center center no-repeat;
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            background-size: contain;
+            display: block;
+            margin-right: 8px;
+        }
+
+        & + li {
+            padding-top: 10px;
+    
+            @include appnav {
+                padding-top: 8px;
+            }
+        }
+    }
+}
+
+.semibold {
+    font-weight: 600;
+}
+
 main {
-    position: absolute;
+    position: relative;
     height: 100%;
     width: 100%;
 }
@@ -71,16 +153,13 @@ main {
     
     @include tablet {
         position: static;
-        padding: 10px;
+        padding: 35px 10px;
     }
     
     img {
         width: 172px;
         height: 53px;
         will-change: transform;
-        @include tablet {
-            margin: auto;
-        }
     }
     a {
         display: block;
@@ -91,12 +170,6 @@ main {
         text-decoration: none;
         font-size: 13px;
         transition: opacity 0.2s;
-        
-        @include tablet {
-            position: static;
-            margin: 20px auto;
-            text-align: center;
-        }
         
         &:hover {
             opacity: 0.75;
@@ -113,49 +186,73 @@ main {
             height: 29px;
             display: inline-block;
         }
+        
+        @include tablet {
+            top: 47px;
+            right: 32px;
+            span {
+                display: none;
+            }
+            span + span {
+                display: block;
+            }
+        }
+
     }
 }
 
 .background {
-    position: fixed;
+    position: absolute;
     width: 100%;
     height: 100%;
     z-index: 1;
     overflow: hidden;
-    background: url('../img/bg.jpg') center center;
+    background: url('../img/bg-new_1920.jpg') center bottom;
+    @media (min-width: 2000px), (min-resolution: 144dpi) and (min-width:1500px) {
+        background-image: url('../img/bg-new_2560.jpg');
+    }
     background-size: cover;
-    background-attachment: fixed;
-    opacity: 0.35;
+    opacity: 0.5;
     animation: bgIn 2s;
     @keyframes bgIn {
         0% { opacity: 0; }
         30% { opacity: 0; }
-        100% { opacity: 0.35; }
+        100% { opacity: 0.5; }
     }
 }
 
 .foreground {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
-    height: 100%;
+    min-height: 100%;
     width: 100%;
     z-index: 2;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    padding: 0 20px;
+
+    &:before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background: linear-gradient(0deg, rgba(#050005, 1), rgba(#050005, 0));
+    }
     
     @include tablet {
         display: block;
         position: relative;
-        height: auto;
     }
     
     .inner {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         width: 100%;
         max-width: 1080px; 
@@ -175,7 +272,7 @@ main {
     .text {
         width: 60%;
         padding-right: 35px;
-        text-align: center;
+        text-align: left;
         color: white;
         
         @include tablet {
@@ -195,78 +292,76 @@ main {
                 height: auto;
             }
         }
-        p {
-            line-height: 24px;
-            font-size: 19px;
-            color: rgba(255, 255, 255, 0.6);
-            font-weight: 400;
-            @include tablet {
-                font-size: 15px;
-                line-height: 19px;
-            }
-        }
-        .buttons {
+        .button {
             font-weight: bold;
-            a {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            color: white;
+            padding: 10px 20px;;
+            font-size: 13px;
+            font-weight: 400;
+            display: inline-block;
+            text-align: center;
+            transition: background 0.1s;
+            backdrop-filter: blur(20px);
+            @include tablet {
+                width: 100%;
+            }
+            
+            &:hover {
                 background: rgba(255, 255, 255, 0.3);
-                border: 2px solid rgba(255, 255, 255, 0);
-                color: white;
-                padding: 10px 20px;;
-                font-size: 13px;
-                font-weight: 400;
+                opacity: 1;
+            }
+            &:active {
+                background: rgba(255, 255, 255, 0.35);
+                opacity: 1;
+            }
+            
+            span {
                 display: inline-block;
-                text-align: center;
-                transition: background 0.1s;
+                vertical-align: middle;
+                line-height: 1;
+                & + span {
+                    padding-left: 10px;
+                }
+            }
+            svg {
+                width: 22px;
+                height: 21px;
+                fill: white;
+            }
+            
+            & + a {
+                padding: 10px 0;
+                margin-left: 10px;
+                opacity: 0.5;
+                &:hover, &:active {
+                    opacity: 0.75;
+                }
                 @include tablet {
-                    width: 100%;
-                }
-                
-                &:hover {
-                    border-color: rgba(255, 255, 255, 0.3);
-                    opacity: 1;
-                }
-                &:active {
-                    background: rgba(255, 255, 255, 0.5);
-                    opacity: 1;
-                }
-                
-                span {
-                    display: inline-block;
-                    vertical-align: middle;
-                    line-height: 1;
-                    & + span {
-                        padding-left: 10px;
-                    }
-                }
-                svg {
-                    width: 22px;
-                    height: 21px;
-                    fill: white;
-                }
-                
-                & + a {
-                    margin-left: 10px;
-                    @include tablet {
-                        margin: 10px 0 0 0;
-                    }
+                    margin: 5px 0 0 0;
                 }
             }
         }
     }
     .wstore {
-        width: 180px;
-        height: 65px;
+        width: 145px;
+        height: 52px;
         margin-top: 7px;
         margin-bottom: -7px;
+        @include mobile {
+            display: none;
+        }
     }
     .download-info {
         padding-top: 20px;
         p {
-            text-align: center;
+            text-align: left;
             font-size: 13px;
             color: rgba(255, 255, 255, 0.55);
         }
     }
+
     .screenshot {
         width: 54%;
         margin-left: auto;
@@ -283,30 +378,48 @@ main {
     }
     .mob-screenshot {
         display: none;
-        max-width: 300px;
+        max-width: 600px;
         height: auto;
-        margin: auto;
+        margin-bottom: 30px;
         
         @include tablet {
             display: block;
         }
     }
+
+    .buttons-row {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+
+        a {
+            margin-right: 10px;
+        }
+
+        & + .buttons-row {
+            padding-top: 10px;
+        }
+    }
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
     width: 100%;
     z-index: 3;
     display: flex;
     justify-content: space-between;
+    background-color: #4A4F57;
+    line-height: 1.2;
     
     @include tablet {
         position: relative;
         display: block;
         text-align: center;
         padding: 20px 0;
+    }
+
+    a {
+        text-decoration: underline;
     }
     
     
@@ -322,5 +435,150 @@ main {
     }
     .right {
         color: rgba(255,255,255,0.5);
+    }
+}
+
+
+
+.section--design {
+    background-color: #050005;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 80px 20px 0;
+    
+    .text {
+        max-width: 664px;
+        margin: auto;
+        text-align: center;
+
+        @include appnav {
+            text-align: left;
+        }
+    }
+    img {
+        max-width: 830px;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: -108px;
+        margin-top: 60px;
+        box-shadow: 0 18px 30px -10px rgba(#131518, 0.5);
+        @include appnav {
+            margin-top: 40px;
+        }
+    }
+}
+
+.section--features {
+    background-color: #242B33;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 220px 20px 100px;
+
+    @media (max-width: 600px) {
+        padding-top: 130px;
+        padding-bottom: 60px;
+    }
+
+    .inner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        @media (max-width: 900px) {
+            display: block;
+        }
+    }
+    img {
+        border-radius: 10px;
+        box-shadow: 0 18px 30px -10px rgba(#131518, 0.5);
+        @media (max-width: 900px) {
+            max-width: 500px;
+        }
+    }
+    .text {
+        padding-left: 70px;
+        max-width: 600px;
+        @media (max-width: 900px) {
+            padding: 40px 0 0;
+        }
+    }
+}
+
+.section--get-started {
+    background-color: #50565D;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 100px 20px;
+
+    @include tablet {
+        padding: 60px 20px;
+    }
+
+    .text {
+        text-align: center;
+        max-width: 680px;
+        width: 100%;
+    }
+    .columns {
+        max-width: 680px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin: 0 -10px;
+        padding-top: 60px;
+
+        @include tablet {
+            padding-top: 30px;
+        }
+
+        @media (max-width: 700px) {
+            display: block;
+            max-width: 400px;
+            margin: 0;
+        }
+        .item {
+            border-radius: 10px;
+            background-color: #242B33;
+            overflow: hidden;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 18px 30px -10px rgba(#131518, 0.5);
+            margin-bottom: 20px;
+
+            @media (max-width: 700px) {
+                width: 100%;
+                margin: 0 0 20px;
+            }
+        }
+        .item-logo {
+            background-color: #1D2227;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 160px;
+        }
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 30px 15px;
+            text-align: center;
+
+            a {
+                display: block;
+                padding: 7px;
+                line-height: 1.2;
+                opacity: 0.75;
+                &:hover, &:active {
+                    opacity: 1;
+                }
+            }
+        }
     }
 }

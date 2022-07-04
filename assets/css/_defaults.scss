@@ -207,10 +207,7 @@ main {
     height: 100%;
     z-index: 1;
     overflow: hidden;
-    background: url('../img/bg-new_1920.jpg') center bottom;
-    @media (min-width: 2000px), (min-resolution: 144dpi) and (min-width:1500px) {
-        background-image: url('../img/bg-new_2560.jpg');
-    }
+    background-image: url('../img/bg-new_2560.jpg');
     background-size: cover;
     opacity: 0.5;
     animation: bgIn 2s;

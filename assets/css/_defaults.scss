@@ -225,7 +225,7 @@ main {
     position: relative;
     top: 0;
     left: 0;
-    min-height: 100%;
+    min-height: 100vh;
     width: 100%;
     z-index: 2;
     display: flex;
@@ -247,6 +247,7 @@ main {
     @include tablet {
         display: block;
         position: relative;
+        min-height: 100%;
     }
     
     .inner {
@@ -438,7 +439,13 @@ main {
     }
 }
 
-
+.section--features {
+    position: relative;
+    min-height: 100vh;
+    @include tablet {
+        min-height: 100%;
+    }
+}
 
 .section--design {
     background-color: #050005;

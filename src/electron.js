@@ -443,9 +443,9 @@ function processSettings(newSettings = {}) {
 
     if(newSettings.detectIdleTime || newSettings.isReadSettings) {
       if(settings.detectIdleTime * 1 > 0) {
-        startIdleDetection()
+        //startIdleDetection()
       } else {
-        stopIdleDetection()
+        //stopIdleDetection()
       }
     }
 
@@ -555,10 +555,10 @@ async function updateKnownDisplays(force = false) {
     try {
 
       // Get from file
-      let known = getKnownDisplays()
+      let known = getKnownDisplays(true)
 
-      // Merge with existing displays
-      Object.assign(known, monitors)
+      // Save to memory
+      lastKnownDisplays = known
 
       // Write back to file
       fs.writeFileSync(knownDisplaysPath, JSON.stringify(known))
@@ -571,14 +571,20 @@ async function updateKnownDisplays(force = false) {
 }
 
 // Get known displays from file, along with current displays
+let lastKnownDisplays
 function getKnownDisplays(useCurrentMonitors) {
   let known
-  try {
-    // Load known displays DB
-    known = fs.readFileSync(knownDisplaysPath)
-    known = JSON.parse(known)
-  } catch (e) {
-    known = {}
+  if(!lastKnownDisplays) {
+    try {
+      // Load known displays DB
+      known = fs.readFileSync(knownDisplaysPath)
+      known = JSON.parse(known)
+      lastKnownDisplays = known
+    } catch (e) {
+      known = {}
+    }
+  } else {
+    known = lastKnownDisplays
   }
 
   // Merge with existing displays
@@ -595,21 +601,25 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
   console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`, useCurrentMonitors, useTransition, transitionSpeed)
 
   const known = getKnownDisplays(useCurrentMonitors)
+  applyProfile(known, useTransition, transitionSpeed)
+}
+
+function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) {
   if(useTransition) {
     // If using smooth transition
     let transitionMonitors = []
-    for (const hwid in known) {
+    for (const hwid in profile) {
       try {
-        const monitor = known[hwid]
+        const monitor = profile[hwid]
         transitionMonitors[monitor.id] = monitor.brightness
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
     transitionBrightness(50, transitionMonitors, transitionSpeed)
   } else {
     // If not using a transition
-    for (const hwid in known) {
+    for (const hwid in profile) {
       try {
-        const monitor = known[hwid]
+        const monitor = profile[hwid]
   
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
@@ -1177,7 +1187,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 }
 
 
-refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
+refreshMonitors = async (fullRefresh = false, bypassRateLimit = false, applyKnownBrightness = false) => {
 
   if (pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
@@ -1218,6 +1228,9 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
   }
+
+  // If wanted, re-apply old brightness values
+  if(applyKnownBrightness) setKnownBrightness();
 
   isRefreshing = false
   applyOrder()
@@ -1455,12 +1468,24 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
   }, settings.updateInterval * 1)
 }
 
+function transitionlessBrightness(level, eventMonitors = []) {
+  for (let key in monitors) {
+    const monitor = monitors[key]
+    let normalized = level
+    if (settings.adjustmentTimeIndividualDisplays) {
+      // If using individual monitor settings
+      normalized = (eventMonitors[monitor.id] >= 0 ? eventMonitors[monitor.id] : level)
+    }
+    updateBrightness(monitor.id, normalized)
+  }
+}
+
 function sleepDisplays(mode = "ps") {
   try {
 
     analyticsUsage.UsedSleep++
     setTimeout(() => {
-  
+      startIdleCheckShort()
       if(mode === "ddcci" || mode === "ps_ddcci") {
         for(let monitorID in monitors) {
           const monitor = monitors[monitorID]
@@ -1697,6 +1722,7 @@ function createPanel(toggleOnLoad = false) {
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 8000)
     setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
+    setTimeout(sendMicaWallpaper, 500)
   })
 
 }
@@ -2551,7 +2577,7 @@ function addEventListeners() {
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;
-    setTimeout(() => handleBackgroundUpdate(), 2500)
+    setTimeout(() => handleBackgroundUpdate(), 3500)
   }
   restartBackgroundUpdate()
 }
@@ -2579,8 +2605,7 @@ function handleMonitorChange(e, d) {
   handleChangeTimeout = setTimeout(() => {
 
     // Reset all known displays
-    refreshMonitors(true, true).then(() => {
-      setKnownBrightness() // Re-apply known brightness
+    refreshMonitors(true, true, true).then(() => {
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
@@ -2598,9 +2623,7 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   setTimeout(
     () => {
-      refreshMonitors(true).then(() => {
-        // Set brightness to last known settings
-        setKnownBrightness()
+      refreshMonitors(true, true, true).then(() => {
         restartPanel()
 
         // Check if time adjustments should apply
@@ -2663,46 +2686,56 @@ function restartBackgroundUpdate() {
 let isUserIdle = false
 let userIdleInterval = false // Check if idle
 let userCheckingForActiveInterval = false // Check if came back
+let userIdleDimmed = false
 
-function startIdleDetection() {
-  clearInterval(userIdleInterval)
-  userIdleInterval = setInterval(checkUserIdle, (settings.detectIdleTime * 1000) / 10)
-}
+let idleMonitor = setInterval(idleCheckLong, 60000)
+let notIdleMonitor
+let lastIdleTime = 0
 
-function stopIdleDetection() {
-  clearInterval(userIdleInterval)
-  checkUserActive(true)
-}
-
-function checkUserIdle() {
-  // Check if user is idle
+function idleCheckLong() {
+  if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
-  console.log(`Idle for: ${idleTime}s`)
-  if (settings.detectIdleTime && !isUserIdle && idleTime >= settings.detectIdleTime) {
-    console.log(`\x1b[36mUser idle. Dimming displays.!\x1b[0m`)
-    isUserIdle = true
-    Object.values(monitors)?.forEach((monitor) => {
-      updateBrightness(monitor.id, 0, true, monitor.brightnessType)
-    })
-    userCheckingForActiveInterval = setInterval(checkUserActive, 1000)
+  lastIdleTime = idleTime
+  if(idleTime > (settings.detectIdleTime ? settings.detectIdleTime : 180) && !notIdleMonitor) {
+    startIdleCheckShort()
   }
 }
 
-function checkUserActive(force = false) {
-  const idleTime = powerMonitor.getSystemIdleTime()
-  if ((force && isUserIdle) || (idleTime < settings.detectIdleTime && isUserIdle)) {
-    console.log(`\x1b[36mUser active. Restoring displays.\x1b[0m`)
-    setKnownBrightness() // Restore last brightness
+function startIdleCheckShort() {
+  updateKnownDisplays(true)
+  isUserIdle = true
+  console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
+  if(notIdleMonitor) clearInterval(notIdleMonitor);
+  notIdleMonitor = setInterval(idleCheckShort, 1000)
+}
 
+function idleCheckShort() {
+  const idleTime = powerMonitor.getSystemIdleTime()
+
+  if (!userIdleDimmed && settings.detectIdleTime && idleTime >= settings.detectIdleTime) {
+    console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
+    userIdleDimmed = true
+    Object.values(monitors)?.forEach((monitor) => {
+      updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+    })
+  }
+
+  if(isUserIdle && idleTime < lastIdleTime) {
+    // Wake up
+    console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
+    clearInterval(notIdleMonitor)
+    notIdleMonitor = false
+    setKnownBrightness()
     // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
     setTimeout(() => {
       setKnownBrightness()
       isUserIdle = false
+      userIdleDimmed = false
       handleBackgroundUpdate() // Apply ToD adjustments, if needed
     }, 3000)
 
-    clearInterval(userCheckingForActiveInterval)
   }
+  lastIdleTime = idleTime
 }
 
 
@@ -2719,7 +2752,7 @@ function handleBackgroundUpdate(force = false) {
     sendMicaWallpaper()
 
     // Time of Day Adjustments
-    if (settings.adjustmentTimes.length > 0 && !isUserIdle) {
+    if (settings.adjustmentTimes.length > 0 && !userIdleDimmed) {
       const date = new Date()
       const hour = date.getHours()
       const minute = date.getMinutes()
@@ -2751,7 +2784,11 @@ function handleBackgroundUpdate(force = false) {
           lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
           refreshMonitors(true, true).then(() => {
-            transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
+            if(force) {
+              transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
+            } else {
+              transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
+            }
           })
         }
       }

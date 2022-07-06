@@ -3,14 +3,14 @@ import Slider from "./Slider"
 
 export default function DDCCISliders(props) {
     const { monitor, name, monitorFeatures } = props
-    const [contrast, setContrast] = useState(monitor.features.contrast ? monitor.features.contrast[0] : 50)
-    const [volume, setVolume] = useState(monitor.features.volume ? monitor.features.volume[0] : 50)
+    const [contrast, setContrast] = useState(monitor?.features?.contrast ? monitor?.features?.contrast[0] : 50)
+    const [volume, setVolume] = useState(monitor?.features?.volume ? monitor?.features?.volume[0] : 50)
     const [gain, setGain] = useState(50)
-    const [powerState, setPowerState] = useState(monitor.features.powerState ? monitor.features.powerState[0] : 50)
+    const [powerState, setPowerState] = useState(monitor?.features?.powerState ? monitor?.features?.powerState[0] : 50)
 
     let extraHTML = []
 
-    if (monitor.features.contrast && monitorFeatures?.contrast) {
+    if (monitor?.features?.contrast && monitorFeatures?.contrast) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
@@ -19,7 +19,7 @@ export default function DDCCISliders(props) {
         )
     }
 
-    if (monitor.features.gain && monitorFeatures?.gain) {
+    if (monitor?.features?.gain && monitorFeatures?.gain) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE9CA;</span></div>
@@ -28,7 +28,7 @@ export default function DDCCISliders(props) {
         )
     }
 
-    if (monitor.features.volume && monitorFeatures?.volume) {
+    if (monitor?.features?.volume && monitorFeatures?.volume) {
         extraHTML.push(
             <div className="feature-row">
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>

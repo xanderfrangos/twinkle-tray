@@ -79,7 +79,7 @@ export default class BrightnessPanel extends PureComponent {
                   }
                 }
                 return (
-                  <div className="monitor-sliders">
+                  <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} />
                   </div>
                 )
@@ -107,8 +107,8 @@ export default class BrightnessPanel extends PureComponent {
                 }
 
                 return (
-                  <div className="monitor-sliders extended">
-                    <div class="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
+                  <div className="monitor-sliders extended" key={monitor.key}>
+                    <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
                       <div className="name-row">
                         <div className="icon">{(monitor.type == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                         <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
@@ -427,12 +427,12 @@ export default class BrightnessPanel extends PureComponent {
   renderMica() {
     return(
       <div id="mica">
-        <div class="displays" style={{visibility: window.micaState.visibility}}>
-          <div class="blur">
+        <div className="displays" style={{visibility: window.micaState.visibility}}>
+          <div className="blur">
             <img alt="" src={window.micaState.src} width="2560" height="1440" />
           </div>
         </div>
-        <div class="noise"></div>
+        <div className="noise"></div>
       </div>
     )
   }

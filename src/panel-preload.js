@@ -324,6 +324,7 @@ window.micaState = {
 ipc.on('mica-wallpaper', (event, wallpaper) => {
     const mica = document.querySelector("#mica .displays")
     const micaIMG = document.querySelector("#mica img")
+    if(!mica) return false;
     if(!wallpaper) {
         mica.style.visibility = "hidden"
         window.micaState.visibility = "hidden"

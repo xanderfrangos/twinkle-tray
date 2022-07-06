@@ -1,11 +1,7 @@
 import React, { useState } from "react"
-import Slider from "./Slider"
 
 export default function MonitorFeatures(props) {
     const { monitor, name, monitorFeatures, T } = props
-    const [contrast, setContrast] = useState(monitor.features?.contrast ? monitor.features.contrast[0] : 50)
-    const [volume, setVolume] = useState(monitor.features?.volume ? monitor.features.volume[0] : 50)
-    const [powerState, setPowerState] = useState(monitor.features?.powerState ? monitor.features.powerState[0] : 50)
 
     let extraHTML = []
 

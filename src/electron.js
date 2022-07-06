@@ -1741,8 +1741,8 @@ function restartPanel() {
   if (mainWindow) {
     mainWindow.close()
     mainWindow = null
-    createPanel()
   }
+  setTimeout(() => createPanel(), 100)
 }
 
 function getPrimaryDisplay() {
@@ -2189,7 +2189,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
         }, 300)
         return false
       }
-
+      sendMicaWallpaper()
       sendToAllWindows("display-mode", "normal")
       showPanel(true, panelSize.height)
       panelState = "visible"

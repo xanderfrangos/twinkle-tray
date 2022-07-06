@@ -81,7 +81,7 @@ const debug = {
   error: log
 }
 
-if (false && !isDev) console.log = () => { };
+//if (false && !isDev) console.log = () => { };
 
 
 
@@ -1702,7 +1702,6 @@ function createPanel(toggleOnLoad = false) {
 }
 
 function setAlwaysOnTop(onTop = true) {
-  console.log(`SetAlwaysOnTop: ${onTop}`)
   if(!mainWindow) return false;
   if(onTop) {
     mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))

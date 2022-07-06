@@ -4,9 +4,15 @@ let browser = remote.getCurrentWindow()
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 // Send logs to main thread
-//console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
-
 const log = console.log
+const con = {
+    log: console.log,
+    warn: console.warn,
+    error: console.error
+}
+console.log = (...e) => { e.forEach((c) => { ipc.send('log', c); con.log(c) }) }
+console.error = (...e) => { e.forEach((c) => { ipc.send('log', c); con.error(c) }) }
+
 
 let isTransparent = false
 

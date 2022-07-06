@@ -4,7 +4,7 @@ const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, global
 const Utils = require("./Utils")
 
 // Expose GC
-app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
+app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128', '--force_low_power_gpu')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
 // Prevent background throttling
@@ -2023,6 +2023,7 @@ app.on("ready", async () => {
   })
 
   setTimeout(addEventListeners, 2000)
+  os.setPriority(0, os.constants.priority.PRIORITY_BELOW_NORMAL)
 })
 
 app.on("window-all-closed", () => {

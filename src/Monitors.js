@@ -3,6 +3,7 @@ const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const fs = require('fs');
 const { exec } = require('child_process');
+require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 
 process.on('message', (data) => {

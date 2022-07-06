@@ -1224,6 +1224,10 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   applyRemaps()
   applyHotkeys()
 
+  for(let id in monitors) {
+    monitors[id].brightness = normalizeBrightness(monitors[id].brightness, true, monitors[id].min, monitors[id].max)
+  }
+
   // Only send update if something changed
   if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
     setTrayPercent()

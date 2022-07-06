@@ -608,6 +608,10 @@ function setVCP(monitor, code, value) {
 }
 
 function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100) {
+    return brightness // Disabled because it wasn't working
+    // Clean this up later
+    // Really
+    // Do it
     let level = brightness
     if (level > 100) level = 100;
     if (level < 0) level = 0;

@@ -1738,11 +1738,13 @@ function setAlwaysOnTop(onTop = true) {
 }
 
 function restartPanel() {
-  if (mainWindow) {
-    mainWindow.close()
-    mainWindow = null
-  }
-  setTimeout(() => createPanel(), 100)
+  setTimeout(() => {
+    if (mainWindow) {
+      mainWindow.close()
+      mainWindow = null
+    }
+    createPanel()
+  }, 100)
 }
 
 function getPrimaryDisplay() {

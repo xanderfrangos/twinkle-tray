@@ -43,6 +43,7 @@ let isDev = (process.argv.indexOf("--isdev=true") >= 0)
 
 let monitors = false
 let monitorNames = []
+let monitorsWin32 = {}
 
 let settings = { order: [] }
 let localization = {}
@@ -88,7 +89,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                         updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
             
                         // If Win32 doesn't find the internal display, hide it.
-                        if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+                        if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
                             updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
                         }
                     }
@@ -105,13 +106,21 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                         updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
 
                         // If Win32 doesn't find the internal display, hide it.
-                        if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+                        if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
                             updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
                         }
                     }
                     console.log(`Refresh WMI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
                 } catch (e) {
                     console.log("Failed to refresh WMI Brightness", e)
+                }
+            }
+
+            // Hide internal
+            if(settings?.hideClosedLid) {
+                const wmiMonitor = Object.values(monitors).find(mon => mon.type === "wmi")
+                if(wmiMonitor && !monitorsWin32[wmiMonitor.hwid[2]]) {
+                    updateDisplay(monitors, wmiMonitor.hwid[2], { type: "none" })
                 }
             }
     
@@ -162,9 +171,9 @@ getAllMonitors = async () => {
     if(!win32Failed) {
         try {
             startTime = process.hrtime.bigint()
-            const monitorsWin32 = await getMonitorsWin32()
+            monitorsWin32 = await getMonitorsWin32()
             console.log(`getMonitorsWin32() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
-    
+
             for (const hwid2 in monitorsWin32) {
                 const monitor = monitorsWin32[hwid2]
                 updateDisplay(foundMonitors, hwid2, monitor)
@@ -221,7 +230,7 @@ getAllMonitors = async () => {
                 updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
     
                 // If Win32 doesn't find the internal display, hide it.
-                if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+                if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
                     updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
                 }
             }
@@ -241,7 +250,7 @@ getAllMonitors = async () => {
                 updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
     
                 // If Win32 doesn't find the internal display, hide it.
-                if (settings?.hideClosedLid && monitorsWin32?.length && Object.keys(monitorsWin32).indexOf(hwid[2]) > 0) {
+                if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
                     updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
                 }
             }
@@ -250,6 +259,14 @@ getAllMonitors = async () => {
         }
     } else if(wmiFailed) {
         console.log("getBrightnessWMI() skipped due to previous failure.")
+    }
+
+    // Hide internal
+    if(settings?.hideClosedLid) {
+        const wmiMonitor = Object.values(foundMonitors).find(mon => mon.type === "wmi")
+        if(wmiMonitor && !monitorsWin32[wmiMonitor.hwid[2]]) {
+            updateDisplay(foundMonitors, wmiMonitor.hwid[2], { type: "none" })
+        }
     }
 
     // Finally, fix names/num

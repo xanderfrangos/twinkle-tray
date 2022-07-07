@@ -1597,7 +1597,6 @@ ipcMain.on('show-acrylic', () => {
     if (lastTheme && lastTheme.ColorPrevalence) {
       tryVibrancy(mainWindow, { theme: getAccentColors().dark + (settings.useAcrylic ? "D0" : "70"), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     } else {
-      console.log(nativeTheme.themeSource)
       tryVibrancy(mainWindow, { theme: (lastTheme && nativeTheme.themeSource === "light" ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     }
   } else {
@@ -1737,13 +1736,17 @@ function setAlwaysOnTop(onTop = true) {
   return true
 }
 
-function restartPanel() {
+function restartPanel(show = false) {
+  if (mainWindow) {
+    mainWindow.close()
+    mainWindow = null
+  }
   setTimeout(() => {
     if (mainWindow) {
       mainWindow.close()
       mainWindow = null
     }
-    createPanel()
+    createPanel(show)
   }, 100)
 }
 
@@ -2593,6 +2596,7 @@ function handleAccentChange() {
 let skipFirstMonChange = false
 let handleChangeTimeout
 function handleMonitorChange(e, d) {
+  console.log("Hardware change detected.")
 
   // Skip event that happens at startup
   if (!skipFirstMonChange) {
@@ -2611,8 +2615,7 @@ function handleMonitorChange(e, d) {
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
-      if (!panelSize.visible)
-        restartPanel()
+      restartPanel(panelSize.visible)
     })
 
     handleChangeTimeout = false

@@ -2717,7 +2717,7 @@ function startIdleCheckShort() {
 function idleCheckShort() {
   const idleTime = powerMonitor.getSystemIdleTime()
 
-  if (!userIdleDimmed && settings.detectIdleTime && idleTime >= settings.detectIdleTime) {
+  if (!userIdleDimmed && settings.detectIdleTime * 1 > 0 && idleTime >= settings.detectIdleTime) {
     console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
     userIdleDimmed = true
     Object.values(monitors)?.forEach((monitor) => {

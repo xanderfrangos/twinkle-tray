@@ -1345,7 +1345,7 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
 
     if (monitor.type == "ddcci" && vcp === "brightness") {
-      monitor.brightness = level
+      monitor.brightness = normalized
       monitorsThread.send({
         type: "brightness",
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),

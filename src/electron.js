@@ -2870,7 +2870,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
         // Get display by ID (partial or whole)
         if (arg.indexOf("--monitorid=") === 0) {
           const monID = Object.keys(monitors).find(id => {
-            return id.indexOf(arg.substring(12)) >= 0
+            return id.toLowerCase().indexOf(arg.substring(12)) >= 0
           })
           display = monitors[monID]
         }

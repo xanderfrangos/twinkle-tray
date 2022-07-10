@@ -605,6 +605,10 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
 }
 
 function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) {
+
+  applyOrder(profile)
+  applyRemaps(profile)  
+
   if(useTransition) {
     // If using smooth transition
     let transitionMonitors = []
@@ -623,7 +627,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
   
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-          updateBrightness(monitor.id, monitor.brightness, true)
+          updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
@@ -803,9 +807,9 @@ function hotkeyOverlayHide(force = true) {
   }
 }
 
-function applyOrder() {
-  for (let key in monitors) {
-    const monitor = monitors[key]
+function applyOrder(monitorList = monitors) {
+  for (let key in monitorList) {
+    const monitor = monitorList[key]
     for (let order of settings.order) {
       if (monitor.id == order.id) {
         monitor.order = order.order
@@ -814,9 +818,9 @@ function applyOrder() {
   }
 }
 
-function applyRemaps() {
-  for (let key in monitors) {
-    const monitor = monitors[key]
+function applyRemaps(monitorList = monitors) {
+  for (let key in monitorList) {
+    const monitor = monitorList[key]
     applyRemap(monitor)
   }
 }
@@ -1187,7 +1191,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 }
 
 
-refreshMonitors = async (fullRefresh = false, bypassRateLimit = false, applyKnownBrightness = false) => {
+refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   if (pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
@@ -1229,9 +1233,6 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false, applyKnow
     console.log('Couldn\'t refresh monitors', e)
   }
 
-  // If wanted, re-apply old brightness values
-  if(applyKnownBrightness) setKnownBrightness();
-
   isRefreshing = false
   applyOrder()
   applyRemaps()
@@ -1244,7 +1245,6 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false, applyKnow
   // Only send update if something changed
   if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
     setTrayPercent()
-    updateKnownDisplays()
     sendToAllWindows('monitors-updated', monitors)
   } else {
     console.log("===--- NO CHANGE ---===")
@@ -1345,7 +1345,8 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
 
     if (monitor.type == "ddcci" && vcp === "brightness") {
-      monitor.brightness = normalized
+      monitor.brightness = level
+      monitor.brightnessRaw = normalized
       monitorsThread.send({
         type: "brightness",
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
@@ -1363,6 +1364,7 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
       })
     } else if (monitor.type == "wmi") {
       monitor.brightness = level
+      monitor.brightnessRaw = normalized
       monitorsThread.send({
         type: "brightness",
         brightness: normalized
@@ -1411,13 +1413,16 @@ function updateAllBrightness(brightness, mode = "offset") {
   }
 }
 
-function normalizeBrightness(brightness, unnormalize = false, min = 0, max = 100) {
+
+function normalizeBrightness(brightness, normalize = false, min = 0, max = 100) {
+  // normalize = true when recieving from Monitors.js
+  // normalize = false when sending to Monitors.js
   let level = brightness
   if (level > 100) level = 100;
   if (level < 0) level = 0;
   if (min > 0 || max < 100) {
     let out = level
-    if (!unnormalize) {
+    if (!normalize) {
       // Normalize
       out = (min + ((level / 100) * (max - min)))
     } else {
@@ -2611,7 +2616,8 @@ function handleMonitorChange(e, d) {
   handleChangeTimeout = setTimeout(() => {
 
     // Reset all known displays
-    refreshMonitors(true, true, true).then(() => {
+    refreshMonitors(true, true).then(() => {
+      setKnownBrightness()
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
@@ -2628,7 +2634,8 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   setTimeout(
     () => {
-      refreshMonitors(true, true, true).then(() => {
+      refreshMonitors(true, true).then(() => {
+        setKnownBrightness()
         restartPanel()
 
         // Check if time adjustments should apply

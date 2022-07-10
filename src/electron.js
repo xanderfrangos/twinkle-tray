@@ -133,6 +133,35 @@ function startMonitorThread() {
 startMonitorThread()
 
 
+
+// Test if wmi-bridge works properly on user's system
+let monitorsThreadTest
+function startMonitorTestThread() {
+  monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+  monitorsThreadTest.on("message", (data) => {
+    if(data?.type === "ready") {
+      console.log("WMI-BRIDGE TEST: READY")
+    }
+    if(data?.type === "ok") {
+      console.log("WMI-BRIDGE TEST: OK")
+      monitorsThread.send({
+        type: "wmi-bridge-ok"
+      })
+    }
+  })
+  // Close after timeout
+  setTimeout(() => {
+    try {
+      if(monitorsThreadTest.connected) {
+        console.log("WMI-BRIDGE TEST: Killing thread")
+        monitorsThreadTest.kill()
+      }
+    } catch(e) { console.log(e) }
+  }, 2000)
+}
+startMonitorTestThread()
+
+
 // Mouse wheel scrolling
 let mouseEventsActive = false
 let bounds
@@ -2601,13 +2630,14 @@ function handleAccentChange() {
 let skipFirstMonChange = false
 let handleChangeTimeout
 function handleMonitorChange(e, d) {
-  console.log("Hardware change detected.")
 
   // Skip event that happens at startup
   if (!skipFirstMonChange) {
     skipFirstMonChange = true
     return false
   }
+
+  console.log("Hardware change detected.")
 
   // Defer actions for a moment just in case of repeat events
   if (handleChangeTimeout) {

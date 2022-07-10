@@ -31,6 +31,8 @@ process.on('message', (data) => {
             setVCP(data.monitor, data.code, data.value)
         } else if (data.type === "flushvcp") {
             vcpCache = [];
+        }  else if (data.type === "wmi-bridge-ok") {
+            canUseWmiBridge = true
         }
     } catch(e) {
         console.log(e)
@@ -47,6 +49,7 @@ let monitorsWin32 = {}
 
 let settings = { order: [] }
 let localization = {}
+let canUseWmiBridge = false
 
 let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
@@ -99,7 +102,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             }
 
             // WMI
-            if(!wmiFailed && wmicUnavailable) {
+            if(canUseWmiBridge && !wmiFailed && wmicUnavailable) {
                 try {
                     const wmiBrightness = await getBrightnessWMI()
                     if (wmiBrightness) {
@@ -152,7 +155,7 @@ getAllMonitors = async () => {
     }
     
     // List via WMI
-    if(!wmiFailed && wmicUnavailable) {
+    if(canUseWmiBridge && !wmiFailed && wmicUnavailable) {
         try {
             const monitorsWMI = await getMonitorsWMI()
             console.log(`getMonitorsWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
@@ -240,7 +243,7 @@ getAllMonitors = async () => {
     }
 
     // WMI Brightness
-    if(!wmiFailed && wmicUnavailable) {
+    if(canUseWmiBridge && !wmiFailed && wmicUnavailable) {
         try {
             startTime = process.hrtime.bigint()
             const wmiBrightness = await getBrightnessWMI()
@@ -569,7 +572,7 @@ function setBrightness(brightness, id) {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
-            if(wmiFailed) {
+            if(!canUseWmiBridge || wmiFailed) {
                 // If native WMI is disabled, fall back to old method
                 exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
             } else {

@@ -30,6 +30,22 @@ Twinkle Tray will automatically adjust the look and feel to match your Windows v
 
 <a href="https://www.microsoft.com/store/productId/9PLJWWSV01LK" target="_blank"><img width="156" src="https://crushee.app/assets/img/ms-store.svg" alt="Get Twinkle Tray brightness slider from the Microsoft Store"></a>
 
+### Via Chocolatey (unofficial)
+
+[Chocolatey](https://chocolatey.org/) users can download and install Twinkle Tray from Chocolatey's Community Repository by installing the `twinkle-tray` package:
+
+```powershell
+choco install twinkle-tray
+```
+
+To upgrade to the latest approved package version, run the following command:
+
+```powershell
+choco upgrade twinkle-tray
+```
+
+**This package is not maintained at this repository**. Please do not create issues relating to the package here. Instead, go to the [package page](https://community.chocolatey.org/packages/twinkle-tray) and follow the [Package Triage Process](https://docs.chocolatey.org/en-us/community-repository/users/package-triage-process).
+
 ## Usage
 
 - Download from the [Releases page](https://github.com/xanderfrangos/twinkle-tray/releases) and run the installer EXE.

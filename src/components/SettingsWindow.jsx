@@ -1134,7 +1134,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <p>
                                 <a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>
-                                <a className="button" onClick={() => { window.ipc("apply-last-known-monitors") }}>Apply Last Known Brightness</a>
+                                <a className="button" onClick={() => { window.ipc.send("apply-last-known-monitors") }}>Apply Last Known Brightness</a>
                             </p>
                             {this.getDebugMonitors()}
                         </div>

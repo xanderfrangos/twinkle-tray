@@ -32,6 +32,12 @@ Twinkle Tray will automatically adjust the look and feel to match your Windows v
 
 ## Install via Package Manager
 
+### Windows Package Manager
+
+```powershell
+winget install twinkletray
+```
+
 ### Chocolatey (unofficial)
 
 [Chocolatey](https://chocolatey.org/) users can download and install Twinkle Tray from Chocolatey's Community Repository by installing the `twinkle-tray` package:
@@ -47,12 +53,6 @@ choco upgrade twinkle-tray
 ```
 
 **This package is not maintained at this repository**. Please do not create issues relating to the package here. Instead, go to the [package page](https://community.chocolatey.org/packages/twinkle-tray) and follow the [Package Triage Process](https://docs.chocolatey.org/en-us/community-repository/users/package-triage-process).
-
-### Windows Package Manager
-
-```powershell
-winget install twinkletray
-```
 
 ## Usage
 

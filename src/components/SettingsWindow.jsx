@@ -124,6 +124,19 @@ export default class SettingsWindow extends PureComponent {
         this.downKeys = {}
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
+        this.sendSettingsTimeout = false
+        this.sendSettingsValues = {}
+    }
+
+    sendSettingsThrottle = (newSetting = {}) => {
+        this.sendSettingsValues = Object.assign(this.sendSettingsValues, newSetting)
+        if(this.sendSettingsTimeout) {
+            clearTimeout(this.sendSettingsTimeout)
+        }
+        this.sendSettingsTimeout = setTimeout(() => {
+            window.sendSettings(Object.assign({}, this.sendSettingsValues))
+            this.sendSettingsValues = {}
+        }, 2000)
     }
 
     componentDidMount() {
@@ -853,7 +866,9 @@ export default class SettingsWindow extends PureComponent {
     }
 
     adjustmentTimesUpdated = () => {
-        window.sendSettings({ adjustmentTimes: this.state.adjustmentTimes })
+        this.setState({ adjustmentTimes: this.state.adjustmentTimes.slice(0) })
+        this.sendSettingsThrottle({ adjustmentTimes: this.state.adjustmentTimes.slice(0) })
+        //window.sendSettings({ adjustmentTimes: this.state.adjustmentTimes })
     }
 
     setSetting = (setting, sentVal) => {

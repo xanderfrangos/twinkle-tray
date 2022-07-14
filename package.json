@@ -59,6 +59,7 @@
       "src/localization/*",
       "src/Utils.js",
       "src/Monitors.js",
+      "src/wmi-bridge-test.js",
       "src/assets/tray-icons/dark/*",
       "src/assets/tray-icons/light/*",
       "build/**/*",

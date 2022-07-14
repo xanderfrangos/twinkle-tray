@@ -1256,7 +1256,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   try {
     newMonitors = await refreshMonitorsJob(fullRefresh)
-    if(newMonitors) monitors = newMonitors;
+    if(!newMonitors) throw "No monitors!";
     lastEagerUpdate = Date.now()
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
@@ -1267,8 +1267,8 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   applyRemaps()
   applyHotkeys()
 
-  for(let id in monitors) {
-    monitors[id].brightness = normalizeBrightness(monitors[id].brightness, true, monitors[id].min, monitors[id].max)
+  for(let id in newMonitors) {
+    newMonitors[id].brightness = normalizeBrightness(newMonitors[id].brightness, true, newMonitors[id].min, newMonitors[id].max)
   }
 
   // Only send update if something changed
@@ -1285,6 +1285,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   }
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
+  monitors = newMonitors;
   return monitors;
 }
 

@@ -2628,7 +2628,8 @@ function handleAccentChange() {
 }
 
 let skipFirstMonChange = false
-let handleChangeTimeout
+let handleChangeTimeout1
+let handleChangeTimeout2
 function handleMonitorChange(e, d) {
 
   // Skip event that happens at startup
@@ -2638,12 +2639,20 @@ function handleMonitorChange(e, d) {
   }
 
   console.log("Hardware change detected.")
+  setKnownBrightness()
 
   // Defer actions for a moment just in case of repeat events
-  if (handleChangeTimeout) {
-    clearTimeout(handleChangeTimeout)
+  if (handleChangeTimeout1) {
+    clearTimeout(handleChangeTimeout1)
   }
-  handleChangeTimeout = setTimeout(() => {
+  handleChangeTimeout1 = setTimeout(() => {
+    setKnownBrightness()
+    handleChangeTimeout1 = false
+  }, 750)
+  if (handleChangeTimeout2) {
+    clearTimeout(handleChangeTimeout2)
+  }
+  handleChangeTimeout2 = setTimeout(() => {
 
     // Reset all known displays
     refreshMonitors(true, true).then(() => {
@@ -2654,7 +2663,7 @@ function handleMonitorChange(e, d) {
       restartPanel(panelSize.visible)
     })
 
-    handleChangeTimeout = false
+    handleChangeTimeout2 = false
   }, 5000)
 
 }
@@ -2662,6 +2671,7 @@ function handleMonitorChange(e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
+  setKnownBrightness()
   setTimeout(
     () => {
       refreshMonitors(true, true).then(() => {

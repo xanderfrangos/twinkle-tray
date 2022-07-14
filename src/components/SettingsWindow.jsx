@@ -340,7 +340,7 @@ export default class SettingsWindow extends PureComponent {
             }
         ]
         return items.map((item, index) => {
-            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.requestMonitors(); }}>
+            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.reloadReactMonitors(); window.requestMonitors(); }}>
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })

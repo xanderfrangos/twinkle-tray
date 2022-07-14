@@ -88,6 +88,12 @@ function checkForUpdates() {
     ipc.send('check-for-updates')
 }
 
+window.reloadReactMonitors = function() { 
+    window.dispatchEvent(new CustomEvent('monitorsUpdated', {
+        detail: window.allMonitors
+    }))
+}
+
 // New app update recieved
 ipc.on('latest-version', (event, version) => {
     window.latestVersion = version

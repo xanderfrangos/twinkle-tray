@@ -1753,9 +1753,16 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.webContents.once('dom-ready', () => {
     sendToAllWindows('monitors-updated', monitors)
     // Do full refreshes shortly after startup in case Windows isn't ready.
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 8000)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
+    refreshMonitors(true).then(() => {
+      sendToAllWindows('monitors-updated', monitors)
+      setTimeout(() => {
+        refreshMonitors(true).then(() => {
+          sendToAllWindows('monitors-updated', monitors)
+          setTimeout(() => { sendToAllWindows('monitors-updated', monitors) }, 10000)
+        })
+      }, 2000)
+    })
+    
     setTimeout(sendMicaWallpaper, 500)
   })
 

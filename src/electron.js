@@ -666,13 +666,13 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
 }
 
 
-function applyHotkeys() {
+function applyHotkeys(monitorList = monitors) {
   if (settings.hotkeys !== undefined) {
     globalShortcut.unregisterAll()
     for (let hotkey of Object.values(settings.hotkeys)) {
       try {
         // Only apply if found
-        if (hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitors).find(m => m.id == hotkey.monitor)) {
+        if (hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitorList).find(m => m.id == hotkey.monitor)) {
           hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
             doHotkey(hotkey)
           })
@@ -1254,29 +1254,38 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   let oldMonitors = Object.assign({}, monitors)
   let newMonitors
 
+  let failed = false
   try {
     newMonitors = await refreshMonitorsJob(fullRefresh)
-    if(!newMonitors) throw "No monitors!";
+    if(!newMonitors) {
+      failed = true;
+      throw "No monitors recieved!";
+    }
     lastEagerUpdate = Date.now()
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
   }
 
   isRefreshing = false
-  applyOrder()
-  applyRemaps()
-  applyHotkeys()
 
-  for(let id in newMonitors) {
-    newMonitors[id].brightness = normalizeBrightness(newMonitors[id].brightness, true, newMonitors[id].min, newMonitors[id].max)
-  }
-
-  // Only send update if something changed
-  if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
-    setTrayPercent()
-    sendToAllWindows('monitors-updated', monitors)
-  } else {
-    console.log("===--- NO CHANGE ---===")
+  if(!failed) {
+    applyOrder(newMonitors)
+    applyRemaps(newMonitors)
+    applyHotkeys(newMonitors)
+  
+    for(let id in newMonitors) {
+      newMonitors[id].brightness = normalizeBrightness(newMonitors[id].brightness, true, newMonitors[id].min, newMonitors[id].max)
+    }
+    
+    monitors = newMonitors;
+  
+    // Only send update if something changed
+    if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
+      setTrayPercent()
+      sendToAllWindows('monitors-updated', monitors)
+    } else {
+      console.log("===--- NO CHANGE ---===")
+    }
   }
 
   if (shouldShowPanel) {
@@ -1285,7 +1294,6 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   }
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
-  monitors = newMonitors;
   return monitors;
 }
 
@@ -1753,9 +1761,16 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.webContents.once('dom-ready', () => {
     sendToAllWindows('monitors-updated', monitors)
     // Do full refreshes shortly after startup in case Windows isn't ready.
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 3500)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 8000)
-    setTimeout(() => { sendToAllWindows("force-refresh-monitors") }, 17000)
+    refreshMonitors(true).then(() => {
+      sendToAllWindows('monitors-updated', monitors)
+      setTimeout(() => {
+        refreshMonitors(true).then(() => {
+          sendToAllWindows('monitors-updated', monitors)
+          setTimeout(() => { sendToAllWindows('monitors-updated', monitors) }, 10000)
+        })
+      }, 2000)
+    })
+    
     setTimeout(sendMicaWallpaper, 500)
   })
 

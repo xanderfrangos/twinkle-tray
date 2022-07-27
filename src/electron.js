@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
+const { nativeTheme, systemPreferences, BrowserWindow, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 
 // Expose GC
@@ -33,7 +33,7 @@ if (!singleInstanceLock) {
 require('@electron/remote/main').initialize()
 
 const { fork } = require('child_process');
-const { BrowserWindow } = require('electron-acrylic-window')
+const { BrowserWindow: AcrylicWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
 const ua = require('universal-analytics');
@@ -167,7 +167,7 @@ let mouseEventsActive = false
 let bounds
 
 function enableMouseEvents() {
-  if (mouseEventsActive) return false;
+  if (mouseEventsActive || settings.disableMouseEvents) return false;
   mouseEventsActive = true;
 
   let mouseEvents
@@ -388,6 +388,7 @@ const defaultSettings = {
   disableWin32: false,
   autoDisabledWMI: false,
   disableOverlay: false,
+  disableMouseEvents: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -437,6 +438,8 @@ function writeSettings(newSettings = {}, processAfter = true) {
 
 function processSettings(newSettings = {}) {
 
+  let doRestartPanel = false
+
   try {
     settings.settingsVer = "v" + app.getVersion()
 
@@ -467,7 +470,7 @@ function processSettings(newSettings = {}) {
     }
 
     if (newSettings.order !== undefined) {
-      restartPanel()
+      doRestartPanel = true
     }
 
     if(newSettings.detectIdleTime || newSettings.isReadSettings) {
@@ -487,13 +490,15 @@ function processSettings(newSettings = {}) {
         settings.isWin11 = isReallyWin11
       }
       newSettings.useAcrylic = settings.useAcrylic
+      doRestartPanel = true
     }
 
     if (newSettings.useAcrylic !== undefined) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
-      handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
+      //handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
       sendToAllWindows('theme-settings', lastTheme)
       sendMicaWallpaper()
+      doRestartPanel = true
     }
 
     if (newSettings.icon !== undefined) {
@@ -552,11 +557,10 @@ function processSettings(newSettings = {}) {
       }
     }
 
-    if (mainWindow && newSettings.isDev !== undefined) {
-      mainWindow.close()
-      setTimeout(() => {
-        createPanel()
-      }, 333)
+
+
+    if (mainWindow && doRestartPanel) {
+      restartPanel()
     }
 
   } catch (e) {
@@ -1670,7 +1674,9 @@ function createPanel(toggleOnLoad = false) {
 
   console.log("Creating panel...")
 
-  mainWindow = new BrowserWindow({
+  const WindowType = (settings.useAcrylic && !settings.isWin11 ? AcrylicWindow : BrowserWindow)
+
+  mainWindow = new WindowType({
     width: panelSize.width,
     height: panelSize.height,
     x: 0,
@@ -1704,7 +1710,6 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: false,
       spellcheck: false,
       enableWebSQL: false,
-      //v8CacheOptions: "none",
       additionalArguments: "--expose_gc",
       allowRunningInsecureContent: true,
       webSecurity: false

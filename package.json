@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.14.3",
+  "version": "1.14.4",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -31,7 +31,7 @@
     "color": "^3.1.3",
     "electron-acrylic-window": "0.5.11",
     "electron-winstore-auto-launch": "^2.0.6",
-    "global-mouse-events": "^1.0.7",
+    "global-mouse-events": "^1.0.8",
     "markdown-to-jsx": "^6.11.4",
     "native-reg": "^1.0.0",
     "node-fetch": "^2.6.1",

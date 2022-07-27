@@ -529,7 +529,7 @@ body[data-is-win11="true"] {
                 .icons {
                     font-size: 18px;
                 }
-                & > {
+                & > * {
                     position: relative;
                     z-index: 2;
                 }

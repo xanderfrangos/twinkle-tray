@@ -191,7 +191,7 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
 })
 
 // Request startup data
-browser.webContents.once('dom-ready', () => {
+window.addEventListener("DOMContentLoaded", () => {
     requestSettings()
     requestMonitors()
     requestAccent()

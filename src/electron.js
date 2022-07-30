@@ -1034,8 +1034,8 @@ ipcMain.on('send-settings', (event, newSettings) => {
 })
 
 ipcMain.on('request-settings', (event) => {
-  getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of
   getSettings()
+  getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of
 })
 
 ipcMain.on('reset-settings', () => {

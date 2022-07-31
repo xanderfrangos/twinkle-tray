@@ -164,13 +164,13 @@ startMonitorTestThread()
 
 // Mouse wheel scrolling
 let mouseEventsActive = false
+let mouseEvents
 let bounds
 
 function enableMouseEvents() {
   if (mouseEventsActive || settings.disableMouseEvents) return false;
   mouseEventsActive = true;
 
-  let mouseEvents
   try {
     mouseEvents = require("global-mouse-events");
     mouseEvents.on('mousewheel', event => {
@@ -221,6 +221,20 @@ function enableMouseEvents() {
     console.error(e)
   }
 
+}
+
+function pauseMouseEvents(paused) {
+  if(paused) {
+    if(mouseEvents && !mouseEvents.getPaused()) {
+      console.log("Pausing mouse events...")
+      mouseEvents.pauseMouseEvents()
+    }
+  } else {
+    if(mouseEvents && mouseEvents.getPaused()) {
+      console.log("Resuming mouse events...")
+      mouseEvents.resumeMouseEvents()
+    }
+  }
 }
 
 
@@ -774,6 +788,9 @@ function hotkeyOverlayStart(timeout = 3000, force = true) {
   if (canReposition) {
     hotkeyOverlayShow()
   }
+  // Resume mouse events if disabled
+  pauseMouseEvents(false)
+
   if(hotkeyOverlayTimeout) clearTimeout(hotkeyOverlayTimeout);
   hotkeyOverlayTimeout = setTimeout(() => hotkeyOverlayHide(force), timeout)
 }
@@ -816,10 +833,12 @@ function hotkeyOverlayHide(force = true) {
     hotkeyOverlayStart(333)
     return false
   }
+
   if (!force && mainWindow && mainWindow.isFocused()) {
     hotkeyOverlayStart(333)
     return false;
   }
+
   clearTimeout(hotkeyOverlayTimeout)
   setAlwaysOnTop(false)
   mainWindow.setOpacity(0)
@@ -828,13 +847,19 @@ function hotkeyOverlayHide(force = true) {
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
-  //repositionPanel()
+
+  // Pause mouse events if scroll shortcut is not enabled
+  if(!settings.scrollShortcut) {
+    pauseMouseEvents(true)
+  }
+
   mainWindow.setBounds({
     width: 0,
     height: 0,
     x: 0,
     y: 0
   })
+  
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
     tryVibrancy(mainWindow, "#00000000")
   }
@@ -1977,6 +2002,9 @@ function showPanel(show = true, height = 300) {
 
     setAlwaysOnTop(true)
 
+    // Resume mouse events if disabled
+    pauseMouseEvents(false)
+
   } else {
     // Hide panel
     setAlwaysOnTop(false)
@@ -1992,6 +2020,10 @@ function showPanel(show = true, height = 300) {
     if (!settings.useAcrylic || !settings.useNativeAnimation) {
       tryVibrancy(mainWindow, false)
       mainWindow.setBackgroundColor("#00000000")
+    }
+    // Pause mouse events if scroll shortcut is not enabled
+    if(!settings.scrollShortcut) {
+      pauseMouseEvents(true)
     }
   }
 }

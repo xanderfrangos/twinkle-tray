@@ -405,7 +405,7 @@ const defaultSettings = {
 
 let settings = Object.assign({}, defaultSettings)
 
-function readSettings(processSettings = true) {
+function readSettings(doProcessSettings = true) {
   try {
     if (fs.existsSync(settingsPath)) {
       settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))
@@ -423,7 +423,7 @@ function readSettings(processSettings = true) {
 
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
-  if(processSettings) processSettings({isReadSettings: true});
+  if(doProcessSettings) processSettings({isReadSettings: true});
 }
 
 readSettings(false)

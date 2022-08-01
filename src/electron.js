@@ -7,11 +7,6 @@ const Utils = require("./Utils")
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128', '--force_low_power_gpu')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
-// Prevent background throttling
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-
 let isDev = false
 try {
   isDev = require("electron-is-dev");
@@ -403,13 +398,14 @@ const defaultSettings = {
   autoDisabledWMI: false,
   disableOverlay: false,
   disableMouseEvents: false,
+  disableThrottling: false,
   uuid: uuid(),
   branch: "master"
 }
 
 let settings = Object.assign({}, defaultSettings)
 
-function readSettings() {
+function readSettings(processSettings = true) {
   try {
     if (fs.existsSync(settingsPath)) {
       settings = Object.assign(settings, JSON.parse(fs.readFileSync(settingsPath)))
@@ -427,7 +423,15 @@ function readSettings() {
 
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
-  processSettings({isReadSettings: true})
+  if(processSettings) processSettings({isReadSettings: true});
+}
+
+readSettings(false)
+if(settings.disableThrottling) {
+  // Prevent background throttling
+  app.commandLine.appendSwitch('disable-renderer-backgrounding');
+  app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+  app.commandLine.appendSwitch('disable-background-timer-throttling');
 }
 
 let writeSettingsTimeout = false
@@ -1732,7 +1736,7 @@ function createPanel(toggleOnLoad = false) {
       contextIsolation: false,
       webgl: false,
       plugins: false,
-      backgroundThrottling: false,
+      backgroundThrottling: (settings.disableThrottling ? false : true),
       spellcheck: false,
       enableWebSQL: false,
       additionalArguments: "--expose_gc",

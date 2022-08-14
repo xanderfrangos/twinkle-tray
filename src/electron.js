@@ -1733,6 +1733,7 @@ function createPanel(toggleOnLoad = false) {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
+      nodeIntegration: true,
       contextIsolation: false,
       webgl: false,
       plugins: false,
@@ -2346,6 +2347,7 @@ function showIntro() {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
+      nodeIntegration: true,
       contextIsolation: false
     }
   });
@@ -2423,6 +2425,7 @@ function createSettings() {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
+      nodeIntegration: true,
       contextIsolation: false,
       allowRunningInsecureContent: true,
       webSecurity: false

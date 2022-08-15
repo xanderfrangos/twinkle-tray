@@ -69,6 +69,8 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             // DDC/CI
             try {
                 if (settings?.getDDCBrightnessUpdates) {
+                    getDDCCI()
+                    ddcci._refresh()
                     for (const hwid2 in monitors) {
                         if (monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
                             const monitor = await getBrightnessDDC(monitors[hwid2])

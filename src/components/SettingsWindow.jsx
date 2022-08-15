@@ -744,16 +744,20 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getFeaturesMonitors = () => {
-        if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
-            return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
-        } else {
-            return Object.values(this.state.monitors).map((monitor, index) => {
-                const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
-                return (
-                    <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} />
-                )
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+                    const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
+                    return (
+                        <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} />
+                    )
+    
+                })
+            }
+        } catch(e) {
 
-            })
         }
     }
 

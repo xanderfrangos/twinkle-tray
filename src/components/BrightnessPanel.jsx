@@ -71,41 +71,35 @@ export default class BrightnessPanel extends PureComponent {
                   }
                 })
               }
+              const powerOff = () => {
+                window.dispatchEvent(new CustomEvent("setVCP", {
+                  detail: {
+                      monitor: monitor.id,
+                      code: 0xD6,
+                      value: 4
+                  }
+                }))
+                window.dispatchEvent(new CustomEvent("setVCP", {
+                  detail: {
+                    monitor: monitor.id,
+                      code: 0xD6,
+                      value: 5
+                  }
+                }))
+              }
+              const showPowerButton = () => {
+                if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
+                }
+              }
 
               if (!useFeatures || !hasFeatures) {
-                const showPowerButton = () => {
-                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
-                    return (<div className="feature-power-icon simple"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
-                  }
-                }
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} />
                   </div>
                 )
               } else {
-                const powerOff = () => {
-                  window.dispatchEvent(new CustomEvent("setVCP", {
-                    detail: {
-                        monitor: monitor.id,
-                        code: 0xD6,
-                        value: 4
-                    }
-                  }))
-                  window.dispatchEvent(new CustomEvent("setVCP", {
-                    detail: {
-                      monitor: monitor.id,
-                        code: 0xD6,
-                        value: 5
-                    }
-                  }))
-                }
-                const showPowerButton = () => {
-                  if(monitorFeatures?.powerState && monitor.features?.powerState) {
-                    return (<div className="feature-power-icon" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>Power off</span></div>)
-                  }
-                }
-
                 return (
                   <div className="monitor-sliders extended" key={monitor.key}>
                     <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>

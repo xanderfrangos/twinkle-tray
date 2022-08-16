@@ -27,6 +27,8 @@ if (!singleInstanceLock) {
 
 require('@electron/remote/main').initialize()
 
+const knownDDCBrightnessIDs = require('./known-ddc-brightness-ids.json')
+
 const { fork } = require('child_process');
 const { BrowserWindow: AcrylicWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
@@ -120,6 +122,10 @@ function startMonitorThread() {
         monitorsThreadReal.send({
           type: "settings",
           settings
+        })
+        monitorsThreadReal.send({
+          type: "ddcBrightnessIDs",
+          ddcBrightnessIDs: getDDCBrightnessIDs()
         })
       }
     }
@@ -399,6 +405,7 @@ const defaultSettings = {
   disableOverlay: false,
   disableMouseEvents: false,
   disableThrottling: false,
+  userDDCBrightnessIDs: {},
   uuid: uuid(),
   branch: "master"
 }
@@ -588,6 +595,10 @@ function processSettings(newSettings = {}) {
   monitorsThread.send({
     type: "settings",
     settings: settings
+  })
+  monitorsThreadReal.send({
+    type: "ddcBrightnessIDs",
+    ddcBrightnessIDs: getDDCBrightnessIDs()
   })
 
   sendToAllWindows('settings-updated', settings)
@@ -1044,6 +1055,15 @@ function getSettings() {
   sendToAllWindows('settings-updated', settings)
 }
 
+function getDDCBrightnessIDs() {
+  try {
+    let ids = Object.assign(knownDDCBrightnessIDs, settings.userDDCBrightnessIDs)
+    return ids
+  } catch(e) {
+    console.log("Couldn't generate DDC Brightness IDs!", e)
+    return {}
+  }
+}
 
 function sendToAllWindows(eventName, data) {
   if (mainWindow) {

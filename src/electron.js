@@ -725,7 +725,7 @@ function applyHotkeys(monitorList = monitors) {
 let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
-const doHotkey = (hotkey) => {
+const doHotkey = async (hotkey) => {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100)) {
     hotkeyThrottle[hotkey.monitor] = now
@@ -739,6 +739,11 @@ const doHotkey = (hotkey) => {
       //refreshMonitors(false)
       analyticsUsage.UsedHotkeys++
       if (hotkey.monitor === "all" || ((settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels) && hotkey.monitor != "turn_off_displays")) {
+
+        // Wait for refresh if user hasn't done so recently
+        if(lastRefreshMonitors < Date.now() - 10000) {
+          await refreshMonitors()
+        }
 
         let linkedLevelVal = false
         for (let key in monitors) {
@@ -1275,6 +1280,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
   })
 }
 
+let lastRefreshMonitors = 0
 
 refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
@@ -1288,6 +1294,8 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     console.log(`Already refreshing. Aborting.`)
     return monitors;
   }
+
+  lastRefreshMonitors = Date.now()
 
   console.log(" ")
   console.log("\x1b[34m-------------- Refresh Monitors -------------- \x1b[0m")

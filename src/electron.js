@@ -7,6 +7,9 @@ const Utils = require("./Utils")
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128', '--force_low_power_gpu')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
+// Remove window animations
+app.commandLine.appendSwitch('wm-window-animations-disabled');
+
 let isDev = false
 try {
   isDev = require("electron-is-dev");

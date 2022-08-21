@@ -2,6 +2,16 @@ const { ipcRenderer: ipc } = require('electron');
 const remote = require('@electron/remote')
 let browser = remote.getCurrentWindow()
 
+function getArgumentVars() {
+    try {
+        const jsVarsString = process.argv.find(arg => arg.indexOf("jsVars") === 0)
+        const jsVars = JSON.parse(atob(jsVarsString.substring(6)))
+        return jsVars
+    } catch(e) {
+        return {}
+    }
+}
+
 function requestMonitors(fullRefresh = false) {
     if (fullRefresh) {
         ipc.send('full-refresh')
@@ -219,5 +229,5 @@ window.settings = {}
 window.thisWindow = browser
 window.accent = "cyan"
 
-window.version = 'v' + remote.app.getVersion()
-window.isAppX = (remote.app.name == "twinkle-tray-appx" ? true : false)
+window.version = 'v' + getArgumentVars().appVersion
+window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)

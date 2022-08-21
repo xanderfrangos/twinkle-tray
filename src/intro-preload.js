@@ -1,6 +1,4 @@
 const { ipcRenderer: ipc } = require('electron');
-const remote = require('@electron/remote')
-let browser = remote.getCurrentWindow()
 
 window.closeIntro = () => {
     ipc.send('close-intro')
@@ -28,10 +26,10 @@ function detectSunValley() {
 }
 
 // Request startup data
-browser.webContents.once('dom-ready', () => {
+window.addEventListener('DOMContentLoaded', () => {
     requestAccent()
 })
-browser.webContents.once('did-finish-load', () => {
+window.document.addEventListener('load', () => {
     ipc.send('request-localization')
     detectSunValley()
     setTimeout(() => {

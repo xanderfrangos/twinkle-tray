@@ -1,7 +1,4 @@
 const { ipcRenderer: ipc } = require('electron');
-const remote = require('@electron/remote')
-let browser = remote.getCurrentWindow()
-require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 // Send logs to main thread
 const log = console.log
@@ -13,15 +10,21 @@ const con = {
 console.log = (...e) => { e.forEach((c) => { ipc.send('log', c); con.log(c) }) }
 console.error = (...e) => { e.forEach((c) => { ipc.send('log', c); con.error(c) }) }
 
+window.winPosition = [0, 0]
 
-let isTransparent = false
+function getArgumentVars() {
+    try {
+        const jsVarsString = process.argv.find(arg => arg.indexOf("jsVars") === 0)
+        const jsVars = JSON.parse(atob(jsVarsString.substring(6)))
+        return jsVars
+    } catch(e) {
+        return {}
+    }
+}
 
 // Show or hide the brightness panel
 function setPanelVisibility(visible) {
     window.showPanel = visible
-
-    // Update browser var to avoid Electron bugs
-    browser = remote.getCurrentWindow()
 
     if (visible) {
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
@@ -34,18 +37,12 @@ function setPanelVisibility(visible) {
                 }
             }, 500)
         }
-        const pos = browser.getPosition()
-        if(settings.isWin11) {
-            pos[0] += 12
-            pos[1] += 12
-        }
-        window.updateMica?.(pos)
+        window.updateMica?.()
     } else {
         window.document.body.dataset["acrylicShow"] = false
         if (window.isAcrylic) {
             window.isAcrylic = false
         }
-        setTimeout(() => { if(!window.showPanel && window.sleep) window.thisWindow.setBounds({width:0})}, 1000)
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: true
         }))
@@ -63,13 +60,6 @@ function setPanelVisibility(visible) {
     // Blur all inputs to fix visual bugs
     if ("activeElement" in document)
         document.activeElement.blur();
-
-    // Update interactivity
-    if (window.showPanel) {
-        browser.setIgnoreMouseEvents(false)
-    } else {
-        browser.setIgnoreMouseEvents(true)
-    }
 }
 
 function requestMonitors() {
@@ -112,7 +102,7 @@ function detectSunValley() {
 
 function openSettings() {
     setPanelVisibility(false)
-    thisWindow.blur()
+    ipc.send('blur-panel')
     setTimeout(() => {
         ipc.send("open-settings")
     }, 111)
@@ -161,7 +151,7 @@ function shouldSendHeightUpdate() {
 
 function turnOffDisplays() {
     setPanelVisibility(false)
-    thisWindow.blur()
+    ipc.send('blur-panel')
     setTimeout(() => {
         ipc.send('sleep-displays')
     }, 111)
@@ -183,15 +173,8 @@ ipc.on('tray-clicked', () => {
 })
 
 ipc.on("panelBlur", (e) => {
-    global.gc()
-    // Update browser var to avoid Electron bugs
-    browser = remote.getCurrentWindow()
-    if (!browser.webContents.isDevToolsOpened()) {
-        setPanelVisibility(false)
-    } else {
-        // Keep interactive if devTools open
-        browser.moveTop()
-    }
+    setPanelVisibility(false)
+    setTimeout(() => global.gc(), 2000)
 })
 
 ipc.on("panel-unsleep", () => {
@@ -291,6 +274,12 @@ ipc.on('updateProgress', (event, progress) => {
     }))
 })
 
+// Updated window position variable
+ipc.on('panel-position', (event, pos) => {
+    winPosition = pos
+    window.updateMica?.()
+})
+
 // User personalization settings recieved
 ipc.on('theme-settings', (event, theme) => {
     try {
@@ -346,7 +335,7 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
 })
 
 // Request startup data
-browser.webContents.once('dom-ready', () => {
+window.addEventListener('DOMContentLoaded', () => {
     requestSettings()
     //requestMonitors()
     requestAccent()
@@ -370,7 +359,6 @@ window.addEventListener("setVCP", e => {
 })
 
 window.ipc = ipc
-window.thisWindow = browser
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.openSettings = openSettings
@@ -389,4 +377,4 @@ window.showPanel = false
 window.isAcrylic = false
 window.theme = "dark"
 window.settings = {}
-window.isAppX = (remote.app.name == "twinkle-tray-appx" ? true : false)
+window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)

@@ -8,7 +8,12 @@ window.ipc.send('request-localization')
 
 ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
 
-window.updateMica = (pos = [0, 0]) => {
+window.updateMica = () => {
+    const pos = window.winPosition.slice(0, 2)
+    if(window.settings.isWin11) {
+        pos[0] += 12
+        pos[1] += 12
+    }
     const micaDisplays = document.querySelector("#mica .displays")
     micaDisplays.style.transform = `translate(${pos[0] * -1}px, ${pos[1] * -1}px)`
 
@@ -48,7 +53,7 @@ window.document.getElementById("root").addEventListener('transitionend', functio
 
 window.document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") {
-        window.thisWindow.blur()
+        window.ipc.send('blur-panel')
     }
 })
 

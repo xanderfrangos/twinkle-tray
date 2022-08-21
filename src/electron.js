@@ -852,7 +852,6 @@ async function hotkeyOverlayShow() {
   if (settings.useAcrylic) {
     tryVibrancy(mainWindow, { theme: "#26262601", effect: "blur" })
   }
-  mainWindow.setIgnoreMouseEvents(false)
   await toggleTray(true, true)
 
   const panelOffset = 40
@@ -882,7 +881,6 @@ function hotkeyOverlayHide(force = true) {
   setAlwaysOnTop(false)
   startHidePanel()
   canReposition = true
-  mainWindow.setIgnoreMouseEvents(true)
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
   sendToAllWindows("display-mode", "normal")
@@ -1713,6 +1711,10 @@ ipcMain.on('panel-hidden', () => {
   if (settings.killWhenIdle) mainWindow.close()
 })
 
+ipcMain.on('blur-panel', () => {
+  if(mainWindow) mainWindow.blur();
+})
+
 ipcMain.on('show-acrylic', () => {
   if (settings.useAcrylic && !settings.useNativeAnimation) {
     if (lastTheme && lastTheme.ColorPrevalence) {
@@ -1784,13 +1786,14 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: (settings.disableThrottling ? false : true),
       spellcheck: false,
       enableWebSQL: false,
-      additionalArguments: "--expose_gc",
+      additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
+        appName: app.name,
+        appVersion: app.getVersion()
+      })).toString('base64')],
       allowRunningInsecureContent: true,
       webSecurity: false
     }
   });
-
-  require("@electron/remote/main").enable(mainWindow.webContents);
 
   mainWindow.loadURL(
     isDev
@@ -1825,17 +1828,19 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if (canReposition) {
       sendToAllWindows("panelBlur")
-      if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
+      if(!mainWindow.webContents.isDevToolsOpened()) startHidePanel();
     }
-    global.gc()
+    setTimeout(() => global.gc(), 1000)
   })
 
   mainWindow.on('move', (e) => {
     e.preventDefault()
+    sendToAllWindows('panel-position', mainWindow.getPosition())
   })
 
   mainWindow.on('resize', (e) => {
     e.preventDefault()
+    sendToAllWindows('panel-position', mainWindow.getPosition())
   })
 
   mainWindow.webContents.once('dom-ready', () => {
@@ -1848,6 +1853,7 @@ function createPanel(toggleOnLoad = false) {
     }, 8000)
     
     setTimeout(sendMicaWallpaper, 500)
+    sendToAllWindows('panel-position', mainWindow.getPosition())
   })
 
 }
@@ -1979,6 +1985,8 @@ function repositionPanel() {
     }
     panelSize.base = mainWindow.getBounds().y
   }
+  
+  sendToAllWindows('panel-position', mainWindow.getPosition())
 }
 
 
@@ -2053,6 +2061,7 @@ function showPanel(show = true, height = 300) {
     pauseMouseEvents(false)
     mainWindow.setOpacity(1)
     mainWindow.show()
+    sendToAllWindows('panel-position', mainWindow.getBounds())
     sendToAllWindows("playPanelAnimation")
 
   } else {
@@ -2492,7 +2501,11 @@ function createSettings() {
       nodeIntegration: true,
       contextIsolation: false,
       allowRunningInsecureContent: true,
-      webSecurity: false
+      webSecurity: false,
+      additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
+        appName: app.name,
+        appVersion: app.getVersion()
+      })).toString('base64')],
     }
   });
 

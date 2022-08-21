@@ -773,7 +773,7 @@ body[data-is-win11="true"] {
         border: 0;
         box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
         &:hover {
-            background: var(--button-border);
+            background: var(--button-highlight);
         }
     }
     .window-titlebar .window-title {

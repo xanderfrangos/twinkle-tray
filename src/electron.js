@@ -1166,6 +1166,7 @@ async function getThemeRegistry() {
     console.log("Couldn't access taskbar registry", e)
   }
 
+  return true
 }
 
 function getTrayIconPath() {
@@ -1652,6 +1653,7 @@ function readInstanceName(insName) {
 
 ipcMain.on('request-colors', () => {
   sendToAllWindows('update-colors', getAccentColors())
+  getThemeRegistry()
 })
 
 ipcMain.on('update-brightness', function (event, data) {
@@ -2201,6 +2203,7 @@ function doAnimationStep() {
 
 app.on("ready", async () => {
   await getAllLanguages()
+  await getThemeRegistry()
   readSettings()
   getLocalization()
 
@@ -2267,7 +2270,7 @@ function createTray() {
   })
 
   nativeTheme.on('updated', async () => {
-    getThemeRegistry()
+    await getThemeRegistry()
     try {
       tray.setImage(getTrayIconPath())
     } catch (e) {
@@ -2425,9 +2428,6 @@ function showIntro() {
     }
   });
 
-  
-  require("@electron/remote/main").enable(introWindow.webContents);
-
   introWindow.loadURL(
     isDev
       ? "http://localhost:3000/intro.html"
@@ -2438,10 +2438,7 @@ function showIntro() {
 
   introWindow.once('ready-to-show', () => {
     introWindow.show()
-    setTimeout(() => {
-      introWindow.setVibrancy(false)
-      introWindow.setBackgroundColor("#00000000")
-    }, 100)
+    if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
   })
 
 }
@@ -2505,7 +2502,7 @@ function createSettings() {
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
         appVersion: app.getVersion()
-      })).toString('base64')],
+      })).toString('base64')]
     }
   });
 

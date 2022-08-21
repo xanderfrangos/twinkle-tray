@@ -81,8 +81,31 @@ video {
     display: block;
     font-size: 16px;
     width: 200px;
+    cursor: pointer;
 
     &:hover {
         border-color: var(--input-border);
+    }
+}
+
+
+
+// Windows 11 style
+body[data-is-win11="true"] {
+    .page {
+        background-color: var(--page-background);
+        border: 1px solid var(--tray-border);
+        border-radius: 8px;
+        box-shadow: 0 8px 15px -5px rgb(0 0 0 / 75%);
+    }
+    .button {
+        background: var(--button-background);
+        color: var(--page-text);
+        border-radius: 6px;
+        border: 0;
+        box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
+        &:hover {
+            background: var(--button-highlight);
+        }
     }
 }

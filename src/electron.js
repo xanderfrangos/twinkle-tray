@@ -193,6 +193,7 @@ function enableMouseEvents() {
           }
 
           pauseMonitorUpdates() // Pause monitor updates to prevent judder
+          willPauseMouseEvents() // Delay pausing mouse events
 
         }
       } catch (e) {
@@ -228,6 +229,10 @@ function enableMouseEvents() {
 }
 
 function pauseMouseEvents(paused) {
+
+  // Clear timeout if set
+  if(willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
+
   if(paused) {
     if(mouseEvents && !mouseEvents.getPaused()) {
       console.log("Pausing mouse events...")
@@ -239,6 +244,15 @@ function pauseMouseEvents(paused) {
       mouseEvents.resumeMouseEvents()
     }
   }
+}
+
+let willPauseMouseEventsTimeout
+function willPauseMouseEvents(time = 10000) {
+  if(willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
+  willPauseMouseEventsTimeout = setTimeout(() => {
+    pauseMouseEvents(true)
+    willPauseMouseEventsTimeout = null
+  }, time)
 }
 
 
@@ -821,6 +835,7 @@ function hotkeyOverlayStart(timeout = 3000, force = true) {
 async function hotkeyOverlayShow() {
   if(settings.disableOverlay) return false;
   if (!mainWindow) return false;
+  mainWindow.restore()
 
   setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
@@ -848,6 +863,7 @@ async function hotkeyOverlayShow() {
     y: panelOffset + 20
   })
   mainWindow.setOpacity(1)
+  mainWindow.show()
 
 }
 
@@ -864,7 +880,7 @@ function hotkeyOverlayHide(force = true) {
 
   clearTimeout(hotkeyOverlayTimeout)
   setAlwaysOnTop(false)
-  mainWindow.setOpacity(0)
+  startHidePanel()
   canReposition = true
   mainWindow.setIgnoreMouseEvents(true)
   sendToAllWindows("panelBlur")
@@ -872,9 +888,7 @@ function hotkeyOverlayHide(force = true) {
   sendToAllWindows("display-mode", "normal")
 
   // Pause mouse events if scroll shortcut is not enabled
-  if(!settings.scrollShortcut) {
-    pauseMouseEvents(true)
-  }
+  pauseMouseEvents(true)
 
   mainWindow.setBounds({
     width: 0,
@@ -1657,7 +1671,7 @@ ipcMain.on('request-monitors', function (event, arg) {
 })
 
 ipcMain.on('full-refresh', function (event, forceUpdate = false) {
-  refreshMonitors(true, true).then(() => {
+  refreshMonitors(true).then(() => {
     if (forceUpdate) {
       sendToAllWindows('monitors-updated', monitors)
     }
@@ -1747,7 +1761,6 @@ function createPanel(toggleOnLoad = false) {
     frame: false,
     transparent: true,
     show: false,
-    opacity: 0,
     alwaysOnTop: false,
     skipTaskbar: true,
     resizable: false,
@@ -1793,8 +1806,9 @@ function createPanel(toggleOnLoad = false) {
       panelReady = true
       console.log("Panel ready!")
       sendMicaWallpaper()
-      mainWindow.show()
       createTray()
+
+      startHidePanel()
 
       setTimeout(() => {
         if(!settings.useAcrylic || settings.isWin11) {
@@ -1827,15 +1841,11 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.webContents.once('dom-ready', () => {
     sendToAllWindows('monitors-updated', monitors)
     // Do full refreshes shortly after startup in case Windows isn't ready.
-    refreshMonitors(true).then(() => {
-      sendToAllWindows('monitors-updated', monitors)
-      setTimeout(() => {
-        refreshMonitors(true).then(() => {
-          sendToAllWindows('monitors-updated', monitors)
-          setTimeout(() => { sendToAllWindows('monitors-updated', monitors) }, 10000)
-        })
-      }, 2000)
-    })
+    setTimeout(() => {
+      refreshMonitors(true).then(() => {
+        sendToAllWindows('monitors-updated', monitors)
+      })
+    }, 8000)
     
     setTimeout(sendMicaWallpaper, 500)
   })
@@ -2002,6 +2012,8 @@ function showPanel(show = true, height = 300) {
 
   if (show) {
     // Show panel
+    if(startHideTimeout) clearTimeout(startHideTimeout); // Reset "hide" timeout
+    mainWindow.restore()
     mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
     repositionPanel()
     panelHeight = height
@@ -2029,22 +2041,24 @@ function showPanel(show = true, height = 300) {
         setWindowPos(mainWindowHandle, -2, panelSize.bounds.x * primaryDPI, ((panelSize.base) * primaryDPI), panelSize.bounds.width * primaryDPI, panelHeight, 0x0400)
       } else {
         // Bottom, left, right
-        sendToAllWindows("playPanelAnimation")
-        mainWindow.setOpacity(0)
+        mainWindow.show()
         mainWindow.setBounds(panelSize.bounds)
       }
-      mainWindow.setOpacity(1)
     }
 
     setAlwaysOnTop(true)
+    mainWindow.focus()
 
     // Resume mouse events if disabled
     pauseMouseEvents(false)
+    mainWindow.setOpacity(1)
+    mainWindow.show()
+    sendToAllWindows("playPanelAnimation")
 
   } else {
     // Hide panel
     setAlwaysOnTop(false)
-    mainWindow.setOpacity(0)
+    startHidePanel()
     panelSize.visible = false
     clearInterval(panelAnimationInterval)
     panelAnimationInterval = false
@@ -2057,10 +2071,22 @@ function showPanel(show = true, height = 300) {
       tryVibrancy(mainWindow, false)
       mainWindow.setBackgroundColor("#00000000")
     }
-    // Pause mouse events if scroll shortcut is not enabled
-    if(!settings.scrollShortcut) {
-      pauseMouseEvents(true)
-    }
+    // Pause mouse events
+    pauseMouseEvents(true)
+  }
+}
+
+let startHideTimeout
+function startHidePanel() {
+  if(!startHideTimeout) {
+    if(mainWindow) mainWindow.setOpacity(0);
+    startHideTimeout = setTimeout(() => {
+      if(mainWindow) {
+        mainWindow.hide();
+        mainWindow.minimize();
+      }
+      startHideTimeout = null
+    }, 100)
   }
 }
 
@@ -2176,7 +2202,6 @@ app.on("ready", async () => {
   })
 
   setTimeout(addEventListeners, 2000)
-  os.setPriority(0, os.constants.priority.PRIORITY_BELOW_NORMAL)
 })
 
 app.on("window-all-closed", () => {
@@ -2222,6 +2247,14 @@ function createTray() {
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate(false)
     sendToAllWindows('panel-unsleep')
+
+    if(settings.scrollShortcut) {
+      // Start tracking cursor to determine when it leaves the tray
+      if(mouseEvents && mouseEvents.getPaused()) {
+        pauseMouseEvents(false)
+      }
+      willPauseMouseEvents()
+    }
   })
 
   nativeTheme.on('updated', async () => {
@@ -2309,7 +2342,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
 
       // Check if overlay is currently open and deal with that
       if (!canReposition) {
-        mainWindow.setOpacity(0)
+        startHidePanel()
         hotkeyOverlayHide()
         setTimeout(() => {
           sendToAllWindows("display-mode", "normal")
@@ -2491,7 +2524,7 @@ function createSettings() {
     })
   })
 
-  refreshMonitors(true)
+  //refreshMonitors(true)
 
   analyticsUsage.OpenedSettings++
 
@@ -2704,6 +2737,9 @@ function addEventListeners() {
   addDisplayChangeListener(handleMonitorChange)
 
   enableMouseEvents()
+
+  // Disable mouse events at startup
+  pauseMouseEvents(true)
 
   if (settings.checkTimeAtStartup) {
     lastTimeEvent = false;

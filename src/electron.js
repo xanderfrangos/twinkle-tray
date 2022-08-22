@@ -3018,9 +3018,9 @@ Example: --Set=95
 Adjust brightness percentage.
 Example: --Offset=-20
 
---DDCCI
-Send a specific DDC/CI command instead of brightness. The first part is the DDC/CI command ID (decimal or hexadecimal), and the second is the value.
-Example: --DDCID="0xD6:5"
+--VCP
+Send a specific DDC/CI VCP code and value instead of brightness. The first part is the VCP code (decimal or hexadecimal), and the second is the value.
+Example: --VCP="0xD6:5"
 
 --Overlay
 Flag to show brightness levels in the overlay
@@ -3032,7 +3032,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
   let display
   let type
   let brightness
-  let ddcciCMD
+  let ddcciVCP
   let commandLine = []
 
   try {
@@ -3083,15 +3083,15 @@ function handleCommandLine(event, argv, directory, additionalData) {
         }
 
         // DDC/CI command
-        if (arg.indexOf("--ddcci=") === 0 && arg.indexOf(":")) {
+        if (arg.indexOf("--vcp=") === 0 && arg.indexOf(":")) {
             try {
               const values = arg.substring(8).replace('"').replace('"').split(":")
-              ddcciCMD = {
-                vcp: parseInt(values[0]),
+              ddcciVCP = {
+                code: parseInt(values[0]),
                 value: parseInt(values[1])
               }
             } catch(e) {
-              console.log("Couldn't parse DDC/CI command!")
+              console.log("Couldn't parse VCP code!")
             }
             
         }
@@ -3117,21 +3117,21 @@ function handleCommandLine(event, argv, directory, additionalData) {
 
       }
 
-      if(display && ddcciCMD) {
+      if(display && ddcciVCP) {
         if(display === "all") {
           Object.values(monitors).forEach(monitor => {
             monitorsThread.send({
               type: "vcp",
-              code: ddcciCMD.vcp,
-              value: ddcciCMD.value,
+              code: ddcciVCP.code,
+              value: ddcciVCP.value,
               monitor: monitor.hwid.join("#")
             })
           })
         } else {
           monitorsThread.send({
             type: "vcp",
-            code: ddcciCMD.vcp,
-            value: ddcciCMD.value,
+            code: ddcciVCP.code,
+            value: ddcciVCP.value,
             monitor: display.hwid.join("#")
           })
         }

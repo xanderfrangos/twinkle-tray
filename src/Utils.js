@@ -43,8 +43,8 @@ module.exports = {
             }
 
             // DDC/CI command
-            if (arg.indexOf("--ddcci=") === 0 && arg.indexOf(":")) {
-                validArgs.DDCCI = true
+            if (arg.indexOf("--vcp=") === 0 && arg.indexOf(":")) {
+                validArgs.VCP = true
             }
 
             // Show overlay
@@ -78,7 +78,7 @@ module.exports = {
                 console.log("\x1b[41mMissing monitor argument.\x1b[0m")
                 failed = true
             }
-            if (args.Brightness === undefined && !args.DDCCI) {
+            if (args.Brightness === undefined && !args.VCP) {
                 console.log("\x1b[41mMissing brightness argument.\x1b[0m")
                 failed = true
             }
@@ -111,9 +111,9 @@ Set brightness percentage.
 Adjust brightness percentage.
 \x1b[2mExample: --Offset=-20\x1b[0m
 
-\x1b[36m--DDCCI\x1b[0m
-Send a specific DDC/CI command instead of brightness. The first part is the DDC/CI command ID (decimal or hexadecimal), and the second is the value.
-\x1b[2mExample: --DDCID="0xD6:5"\x1b[0m
+\x1b[36m--VCP\x1b[0m
+Send a specific DDC/CI VCP code and value instead of brightness. The first part is the VCP code (decimal or hexadecimal), and the second is the value.
+\x1b[2mExample: --VCP="0xD6:5"\x1b[0m
 
 \x1b[36m--Overlay\x1b[0m
 Flag to show brightness levels in the overlay

@@ -3017,6 +3017,10 @@ Example: --Set=95
 Adjust brightness percentage.
 Example: --Offset=-20
 
+--DDCCI
+Send a specific DDC/CI command instead of brightness. The first part is the DDC/CI command ID (decimal or hexadecimal), and the second is the value.
+Example: --DDCID="0xD6:5"
+
 --Overlay
 Flag to show brightness levels in the overlay
 Example: --Overlay
@@ -3027,6 +3031,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
   let display
   let type
   let brightness
+  let ddcciCMD
   let commandLine = []
 
   try {
@@ -3076,6 +3081,20 @@ function handleCommandLine(event, argv, directory, additionalData) {
           type = "offset"
         }
 
+        // DDC/CI command
+        if (arg.indexOf("--ddcci=") === 0 && arg.indexOf(":")) {
+            try {
+              const values = arg.substring(8).replace('"').replace('"').split(":")
+              ddcciCMD = {
+                vcp: parseInt(values[0]),
+                value: parseInt(values[1])
+              }
+            } catch(e) {
+              console.log("Couldn't parse DDC/CI command!")
+            }
+            
+        }
+
         // Show overlay
         if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
           hotkeyOverlayStart()
@@ -3095,6 +3114,26 @@ function handleCommandLine(event, argv, directory, additionalData) {
           updateBrightnessThrottle(display.id, newBrightness, true)
         }
 
+      }
+
+      if(display && ddcciCMD) {
+        if(display === "all") {
+          Object.values(monitors).forEach(monitor => {
+            monitorsThread.send({
+              type: "vcp",
+              code: ddcciCMD.vcp,
+              value: ddcciCMD.value,
+              monitor: monitor.hwid.join("#")
+            })
+          })
+        } else {
+          monitorsThread.send({
+            type: "vcp",
+            code: ddcciCMD.vcp,
+            value: ddcciCMD.value,
+            monitor: display.hwid.join("#")
+          })
+        }
       }
 
     }

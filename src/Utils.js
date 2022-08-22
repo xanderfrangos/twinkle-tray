@@ -42,6 +42,11 @@ module.exports = {
                 validArgs.BrightnessType = "offset"
             }
 
+            // DDC/CI command
+            if (arg.indexOf("--ddcci=") === 0 && arg.indexOf(":")) {
+                validArgs.DDCCI = true
+            }
+
             // Show overlay
             if (arg.indexOf("--overlay") === 0) {
                 validArgs.ShowOverlay = true
@@ -73,7 +78,7 @@ module.exports = {
                 console.log("\x1b[41mMissing monitor argument.\x1b[0m")
                 failed = true
             }
-            if (!(args.Brightness !== undefined)) {
+            if (args.Brightness === undefined && !args.DDCCI) {
                 console.log("\x1b[41mMissing brightness argument.\x1b[0m")
                 failed = true
             }
@@ -105,6 +110,10 @@ Set brightness percentage.
 \x1b[36m--Offset\x1b[0m
 Adjust brightness percentage.
 \x1b[2mExample: --Offset=-20\x1b[0m
+
+\x1b[36m--DDCCI\x1b[0m
+Send a specific DDC/CI command instead of brightness. The first part is the DDC/CI command ID (decimal or hexadecimal), and the second is the value.
+\x1b[2mExample: --DDCID="0xD6:5"\x1b[0m
 
 \x1b[36m--Overlay\x1b[0m
 Flag to show brightness levels in the overlay

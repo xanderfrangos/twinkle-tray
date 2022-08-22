@@ -623,17 +623,13 @@ function processSettings(newSettings = {}) {
 }
 
 // Save all known displays to disk for future use
-async function updateKnownDisplays(force = false) {
+async function updateKnownDisplays(force = false, immediate = false) {
 
   // Skip when idle
   if(!force && isUserIdle) return false;
 
-  // Reset timeout
-  if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
-  // Wait a moment
-  updateKnownDisplaysTimeout = setTimeout(async () => {
+  const doFunc = () => {
     try {
-
       // Get from file
       let known = getKnownDisplays(true)
 
@@ -646,7 +642,17 @@ async function updateKnownDisplays(force = false) {
     } catch (e) {
       console.error("Couldn't update known displays file.")
     }
-  }, 3000)
+  }
+
+  // Reset timeout
+  if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
+
+  if(immediate) {
+    doFunc()
+  } else {
+    // Wait a moment
+    updateKnownDisplaysTimeout = setTimeout(doFunc, 3000)
+  }
 
 }
 
@@ -669,7 +675,7 @@ function getKnownDisplays(useCurrentMonitors) {
 
   // Merge with existing displays
   if (useCurrentMonitors) {
-    Object.assign(known, monitors)
+    known = Object.assign(known, JSON.parse(JSON.stringify(monitors)))
   }
 
   return known
@@ -2882,8 +2888,10 @@ let idleMonitor = setInterval(idleCheckLong, 60000)
 let notIdleMonitor
 let lastIdleTime = 0
 
+let preIdleMonitors = {}
+
 function idleCheckLong() {
-  if(powerMonitor.onBatteryPower) return false;
+  //if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
   lastIdleTime = idleTime
   if(idleTime > (settings.detectIdleTime * 1 > 0 ? settings.detectIdleTime : 180) && !notIdleMonitor) {
@@ -2891,9 +2899,10 @@ function idleCheckLong() {
   }
 }
 
-function startIdleCheckShort() {
-  updateKnownDisplays(true)
+async function startIdleCheckShort() {
   isUserIdle = true
+  await updateKnownDisplays(true, true)
+  preIdleMonitors = Object.assign({}, lastKnownDisplays)
   console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
   if(notIdleMonitor) clearInterval(notIdleMonitor);
   notIdleMonitor = setInterval(idleCheckShort, 1000)
@@ -2915,10 +2924,10 @@ function idleCheckShort() {
     console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
     clearInterval(notIdleMonitor)
     notIdleMonitor = false
-    setKnownBrightness()
+    setKnownBrightness(false)
     // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
     setTimeout(() => {
-      setKnownBrightness()
+      setKnownBrightness(false)
       isUserIdle = false
       userIdleDimmed = false
       handleBackgroundUpdate() // Apply ToD adjustments, if needed

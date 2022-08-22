@@ -25,8 +25,8 @@ process.on('message', (data) => {
             if(settings?.disableWMI) wmiFailed = true;
             if(settings?.disableWin32) win32Failed = true;
 
-        } else if (data.type === "ddcBrightnessIDs") {
-            ddcBrightnessIDs = data.ddcBrightnessIDs
+        } else if (data.type === "ddcBrightnessVCPs") {
+            ddcBrightnessVCPs = data.ddcBrightnessVCPs
         } else if (data.type === "localization") {
             localization = data.localization
         } else if(data.type === "vcp") {
@@ -53,7 +53,7 @@ let settings = { order: [] }
 let localization = {}
 let canUseWmiBridge = false
 
-let ddcBrightnessIDs = {}
+let ddcBrightnessVCPs = {}
 
 let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
@@ -206,8 +206,8 @@ getAllMonitors = async () => {
             let brightnessType = (features.luminance ? 0x10 : (features.brightness ? 0x13 : 0x00))
 
             // Use DDC Brightness overrides, if relevant
-            if(typeof ddcBrightnessIDs === "object" && Object.keys(ddcBrightnessIDs).indexOf(hwid[1]) > -1) {
-                brightnessType = ddcBrightnessIDs[hwid[1]]
+            if(typeof ddcBrightnessVCPs === "object" && Object.keys(ddcBrightnessVCPs).indexOf(hwid[1]) > -1) {
+                brightnessType = ddcBrightnessVCPs[hwid[1]]
             }
 
             let ddcciInfo = {

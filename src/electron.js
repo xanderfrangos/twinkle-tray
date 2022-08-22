@@ -1440,30 +1440,31 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 function updateBrightness(index, level, useCap = true, vcp = "brightness", clearTransition = true) {
-  let monitor = false
-  if (typeof index == "string" && index * 1 != index) {
-    monitor = Object.values(monitors).find((display) => {
-      return display?.id?.indexOf(index) === 0
-    })
-  } else {
-    if (index >= Object.keys(monitors).length) {
-      console.log("updateBrightness: Invalid monitor")
-      return false;
-    }
-    monitor = monitors[index]
-  }
-
-  if(!monitor) {
-    console.log(`Monitor does not exist: ${index}`)
-    return false
-  }
-  
-  if(clearTransition && currentTransition) {
-    clearInterval(currentTransition)
-    currentTransition = null
-  }
-
   try {
+      
+    let monitor = false
+    if (typeof index == "string" && index * 1 != index) {
+      monitor = Object.values(monitors).find((display) => {
+        return display?.id?.indexOf(index) === 0
+      })
+    } else {
+      if (index >= Object.keys(monitors).length) {
+        console.log("updateBrightness: Invalid monitor")
+        return false;
+      }
+      monitor = monitors[index]
+    }
+
+    if(!monitor) {
+      console.log(`Monitor does not exist: ${index}`)
+      return false
+    }
+    
+    if(clearTransition && currentTransition) {
+      clearInterval(currentTransition)
+      currentTransition = null
+    }
+
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
 
     if (monitor.type == "ddcci" && vcp === "brightness") {

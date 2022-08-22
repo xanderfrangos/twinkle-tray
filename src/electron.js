@@ -4,7 +4,8 @@ const { nativeTheme, systemPreferences, BrowserWindow, Menu, Tray, ipcMain, app,
 const Utils = require("./Utils")
 
 // Expose GC
-app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128', '--force_low_power_gpu')
+app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
+app.commandLine.appendSwitch('force_low_power_gpu')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
 // Remove window animations

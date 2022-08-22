@@ -537,6 +537,10 @@ export default class SettingsWindow extends PureComponent {
                     let level = time.brightness
                     if (this.state.adjustmentTimes[index] && this.state.adjustmentTimes[index].monitors && this.state.adjustmentTimes[index].monitors[monitor.id] >= 0) {
                         level = this.state.adjustmentTimes[index].monitors[monitor.id]
+                    } else {
+                        // No value set, use shared value
+                        this.state.adjustmentTimes[index].monitors[monitor.id] = level
+                        this.adjustmentTimesUpdated()
                     }
                     return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={this.getMonitorName(monitor, this.state.names)} onChange={(value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
                 }

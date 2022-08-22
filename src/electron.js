@@ -2573,7 +2573,7 @@ checkForUpdates = async (force = false) => {
         response.json().then((releases) => {
           let foundVersion = false
           for (let release of releases) {
-            if (release.target_commitish == settings.branch) {
+            if (!(settings.branch === "master" && release.prerelease === true)) {
               foundVersion = true
               latestVersion = {
                 releaseURL: (release.html_url),

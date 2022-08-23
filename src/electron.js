@@ -363,7 +363,8 @@ const panelSize = {
   width: 356,
   height: 500,
   base: 0,
-  visible: false
+  visible: false,
+  taskbar: {}
 }
 
 //
@@ -865,7 +866,7 @@ async function hotkeyOverlayShow() {
   mainWindow.setBounds({
     width: 26 + (40 * monitorCount),
     height: 138,
-    x: panelOffset + 10,
+    x: panelOffset + 10 + (panelSize.taskbar.position === "LEFT" ? panelSize.taskbar.gap : 0),
     y: panelOffset + 20
   })
   mainWindow.setOpacity(1)

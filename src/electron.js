@@ -1918,86 +1918,91 @@ let detectedTaskbarHeight = false
 let detectedTaskbarHide = false
 let canReposition = true
 function repositionPanel() {
-  if (!canReposition) {
-    mainWindow.setBounds({
-      width: panelSize.width,
-      height: panelSize.height
-    })
-    return false
-  }
-  let primaryDisplay = getPrimaryDisplay()
+  try {
 
-  function taskbarPosition() {
+    if (!canReposition) {
+      mainWindow.setBounds({
+        width: panelSize.width,
+        height: panelSize.height
+      })
+      return false
+    }
     let primaryDisplay = getPrimaryDisplay()
-
-    const bounds = primaryDisplay.bounds
-    const workArea = primaryDisplay.workArea
-    let gap = 0
-    let position = "BOTTOM"
-    if (bounds.x < workArea.x) {
-      position = "LEFT"
-      gap = bounds.width - workArea.width
-    } else if (bounds.y < workArea.y) {
-      position = "TOP"
-      gap = bounds.height - workArea.height
-    } else if (bounds.width > workArea.width) {
-      position = "RIGHT"
-      gap = bounds.width - workArea.width
-    } else {
-      position = "BOTTOM"
-      gap = bounds.height - workArea.height
-    }
-
-    // Use taskbar position from registry if auto-hide is on
-    if (detectedTaskbarHide) {
-      position = detectedTaskbarPos
-      if (position === "TOP" || position === "BOTTOM") {
-        gap = detectedTaskbarHeight
-      }
-    }
-
-    return { position, gap }
-  }
-
-  const taskbar = taskbarPosition()
-  panelSize.taskbar = taskbar
-  sendToAllWindows('taskbar', taskbar)
-
-  if (mainWindow && !isAnimatingPanel) {
-    if (taskbar.position == "LEFT") {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: primaryDisplay.bounds.x + taskbar.gap,
-        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
-      })
-    } else if (taskbar.position == "TOP") {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
-        y: primaryDisplay.bounds.y + taskbar.gap
-      })
-    } else if (detectedTaskbarHide && taskbar.position == "BOTTOM") {
-      // Edge case for auto-hide taskbar
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
-        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height - taskbar.gap
-      })
-    } else {
-      mainWindow.setBounds({
-        width: panelSize.width,
-        height: panelSize.height,
-        x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
-        y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
-      })
-    }
-    panelSize.base = mainWindow.getBounds().y
-  }
   
-  sendToAllWindows('panel-position', mainWindow.getPosition())
+    function taskbarPosition() {
+      let primaryDisplay = getPrimaryDisplay()
+  
+      const bounds = primaryDisplay.bounds
+      const workArea = primaryDisplay.workArea
+      let gap = 0
+      let position = "BOTTOM"
+      if (bounds.x < workArea.x) {
+        position = "LEFT"
+        gap = bounds.width - workArea.width
+      } else if (bounds.y < workArea.y) {
+        position = "TOP"
+        gap = bounds.height - workArea.height
+      } else if (bounds.width > workArea.width) {
+        position = "RIGHT"
+        gap = bounds.width - workArea.width
+      } else {
+        position = "BOTTOM"
+        gap = bounds.height - workArea.height
+      }
+  
+      // Use taskbar position from registry if auto-hide is on
+      if (detectedTaskbarHide) {
+        position = detectedTaskbarPos
+        if (position === "TOP" || position === "BOTTOM") {
+          gap = detectedTaskbarHeight
+        }
+      }
+  
+      return { position, gap }
+    }
+  
+    const taskbar = taskbarPosition()
+    panelSize.taskbar = taskbar
+    sendToAllWindows('taskbar', taskbar)
+  
+    if (mainWindow && !isAnimatingPanel) {
+      if (taskbar.position == "LEFT") {
+        mainWindow.setBounds({
+          width: panelSize.width,
+          height: panelSize.height,
+          x: primaryDisplay.bounds.x + taskbar.gap,
+          y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
+        })
+      } else if (taskbar.position == "TOP") {
+        mainWindow.setBounds({
+          width: panelSize.width,
+          height: panelSize.height,
+          x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+          y: primaryDisplay.bounds.y + taskbar.gap
+        })
+      } else if (detectedTaskbarHide && taskbar.position == "BOTTOM") {
+        // Edge case for auto-hide taskbar
+        mainWindow.setBounds({
+          width: panelSize.width,
+          height: panelSize.height,
+          x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+          y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height - taskbar.gap
+        })
+      } else {
+        mainWindow.setBounds({
+          width: panelSize.width,
+          height: panelSize.height,
+          x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
+          y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
+        })
+      }
+      panelSize.base = mainWindow.getBounds().y
+    }
+    
+    sendToAllWindows('panel-position', mainWindow.getPosition())
+  } catch(e) {
+    console.log("Couldn't reposition panel", e)
+  }
 }
 
 

@@ -468,7 +468,7 @@ function writeSettings(newSettings = {}, processAfter = true) {
     writeSettingsTimeout = setTimeout(() => {
       // Save new settings
       try {
-        fs.writeFile(settingsPath, JSON.stringify(settings), (e) => { if (e) debug.error(e) })
+        fs.writeFile(settingsPath, JSON.stringify(settings, null, '\t'), (e) => { if (e) debug.error(e) })
       } catch (e) {
         debug.error("Couldn't save settings.", settingsPath, e)
       }

@@ -845,7 +845,11 @@ function hotkeyOverlayStart(timeout = 3000, force = true) {
 async function hotkeyOverlayShow() {
   if(settings.disableOverlay) return false;
   if (!mainWindow) return false;
+  if(startHideTimeout) clearTimeout(startHideTimeout);
+  startHideTimeout = null;
+  
   mainWindow.restore()
+  mainWindow.show()
 
   setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
@@ -871,9 +875,14 @@ async function hotkeyOverlayShow() {
     x: panelOffset + 10 + (panelSize.taskbar.position === "LEFT" ? panelSize.taskbar.gap : 0),
     y: panelOffset + 20
   })
-  mainWindow.setOpacity(1)
-  mainWindow.show()
 
+  // Dumb stuff to prevent UI flicker
+  setTimeout(() => {
+    sendToAllWindows("display-mode", "overlay")
+    setTimeout(() => {
+      mainWindow.setOpacity(1)
+    }, 33)
+  }, 66)
 }
 
 function hotkeyOverlayHide(force = true) {
@@ -889,11 +898,10 @@ function hotkeyOverlayHide(force = true) {
 
   clearTimeout(hotkeyOverlayTimeout)
   setAlwaysOnTop(false)
-  startHidePanel()
+  showPanel(false)
   canReposition = true
   sendToAllWindows("panelBlur")
   hotkeyOverlayTimeout = false
-  sendToAllWindows("display-mode", "normal")
 
   // Pause mouse events if scroll shortcut is not enabled
   pauseMouseEvents(true)
@@ -1841,7 +1849,7 @@ function createPanel(toggleOnLoad = false) {
     // Only run when not in an overlay
     if (canReposition) {
       sendToAllWindows("panelBlur")
-      if(!mainWindow.webContents.isDevToolsOpened()) startHidePanel();
+      if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
     }
     setTimeout(() => global.gc(), 1000)
   })
@@ -2097,7 +2105,6 @@ function showPanel(show = true, height = 300) {
   } else {
     // Hide panel
     setAlwaysOnTop(false)
-    startHidePanel()
     panelSize.visible = false
     clearInterval(panelAnimationInterval)
     panelAnimationInterval = false
@@ -2112,6 +2119,7 @@ function showPanel(show = true, height = 300) {
     }
     // Pause mouse events
     pauseMouseEvents(true)
+    startHidePanel()
   }
 }
 
@@ -2382,7 +2390,7 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
 
       // Check if overlay is currently open and deal with that
       if (!canReposition) {
-        startHidePanel()
+        showPanel(false)
         hotkeyOverlayHide()
         setTimeout(() => {
           sendToAllWindows("display-mode", "normal")

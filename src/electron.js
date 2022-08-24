@@ -417,6 +417,8 @@ const defaultSettings = {
   hideClosedLid: false,
   getDDCBrightnessUpdates: false,
   detectIdleTime: 0,
+  overrideTaskbarPosition: false,
+  overrideTaskbarGap: false,
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,
@@ -1929,7 +1931,7 @@ function repositionPanel() {
     }
     let primaryDisplay = getPrimaryDisplay()
   
-    function taskbarPosition() {
+    const taskbarPosition = () => {
       let primaryDisplay = getPrimaryDisplay()
   
       const bounds = primaryDisplay.bounds
@@ -1956,6 +1958,18 @@ function repositionPanel() {
         if (position === "TOP" || position === "BOTTOM") {
           gap = detectedTaskbarHeight
         }
+      }
+
+      if(typeof settings.overrideTaskbarPosition === "string") {
+        const pos = settings.overrideTaskbarPosition.toUpperCase()
+        if(pos === "BOTTOM" || pos === "TOP" || pos === "LEFT" || pos === "RIGHT") {
+          position = pos
+        }
+      }
+
+      if(typeof settings.overrideTaskbarGap === "number") {
+        gap = settings.overrideTaskbarGap
+        console.log(gap)
       }
   
       return { position, gap }
@@ -1993,7 +2007,7 @@ function repositionPanel() {
           width: panelSize.width,
           height: panelSize.height,
           x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
-          y: primaryDisplay.bounds.y + primaryDisplay.workArea.height - panelSize.height
+          y: primaryDisplay.bounds.y + primaryDisplay.bounds.height - panelSize.height - taskbar.gap
         })
       }
       panelSize.base = mainWindow.getBounds().y

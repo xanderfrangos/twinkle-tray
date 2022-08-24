@@ -1855,26 +1855,32 @@ function createPanel(toggleOnLoad = false) {
   })
 
   mainWindow.on('move', (e) => {
-    e.preventDefault()
-    sendToAllWindows('panel-position', mainWindow.getPosition())
+    try {
+      e.preventDefault()
+      sendToAllWindows('panel-position', mainWindow.getPosition())
+    } catch(e) { }
   })
 
   mainWindow.on('resize', (e) => {
-    e.preventDefault()
-    sendToAllWindows('panel-position', mainWindow.getPosition())
+    try {
+      e.preventDefault()
+      sendToAllWindows('panel-position', mainWindow.getPosition())
+    } catch(e) { }
   })
 
   mainWindow.webContents.once('dom-ready', () => {
-    sendToAllWindows('monitors-updated', monitors)
-    // Do full refreshes shortly after startup in case Windows isn't ready.
-    setTimeout(() => {
-      refreshMonitors(true).then(() => {
-        sendToAllWindows('monitors-updated', monitors)
-      })
-    }, 8000)
-    
-    setTimeout(sendMicaWallpaper, 500)
-    sendToAllWindows('panel-position', mainWindow.getPosition())
+    try {
+      sendToAllWindows('monitors-updated', monitors)
+      // Do full refreshes shortly after startup in case Windows isn't ready.
+      setTimeout(() => {
+        refreshMonitors(true).then(() => {
+          sendToAllWindows('monitors-updated', monitors)
+        })
+      }, 8000)
+      
+      setTimeout(sendMicaWallpaper, 500)
+      sendToAllWindows('panel-position', mainWindow.getPosition())
+    } catch(e) { }
   })
 
 }

@@ -1096,6 +1096,9 @@ function getSettings() {
 function getDDCBrightnessVCPs() {
   try {
     let ids = Object.assign(knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
+    for(let mon in ids) {
+      ids[mon] = parseInt(ids[mon])
+    }
     return ids
   } catch(e) {
     console.log("Couldn't generate DDC Brightness IDs!", e)

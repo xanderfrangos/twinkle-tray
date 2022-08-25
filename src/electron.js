@@ -1900,8 +1900,9 @@ function setAlwaysOnTop(onTop = true) {
 
 function restartPanel(show = false) {
   if (mainWindow) {
-    mainWindow.close()
-    mainWindow = null
+    mainWindow.setOpacity(0)
+    mainWindow.restore()
+    mainWindow.show()
   }
   setTimeout(() => {
     if (mainWindow) {

@@ -1640,12 +1640,6 @@ function sleepDisplays(mode = "ps") {
               type: "vcp",
               monitor: monitor.hwid.join("#"),
               code: 0xD6,
-              value: 5
-            })
-            monitorsThread.send({
-              type: "vcp",
-              monitor: monitor.hwid.join("#"),
-              code: 0xD6,
               value: 4
             })
           }

@@ -5,7 +5,6 @@ const Utils = require("./Utils")
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
-app.commandLine.appendSwitch('force_low_power_gpu')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
 // Remove window animations
@@ -427,6 +426,7 @@ const defaultSettings = {
   disableMouseEvents: false,
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
+  forceLowPowerGPU: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -460,6 +460,10 @@ if(settings.disableThrottling) {
   app.commandLine.appendSwitch('disable-renderer-backgrounding');
   app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
   app.commandLine.appendSwitch('disable-background-timer-throttling');
+}
+
+if(settings.forceLowPowerGPU) {
+  app.commandLine.appendSwitch('force_low_power_gpu')
 }
 
 let writeSettingsTimeout = false

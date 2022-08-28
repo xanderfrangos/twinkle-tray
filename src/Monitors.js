@@ -445,10 +445,10 @@ checkMonitorFeatures = async (monitor) => {
                         setTimeout(() => {
                             features.volume = checkVCPIfEnabled(monitor, 0x62, "volume")
                             resolve(features)
-                        }, 50)
-                    }, 50)
-                }, 50)
-            }, 50)
+                        }, 100)
+                    }, 100)
+                }, 100)
+            }, 100)
         } catch (e) {
             resolve(features)
         }

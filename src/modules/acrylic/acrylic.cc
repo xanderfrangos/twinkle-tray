@@ -7,7 +7,8 @@ enum AccentState {
     ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
     ACCENT_ENABLE_BLURBEHIND = 3,
     ACCENT_ENABLE_ACRYLICBLURBEHIND = 4,
-    ACCENT_INVALID_STATE = 5
+    ACCENT_ENABLE_HOSTBACKDROP = 5, // RS5 1809
+    ACCENT_INVALID_STATE = 6
 };
 
 enum WindowCompositionAttribute {
@@ -32,7 +33,7 @@ typedef BOOL(WINAPI
 
 const HINSTANCE hModule = LoadLibrary(TEXT("user32.dll"));
 
-void setVibrancy(const Napi::CallbackInfo &info) {
+void setAcrylic(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     try {
         if (info.Length() == 0) {
@@ -78,7 +79,7 @@ void setVibrancy(const Napi::CallbackInfo &info) {
     }
 }
 
-void disableVibrancy(const Napi::CallbackInfo &info) {
+void disableAcrylic(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     try {
         if (info.Length() != 1) {
@@ -112,12 +113,11 @@ void disableVibrancy(const Napi::CallbackInfo &info) {
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-    exports.Set(Napi::String::New(env, "setVibrancy"),
-                Napi::Function::New(env, setVibrancy));
-    exports.Set(Napi::String::New(env, "disableVibrancy"),
-                Napi::Function::New(env, disableVibrancy));
+    exports.Set(Napi::String::New(env, "setAcrylic"),
+                Napi::Function::New(env, setAcrylic));
+    exports.Set(Napi::String::New(env, "disableAcrylic"),
+                Napi::Function::New(env, disableAcrylic));
     return exports;
 }
 
-NODE_API_MODULE(vibrancy, Init
-)
+NODE_API_MODULE(acrylic, Init)

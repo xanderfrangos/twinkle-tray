@@ -33,7 +33,6 @@ require('@electron/remote/main').initialize()
 const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
 const { fork } = require('child_process');
-const { BrowserWindow: AcrylicWindow } = require('electron-acrylic-window')
 const { exec } = require('child_process');
 const os = require("os")
 const ua = require('universal-analytics');
@@ -43,6 +42,7 @@ const refreshCtx = new VerticalRefreshRateContext();
 
 const setWindowPos = require("setwindowpos-binding")
 const AccentColors = require("windows-accent-colors")
+const Acrylic = require("acrylic")
 
 const reg = require('native-reg');
 const Color = require('color')
@@ -53,6 +53,7 @@ const sharp = require('sharp');
 const { EventEmitter } = require('stream');
 
 const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
+const isAtLeast1803 = (os.release()?.split(".")[2] * 1) >= 17134
 
 app.allowRendererProcessReuse = true
 
@@ -918,7 +919,7 @@ function hotkeyOverlayHide(force = true) {
   })
   
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
-    tryVibrancy(mainWindow, "#00000000")
+    tryVibrancy(mainWindow, false)
   }
 }
 
@@ -1261,14 +1262,14 @@ function handleTransparencyChange(transparent = true, blur = false) {
 
 function tryVibrancy(window, value = null) {
   if (!window) return false;
-  if(!settings.useAcrylic || settings.isWin11) {
-    window.setVibrancy(false)
-    window.setBackgroundColor("#00000000")
-    return false
-  }
   try {
-    window.getBounds()
-    window.setVibrancy(value, { useCustomWindowRefreshMethod: (window === settingsWindow) })
+    if(!settings.useAcrylic || settings.isWin11 || value === false) {
+      window.setBackgroundColor("#00000000")
+      Acrylic.disableAcrylic(window.getNativeWindowHandle().readInt32LE(0))
+      return false
+    }
+    const color = Color((typeof value === "string" ? value : value.theme))
+    Acrylic.setAcrylic(window.getNativeWindowHandle().readInt32LE(0), 1, color.red(), color.green(), color.blue(), parseInt(color.alpha() * 255))
   }
   catch (e) {
     console.log("Couldn't set vibrancy", e)
@@ -1772,9 +1773,7 @@ function createPanel(toggleOnLoad = false) {
 
   console.log("Creating panel...")
 
-  const WindowType = (settings.useAcrylic && !settings.isWin11 ? AcrylicWindow : BrowserWindow)
-
-  mainWindow = new WindowType({
+  mainWindow = new BrowserWindow({
     width: panelSize.width,
     height: panelSize.height,
     x: 0,
@@ -1898,9 +1897,10 @@ function setAlwaysOnTop(onTop = true) {
 
 function restartPanel(show = false) {
   if (mainWindow) {
-    mainWindow.setOpacity(0)
+    mainWindow.setOpacity(1)
     mainWindow.restore()
     mainWindow.show()
+    mainWindow.setBounds({x:0,y:0,width:0,height:0})
   }
   setTimeout(() => {
     if (mainWindow) {
@@ -1908,7 +1908,7 @@ function restartPanel(show = false) {
       mainWindow = null
     }
     createPanel(show)
-  }, 100)
+  }, 1)
 }
 
 function getPrimaryDisplay() {
@@ -2123,7 +2123,6 @@ function showPanel(show = true, height = 300) {
     sendToAllWindows("closePanelAnimation")
     if (!settings.useAcrylic || !settings.useNativeAnimation) {
       tryVibrancy(mainWindow, false)
-      mainWindow.setBackgroundColor("#00000000")
     }
     // Pause mouse events
     pauseMouseEvents(true)

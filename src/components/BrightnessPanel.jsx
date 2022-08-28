@@ -76,7 +76,7 @@ export default class BrightnessPanel extends PureComponent {
                   detail: {
                       monitor: monitor.id,
                       code: 0xD6,
-                      value: 4
+                      value: 5
                   }
                 }))
               }

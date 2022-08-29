@@ -2306,10 +2306,23 @@ function setTrayMenu() {
   const contextMenu = Menu.buildFromTemplate([
     { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    getDebugTrayMenuItems(),
     { type: 'separator' },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setContextMenu(contextMenu)
+}
+
+function getDebugTrayMenuItems() {
+  return { label: "DEBUG", visible: (settings.isDev ? true : false), submenu: [
+    { label: "RESTART PANEL", type: 'normal', click: () => restartPanel() },
+    { label: "MINIMIZE PANEL", type: 'normal', click: () => mainWindow?.minimize() },
+    { label: "HIDE PANEL", type: 'normal', click: () => showPanel(false) },
+    { label: "OPACITY 0", type: 'normal', click: () => mainWindow?.setOpacity(0) },
+    { label: "OPACITY 1", type: 'normal', click: () => mainWindow?.setOpacity(1) },
+    { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
+    { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
+  ] }
 }
 
 function setTrayPercent() {

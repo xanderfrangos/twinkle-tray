@@ -15,7 +15,7 @@ window.updateMica = () => {
         pos[1] += 12
     }
     const micaDisplays = document.querySelector("#mica .displays")
-    micaDisplays.style.transform = `translate(${pos[0] * -1}px, ${pos[1] * -1}px)`
+    if(micaDisplays) micaDisplays.style.transform = `translate(${pos[0] * -1}px, ${pos[1] * -1}px)`;
 
 }
 

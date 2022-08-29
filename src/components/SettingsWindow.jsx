@@ -1060,6 +1060,12 @@ export default class SettingsWindow extends PureComponent {
 
 
                         <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("GENERIC_ALL_DISPLAYS")}</div>
+                            <div className="monitorItem">
+                                {this.getInfoMonitors()}
+                            </div>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RATE_TITLE")}</div>
                             <p>{T.t("SETTINGS_MONITORS_RATE_DESC")}</p>
                             <select value={this.state.updateInterval} onChange={this.updateIntervalChanged}>
@@ -1097,12 +1103,6 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
                             <div className="monitorItem">
                                 {this.getMinMaxMonitors()}
-                            </div>
-                        </div>
-                        <div className="pageSection" data-active={this.isSection("monitors")}>
-                            <div className="sectionTitle">{T.t("GENERIC_ALL_DISPLAYS")}</div>
-                            <div className="monitorItem">
-                                {this.getInfoMonitors()}
                             </div>
                         </div>
 

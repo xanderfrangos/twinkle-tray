@@ -49,7 +49,7 @@ export default class BrightnessPanel extends PureComponent {
         }
 
         return sorted.map((monitor, index) => {
-          if (monitor.type == "none") {
+          if (monitor.type == "none" || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
             if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
@@ -214,19 +214,24 @@ export default class BrightnessPanel extends PureComponent {
   recievedMonitors = (e) => {
     let newMonitors = Object.assign(e.detail, {})
     this.lastLevels = []
-    let numMonitors = 0
-    for (let key in newMonitors) {
-      if (newMonitors[key].type != "none") numMonitors++;
-    }
-    this.numMonitors = numMonitors
+    
     // Reset panel height so it's recalculated
     this.panelHeight = -1
     this.setState({
       monitors: newMonitors
+    }, () => {
+      this.recalculateNumMonitors()
+      // Delay initial adjustments
+      if (!this.init) setTimeout(() => { this.init = true }, 333)
     })
+  }
 
-    // Delay initial adjustments
-    if (!this.init) setTimeout(() => { this.init = true }, 333)
+  recalculateNumMonitors = (newMonitors = this.state.monitors) => {
+    let numMonitors = 0
+    for (let key in newMonitors) {
+      if (newMonitors[key].type != "none" && !(window.settings?.hideDisplays?.[key] === true)) numMonitors++;
+    }
+    this.numMonitors = numMonitors
   }
 
 
@@ -275,6 +280,7 @@ export default class BrightnessPanel extends PureComponent {
       updateInterval,
       sleepAction
     }, () => {
+      this.recalculateNumMonitors()
       this.resetBrightnessInterval()
       this.updateMinMax()
       this.forceUpdate()

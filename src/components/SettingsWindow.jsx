@@ -765,6 +765,33 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getHideMonitors = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <div key={monitor.key} className="inputToggle-generic">
+                            <input onChange={(e) => {this.setHideMonitor(e.target.checked, monitor)}}  checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            <div className="text" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                        </div>
+                    )
+    
+                })
+            }
+        } catch(e) {
+            console.log(e)
+        }
+    }
+
+    setHideMonitor = (value, monitor) => {
+        const hideDisplays = Object.assign({}, this.state.rawSettings?.hideDisplays)
+        hideDisplays[monitor.key] = value
+        this.setSetting("hideDisplays", hideDisplays)
+    }
+
     toggleFeature = (monitor, feature) => {
         const newFeatures = Object.assign({}, this.state.rawSettings.monitorFeatures)
         if(!newFeatures[monitor]) newFeatures[monitor] = {};
@@ -1047,6 +1074,11 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_TITLE")}</div>
                             <p>{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_DESC")}</p>
                             { this.renderToggle("hideClosedLid") }
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("monitors")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")}</div>
+                            <p>{T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")}</p>
+                            { this.getHideMonitors() }
                         </div>
                         <div className="pageSection" data-active={this.isSection("monitors")}>
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RENAME_TITLE")}</div>

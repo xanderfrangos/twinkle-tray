@@ -397,6 +397,7 @@ const defaultSettings = {
   checkTimeAtStartup: true,
   order: [],
   monitorFeatures: {},
+  hideDisplays: {},
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",

@@ -546,7 +546,6 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.useAcrylic !== undefined) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
-      //handleTransparencyChange(lastTheme.EnableTransparency, newSettings.useAcrylic)
       sendToAllWindows('theme-settings', lastTheme)
       sendMicaWallpaper()
       doRestartPanel = true
@@ -1236,28 +1235,6 @@ function getAccentColors() {
   outColors = Object.assign(outColors, colors)
   
   return outColors
-}
-
-// 0 = off
-// 1 = transparent
-// 2 = blur
-let currentTransparencyStyle
-function handleTransparencyChange(transparent = true, blur = false) {
-  const style = (transparent ? (blur ? 2 : 1) : 0)
-  if (style !== currentTransparencyStyle) {
-    currentTransparencyStyle = style
-  }
-  sendToAllWindows("transparencyStyle", style)
-  if (style === 2) {
-    if (settingsWindow) {
-      tryVibrancy(settingsWindow, determineTheme(settings.theme))
-    }
-  } else {
-    if (settingsWindow) {
-      tryVibrancy(settingsWindow)
-      settingsWindow.setBackgroundColor("#00000000")
-    }
-  }
 }
 
 function tryVibrancy(window, value = null) {
@@ -2569,7 +2546,6 @@ function createSettings() {
     setTimeout(() => {
       sendMicaWallpaper()
       settingsWindow.show()
-      tryVibrancy(settingsWindow, determineTheme(settings.theme))
     }, 100)
 
     // Prevent links from opening in Electron

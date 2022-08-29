@@ -3028,7 +3028,7 @@ function handleBackgroundUpdate(force = false) {
           console.log("Adjusting brightness automatically", foundEvent)
           lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
-          refreshMonitors(true, true).then(() => {
+          refreshMonitors().then(() => {
             if(force || settings.adjustmentTimeSpeed === "instant") {
               transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
             } else {

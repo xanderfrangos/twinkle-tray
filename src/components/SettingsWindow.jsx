@@ -1040,6 +1040,18 @@ export default class SettingsWindow extends PureComponent {
                             { this.renderToggle("adjustmentTimeIndividualDisplays") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>{T.t("SETTINGS_TIME_TRANSITON_TITLE")}</label>
+                            <p>{T.t("SETTINGS_TIME_TRANSITON_DESC")}</p>                            
+                            <select value={window.settings.adjustmentTimeSpeed} onChange={(e) => this.setSetting("adjustmentTimeSpeed", e.target.value)}>
+                                <option value="slowest">{T.t("GENERIC_SPEED_VERY_SLOW")}</option>
+                                <option value="slow">{T.t("GENERIC_SPEED_SLOW")}</option>
+                                <option value="normal">{T.t("GENERIC_SPEED_NORMAL")}</option>
+                                <option value="faster">{T.t("GENERIC_SPEED_FAST")}</option>
+                                <option value="fastest">{T.t("GENERIC_SPEED_VERY_FAST")}</option>
+                                <option value="instant">{T.t("GENERIC_SPEED_INSTANT")}</option>
+                            </select>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_STARTUP_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_STARTUP_DESC")}</p>
                             { this.renderToggle("checkTimeAtStartup") }

@@ -394,6 +394,7 @@ const defaultSettings = {
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
+  adjustmentTimeSpeed: "normal",
   checkTimeAtStartup: true,
   order: [],
   monitorFeatures: {},
@@ -1558,6 +1559,25 @@ function normalizeBrightness(brightness, normalize = false, min = 0, max = 100) 
 let currentTransition = null
 function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
   if (currentTransition !== null) clearInterval(currentTransition);
+
+  // Slow down transition
+  let transitionIntervalMult = 1
+  switch(settings.adjustmentTimeSpeed) {
+    case "slow": transitionIntervalMult = 4; break;
+    case "slowest": transitionIntervalMult = 10; break;
+    default: transitionIntervalMult = 1; break;
+  }
+
+  // Speed up transition
+  let stepSpeedMult = 1
+  switch(settings.adjustmentTimeSpeed) {
+    case "fast": stepSpeedMult = 3; break;
+    case "fastest": stepSpeedMult = 6; break;
+    default: stepSpeedMult = 1; break;
+  }
+
+  const step = (stepSpeed * stepSpeedMult)
+
   currentTransition = setInterval(() => {
     let numDone = 0
     for (let key in monitors) {
@@ -1576,18 +1596,18 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
           }
         }
       }
-      if (monitor.brightness < normalized + 3 && monitor.brightness > normalized - 3) {
+      if (monitor.brightness < normalized + (step + 1) && monitor.brightness > normalized - (step + 1)) {
         updateBrightness(monitor.id, normalized, undefined, undefined, false)
         numDone++
       } else {
-        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + stepSpeed : monitor.brightness - stepSpeed), undefined, undefined, false)
+        updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + step : monitor.brightness - step), undefined, undefined, false)
       }
       if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);
         currentTransition = null
       }
     }
-  }, settings.updateInterval * 1)
+  }, settings.updateInterval * transitionIntervalMult)
 }
 
 function transitionlessBrightness(level, eventMonitors = []) {
@@ -3009,7 +3029,7 @@ function handleBackgroundUpdate(force = false) {
           lastTimeEvent = Object.assign({}, foundEvent)
           lastTimeEvent.day = new Date().getDate()
           refreshMonitors(true, true).then(() => {
-            if(force) {
+            if(force || settings.adjustmentTimeSpeed === "instant") {
               transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
             } else {
               transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))

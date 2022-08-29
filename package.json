@@ -6,7 +6,7 @@
   "scripts": {
     "parcel": "parcel src/html/*.html --port 3000 --out-dir cache",
     "parcel-build": "del /q build && parcel build src/html/*.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
-    "dev": "wait-on http://localhost:3000/index.html && electron . ",
+    "dev": "wait-on http://localhost:3000/index.html && electron . --dev",
     "electron-build": "electron-builder",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
@@ -120,7 +120,6 @@
     "cross-env": "^7.0.3",
     "electron": "^20.0.3",
     "electron-builder": "^23.3.3",
-    "electron-is-dev": "^1.2.0",
     "parcel-bundler": "^1.12.5",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.1.0",

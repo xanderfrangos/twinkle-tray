@@ -10,10 +10,7 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 // Remove window animations
 app.commandLine.appendSwitch('wm-window-animations-disabled');
 
-let isDev = false
-try {
-  isDev = require("electron-is-dev");
-} catch (e) { }
+let isDev = app.commandLine.hasSwitch("dev") 
 
 const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
 let updateKnownDisplaysTimeout

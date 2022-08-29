@@ -12,7 +12,12 @@ app.commandLine.appendSwitch('wm-window-animations-disabled');
 
 let isDev = app.commandLine.hasSwitch("dev") 
 
-const knownDisplaysPath = path.join(app.getPath("userData"), `\\known-displays${(isDev ? "-dev" : "")}.json`)
+const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
+const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
+
+const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
+
+const knownDisplaysPath = path.join(configFilesDir, `\\known-displays${(isDev ? "-dev" : "")}.json`)
 let updateKnownDisplaysTimeout
 
 // Handle multiple instances before continuing
@@ -43,7 +48,6 @@ const Acrylic = require("acrylic")
 
 const reg = require('native-reg');
 const Color = require('color')
-const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
 const sharp = require('sharp');
@@ -55,8 +59,8 @@ const isAtLeast1803 = (os.release()?.split(".")[2] * 1) >= 17134
 app.allowRendererProcessReuse = true
 
 // Logging
-const logPath = path.join(app.getPath("userData"), `\\debug${(isDev ? "-dev" : "")}.log`)
-const updatePath = path.join(app.getPath("userData"), `\\update.exe`)
+const logPath = path.join(configFilesDir, `\\debug${(isDev ? "-dev" : "")}.log`)
+const updatePath = path.join(configFilesDir, `\\update.exe`)
 
 // Remove old log
 if (fs.existsSync(logPath)) {
@@ -370,15 +374,15 @@ const panelSize = {
 //
 //
 
-if (!fs.existsSync(app.getPath("appData"))) {
+if (!fs.existsSync(configFilesDir)) {
   try {
-    fs.mkdirSync(app.getPath("appData"), { recursive: true })
+    fs.mkdirSync(configFilesDir, { recursive: true })
   } catch (e) {
     debug.error(e)
   }
 }
 
-const settingsPath = path.join(app.getPath("userData"), `\\settings${(isDev ? "-dev" : "")}.json`)
+const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
 
 const defaultSettings = {
   isDev,
@@ -2610,6 +2614,7 @@ checkForUpdates = async (force = false) => {
     if (!settings.checkForUpdates) return false;
     if (lastCheck && lastCheck == new Date().getDate()) return false;
   }
+  if(isPortable || isAppX) return false;
   lastCheck = new Date().getDate()
   try {
     const fetch = require('node-fetch');
@@ -3207,7 +3212,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentScreenSize = {width: 1280, height: 720}
-const micaWallpaperPath = path.join(app.getPath("userData"), `\\mica${(isDev ? "-dev" : "")}.webp`)
+const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
 async function getWallpaper() {
   try {
     const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");

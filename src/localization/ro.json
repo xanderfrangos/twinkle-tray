@@ -114,5 +114,6 @@
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Până în prezent. Versiunea actuală include următoarele modificări:",
     "SETTINGS_UPDATES_DOWNLOADING": "Descărcarea actualizării…",
     "SETTINGS_UPDATES_DOWNLOAD": "Descărcați și instalați {{1}}",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "În cazul în care Twinkle Tray nu răspunde când faceți clic pe pictograma din tavă sau nu vă detectează afișajele, puteți încerca să dezactivați anumite metode de detectare a monitorului. Reporniți Twinkle Tray pentru ca modificările să aibă efect. {{1}}"
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "În cazul în care Twinkle Tray nu răspunde când faceți clic pe pictograma din tavă sau nu vă detectează afișajele, puteți încerca să dezactivați anumite metode de detectare a monitorului. Reporniți Twinkle Tray pentru ca modificările să aibă efect. {{1}}",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ascunderea afișajului intern inactiv"
 }

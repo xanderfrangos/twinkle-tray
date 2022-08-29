@@ -1104,15 +1104,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
                             <label>{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</label>
                             <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
-                            <select value={this.state.hotkeyPercent} onChange={(e) => { this.setState({ hotkeyPercent: e.target.value * 1 }); window.sendSettings({ hotkeyPercent: e.target.value * 1 }) }}>
-                                <option value="1">1%</option>
-                                <option value="5">5%</option>
-                                <option value="10">10%</option>
-                                <option value="15">15%</option>
-                                <option value="20">20%</option>
-                                <option value="25">25%</option>
-                                <option value="30">30%</option>
-                            </select>
+                            <Slider type="min" min={1} max={100} level={this.state.hotkeyPercent || 1} onChange={(e) => { this.setState({ hotkeyPercent: e * 1 }); window.sendSettings({ hotkeyPercent: e * 1 }) }} scrolling={false} />
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>

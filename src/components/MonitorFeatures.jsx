@@ -32,7 +32,7 @@ export default function MonitorFeatures(props) {
             extraHTML.push(
                 <div className="feature-toggle-row" key="powerState">
                     <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "powerState")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_OFF_ON")}</span></div>
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_OFF_ON")} ⚠️</span></div>
                 </div>
             )
         }

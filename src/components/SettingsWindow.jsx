@@ -1125,6 +1125,7 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_SIDEBAR_FEATURES")}</div>
                             <p>{T.t("SETTINGS_FEATURES_DESCRIPTION")}</p>
                             {this.getFeaturesMonitors()}
+                            <div className="ddc-warning">⚠️ <em>{T.t("GENERIC_DDC_WARNING")}</em></div>
                         </div>
                         <div className="pageSection" data-active={this.isSection("features")}>
                         <div className="sectionTitle">{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE")}</div>
@@ -1173,6 +1174,9 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="ps_ddcci">{T.t("SETTINGS_HOTKEYS_TOD_BOTH")}</option>
                             </select>
                             <p><i>{T.t("SETTINGS_HOTKEYS_TOD_NOTE")}</i></p>
+                            {
+                                (this.state.rawSettings?.sleepAction === "ddcci" || this.state.rawSettings?.sleepAction === "ps_ddcci" ? (<div className="ddc-warning">⚠️ <em>{T.t("GENERIC_DDC_WARNING")}</em></div>) : null)
+                            }
                         </div>
 
 

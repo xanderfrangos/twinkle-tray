@@ -21,6 +21,7 @@
     "GENERIC_NO_DISPLAYS_SHORT": "No compatible displays detected.",
     "GENERIC_SECONDS": "seconds",
     "GENERIC_MINUTES": "minutes",
+    "GENERIC_DDC_WARNING": "DDC/CI features such as controling the power state can cause your monitor to become unresponsive. Use at your own risk.",
     "GENERIC_SPEED_INSTANT": "Instant",
     "GENERIC_SPEED_SLOW": "Slow",
     "GENERIC_SPEED_VERY_SLOW": "Very Slow",

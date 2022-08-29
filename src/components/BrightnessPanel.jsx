@@ -214,16 +214,16 @@ export default class BrightnessPanel extends PureComponent {
   recievedMonitors = (e) => {
     let newMonitors = Object.assign(e.detail, {})
     this.lastLevels = []
+
+    this.recalculateNumMonitors(newMonitors)
     
     // Reset panel height so it's recalculated
     this.panelHeight = -1
     this.setState({
       monitors: newMonitors
-    }, () => {
-      this.recalculateNumMonitors()
-      // Delay initial adjustments
-      if (!this.init) setTimeout(() => { this.init = true }, 333)
     })
+    // Delay initial adjustments
+    if (!this.init) setTimeout(() => { this.init = true }, 333)
   }
 
   recalculateNumMonitors = (newMonitors = this.state.monitors) => {

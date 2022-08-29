@@ -1823,6 +1823,8 @@ function createPanel(toggleOnLoad = false) {
   );
 
   mainWindow.on("closed", () => { console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~"); mainWindow = null });
+  mainWindow.on("minimize", () => { console.log("~~~~~ MAIN WINDOW MINIMIZED ~~~~~~") });
+  mainWindow.on("restore", () => { console.log("~~~~~ MAIN WINDOW RESTORED ~~~~~~") });
 
   mainWindow.once('ready-to-show', () => {
     if(mainWindow) {
@@ -1832,7 +1834,7 @@ function createPanel(toggleOnLoad = false) {
       sendMicaWallpaper()
       createTray()
 
-      startHidePanel()
+      showPanel(false)
 
       setTimeout(() => {
         if(!settings.useAcrylic || settings.isWin11) {
@@ -2067,6 +2069,7 @@ function showPanel(show = true, height = 300) {
   if (show) {
     // Show panel
     if(startHideTimeout) clearTimeout(startHideTimeout); // Reset "hide" timeout
+    startHideTimeout = null
     mainWindow.restore()
     mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
     repositionPanel()
@@ -2133,7 +2136,6 @@ function showPanel(show = true, height = 300) {
 let startHideTimeout
 function startHidePanel() {
   if(!startHideTimeout) {
-    if(mainWindow) mainWindow.setOpacity(0);
     startHideTimeout = setTimeout(() => {
       if(mainWindow) {
         mainWindow.hide();
@@ -2141,6 +2143,7 @@ function startHidePanel() {
       }
       startHideTimeout = null
     }, 100)
+    if(mainWindow) mainWindow.setOpacity(0);
   }
 }
 

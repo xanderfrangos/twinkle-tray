@@ -2559,7 +2559,9 @@ function createSettings() {
       webSecurity: false,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
-        appVersion: app.getVersion()
+        appVersion: app.getVersion(),
+        settings,
+        lastTheme
       })).toString('base64')]
     }
   });

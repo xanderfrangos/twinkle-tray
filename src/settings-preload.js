@@ -165,8 +165,7 @@ ipc.on('localization-updated', (event, localization) => {
     }))
 })
 
-// User personalization settings recieved
-ipc.on('theme-settings', (event, theme) => {
+const processTheme = (event, theme) => {
     try {
         window.document.body.dataset["systemTheme"] = (theme.SystemUsesLightTheme == 0 ? "dark" : "light")
         window.document.body.dataset["transparent"] = (theme.EnableTransparency == 0 || theme.UseAcrylic == 0 ? "false" : "true")
@@ -185,7 +184,10 @@ ipc.on('theme-settings', (event, theme) => {
         window.document.body.dataset["acrylic"] = false
         window.document.body.dataset["coloredTaskbar"] = "false"
     }
-})
+}
+
+// User personalization settings recieved
+ipc.on('theme-settings', processTheme)
 
 ipc.on('mica-wallpaper', (event, wallpaper) => {
     const mica = document.querySelector("#mica .displays")
@@ -202,6 +204,7 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
 
 // Request startup data
 window.addEventListener("DOMContentLoaded", () => {
+    processTheme(undefined, getArgumentVars().lastTheme)
     requestSettings()
     requestMonitors()
     requestAccent()
@@ -225,7 +228,7 @@ window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
-window.settings = {}
+window.settings = getArgumentVars().settings
 window.thisWindow = browser
 window.accent = "cyan"
 

@@ -118,7 +118,7 @@
     "SETTINGS_HOTKEYS_BREAK_DESC": "Отключает одновременную регулировку яркости при использовании сочетаний клавиш, настроенных для одного монитора.",
     "SETTINGS_GENERAL_MICA_DESC": "Включить или выключить размытие заднего фона в Twinkle Tray.",
     "SETTINGS_GENERAL_MICA_TITLE": "Размытие Mica",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Скрыть экран ноутбука",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Скрыть неактивный экран ноутбука",
     "GENERIC_SECONDS": "секунд",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Когда крышка ноутбука закрыта или экран ноутбука был отключен в Windows, скрыть его слайдер яркости на панели.",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Всегда получать текущий уровень яркости монитора на странице настроек яркости. Включите, если яркость монитора часто меняется из других источников (например, из других приложений).",

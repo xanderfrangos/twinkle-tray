@@ -786,9 +786,18 @@ body[data-is-win11="true"] {
         border-width: 1.5px;
         background-color: var(--page-section-bg);
         border-color: var(--button-border);
+        transition: background 0.1s;
 
         &[type="text"] {
             border-bottom: 1px solid var(--page-text-mid);
+        }
+
+        &[type="range"] {
+            background-color: transparent !important;
+        }
+
+        &:hover {
+            background-color: var(--button-highlight);
         }
     }
     option {

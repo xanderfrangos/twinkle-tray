@@ -112,5 +112,6 @@
     "PANEL_LABEL_VOLUME": "Độ sáng",
     "SETTINGS_GENERAL_MICA_DESC": "Bật hoặc tắt tính năng làm mờ nền trong Twinkle Tray.",
     "SETTINGS_GENERAL_SCROLL_DESC": "Điều chỉnh độ sáng của tất cả các màn hình cùng một lúc bằng cách cuộn qua biểu tượng khay hệ thống. Điều này không hoạt động với một số bàn di chuột.",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Nếu cái khay lấp lánh không có phản ứng khi nhắp vào biểu tượng khay hay không phát hiện bộ trình bày, bạn có thể thử ngắt một số phương pháp phát hiện màn hình. Khởi chạy khay lấp lánh để thay đổi có tác dụng. Tốt."
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Nếu cái khay lấp lánh không có phản ứng khi nhắp vào biểu tượng khay hay không phát hiện bộ trình bày, bạn có thể thử ngắt một số phương pháp phát hiện màn hình. Khởi chạy khay lấp lánh để thay đổi có tác dụng. Tốt.",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ẩn bộ nội bộ không hoạt động"
 }

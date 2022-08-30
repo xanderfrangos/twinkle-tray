@@ -362,13 +362,18 @@ body #root {
                 margin-top: -1px;
             }
         }
+    }
+}
+#root[data-segoe-u-i-variable="true"] {
+
+    &[data-mode="normal"] {
         .titlebar .title {
-            font-family: "Segoe UI Variable Small";
+            font-family: "Segoe UI Variable Small", "Segoe UI";
             font-weight: 300;
             font-size: 13.5px;
         }
         .monitor-item .name-row .title {
-            font-family: "Segoe UI Variable Small";
+            font-family: "Segoe UI Variable Small", "Segoe UI";
             font-weight: 300;
             font-size: 14.5px;
         }

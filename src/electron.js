@@ -2751,7 +2751,7 @@ function handleMonitorChange(e, d) {
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
-      restartPanel(panelSize.visible)
+      //restartPanel(panelSize.visible)
     })
 
     handleChangeTimeout2 = false

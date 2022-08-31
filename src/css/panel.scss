@@ -51,8 +51,8 @@ body {
 
     &[data-position="TOP"]>.window-base {
         box-shadow: 0.5px -0.5px 0 0.5px var(--tray-border) inset;
-        top: auto;
-        bottom: 0;
+        top: auto !important;
+        bottom: 0 !important;
     }
 
     &[data-position="LEFT"]>.window-base {

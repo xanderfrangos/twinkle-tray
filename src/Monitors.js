@@ -1,7 +1,6 @@
 console.log("\x1b[45mMonitor.js starting. If you see this more than once, something bad happened.\x1b[0m")
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
-const fs = require('fs');
 const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
@@ -721,7 +720,7 @@ let wmi = false
 function getWMIC() {
     if (wmi) return true;
     let WmiClient = false
-    if (!fs.existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
+    if (!require('fs').existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
         console.log("\x1b[41mWARNING: WMIC unavailable! Using WMI Bridge instead.\x1b[0m")
         wmicUnavailable = true
         return false;

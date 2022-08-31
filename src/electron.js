@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs')
-const { nativeTheme, systemPreferences, BrowserWindow, Menu, Tray, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
+const { nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 
 // Expose GC
@@ -36,8 +36,6 @@ const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
 const { fork } = require('child_process');
 const { exec } = require('child_process');
-const os = require("os")
-const ua = require('universal-analytics');
 const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
@@ -48,13 +46,11 @@ const Acrylic = require("acrylic")
 
 const reg = require('native-reg');
 const Color = require('color')
-const { WindowsStoreAutoLaunch } = (isAppX ? require('electron-winstore-auto-launch') : false);
 const Translate = require('./Translate');
-const sharp = require('sharp');
 const { EventEmitter } = require('stream');
 
-const isReallyWin11 = (os.release()?.split(".")[2] * 1) >= 22000
-const isAtLeast1803 = (os.release()?.split(".")[2] * 1) >= 17134
+const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
+const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
 
 app.allowRendererProcessReuse = true
 
@@ -261,99 +257,20 @@ function willPauseMouseEvents(time = 10000) {
 
 
 // Analytics
-
-let analytics = false
-let analyticsQueue = false
 let analyticsInterval = false
 let analyticsFrequency = 1000 * 60 * 59 // 59 minutes
-let analyticsUsage = {}
 
-function analyticsResetUsage() {
-  analyticsUsage = {
-    OpenedPanel: 0,
-    OpenedSettings: 0,
-    UsedSleep: 0,
-    UsedHotkeys: 0
-  }
+function pingAnalytics() {
+  const analytics = require('universal-analytics')('UA-146439005-2', settings.uuid)
+  console.log("\x1b[34mAnalytics:\x1b[0m sending with UUID " + settings.uuid)
+  analytics.set("ds", "app")
+  analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
+  analytics.event({
+    ec: "Session Information",
+    ea: "OS Version",
+    el: require("os").release()
+  }).send()
 }
-analyticsResetUsage()
-
-function analyticsData(data = {}) {
-  if (analytics) {
-    if (!analyticsQueue) {
-      analyticsQueue = analytics
-    }
-    analyticsQueue.event(data)
-  }
-}
-
-function getSettingsAnalytics() {
-
-  let data = {
-    updateRate: settings.updateInterval,
-    usingRunAtLogin: settings.openAtLogin,
-    usingRenames: false,
-    usingReorder: false,
-    usingNormalize: false,
-    usingTimeAdjust: (settings.adjustmentTimes.length > 0 ? true : false),
-    usingTimeAdjustIndividualDisplays: settings.adjustmentTimeIndividualDisplays,
-    usingHotkeys: (Object.keys(settings.hotkeys).length > 0 ? true : false),
-    usingLinkedLevels: settings.linkedLevelsActive,
-    usingAutomaticUpdates: settings.checkForUpdates,
-    trayIcon: settings.icon,
-  }
-
-  // Check if renames are used
-  if (settings.names && Object.values(settings.names).length > 0) {
-    for (let key in settings.names) {
-      if (settings.names[key] != "") data.usingRenames = true;
-    }
-  }
-
-  // Check if reorders are used
-  for (let idx in monitors) {
-    if (monitors[idx].order && monitors[idx].order != idx) {
-      data.usingReorder = true
-    }
-  }
-
-  // Check if normalization is used
-  if (settings.remaps && Object.values(settings.remaps).length > 0) {
-    for (let key in settings.remaps) {
-      if (settings.remaps[key].max != 100 || settings.remaps[key].min != 0) data.usingNormalize = true;
-    }
-  }
-
-  // Queue settings
-  for (let key in data) {
-    analyticsData({
-      ec: "User Settings",
-      ea: key,
-      el: data[key]
-    })
-  }
-
-  // Queue usage
-  for (let key in analyticsUsage) {
-    if (analyticsUsage[key] > 0) {
-      analyticsData({
-        ec: "User Activity",
-        ea: key,
-        el: analyticsUsage[key],
-        ev: analyticsUsage[key]
-      })
-    }
-  }
-
-  console.log("\x1b[34mAnalytics:\x1b[0m ", data)
-  console.log("\x1b[34mAnalytics:\x1b[0m ", analyticsUsage)
-
-  analyticsResetUsage()
-
-}
-
-
-
 
 let monitors = {}
 let mainWindow;
@@ -576,33 +493,11 @@ function processSettings(newSettings = {}) {
     }
 
     if (settings.analytics) {
-      if (!analytics) {
-        console.log("\x1b[34mAnalytics:\x1b[0m starting with UUID " + settings.uuid)
-        analytics = ua('UA-146439005-2', settings.uuid)
-        analytics.set("ds", "app")
-        analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
-        analytics.event({
-          ec: "Session Information",
-          ea: "OS Version",
-          el: os.release()
-        }).send()
-
-        analyticsResetUsage()
-
-        analyticsInterval = setInterval(() => {
-          try {
-            //getSettingsAnalytics()
-            if (analytics && analyticsQueue) {
-              console.log("\x1b[34mAnalytics:\x1b[0m Sending analytics")
-              analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
-              analyticsQueue.send()
-              analyticsQueue = false
-            }
-          } catch (e) {
-            console.log("\x1b[34mAnalytics:\x1b[0m Couldn't complete anaytics sync!", e)
-          }
-        }, analyticsFrequency)
+      pingAnalytics()
+      if (analyticsInterval) {
+        clearInterval(analyticsInterval)
       }
+      analyticsInterval = setInterval(pingAnalytics, analyticsFrequency)
     } else {
       analytics = false
       if (analyticsInterval) {
@@ -767,8 +662,6 @@ const doHotkey = async (hotkey) => {
     doingHotkey = true
 
     try {
-      //refreshMonitors(false)
-      analyticsUsage.UsedHotkeys++
       if (hotkey.monitor === "all" || ((settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels) && hotkey.monitor != "turn_off_displays")) {
 
         // Wait for refresh if user hasn't done so recently
@@ -983,6 +876,7 @@ async function updateStartupOption(openAtLogin) {
   // Set autolaunch for AppX
   try {
     if (isAppX) {
+      const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
       if (openAtLogin) {
         WindowsStoreAutoLaunch.enable()
       } else {
@@ -1629,7 +1523,6 @@ function transitionlessBrightness(level, eventMonitors = []) {
 function sleepDisplays(mode = "ps") {
   try {
 
-    analyticsUsage.UsedSleep++
     setTimeout(() => {
       startIdleCheckShort()
       if(mode === "ddcci" || mode === "ps_ddcci") {
@@ -1772,6 +1665,7 @@ function createPanel(toggleOnLoad = false) {
 
   console.log("Creating panel...")
 
+  const { BrowserWindow } = require('electron')
   mainWindow = new BrowserWindow({
     width: panelSize.width,
     height: panelSize.height,
@@ -1852,7 +1746,6 @@ function createPanel(toggleOnLoad = false) {
       sendToAllWindows("panelBlur")
       if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
     }
-    setTimeout(() => global.gc(), 1000)
   })
 
   mainWindow.on('move', (e) => {
@@ -2141,6 +2034,9 @@ function startHidePanel() {
         mainWindow.minimize();
       }
       startHideTimeout = null
+      setTimeout(() => {
+        try { global.gc() } catch(e) {}
+      }, 33)
     }, 100)
     if(mainWindow) mainWindow.setOpacity(0);
   }
@@ -2290,6 +2186,7 @@ app.on('quit', () => {
 function createTray() {
   if (tray != null) return false;
 
+  const { Tray } = require('electron')
   tray = new Tray(getTrayIconPath())
   tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
   setTrayMenu()
@@ -2428,7 +2325,6 @@ const toggleTray = async (doRefresh = true, isOverlay = false) => {
     } else {
       sendToAllWindows("display-mode", "overlay")
       panelState = "overlay"
-      analyticsUsage.OpenedPanel++
     }
     sendToAllWindows('request-height')
     mainWindow.webContents.send("tray-clicked")
@@ -2461,6 +2357,7 @@ function showIntro() {
     return false;
   }
 
+  const { BrowserWindow } = require('electron')
   introWindow = new BrowserWindow({
     width: 500,
     height: 650,
@@ -2530,6 +2427,7 @@ function createSettings() {
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
+  const { BrowserWindow } = require('electron')
   settingsWindow = new BrowserWindow({
     width: (width >= 1200 ? 1024 : 600),
     height: (height >= 768 ? 720 : 500),
@@ -2592,10 +2490,6 @@ function createSettings() {
       require('electron').shell.openExternal(url)
     })
   })
-
-  //refreshMonitors(true)
-
-  analyticsUsage.OpenedSettings++
 
 }
 
@@ -3214,10 +3108,12 @@ function handleCommandLine(event, argv, directory, additionalData) {
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentScreenSize = {width: 1280, height: 720}
+const homeDir = require("os").homedir()
 const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
 async function getWallpaper() {
-  try {
-    const wallPath = path.join(os.homedir(), "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
+  try {  
+    const sharp = require('sharp');
+    const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
     currentScreenSize = screen.getPrimaryDisplay().workAreaSize
 
@@ -3234,7 +3130,6 @@ async function getWallpaper() {
           background: "#202020FF"
         }
       }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
-      //const image = await sharp(wallPath).blur(100).webp().toBuffer().then((data) => data.toString('base64'))
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
       currentWallpaperTime = file.mtime.getTime()
     }

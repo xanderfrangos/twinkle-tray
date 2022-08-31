@@ -3045,7 +3045,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
         // DDC/CI command
         if (arg.indexOf("--vcp=") === 0 && arg.indexOf(":")) {
             try {
-              const values = arg.substring(8).replace('"').replace('"').split(":")
+              const values = arg.substring(6).replace('"').replace('"').split(":")
               ddcciVCP = {
                 code: parseInt(values[0]),
                 value: parseInt(values[1])

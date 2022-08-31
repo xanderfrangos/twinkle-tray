@@ -79,7 +79,7 @@ const debug = {
   error: log
 }
 
-//if (false && !isDev) console.log = () => { };
+if (!isDev && !app.commandLine.hasSwitch("console") ) console.log = () => { };
 
 
 
@@ -2036,7 +2036,7 @@ function startHidePanel() {
       startHideTimeout = null
       setTimeout(() => {
         try { global.gc() } catch(e) {}
-      }, 33)
+      }, 1000)
     }, 100)
     if(mainWindow) mainWindow.setOpacity(0);
   }
@@ -2945,6 +2945,10 @@ function handleBackgroundUpdate(force = false) {
 
   if(!force) checkForUpdates(); // Ignore when forced update, since it should just be about fixing brightness.
 
+  // GC
+  setTimeout(() => {
+    try { global.gc() } catch(e) {}
+  }, 1000)
 }
 
 /*

@@ -122,7 +122,7 @@
     "PANEL_LABEL_TURN_OFF": "Isključi",
     "SETTINGS_GENERAL_MICA_TITLE": "Mica zamućenje",
     "SETTINGS_GENERAL_MICA_DESC": "Aktiviraj ili deaktiviraj zamućenost iza pozadina u Twinkle Tray.",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Sakrij interni prikaz",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Sakrij neaktivan interni prikaz",
     "SETTINGS_TIME_IDLE_TITLE": "Otkrivanje nekativnosti",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Preuzmi trenutačnu svjetlinu",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Kad je poklopac zatvoren ili kad je interni ekran deaktiviran u sustavu Windows, sakrij upravljač svjetline u ploči.",

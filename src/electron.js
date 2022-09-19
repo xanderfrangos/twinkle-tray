@@ -1638,7 +1638,7 @@ ipcMain.on('show-acrylic', () => {
       tryVibrancy(mainWindow, { theme: (lastTheme && nativeTheme.themeSource === "light" ? (settings.useAcrylic ? "#DBDBDBDD" : "#DBDBDB70") : (settings.useAcrylic ? "#292929DD" : "#29292970")), effect: (settings.useAcrylic ? "acrylic" : "blur") })
     }
   } else {
-    mainWindow.setVibrancy(false)
+    tryVibrancy(mainWindow, false)
     mainWindow.setBackgroundColor("#00000000")
   }
   sendToAllWindows("set-acrylic-show")
@@ -1731,7 +1731,7 @@ function createPanel(toggleOnLoad = false) {
 
       setTimeout(() => {
         if(!settings.useAcrylic || settings.isWin11) {
-          mainWindow.setVibrancy(false)
+          tryVibrancy(mainWindow, false)
           mainWindow.setBackgroundColor("#00000000")
         }
       }, 100)

@@ -121,7 +121,7 @@
     "SETTINGS_HOTKEYS_TOD_DESC": "Dostosuj sygnał wysyłany podczas używania klawisza skrótu lub ikony Wyłącz wyświetlacze. Sygnał programowy wyświetli czarny ekran do czasu wykrycia wejścia (np. myszy lub klawiatury) przez system Windows. Sygnał sprzętowy wyłączy zasilanie monitorów.",
     "SETTINGS_TIME_IDLE_DESC": "Jeśli przez pewien czas nie zostanie wykryty żaden sygnał wejściowy, jasność wszystkich wyświetlaczy zostanie zmniejszona.",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Gdy klapa jest zamknięta lub wbudowany wyświetlacz został wyłączony w systemie Windows, ukryj suwak jasności na panelu.",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ukryj wbudowany wyświetlacz",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ukryj nieaktywny wbudowany wyświetlacz",
     "SETTINGS_HOTKEYS_TOD_HARD": "Sygnał sprzętowy* (tylko DDC/CI)",
     "SETTINGS_HOTKEYS_TOD_SOFT": "Sygnał programowy (domyślnie)",
     "SETTINGS_HOTKEYS_TOD_BOTH": "Sygnał sprzętowy* i programowy",

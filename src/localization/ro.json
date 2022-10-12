@@ -115,5 +115,16 @@
     "SETTINGS_UPDATES_DOWNLOADING": "Descărcarea actualizării…",
     "SETTINGS_UPDATES_DOWNLOAD": "Descărcați și instalați {{1}}",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "În cazul în care Twinkle Tray nu răspunde când faceți clic pe pictograma din tavă sau nu vă detectează afișajele, puteți încerca să dezactivați anumite metode de detectare a monitorului. Reporniți Twinkle Tray pentru ca modificările să aibă efect. {{1}}",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ascunderea afișajului intern inactiv"
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ascunderea afișajului intern inactiv",
+    "PANEL_LABEL_TURN_OFF": "Oprire",
+    "SETTINGS_GENERAL_MICA_TITLE": "Mica Ceață",
+    "SETTINGS_GENERAL_MICA_DESC": "Activați sau dezactivați estomparea în spatele fundalurilor din Twinkle Tray.",
+    "SETTINGS_TIME_IDLE_TITLE": "Detectarea inactivității",
+    "SETTINGS_TIME_IDLE_DESC": "Atunci când nu a fost detectată nicio intrare pentru o perioadă de timp, luminozitatea tuturor afișajelor va fi redusă.",
+    "GENERIC_MINUTES": "minute",
+    "GENERIC_SECONDS": "secunde",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Atunci când capacul este închis sau când afișajul intern a fost dezactivat în Windows, ascundeți cursorul de luminozitate din panou.",
+    "SETTINGS_FEATURES_UNSUPPORTED": "Acest monitor nu acceptă caracteristicile DDC/CI.",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Obțineți întotdeauna cel mai recent nivel de luminozitate de la monitor atunci când deschideți pagina de luminozitate. Activați această opțiune dacă luminozitatea este schimbată frecvent din afara Twinkle Tray (de ex. o altă aplicație).",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Obțineți luminozitatea curentă"
 }

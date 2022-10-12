@@ -115,5 +115,16 @@
     "SETTINGS_UPDATES_DOWNLOADING": "Güncelleme indiriliyor…",
     "SETTINGS_UPDATES_DOWNLOAD": "{{1}} İndir ve Yükle",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Twinkle Tray, tepsi simgesine tıklandığında yanıt vermiyorsa veya ekranlarınızı algılamıyorsa, belirli monitör algılama yöntemlerini devre dışı bırakmayı deneyebilirsiniz. Değişikliklerin etkili olması için Twinkle Tray'i yeniden başlatın. {{1}}",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Etkin Olmayan Dahili Ekranı Gizle"
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Etkin Olmayan Dahili Ekranı Gizle",
+    "SETTINGS_GENERAL_MICA_TITLE": "Mika Bulanıklığı",
+    "SETTINGS_GENERAL_MICA_DESC": "Twinkle Tray'de arka planların arkasındaki bulanıklığı etkinleştirin veya devre dışı bırakın.",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Kapak kapalıyken veya dahili ekran Windows'ta devre dışı bırakıldığında, paneldeki parlaklık kaydırıcısını gizleyin.",
+    "SETTINGS_FEATURES_UNSUPPORTED": "Bu monitör DDC/CI özelliklerini desteklemez.",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Geçerli Parlaklığı Al",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Parlaklık sayfasını açarken her zaman monitörden en son parlaklık seviyesini alın. Parlaklık sık sık Twinkle Tray dışından değiştiriliyorsa (örn. başka bir uygulama) bunu etkinleştirin.",
+    "GENERIC_MINUTES": "dakika",
+    "GENERIC_SECONDS": "saniye",
+    "SETTINGS_TIME_IDLE_TITLE": "Boşta Algılama",
+    "PANEL_LABEL_TURN_OFF": "Güç kapalı",
+    "SETTINGS_TIME_IDLE_DESC": "Belirli bir süre boyunca hiçbir giriş algılanmadığında, tüm ekranların parlaklığı azalacaktır."
 }

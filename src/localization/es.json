@@ -121,7 +121,7 @@
     "GENERIC_SECONDS": "segundos",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Obtener el brillo actual",
     "PANEL_LABEL_TURN_OFF": "Apagar",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ocultar pantalla integrada",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Ocultar pantalla integrada inactiva",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Obtener siempre el último nivel de brillo del monitor al abrir la página de brillo. Active esta opción si el brillo se cambia con frecuencia desde fuera de Twinkle Tray (por ejemplo, otra aplicación).",
     "SETTINGS_TIME_IDLE_TITLE": "Detección de inactividad",
     "SETTINGS_TIME_IDLE_DESC": "Cuando no se detecta ninguna entrada durante un periodo de tiempo, el brillo de todas las pantallas se reduce.",

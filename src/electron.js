@@ -82,7 +82,11 @@ const debug = {
 if (!isDev && !app.commandLine.hasSwitch("console") ) console.log = () => { };
 
 
-
+const windowMenu = Menu.buildFromTemplate([{
+  label: "Dev Tools",
+  role: "toggleDevTools",
+  accelerator: "Ctrl+Shift+I"
+}])
 
 
 
@@ -1737,7 +1741,7 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.once('ready-to-show', () => {
     if(mainWindow) {
-      mainWindow.removeMenu()
+      mainWindow.setMenu(windowMenu)
 
       panelReady = true
       console.log("Panel ready!")
@@ -2405,7 +2409,7 @@ function showIntro() {
   introWindow.on("closed", () => (introWindow = null));
 
   introWindow.once('ready-to-show', () => {
-    introWindow.removeMenu()
+    introWindow.setMenu(windowMenu)
     introWindow.show()
     if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
   })
@@ -2485,7 +2489,7 @@ function createSettings() {
   settingsWindow.on("closed", () => (settingsWindow = null));
 
   settingsWindow.once('ready-to-show', () => {
-    settingsWindow.removeMenu()
+    settingsWindow.setMenu(windowMenu)
 
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {

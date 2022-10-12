@@ -2861,9 +2861,13 @@ function idleCheckShort() {
   if (!userIdleDimmed && settings.detectIdleTime * 1 > 0 && idleTime >= settings.detectIdleTime) {
     console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
     userIdleDimmed = true
-    Object.values(monitors)?.forEach((monitor) => {
-      updateBrightness(monitor.id, 0, true, monitor.brightnessType)
-    })
+    try {
+      Object.values(monitors)?.forEach((monitor) => {
+        updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+      })
+    } catch(e) {
+      console.log(`Error dimming displays`, e)
+    }
   }
 
   if(isUserIdle && idleTime < lastIdleTime) {

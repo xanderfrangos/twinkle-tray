@@ -1681,12 +1681,7 @@ function createPanel(toggleOnLoad = false) {
     skipTaskbar: true,
     resizable: false,
     type: "toolbar",
-    vibrancy: {
-      theme: "#00000000",
-      disableOnBlur: false,
-      useCustomWindowRefreshMethod: false,
-      effect: 'blur'
-    },
+    title: "Twinkle Tray Flyout",
     maximizable: false,
     minimizable: false,
     webPreferences: {
@@ -1700,6 +1695,8 @@ function createPanel(toggleOnLoad = false) {
       backgroundThrottling: (settings.disableThrottling ? false : true),
       spellcheck: false,
       enableWebSQL: false,
+      v8CacheOptions: "none",
+      zoomFactor: 1.0,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
         appVersion: app.getVersion()
@@ -2369,17 +2366,13 @@ function showIntro() {
     frame: false,
     transparent: true,
     icon: './src/assets/logo.ico',
-    vibrancy: {
-      theme: "#00000000",
-      disableOnBlur: false,
-      useCustomWindowRefreshMethod: false,
-      effect: 'blur'
-    },
+    title: "Twinkle Tray",
     webPreferences: {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
       enableRemoteModule: true,
       nodeIntegration: true,
+      zoomFactor: 1.0,
       contextIsolation: false
     }
   });
@@ -2442,13 +2435,7 @@ function createSettings() {
     backgroundColor: "#00000000",
     frame: false,
     icon: './src/assets/logo.ico',
-    vibrancy: {
-      theme: "#00000000",
-      disableOnBlur: false,
-      //useCustomWindowRefreshMethod: !isReallyWin11,
-      useCustomWindowRefreshMethod: true,
-      effect: 'blur'
-    },
+    title: "Twinkle Tray Settings",
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
@@ -2457,6 +2444,7 @@ function createSettings() {
       contextIsolation: false,
       allowRunningInsecureContent: true,
       webSecurity: false,
+      zoomFactor: 1.0,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
         appVersion: app.getVersion(),

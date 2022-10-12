@@ -1721,6 +1721,7 @@ function createPanel(toggleOnLoad = false) {
 
   mainWindow.once('ready-to-show', () => {
     if(mainWindow) {
+      mainWindow.removeMenu()
 
       panelReady = true
       console.log("Panel ready!")
@@ -2392,6 +2393,7 @@ function showIntro() {
   introWindow.on("closed", () => (introWindow = null));
 
   introWindow.once('ready-to-show', () => {
+    introWindow.removeMenu()
     introWindow.show()
     if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
   })
@@ -2476,6 +2478,7 @@ function createSettings() {
   settingsWindow.on("closed", () => (settingsWindow = null));
 
   settingsWindow.once('ready-to-show', () => {
+    settingsWindow.removeMenu()
 
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {

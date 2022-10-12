@@ -348,6 +348,7 @@ const defaultSettings = {
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
   forceLowPowerGPU: false,
+  ddcPowerOffValue: 5,
   uuid: uuid(),
   branch: "master"
 }
@@ -1528,14 +1529,7 @@ function sleepDisplays(mode = "ps") {
       if(mode === "ddcci" || mode === "ps_ddcci") {
         for(let monitorID in monitors) {
           const monitor = monitors[monitorID]
-          if(monitor.type === "ddcci") {
-            monitorsThread.send({
-              type: "vcp",
-              monitor: monitor.hwid.join("#"),
-              code: 0xD6,
-              value: 5
-            })
-          }
+          turnOffDisplayDDC(monitor.hwid.join("#"))
         }
       }
   
@@ -1547,6 +1541,30 @@ function sleepDisplays(mode = "ps") {
 
   } catch(e) {
     console.log(e)
+  }
+}
+
+function turnOffDisplayDDC(hwid) {
+  try {
+    const offVal = parseInt(settings.ddcPowerOffValue)
+    if(offVal === 4 || offVal === 6) {
+      monitorsThread.send({
+        type: "vcp",
+        monitor: hwid,
+        code: 0xD6,
+        value: 4
+      })
+    }
+    if(offVal === 5 || offVal === 6) {
+      monitorsThread.send({
+        type: "vcp",
+        monitor: hwid,
+        code: 0xD6,
+        value: 5
+      })
+    }
+  } catch(e) {
+    console.log("turnOffDisplayDDC failed", e)
   }
 }
 
@@ -1647,6 +1665,7 @@ ipcMain.on('show-acrylic', () => {
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
+ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid))
 ipcMain.on('set-vcp', (e, values) => {
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
 })

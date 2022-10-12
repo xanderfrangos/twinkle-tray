@@ -72,13 +72,7 @@ export default class BrightnessPanel extends PureComponent {
                 })
               }
               const powerOff = () => {
-                window.dispatchEvent(new CustomEvent("setVCP", {
-                  detail: {
-                      monitor: monitor.id,
-                      code: 0xD6,
-                      value: 5
-                  }
-                }))
+                window.ipc.send("sleep-display", monitor.hwid.join("#"))
               }
               const showPowerButton = () => {
                 if(monitorFeatures?.powerState && monitor.features?.powerState) {

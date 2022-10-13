@@ -2855,7 +2855,7 @@ function idleCheckLong() {
   //if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
   lastIdleTime = idleTime
-  if(idleTime > (settings.detectIdleTime * 1 > 0 ? settings.detectIdleTime : 180) && !notIdleMonitor) {
+  if (settings.detectIdleTime * 1 && idleTime > settings.detectIdleTime && !notIdleMonitor) {
     startIdleCheckShort()
   }
 }

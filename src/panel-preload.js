@@ -27,6 +27,7 @@ function setPanelVisibility(visible) {
     window.showPanel = visible
 
     if (visible) {
+        window.document.body.dataset["visible"] = true
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: false
         }))
@@ -39,6 +40,7 @@ function setPanelVisibility(visible) {
         }
         window.updateMica?.()
     } else {
+        window.document.body.dataset["visible"] = false
         window.document.body.dataset["acrylicShow"] = false
         if (window.isAcrylic) {
             window.isAcrylic = false
@@ -276,7 +278,7 @@ ipc.on('updateProgress', (event, progress) => {
 
 // Updated window position variable
 ipc.on('panel-position', (event, pos) => {
-    winPosition = pos
+    window.winPosition = pos
     window.updateMica?.()
 })
 

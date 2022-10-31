@@ -2,6 +2,14 @@ const path = require('path');
 const fs = require('fs')
 
 module.exports = {
+    unloadModule: (name) => {
+        try {
+            delete require.cache[require.resolve(name)];
+            console.log(`Unloaded module: ${name}`)
+        } catch(e) {
+            console.log(`Couldn't unload module: ${name}`)
+        }
+    },
     processArgs: (commandLine) => {
 
         let validArgs = {}

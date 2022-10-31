@@ -34,20 +34,20 @@ require('@electron/remote/main').initialize()
 
 const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
-const { fork } = require('child_process');
-const { exec } = require('child_process');
+const { fork, exec } = require('child_process');
 const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const setWindowPos = require("setwindowpos-binding")
+//const setWindowPos = require("setwindowpos-binding")
+const setWindowPos = () => {}
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
 
 const reg = require('native-reg');
 const Color = require('color')
 const Translate = require('./Translate');
-const { EventEmitter } = require('stream');
+const { EventEmitter } = require("events");
 
 const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
 const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
@@ -358,6 +358,8 @@ const defaultSettings = {
   uuid: uuid(),
   branch: "master"
 }
+
+Utils.unloadModule("uuid/v4")
 
 let settings = Object.assign({}, defaultSettings)
 
@@ -889,6 +891,7 @@ async function updateStartupOption(openAtLogin) {
       } else {
         WindowsStoreAutoLaunch.disable()
       }
+      Utils.unloadModule('electron-winstore-auto-launch')
     }
   } catch (e) {
     debug.error(e)
@@ -1717,10 +1720,10 @@ function createPanel(toggleOnLoad = false) {
       enableRemoteModule: true,
       nodeIntegration: true,
       contextIsolation: false,
-      webgl: false,
       plugins: false,
       backgroundThrottling: (settings.disableThrottling ? false : true),
       spellcheck: false,
+      webgl: false,
       enableWebSQL: false,
       v8CacheOptions: "none",
       zoomFactor: 1.0,
@@ -1746,6 +1749,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     if(mainWindow) {
       mainWindow.setMenu(windowMenu)
+      mainWindow.setZoomFactor(1)
 
       panelReady = true
       console.log("Panel ready!")
@@ -2566,6 +2570,7 @@ checkForUpdates = async (force = false) => {
   } catch (e) {
     console.log(e)
   }
+  Utils.unloadModule("node-fetch")
 }
 
 
@@ -2630,6 +2635,7 @@ getLatestUpdate = async (version) => {
     latestVersion.downloading = false
     sendToAllWindows('latest-version', latestVersion)
   }
+  Utils.unloadModule("node-fetch")
 }
 
 function runUpdate(expectedSize = false) {
@@ -3145,13 +3151,13 @@ const homeDir = require("os").homedir()
 const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
 async function getWallpaper() {
   try {  
-    const sharp = require('sharp');
     const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
     currentScreenSize = screen.getPrimaryDisplay().workAreaSize
 
     // If time on file changed, render new wallpaper
     if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
+      const sharp = require('sharp')
       currentWallpaper = "file://" + wallPath + "?" + Date.now()
       const wallpaperImage = sharp(wallPath)
       //const wallpaperInfo = await wallpaperImage.metadata()
@@ -3165,6 +3171,7 @@ async function getWallpaper() {
       }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
       currentWallpaperTime = file.mtime.getTime()
+      Utils.unloadModule("sharp")
     }
     
     return { path: currentWallpaper, size: currentScreenSize }

@@ -2784,9 +2784,9 @@ powerMonitor.on("resume", () => {
   if(!settings.disableAutoApply) setKnownBrightness();
   setTimeout(
     () => {
-        restartPanel()
       if(!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
         if(!settings.disableAutoApply) setKnownBrightness();
+        //restartPanel()
 
         // Check if time adjustments should apply
         handleBackgroundUpdate(true)

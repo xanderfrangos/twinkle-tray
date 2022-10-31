@@ -1749,7 +1749,6 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.once('ready-to-show', () => {
     if(mainWindow) {
       mainWindow.setMenu(windowMenu)
-      mainWindow.setZoomFactor(1)
 
       panelReady = true
       console.log("Panel ready!")

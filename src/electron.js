@@ -2737,6 +2737,7 @@ function handleAccentChange() {
 }
 
 let skipFirstMonChange = false
+let handleChangeTimeout0
 let handleChangeTimeout1
 let handleChangeTimeout2
 function handleMonitorChange(e, d) {
@@ -2748,14 +2749,19 @@ function handleMonitorChange(e, d) {
   }
 
   console.log("Hardware change detected.")
-  setKnownBrightness()
 
   // Defer actions for a moment just in case of repeat events
+  if (handleChangeTimeout0) {
+    clearTimeout(handleChangeTimeout0)
+  }
+  handleChangeTimeout0 = setTimeout(() => {
+    if(!settings.disableAutoApply) setKnownBrightness();
+    handleChangeTimeout0 = false
+  }, 150)
   if (handleChangeTimeout1) {
     clearTimeout(handleChangeTimeout1)
   }
   handleChangeTimeout1 = setTimeout(() => {
-    setKnownBrightness()
     if(!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout1 = false
   }, 750)

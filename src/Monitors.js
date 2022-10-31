@@ -432,6 +432,7 @@ getFeaturesDDC = () => {
 checkMonitorFeatures = async (monitor) => {
     return new Promise((resolve, reject) => {
         const features = {}
+        const featureTestTime = 200
         try {
             // This part is flaky, so we'll do it slowly
             features.luminance = checkVCPIfEnabled(monitor, 0x10, "luminance")
@@ -444,10 +445,10 @@ checkMonitorFeatures = async (monitor) => {
                         setTimeout(() => {
                             features.volume = checkVCPIfEnabled(monitor, 0x62, "volume")
                             resolve(features)
-                        }, 100)
-                    }, 100)
-                }, 100)
-            }, 100)
+                        }, featureTestTime)
+                    }, featureTestTime)
+                }, featureTestTime)
+            }, featureTestTime)
         } catch (e) {
             resolve(features)
         }

@@ -353,6 +353,8 @@ const defaultSettings = {
   userDDCBrightnessVCPs: {},
   forceLowPowerGPU: false,
   ddcPowerOffValue: 5,
+  disableAutoRefresh: false,
+  disableAutoApply: false,
   uuid: uuid(),
   branch: "master"
 }
@@ -2752,6 +2754,7 @@ function handleMonitorChange(e, d) {
   }
   handleChangeTimeout1 = setTimeout(() => {
     setKnownBrightness()
+    if(!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout1 = false
   }, 750)
   if (handleChangeTimeout2) {
@@ -2760,8 +2763,8 @@ function handleMonitorChange(e, d) {
   handleChangeTimeout2 = setTimeout(() => {
 
     // Reset all known displays
-    refreshMonitors(true, true).then(() => {
-      setKnownBrightness()
+    if(!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+      if(!settings.disableAutoApply) setKnownBrightness();
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
@@ -2776,12 +2779,12 @@ function handleMonitorChange(e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
-  setKnownBrightness()
+  if(!settings.disableAutoApply) setKnownBrightness();
   setTimeout(
     () => {
-      refreshMonitors(true, true).then(() => {
-        setKnownBrightness()
         restartPanel()
+      if(!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+        if(!settings.disableAutoApply) setKnownBrightness();
 
         // Check if time adjustments should apply
         handleBackgroundUpdate(true)
@@ -2789,7 +2792,7 @@ powerMonitor.on("resume", () => {
     },
     3000 // Give Windows a few seconds to... you know... wake up.
   )
-  setTimeout(() => {
+  if(!settings.disableAutoRefresh) setTimeout(() => {
     refreshMonitors(true)
   },
   10000 // Additional full refresh
@@ -2805,7 +2808,7 @@ powerMonitor.on("suspend", () => {  recentlyWokeUp = true })
 powerMonitor.on("lock-screen", () => {  recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
   recentlyWokeUp = true
-  refreshMonitors(true)
+  if(!settings.disableAutoRefresh) refreshMonitors(true);
     setTimeout(() => {
       recentlyWokeUp = false
     }, 
@@ -2889,10 +2892,10 @@ function idleCheckShort() {
     console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
     clearInterval(notIdleMonitor)
     notIdleMonitor = false
-    setKnownBrightness(false)
+    if(!settings.disableAutoApply) setKnownBrightness(false);
     // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
     setTimeout(() => {
-      setKnownBrightness(false)
+      if(!settings.disableAutoApply) setKnownBrightness(false);
       isUserIdle = false
       userIdleDimmed = false
       handleBackgroundUpdate() // Apply ToD adjustments, if needed

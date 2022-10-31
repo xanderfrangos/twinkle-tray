@@ -1039,6 +1039,8 @@ ipcMain.on('request-settings', (event) => {
 ipcMain.on('reset-settings', () => {
   settings = Object.assign({}, defaultSettings)
   console.log("Resetting settings")
+  lastKnownDisplays = {}
+  fs.writeFileSync(knownDisplaysPath, JSON.stringify(lastKnownDisplays))
   writeSettings({ userClosedIntro: true })
 })
 

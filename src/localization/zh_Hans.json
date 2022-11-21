@@ -26,7 +26,7 @@
     "GENERIC_SPEED_SLOW": "慢",
     "GENERIC_SPEED_VERY_SLOW": "非常慢",
     "GENERIC_SPEED_NORMAL": "正常",
-    "GENERIC_SPEED_FAST": "F快",
+    "GENERIC_SPEED_FAST": "快",
     "GENERIC_SPEED_VERY_FAST": "非常快",
     "PANEL_TITLE": "调整亮度",
     "PANEL_UPDATE_AVAILABLE": "有新版本可用",
@@ -75,7 +75,6 @@
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "如果 Twinkle Tray 在点击托盘图标时没有反应，或者没有检测到你的显示器，你可以尝试禁用某些显示器检测方法。重新启动 Twinkle Tray 以使改变生效。{{1}}",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "禁用热键覆盖",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "如果 Twinkle Tray 的热键覆盖干扰全屏应用程序，您可以在此处禁用它。",
-    "SETTINGS_MONITORS_FEATURES_DESCRIPTION": "在亮度面板中启用或禁用特定的 DDC/CI 功能。 必须至少启用一项功能，监视器才能显示在亮度面板中。 并非所有的显示器都支持这些功能，例如笔记本电脑/平板电脑显示器。"
     "SETTINGS_MONITORS_RATE_TITLE": "亮度更新速度",
     "SETTINGS_MONITORS_RATE_DESC": "调整显示器的亮度值时，显示器亮度的更新速度。如果显示器闪烁，请延长亮度更新时间。",
     "SETTINGS_MONITORS_RATE_0": "非常快",
@@ -96,10 +95,10 @@
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "当前亮度",
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "最大亮度",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "统一亮度区间",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "隐藏不活动的内部显示器",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "如果显示器被合上，或者在 Windows 中禁用了内建屏幕（自带显示器），那么该显示器的亮度滑块将被隐藏。",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "隐藏显示器",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "如果您想从弹出窗口中隐藏特定的显示器，您可以在此处将其关闭。",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "隐藏不活动的内部显示器",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "如果显示器被合上，或者在 Windows 中禁用了内建屏幕（自带显示器），那么该显示器的亮度滑块将被隐藏。",
     "SETTINGS_FEATURES_DESCRIPTION": "启用或禁用亮度设置面板中特定的 DDC/CI 功能。 至少启用了一个或多个功能的显示器才将显示在亮度设置面板中。 并非所有显示器都支持这些功能，例如笔记本电脑、平板电脑等。",
     "SETTINGS_FEATURES_UNSUPPORTED": "此显示器不支持 DDC/CI 功能。",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "获取当前亮度值",
@@ -142,5 +141,5 @@
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray 有新版本可用！",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "已是最新版。目前的版本包括以下更新：",
     "SETTINGS_UPDATES_DOWNLOADING": "正在下载更新…",
-    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}",
+    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}"
 }

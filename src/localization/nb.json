@@ -124,7 +124,7 @@
     "SETTINGS_FEATURES_UNSUPPORTED": "Denne skjermen støtter ikke noen DDC/CI valg.",
     "SETTINGS_HOTKEYS_TOD_NONE": "Ingen (skjul ikonet)",
     "SETTINGS_HOTKEYS_TOD_SOFT": "Applikasjons-signal (Standard)",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Skjul innebygd skjerm",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Skjul deaktivert innebygd skjerm",
     "SETTINGS_GENERAL_MICA_TITLE": "Uskarphet",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Når skjermen er lukket eller den innebygde skjermen er slått av i Windows, skjul lysstyrkenivået fra panelet.",
     "SETTINGS_TIME_IDLE_TITLE": "Oppdag når enheten ikke er i bruk",

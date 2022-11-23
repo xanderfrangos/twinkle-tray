@@ -1217,7 +1217,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   }
 
   // Don't do 2+ refreshes at once
-  if (!fullRefresh && isRefreshing) {
+  if (isRefreshing) {
     console.log(`Already refreshing. Aborting.`)
     return monitors;
   }

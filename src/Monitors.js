@@ -307,7 +307,7 @@ getMonitorsWMI = () => {
     return new Promise(async (resolve, reject) => {
         const foundMonitors = {}
         try {
-            const timeout = setTimeout(() => { wmiFailed = true; console.log("getMonitorsWMI Timed out."); reject({}) }, 2000 )
+            const timeout = setTimeout(() => { wmiFailed = true; console.log("getMonitorsWMI Timed out."); reject({}) }, 4000 )
             const wmiMonitors = await wmibridge.getMonitors();
 
             if(wmiMonitors.failed) {
@@ -353,7 +353,7 @@ getMonitorsWin32 = () => {
     let foundDisplays = {}
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 2000 )
+            const timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 4000 )
             let displays = []
             let config = await w32disp.queryDisplayConfig()
             
@@ -400,7 +400,7 @@ getFeaturesDDC = () => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 12000 )
+            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 14000 )
             getDDCCI()
             ddcci._refresh()
             const ddcciMonitors = ddcci.getMonitorList()
@@ -459,7 +459,7 @@ getBrightnessWMI = () => {
     // Request WMI monitors.
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { console.log("getBrightnessWMI Timed out."); reject(false) }, 2000 )
+            const timeout = setTimeout(() => { console.log("getBrightnessWMI Timed out."); reject(false) }, 4000 )
             const monitor = await wmibridge.getBrightness();
             if (monitor.failed) {
                 // Something went wrong

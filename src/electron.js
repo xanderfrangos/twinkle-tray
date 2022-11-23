@@ -2894,36 +2894,40 @@ async function startIdleCheckShort() {
 }
 
 function idleCheckShort() {
-  const idleTime = powerMonitor.getSystemIdleTime()
+  try {
+    const idleTime = powerMonitor.getSystemIdleTime()
 
-  if (!userIdleDimmed && settings.detectIdleTime * 1 > 0 && idleTime >= settings.detectIdleTime) {
-    console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
-    userIdleDimmed = true
-    try {
-      Object.values(monitors)?.forEach((monitor) => {
-        updateBrightness(monitor.id, 0, true, monitor.brightnessType)
-      })
-    } catch(e) {
-      console.log(`Error dimming displays`, e)
+    if (!userIdleDimmed && settings.detectIdleTime * 1 > 0 && idleTime >= settings.detectIdleTime) {
+      console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
+      userIdleDimmed = true
+      try {
+        Object.values(monitors)?.forEach((monitor) => {
+          updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+        })
+      } catch(e) {
+        console.log(`Error dimming displays`, e)
+      }
     }
-  }
-
-  if(isUserIdle && idleTime < lastIdleTime) {
-    // Wake up
-    console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
-    clearInterval(notIdleMonitor)
-    notIdleMonitor = false
-    if(!settings.disableAutoApply) setKnownBrightness(false);
-    // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
-    setTimeout(() => {
+  
+    if(isUserIdle && idleTime < lastIdleTime) {
+      // Wake up
+      console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
+      clearInterval(notIdleMonitor)
+      notIdleMonitor = false
       if(!settings.disableAutoApply) setKnownBrightness(false);
-      isUserIdle = false
-      userIdleDimmed = false
-      handleBackgroundUpdate() // Apply ToD adjustments, if needed
-    }, 3000)
-
+      // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
+      setTimeout(() => {
+        if(!settings.disableAutoApply) setKnownBrightness(false);
+        isUserIdle = false
+        userIdleDimmed = false
+        handleBackgroundUpdate() // Apply ToD adjustments, if needed
+      }, 3000)
+  
+    }
+    lastIdleTime = idleTime
+  } catch(e) {
+    console.log('Error in idleCheckShort', e)
   }
-  lastIdleTime = idleTime
 }
 
 

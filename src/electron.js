@@ -1050,6 +1050,7 @@ ipcMain.on('reset-settings', () => {
 
 // Get the user's Windows Personalization settings
 async function getThemeRegistry() {
+  console.log("Function: getThemeRegistry");
 
   if (lastTheme) sendToAllWindows('theme-settings', lastTheme)
 
@@ -1819,6 +1820,7 @@ function setAlwaysOnTop(onTop = true) {
 }
 
 function restartPanel(show = false) {
+  console.log("Function: restartPanel");
   if (mainWindow) {
     mainWindow.setOpacity(1)
     mainWindow.restore()
@@ -2241,6 +2243,7 @@ function createTray() {
   })
 
   nativeTheme.on('updated', async () => {
+    console.log("Event: theme updated");
     await getThemeRegistry()
     try {
       tray.setImage(getTrayIconPath())
@@ -2737,6 +2740,7 @@ function addEventListeners() {
 }
 
 function handleAccentChange() {
+  console.log("Event: handleAccentChange");
   sendToAllWindows('update-colors', getAccentColors())
   getThemeRegistry()
   sendMicaWallpaper()
@@ -2747,6 +2751,7 @@ let handleChangeTimeout0
 let handleChangeTimeout1
 let handleChangeTimeout2
 function handleMonitorChange(e, d) {
+  console.log("Event: handleMonitorChange");
 
   // Skip event that happens at startup
   if (!skipFirstMonChange) {
@@ -2818,9 +2823,10 @@ powerMonitor.on("resume", () => {
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
-powerMonitor.on("suspend", () => {  recentlyWokeUp = true })
-powerMonitor.on("lock-screen", () => {  recentlyWokeUp = true })
+powerMonitor.on("suspend", () => {  console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => {  console.log("Event: lock-screen"); recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
+  console.log("Event: unlock-screen");
   recentlyWokeUp = true
   if(!settings.disableAutoRefresh) refreshMonitors(true);
     setTimeout(() => {
@@ -2830,6 +2836,7 @@ powerMonitor.on("unlock-screen", () => {
     )
 })
 powerMonitor.on("resume", () => {
+  console.log("Event: resume");
     recentlyWokeUp = true
     setTimeout(() => {
       recentlyWokeUp = false
@@ -2927,6 +2934,7 @@ let lastTimeEvent = {
   day: new Date().getDate()
 }
 function handleBackgroundUpdate(force = false) {
+  console.log("Event: handleBackgroundUpdate");
 
   try {
     // Wallpaper updates

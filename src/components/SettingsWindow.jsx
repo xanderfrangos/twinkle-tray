@@ -1017,14 +1017,6 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.h("SETTINGS_GENERAL_DIS_OVERLAY_DESC")}</p>
                             { this.renderToggle("disableOverlay") }
                             <br />
-                            <label>Disable Auto Apply</label>
-                            <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
-                            { this.renderToggle("disableAutoApply") }
-                            <br />
-                            <label>Disable Auto Refresh</label>
-                            <p>Prevent last known brightness from read after certain hardware/user events.</p>
-                            { this.renderToggle("disableAutoRefresh") }
-                            <br />
                             <label>{T.t("SETTINGS_GENERAL_RESET_TITLE")}</label>
                             <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
                             
@@ -1233,7 +1225,15 @@ export default class SettingsWindow extends PureComponent {
                             <p>Dev Mode</p>
                             { this.renderToggle("isDev") }
                             <br />
-                            <p>Use Native Animation</p>
+                            <label>Disable Auto Apply</label>
+                            <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
+                            { this.renderToggle("disableAutoApply") }
+                            <br />
+                            <label>Disable Auto Refresh</label>
+                            <p>Prevent last known brightness from read after certain hardware/user events.</p>
+                            { this.renderToggle("disableAutoRefresh") }
+                            <br />
+                            <p>Use Native Animation (depricated)</p>
                             { this.renderToggle("useNativeAnimation") }
                             <br />
                             <p>Use Taskbar Registry</p>

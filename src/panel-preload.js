@@ -1,4 +1,5 @@
 const { ipcRenderer: ipc } = require('electron');
+require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 // Send logs to main thread
 const log = console.log

@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs')
+require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 

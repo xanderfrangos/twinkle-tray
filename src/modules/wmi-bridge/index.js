@@ -1,5 +1,6 @@
 "use strict";
 const addon = require("bindings")("wmi_bridge");
+require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 class WMIBridge {
     constructor() {}

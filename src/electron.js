@@ -353,7 +353,7 @@ const defaultSettings = {
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
   forceLowPowerGPU: false,
-  ddcPowerOffValue: 5,
+  ddcPowerOffValue: 6,
   disableAutoRefresh: false,
   disableAutoApply: false,
   uuid: uuid(),

@@ -217,8 +217,10 @@ function enableMouseEvents() {
             hotkeyOverlayHide(true)
           } else {
             // Panel is displayed
-            sendToAllWindows("panelBlur")
-            if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
+            if(!mainWindow.webContents.isDevToolsOpened()) {
+              sendToAllWindows("panelBlur")
+              showPanel(false)
+            }
           }
         }
 
@@ -820,9 +822,11 @@ function hotkeyOverlayHide(force = true) {
 
   clearTimeout(hotkeyOverlayTimeout)
   setAlwaysOnTop(false)
-  showPanel(false)
   canReposition = true
-  sendToAllWindows("panelBlur")
+  if(!mainWindow.webContents.isDevToolsOpened()) {
+    sendToAllWindows("panelBlur")
+    showPanel(false)
+  }
   hotkeyOverlayTimeout = false
 
   // Pause mouse events if scroll shortcut is not enabled
@@ -1785,8 +1789,10 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.on("blur", () => {
     // Only run when not in an overlay
     if (canReposition) {
-      sendToAllWindows("panelBlur")
-      if(!mainWindow.webContents.isDevToolsOpened()) showPanel(false);
+      if(!mainWindow.webContents.isDevToolsOpened()) {
+        sendToAllWindows("panelBlur")
+        showPanel(false)
+      }
     }
   })
 

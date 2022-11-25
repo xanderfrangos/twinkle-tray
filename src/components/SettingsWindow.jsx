@@ -495,22 +495,13 @@ export default class SettingsWindow extends PureComponent {
             return (<div></div>)
         } else {
             return this.state.adjustmentTimes.map((time, index) => {
-                const hourInt = parseInt(time.hour)
-                const fixedHour = hourInt + (hourInt == 12 ? (time.am.toLowerCase() == "pm" ? 0 : -12) : (time.am.toLowerCase() == "pm" ? 12 : 0))
-                const calcTime = (fixedHour < 10 ? "0" + fixedHour : fixedHour) + ":" + (time.minute < 10 ? "0" + time.minute : time.minute)
-                console.log("INVAL", calcTime)
                 return (
                     <div className="item" key={index}>
                         <div className="row">
                             <input type="time" min="00:00" max="23:59" onChange={(e) => {
                                 console.log("OUTVAL", e.target.value)
-                                let timeOut = e.target.value.split(":")
-                                timeOut[2] = (timeOut[0] >= 12 ? "PM" : "AM")
-                                timeOut[0] = (timeOut[0] == 0 ? 12 : timeOut[0] * 1)
-                                timeOut[0] = (timeOut[0] > 12 ? (timeOut[0] - 12) : timeOut[0])
-                                timeOut[1] = timeOut[1] * 1
-                                this.setAdjustmentTimeValue(index, timeOut)
-                            }} value={calcTime}></input>
+                                this.setAdjustmentTimeValue(index, e.target.value)
+                            }} value={time.time}></input>
                             <a className="button" onClick={() => {
                                 this.state.adjustmentTimes.splice(index, 1)
                                 this.forceUpdate()
@@ -566,9 +557,7 @@ export default class SettingsWindow extends PureComponent {
             console.log(arr[i])
             if (i < 2 && isNaN(arr[i])) return false;
         }
-        this.state.adjustmentTimes[index].hour = arr[0]
-        this.state.adjustmentTimes[index].minute = arr[1]
-        this.state.adjustmentTimes[index].am = arr[2]
+        this.state.adjustmentTimes[index].time = arr
 
         //this.forceUpdate()
         this.adjustmentTimesUpdated()
@@ -891,9 +880,7 @@ export default class SettingsWindow extends PureComponent {
     addAdjustmentTime = () => {
         this.state.adjustmentTimes.push({
             brightness: 50,
-            hour: '12',
-            minute: '30',
-            am: "PM",
+            time: "12:30",
             monitors: {}
         })
         this.forceUpdate()

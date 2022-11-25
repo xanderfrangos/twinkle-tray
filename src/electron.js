@@ -382,6 +382,17 @@ function readSettings(doProcessSettings = true) {
 
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
+  // Upgrade settings
+  if(Utils.getVersionValue(settings.settingsVer) < Utils.getVersionValue("v1.15.0")) {
+    try {
+      const upgradedTimes = Utils.upgradeAdjustmentTimes(settings.adjustmentTimes)
+      settings.adjustmentTimes = upgradedTimes
+      console.log("Upgraded Adjustment Times to v1.15.0 format!")
+    } catch(e) {
+      console.log("Couldn't upgrade Adjustment Times", e)
+    }
+  }
+
   if(doProcessSettings) processSettings({isReadSettings: true});
 }
 
@@ -422,6 +433,7 @@ function processSettings(newSettings = {}) {
   let doRestartPanel = false
 
   try {
+
     settings.settingsVer = "v" + app.getVersion()
 
     if (settings.theme) {
@@ -2181,6 +2193,11 @@ app.on("ready", async () => {
 
   refreshMonitors(true, true).then(() => {
     if (settings.brightnessAtStartup) setKnownBrightness();
+    if (settings.checkTimeAtStartup) {
+      lastTimeEvent = false;
+      setTimeout(() => handleBackgroundUpdate(true), 3500)
+    }
+    restartBackgroundUpdate()
     showIntro()
     createPanel()
   })
@@ -2274,6 +2291,7 @@ function getDebugTrayMenuItems() {
     { label: "HIDE PANEL", type: 'normal', click: () => showPanel(false) },
     { label: "OPACITY 0", type: 'normal', click: () => mainWindow?.setOpacity(0) },
     { label: "OPACITY 1", type: 'normal', click: () => mainWindow?.setOpacity(1) },
+    { label: "DO CURRENT TOD", type: 'normal', click: () => applyCurrentAdjustmentEvent(true) },
     { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
     { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
   ] }
@@ -2732,11 +2750,6 @@ function addEventListeners() {
   // Disable mouse events at startup
   pauseMouseEvents(true)
 
-  if (settings.checkTimeAtStartup) {
-    lastTimeEvent = false;
-    setTimeout(() => handleBackgroundUpdate(), 3500)
-  }
-  restartBackgroundUpdate()
 }
 
 function handleAccentChange() {
@@ -2920,7 +2933,7 @@ function idleCheckShort() {
         if(!settings.disableAutoApply) setKnownBrightness(false);
         isUserIdle = false
         userIdleDimmed = false
-        handleBackgroundUpdate() // Apply ToD adjustments, if needed
+        handleBackgroundUpdate(true) // Apply ToD adjustments, if needed
       }, 3000)
   
     }
@@ -2930,6 +2943,70 @@ function idleCheckShort() {
   }
 }
 
+
+// Get the currently applicable Time of Day Adjustment
+function getCurrentAdjustmentEvent() {
+
+  const date = new Date()
+  const nowValue = (date.getHours() * 60) + (date.getMinutes() * 1)
+
+  // Find most recent event
+  let foundEvent = false
+  try {
+    for (let event of settings.adjustmentTimes) {
+      const eventValue = (event.time.split(":")[0] * 60) + (event.time.split(":")[1] * 1)
+
+      // Check if event is not later than current time, last event time, or last found time
+      if (eventValue <= nowValue) {
+        // Check if found event is greater than last found event
+        if (foundEvent === false || foundEvent.value <= eventValue) {
+          foundEvent = Object.assign({}, event)
+          foundEvent.value = eventValue
+        }
+      }
+    }
+  } catch (e) {
+    console.log("Error getting adjustment times!", e)
+  }
+
+  console.log("getCurrentAdjustmentEvent: ", foundEvent)
+  return foundEvent
+}
+
+// If applicable, apply the current Time of Day Adjustment
+function applyCurrentAdjustmentEvent(force = false) {
+  try {
+    if (settings.adjustmentTimes.length === 0) return false;
+
+    const date = new Date()
+
+    // Reset on new day
+    if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
+      console.log("New day (or forced)... resetting lastTimeEvent")
+      lastTimeEvent = false
+    }
+
+    // Find most recent event
+    const foundEvent = getCurrentAdjustmentEvent()
+    if (foundEvent) {
+      if (lastTimeEvent == false || lastTimeEvent.value < foundEvent.value) {
+        console.log("Adjusting brightness automatically", foundEvent)
+        lastTimeEvent = Object.assign({}, foundEvent)
+        lastTimeEvent.day = new Date().getDate()
+        refreshMonitors().then(() => {
+          if (force || settings.adjustmentTimeSpeed === "instant") {
+            transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
+          } else {
+            transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
+          }
+        })
+      }
+    }
+  } catch (e) {
+    console.log("Error applying current Time of Day Adjustment", e)
+  }
+
+}
 
 
 let lastTimeEvent = {
@@ -2946,45 +3023,7 @@ function handleBackgroundUpdate(force = false) {
 
     // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0 && !userIdleDimmed) {
-      const date = new Date()
-      const hour = date.getHours()
-      const minute = date.getMinutes()
-
-      // Reset on new day
-      if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
-        console.log("New day (or forced), resettings lastTimeEvent")
-        lastTimeEvent = false
-      }
-
-      // Find most recent event
-      let foundEvent = false
-      for (let event of settings.adjustmentTimes) {
-        const eventHour = (event.hour * 1) + (event.am == "PM" && (event.hour * 1) != 12 ? 12 : (event.am == "AM" && (event.hour * 1) == 12 ? -12 : 0))
-        const eventMinute = event.minute * 1
-        // Check if event is not later than current time, last event time, or last found time
-        if (hour > eventHour || (hour == eventHour && minute >= eventMinute)) {
-          // Check if found event is greater than last found event
-          if (foundEvent === false || foundEvent.hour < eventHour || (foundEvent.hour == eventHour && foundEvent.minute <= eventMinute)) {
-            foundEvent = Object.assign({}, event)
-            foundEvent.minute = eventMinute
-            foundEvent.hour = eventHour
-          }
-        }
-      }
-      if (foundEvent) {
-        if (lastTimeEvent == false || lastTimeEvent.hour < foundEvent.hour || (lastTimeEvent.hour == foundEvent.hour && lastTimeEvent.minute < foundEvent.minute)) {
-          console.log("Adjusting brightness automatically", foundEvent)
-          lastTimeEvent = Object.assign({}, foundEvent)
-          lastTimeEvent.day = new Date().getDate()
-          refreshMonitors().then(() => {
-            if(force || settings.adjustmentTimeSpeed === "instant") {
-              transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
-            } else {
-              transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
-            }
-          })
-        }
-      }
+      applyCurrentAdjustmentEvent(force)
     }
   } catch (e) {
     console.error(e)

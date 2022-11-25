@@ -137,7 +137,43 @@ Flag to show brightness levels in the overlay
         0x12: "contrast",
         0xD6: "powerState",
         0x62: "volume"
-    }
+    },
+    upgradeAdjustmentTimes,
+    getVersionValue
+}
+
+
+function upgradeAdjustmentTimes(times = []) {
+    const newTimes = []
+
+    times.forEach(time => {
+        if(time.time) {
+            newTimes.push(time)
+            return
+        }
+
+        const newTime = {
+            brightness: (time.brightness ? time.brightness : 50),
+            monitors: (time.monitors ? time.monitors : 50),
+            time: "00:00"
+        }
+
+        // Convert to 24H
+        const hourInt = parseInt(time.hour)
+        const fixedHour = hourInt + (hourInt == 12 ? (time.am.toLowerCase() == "pm" ? 0 : -12) : (time.am.toLowerCase() == "pm" ? 12 : 0))
+        newTime.time = (fixedHour < 10 ? "0" + fixedHour : fixedHour) + ":" + (time.minute < 10 ? "0" + time.minute : time.minute)
+
+        newTimes.push(newTime)
+    })
+
+    return newTimes
+}
+
+// Convert version to a numeric value (v1.2.3 = 10020003)
+function getVersionValue(version = 'v1.0.0') {
+    let out = version.split('-')[0].replace("v","").split(".")
+    out = (out[0] * 10000 * 10000) + (out[1] * 10000) + (out[2] * 1)
+    return parseInt(out)
 }
 
 // Get known displays from file, along with current displays

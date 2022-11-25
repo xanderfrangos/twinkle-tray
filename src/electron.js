@@ -3078,6 +3078,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
   let display
   let type
   let brightness
+  let usetime
   let ddcciVCP
   let commandLine = []
 
@@ -3126,6 +3127,11 @@ function handleCommandLine(event, argv, directory, additionalData) {
         if (arg.indexOf("--offset=") === 0) {
           brightness = (arg.substring(9) * 1)
           type = "offset"
+        }
+
+        // Use time adjustments
+        if (arg.indexOf("--usetime") === 0) {
+          usetime = true
         }
 
         // DDC/CI command
@@ -3181,6 +3187,10 @@ function handleCommandLine(event, argv, directory, additionalData) {
             monitor: display.hwid.join("#")
           })
         }
+      }
+
+      if(usetime) {
+        applyCurrentAdjustmentEvent(true)
       }
 
     }

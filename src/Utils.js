@@ -50,6 +50,11 @@ module.exports = {
                 validArgs.BrightnessType = "offset"
             }
 
+            // Use time adjustments
+            if (arg.indexOf("--usetime") === 0) {
+                validArgs.UseTime = true
+            }
+
             // DDC/CI command
             if (arg.indexOf("--vcp=") === 0 && arg.indexOf(":")) {
                 validArgs.VCP = true
@@ -82,11 +87,11 @@ module.exports = {
             failed = false;
             return true;
         } else {
-            if (!(args.MonitorID !== undefined || args.MonitorNum !== undefined || args.All)) {
+            if (!(args.MonitorID !== undefined || args.MonitorNum !== undefined || args.All || args.UseTime)) {
                 console.log("\x1b[41mMissing monitor argument.\x1b[0m")
                 failed = true
             }
-            if (args.Brightness === undefined && !args.VCP) {
+            if (args.Brightness === undefined && !args.VCP && !args.UseTime) {
                 console.log("\x1b[41mMissing brightness argument.\x1b[0m")
                 failed = true
             }
@@ -118,6 +123,10 @@ Set brightness percentage.
 \x1b[36m--Offset\x1b[0m
 Adjust brightness percentage.
 \x1b[2mExample: --Offset=-20\x1b[0m
+
+\x1b[36m--UseTime\x1b[0m
+Adjust brightness using Time of Day Adjustments. 
+\x1b[2mExample: --UseTime\x1b[0m
 
 \x1b[36m--VCP\x1b[0m
 Send a specific DDC/CI VCP code and value instead of brightness. The first part is the VCP code (decimal or hexadecimal), and the second is the value.

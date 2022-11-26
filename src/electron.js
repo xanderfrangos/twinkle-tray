@@ -2063,7 +2063,7 @@ function showPanel(show = true, height = 300) {
     pauseMouseEvents(false)
     mainWindow.setOpacity(1)
     mainWindow.show()
-    sendToAllWindows('panel-position', mainWindow.getBounds())
+    sendToAllWindows('panel-position', mainWindow.getPosition())
     sendToAllWindows("playPanelAnimation")
 
   } else {

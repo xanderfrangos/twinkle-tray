@@ -9,7 +9,7 @@ window.ipc.send('request-localization')
 ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
 
 window.updateMica = () => {
-    const pos = window.winPosition.slice(0, 2)
+    const pos = [window.winPosition[0], window.winPosition[1]]
     if(window.settings.isWin11) {
         pos[0] += 12
         pos[1] += 12

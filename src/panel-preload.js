@@ -11,7 +11,7 @@ const con = {
 console.log = (...e) => { e.forEach((c) => { ipc.send('log', c); con.log(c) }) }
 console.error = (...e) => { e.forEach((c) => { ipc.send('log', c); con.error(c) }) }
 
-window.winPosition = [0, 0]
+window.winPosition = { x: 0, y: 0, width: 0, height: 0 }
 
 function getArgumentVars() {
     try {

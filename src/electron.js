@@ -848,12 +848,7 @@ function hotkeyOverlayHide(force = true) {
   // Pause mouse events if scroll shortcut is not enabled
   pauseMouseEvents(true)
 
-  mainWindow.setBounds({
-    width: 0,
-    height: 0,
-    x: 0,
-    y: 0
-  })
+  mainWindow.setSize(0, 0)
   
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
     tryVibrancy(mainWindow, false)

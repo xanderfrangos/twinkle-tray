@@ -573,11 +573,33 @@ body[data-is-win11="true"] {
         }
 
         .monitor-sliders.extended {
+            height: 28px;
+
+            & + .monitor-sliders.extended:before {
+                display: none;
+            }
+
+            & > .monitor-item {
+                display: none !important;
+            }
             .name-row, .feature-row {
                 display: none;
             }
             .feature-row.feature-brightness {
                 display: flex;
+                height: 28px;
+                margin: 0;
+                padding: 0;
+
+                .feature-icon {
+                    padding: 0;
+                    width: 26px;
+                    justify-content: flex-start;
+                    .icon {
+                        font-size: 16px !important;
+                        padding-right: 0;
+                    }
+                }
             }
         }
 
@@ -589,14 +611,14 @@ body[data-is-win11="true"] {
             height: 28px;
 
             .icon {
-                font-size: 14px !important;
+                font-size: 15px !important;
                 padding-right: 0;
                 position: relative;
                 top: -2px;
             }
 
             .name-row {
-                width: 32px;
+                width: 26px;
                 .title, .feature-power-icon {
                     display: none;
                 }
@@ -611,6 +633,7 @@ body[data-is-win11="true"] {
             .input--range {
                 position: relative;
                 top: -2px;
+                flex: 1;
                 .range {
                     &::-webkit-slider-thumb {
                         opacity: 0;

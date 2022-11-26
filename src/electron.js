@@ -777,9 +777,10 @@ async function hotkeyOverlayShow() {
 
   setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
+  panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if (monitor.type === "ddcci" || monitor.type === "wmi") monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -792,13 +793,27 @@ async function hotkeyOverlayShow() {
   }
   await toggleTray(true, true)
 
-  const panelOffset = 40
-  mainWindow.setBounds({
-    width: 26 + (40 * monitorCount),
-    height: 138,
-    x: panelOffset + 10 + (panelSize.taskbar.position === "LEFT" ? panelSize.taskbar.gap : 0),
-    y: panelOffset + 20
-  })
+  if(settings?.isWin11) {
+    const panelHeight = 14 + 36 + (28 * monitorCount)
+    const panelWidth = 216
+    const primaryDisplay = screen.getPrimaryDisplay()
+    const bounds = {
+      width: panelWidth,
+      height: panelHeight,
+      x: parseInt((primaryDisplay.workArea.width - panelWidth) / 2),
+      y: parseInt(primaryDisplay.workArea.height - panelHeight)
+    }
+    mainWindow.setBounds(bounds)
+  } else {
+    // Win10 style
+    const panelOffset = 40
+    mainWindow.setBounds({
+      width: 26 + (40 * monitorCount),
+      height: 138,
+      x: panelOffset + 10 + (panelSize.taskbar.position === "LEFT" ? panelSize.taskbar.gap : 0),
+      y: panelOffset + 20
+    })
+  }
 
   // Dumb stuff to prevent UI flicker
   setTimeout(() => {
@@ -826,6 +841,7 @@ function hotkeyOverlayHide(force = true) {
   if(!mainWindow.webContents.isDevToolsOpened()) {
     sendToAllWindows("panelBlur")
     showPanel(false)
+    sendToAllWindows("display-mode", "normal")
   }
   hotkeyOverlayTimeout = false
 
@@ -1660,6 +1676,7 @@ ipcMain.on('get-update', (event, version) => {
 })
 
 ipcMain.on('panel-height', (event, height) => {
+  if(panelState === "overlay") return;
   panelSize.height = height + (settings?.isWin11 ? 24 : 0)
   panelSize.width = 356 + (settings?.isWin11 ? 24 : 0)
   if (panelSize.visible && !isAnimatingPanel) {

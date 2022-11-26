@@ -96,7 +96,7 @@ export default class BrightnessPanel extends PureComponent {
                         { showPowerButton() }
                       </div>
                     </div>
-                    <div className="feature-row">
+                    <div className="feature-row feature-brightness">
                       <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
                       <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
                     </div>

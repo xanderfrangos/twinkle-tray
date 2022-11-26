@@ -233,7 +233,7 @@ body[data-use-native-animation="false"] {
 $overlayBarWidth: 11px;
 $overlayBarWidthOff: $overlayBarWidth * -0.5;
 
-body #root {
+body[data-is-win11="false"] #root {
     &[data-mode="overlay"] {
         .input--range .progress {
             height: $overlayBarWidth;
@@ -470,7 +470,7 @@ body #root {
 
 // Windows 11 style
 body[data-is-win11="true"] {
-    #root[data-mode="normal"] {
+    #root[data-mode="normal"], #root[data-mode="overlay"] {
         & > .window-base {
             display: flex;
             flex-direction: column;
@@ -558,21 +558,69 @@ body[data-is-win11="true"] {
     }
 
     #root[data-mode="overlay"] {
-        & > .window-base {
-            //border-radius: 5px;
-            //overflow: hidden;
-            //box-sizing: border-box;
+
+        .window-base {
+            transform: translateY(220px);
+            padding: 12px 15px;
         }
-        .titlebar {
+
+        .titlebar, .updateBar {
             display: none;
         }
 
-        .input--range .range::-webkit-slider-thumb {
-            //border-radius: 100%;
+        #mica {
+            //display: none !important;
         }
 
-        #mica {
-            display: none !important;
+        .monitor-sliders.extended {
+            .name-row, .feature-row {
+                display: none;
+            }
+            .feature-row.feature-brightness {
+                display: flex;
+            }
+        }
+
+        .monitor-item {
+            height: auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            height: 28px;
+
+            .icon {
+                font-size: 14px !important;
+                padding-right: 0;
+                position: relative;
+                top: -2px;
+            }
+
+            .name-row {
+                width: 32px;
+                .title, .feature-power-icon {
+                    display: none;
+                }
+            }
+
+            .val {
+                width: 32px;
+                font-size: 13px;
+                padding-right: 4px;
+            }
+
+            .input--range {
+                position: relative;
+                top: -2px;
+                .range {
+                    &::-webkit-slider-thumb {
+                        opacity: 0;
+                    }
+                }
+            }
+
+            &+.monitor-item {
+                margin-top: 0px !important;
+            }
         }
     }
     

@@ -3214,16 +3214,19 @@ function handleCommandLine(event, argv, directory, additionalData) {
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentScreenSize = {width: 1280, height: 720}
+let sharpBusy = false
 const homeDir = require("os").homedir()
 const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
 async function getWallpaper() {
+  if(sharpBusy) return false;
   try {  
     const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
-    currentScreenSize = screen.getPrimaryDisplay().workAreaSize
 
     // If time on file changed, render new wallpaper
     if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
+      sharpBusy = true
+      currentScreenSize = screen.getPrimaryDisplay().workAreaSize
       const sharp = require('sharp')
       currentWallpaper = "file://" + wallPath + "?" + Date.now()
       const wallpaperImage = sharp(wallPath)
@@ -3241,9 +3244,11 @@ async function getWallpaper() {
       Utils.unloadModule("sharp")
     }
     
+    sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
   } catch(e) {
     console.log("Wallpaper file not found or unavailable.", e)
+    sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
   }
 }

@@ -799,8 +799,7 @@ async function hotkeyOverlayShow() {
   if(startHideTimeout) clearTimeout(startHideTimeout);
   startHideTimeout = null;
   
-  mainWindow.restore()
-  mainWindow.show()
+  mainWindow.showInactive()
 
   setAlwaysOnTop(true)
   sendToAllWindows("display-mode", "overlay")
@@ -2118,7 +2117,6 @@ function startHidePanel() {
   if(!startHideTimeout) {
     startHideTimeout = setTimeout(() => {
       if(mainWindow) {
-        mainWindow.hide();
         mainWindow.minimize();
       }
       startHideTimeout = null

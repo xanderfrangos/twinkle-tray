@@ -12,7 +12,7 @@ export default function DDCCISliders(props) {
 
     if (monitor?.features?.contrast && monitorFeatures?.contrast) {
         extraHTML.push(
-            <div className="feature-row feature-contrast">
+            <div className="feature-row feature-contrast" key={monitor.key + "_contrast"}>
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
                 <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features.contrast[1] / 100)) }} />
             </div>
@@ -21,7 +21,7 @@ export default function DDCCISliders(props) {
 
     if (monitor?.features?.gain && monitorFeatures?.gain) {
         extraHTML.push(
-            <div className="feature-row feature-gain">
+            <div className="feature-row feature-gain" key={monitor.key + "_gain"}>
                 <div className="feature-icon"><span className="icon vfix">&#xE9CA;</span></div>
                 <Slider type="gain" monitorID={monitor.id} level={gain} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setGain(val); }} />
             </div>
@@ -30,7 +30,7 @@ export default function DDCCISliders(props) {
 
     if (monitor?.features?.volume && monitorFeatures?.volume) {
         extraHTML.push(
-            <div className="feature-row feature-volume">
+            <div className="feature-row feature-volume" key={monitor.key + "_volume"}>
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
                 <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} />
             </div>

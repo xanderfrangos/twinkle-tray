@@ -343,7 +343,9 @@ const defaultSettings = {
   windowsStyle: "system",
   hideClosedLid: false,
   getDDCBrightnessUpdates: false,
-  detectIdleTime: 0,
+  detectIdleTimeEnabled: false,
+  detectIdleTimeSeconds: 0,
+  detectIdleTimeMinutes: 5,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
   disableWMIC: false,
@@ -386,6 +388,7 @@ function readSettings(doProcessSettings = true) {
 
   // Upgrade settings
   if(Utils.getVersionValue(settings.settingsVer) < Utils.getVersionValue("v1.15.0")) {
+    // v1.15.0
     try {
       const upgradedTimes = Utils.upgradeAdjustmentTimes(settings.adjustmentTimes)
       settings.adjustmentTimes = upgradedTimes
@@ -393,7 +396,21 @@ function readSettings(doProcessSettings = true) {
     } catch(e) {
       console.log("Couldn't upgrade Adjustment Times", e)
     }
+    try {
+      if(settings.detectIdleTime) {
+        if(settings.detectIdleTime * 1 > 0) {
+          settings.detectIdleTimeEnabled = true
+          settings.detectIdleTimeSeconds = (settings.detectIdleTime * 1) % 60
+          settings.detectIdleTimeMinutes = Math.floor((settings.detectIdleTime * 1) / 60)
+        }
+        delete settings.detectIdleTime
+      }
+      console.log("Upgraded Idle settings to v1.15.0 format!")
+    } catch(e) {
+      console.log("Couldn't upgrade Idle settings", e)
+    }
   }
+
 
   if(doProcessSettings) processSettings({isReadSettings: true});
 }
@@ -2900,17 +2917,22 @@ let userIdleInterval = false // Check if idle
 let userCheckingForActiveInterval = false // Check if came back
 let userIdleDimmed = false
 
-let idleMonitor = setInterval(idleCheckLong, 60000)
+let idleMonitor = setInterval(idleCheckLong, 5000)
 let notIdleMonitor
 let lastIdleTime = 0
 
 let preIdleMonitors = {}
 
+function getIdleSettingValue() {
+  const detectIdleTime = (parseInt(settings.detectIdleTimeSeconds) + (settings.detectIdleTimeMinutes * 60))
+  return detectIdleTime
+}
+
 function idleCheckLong() {
   //if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
   lastIdleTime = idleTime
-  if(idleTime > (settings.detectIdleTime * 1 > 0 ? settings.detectIdleTime : 180) && !notIdleMonitor) {
+  if(idleTime >= (settings.detectIdleTimeEnabled ? getIdleSettingValue() : 180) && !notIdleMonitor) {
     startIdleCheckShort()
   }
 }
@@ -2922,13 +2944,14 @@ async function startIdleCheckShort() {
   console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
   if(notIdleMonitor) clearInterval(notIdleMonitor);
   notIdleMonitor = setInterval(idleCheckShort, 1000)
+  lastIdleTime = 1
 }
 
 function idleCheckShort() {
   try {
     const idleTime = powerMonitor.getSystemIdleTime()
 
-    if (!userIdleDimmed && settings.detectIdleTime * 1 > 0 && idleTime >= settings.detectIdleTime) {
+    if (!userIdleDimmed && settings.detectIdleTimeEnabled && idleTime >= getIdleSettingValue()) {
       console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
       userIdleDimmed = true
       try {
@@ -2951,6 +2974,7 @@ function idleCheckShort() {
         if(!settings.disableAutoApply) setKnownBrightness(false);
         isUserIdle = false
         userIdleDimmed = false
+        lastIdleTime = 1
         handleBackgroundUpdate(true) // Apply ToD adjustments, if needed
       }, 3000)
   
@@ -2987,7 +3011,6 @@ function getCurrentAdjustmentEvent() {
     console.log("Error getting adjustment times!", e)
   }
 
-  console.log("getCurrentAdjustmentEvent: ", foundEvent)
   return foundEvent
 }
 

@@ -1046,13 +1046,17 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_IDLE_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>                            
-                            <select value={window.settings.detectIdleTime} onChange={(e) => this.setSetting("detectIdleTime", e.target.value)}>
-                                <option value="0">{T.t("GENERIC_OFF")}</option>
-                                <option value="60">60 {T.t("GENERIC_SECONDS")}</option>
-                                <option value="300">3 {T.t("GENERIC_MINUTES")}</option>
-                                <option value="600">10 {T.t("GENERIC_MINUTES")}</option>
-                                <option value="1800">30 {T.t("GENERIC_MINUTES")}</option>
-                            </select>
+                            { this.renderToggle("detectIdleTimeEnabled") }
+                            <div style={{"display":(window.settings?.detectIdleTimeEnabled === true ? "flex" : "none")}}>
+                                <div style={{"marginRight":"6px"}}>
+                                    <label style={{"textTransform":"capitalize"}}>{T.t("GENERIC_MINUTES")}</label>
+                                    <input type="number" min="0" max="600" value={window.settings.detectIdleTimeMinutes * 1} onChange={(e) => this.setSetting("detectIdleTimeMinutes", e.target.value)} />
+                                </div>
+                                <div>
+                                    <label style={{"textTransform":"capitalize"}}>{T.t("GENERIC_SECONDS")}</label>
+                                    <input type="number" min="0" max="600" value={window.settings.detectIdleTimeSeconds * 1} onChange={(e) => this.setSetting("detectIdleTimeSeconds", e.target.value)} />
+                                </div>
+                            </div>
                         </div>
 
 

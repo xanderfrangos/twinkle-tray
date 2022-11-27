@@ -2312,6 +2312,8 @@ function setTrayMenu() {
   const contextMenu = Menu.buildFromTemplate([
     { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
+    getTimeAdjustmentsMenuItem(),
+    getDetectIdleMenuItem(),
     getDebugTrayMenuItems(),
     { type: 'separator' },
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
@@ -2854,7 +2856,7 @@ powerMonitor.on("resume", () => {
         //restartPanel()
 
         // Check if time adjustments should apply
-        handleBackgroundUpdate(true)
+        applyCurrentAdjustmentEvent(true, false)
       })
     },
     3000 // Give Windows a few seconds to... you know... wake up.
@@ -2975,7 +2977,7 @@ function idleCheckShort() {
         isUserIdle = false
         userIdleDimmed = false
         lastIdleTime = 1
-        handleBackgroundUpdate(true) // Apply ToD adjustments, if needed
+        applyCurrentAdjustmentEvent(true, false) // Apply ToD adjustments, if needed
       }, 3000)
   
     }
@@ -3015,9 +3017,10 @@ function getCurrentAdjustmentEvent() {
 }
 
 // If applicable, apply the current Time of Day Adjustment
-function applyCurrentAdjustmentEvent(force = false) {
+function applyCurrentAdjustmentEvent(force = false, instant = true) {
   try {
-    if (settings.adjustmentTimes.length === 0) return false;
+    if (tempSettings.pauseTimeAdjustments) return false;
+    if (settings.adjustmentTimes.length === 0 || userIdleDimmed) return false;
 
     const date = new Date()
 
@@ -3035,7 +3038,7 @@ function applyCurrentAdjustmentEvent(force = false) {
         lastTimeEvent = Object.assign({}, foundEvent)
         lastTimeEvent.day = new Date().getDate()
         refreshMonitors().then(() => {
-          if (force || settings.adjustmentTimeSpeed === "instant") {
+          if (instant || settings.adjustmentTimeSpeed === "instant") {
             transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           } else {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
@@ -3064,7 +3067,7 @@ function handleBackgroundUpdate(force = false) {
 
     // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0 && !userIdleDimmed) {
-      applyCurrentAdjustmentEvent(force)
+      applyCurrentAdjustmentEvent(force, false)
     }
   } catch (e) {
     console.error(e)
@@ -3231,7 +3234,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
       }
 
       if(usetime) {
-        applyCurrentAdjustmentEvent(true)
+        applyCurrentAdjustmentEvent(true, false)
       }
 
     }

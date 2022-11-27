@@ -148,7 +148,9 @@ Flag to show brightness levels in the overlay
         0x62: "volume"
     },
     upgradeAdjustmentTimes,
-    getVersionValue
+    getVersionValue,
+    lerp,
+    parseTime
 }
 
 
@@ -183,6 +185,14 @@ function getVersionValue(version = 'v1.0.0') {
     let out = version.split('-')[0].replace("v","").split(".")
     out = (out[0] * 10000 * 10000) + (out[1] * 10000) + (out[2] * 1)
     return parseInt(out)
+}
+
+function lerp(start, finish, perc) {
+    return start * (1 - perc) + finish * perc
+}
+
+function parseTime(time) {
+    return parseInt((time.split(":")[0] * 60) + (time.split(":")[1] * 1))
 }
 
 // Get known displays from file, along with current displays

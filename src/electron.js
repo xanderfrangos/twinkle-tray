@@ -323,6 +323,7 @@ const defaultSettings = {
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
   adjustmentTimeSpeed: "normal",
+  adjustmentTimeAnimate: false,
   checkTimeAtStartup: true,
   order: [],
   monitorFeatures: {},
@@ -2318,13 +2319,16 @@ function createTray() {
 function setTrayMenu() {
   if (tray === null) return false;
 
+  let willShowPausableItems = (settings.detectIdleTimeEnabled || settings.adjustmentTimes.length ? true : false)
+
   const contextMenu = Menu.buildFromTemplate([
-    { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
-    { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     getTimeAdjustmentsMenuItem(),
     getDetectIdleMenuItem(),
-    getDebugTrayMenuItems(),
+    { type: 'separator', visible: (willShowPausableItems) },
+    { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
+    { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     { type: 'separator' },
+    getDebugTrayMenuItems(),
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setContextMenu(contextMenu)
@@ -2593,6 +2597,16 @@ function createSettings() {
       require('electron').shell.openExternal(url)
     })
   })
+
+  // Sort Time of Day Adjustments
+  // We're doing it here as it's least obtrusive to the UI. Refreshing when re-opening the window.
+  if(settings.adjustmentTimes?.length) {
+    settings.adjustmentTimes.sort((a, b) => {
+      const aVal = Utils.parseTime(a.time)
+      const bVal = Utils.parseTime(b.time)
+      return aVal - bVal
+    })
+  }
 
 }
 
@@ -2989,7 +3003,7 @@ function idleCheckShort() {
       }
     }
   
-    if(isUserIdle && idleTime < lastIdleTime) {
+    if(isUserIdle && idleTime < (lastIdleTime + 1)) {
       // Wake up
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)
@@ -3022,13 +3036,14 @@ function getCurrentAdjustmentEvent() {
   let foundEvent = false
   try {
     for (let event of settings.adjustmentTimes) {
-      const eventValue = (event.time.split(":")[0] * 60) + (event.time.split(":")[1] * 1)
+      const eventValue = Utils.parseTime(event.time)
 
       // Check if event is not later than current time, last event time, or last found time
       if (eventValue <= nowValue) {
         // Check if found event is greater than last found event
         if (foundEvent === false || foundEvent.value <= eventValue) {
           foundEvent = Object.assign({}, event)
+          foundEvent.monitors = Object.assign({}, event.monitors)
           foundEvent.value = eventValue
         }
       }
@@ -3040,6 +3055,76 @@ function getCurrentAdjustmentEvent() {
   return foundEvent
 }
 
+function getNextAdjustmentEvent() {
+  const currentEvent = getCurrentAdjustmentEvent()
+  if(!currentEvent) return false
+
+  let earliestEvent = false
+  let closestEvent = false
+
+  try {
+    for (let event of settings.adjustmentTimes) {
+      const eventValue = Utils.parseTime(event.time)
+
+      // Check if event is later than current time, and less than the last found event
+      if (eventValue > currentEvent.value && (!closestEvent || eventValue < closestEvent.value)) {
+        closestEvent = Object.assign({}, event)
+        closestEvent.monitors = Object.assign({}, event.monitors)
+        closestEvent.value = eventValue
+      }
+
+      // Check if event is the earliest
+      if (!earliestEvent || eventValue < earliestEvent.value) {
+        earliestEvent = Object.assign({}, event)
+        earliestEvent.monitors = Object.assign({}, event.monitors)
+        earliestEvent.value = eventValue
+      }
+    }
+  } catch (e) {
+    console.log("Error getting adjustment times!", e)
+  }
+
+  // Return closest event or earliest event
+  return (closestEvent ? closestEvent : earliestEvent)
+}
+
+
+function getCurrentAdjustmentEventLERP() {
+  try {
+    const current = getCurrentAdjustmentEvent()
+    const next = getNextAdjustmentEvent()
+  
+    if(!current || !next) return false;
+  
+    const date = new Date()
+    const nowValue = (date.getHours() * 60) + (date.getMinutes() * 1)
+  
+    if(current.value > next.value) {
+      next.value += 1440 // Add 24hr if next event is tomorrow
+    }
+  
+    // Calculate 0-1 percentage of progress
+    const percent = (next.value - nowValue) / (next.value - current.value)
+  
+    // Generate result depending on if displays are linked
+    if(settings.adjustmentTimeIndividualDisplays) {
+      const keys = Object.keys(next.monitors)
+      const monitors = Object.assign(current.monitors)
+      keys.forEach(key => {
+        if(monitors[key] > -1) {
+          monitors[key] = Math.round(Utils.lerp(current.monitors[key], next.monitors[key], percent))
+        }
+      })
+      return monitors
+    } else {
+      return Math.round(Utils.lerp(current.brightness, next.brightness, percent))
+    }
+  } catch(e) {
+    console.log("Error generating Adjustment Time LERP", e)
+    return false
+  }
+}
+
 // If applicable, apply the current Time of Day Adjustment
 function applyCurrentAdjustmentEvent(force = false, instant = true) {
   try {
@@ -3049,7 +3134,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
     const date = new Date()
 
     // Reset on new day
-    if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
+    if (force || settings.adjustmentTimeAnimate || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
       console.log("New day (or forced)... resetting lastTimeEvent")
       lastTimeEvent = false
     }
@@ -3058,9 +3143,21 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
     const foundEvent = getCurrentAdjustmentEvent()
     if (foundEvent) {
       if (lastTimeEvent == false || lastTimeEvent.value < foundEvent.value) {
+
+        if(settings.adjustmentTimeAnimate) {
+          // If LERPing, override foundEvent with interpolated value
+          lerp = getCurrentAdjustmentEventLERP()
+          if(typeof lerp === "number") {
+            foundEvent.brightness = lerp
+          } else if(typeof lerp === "object") {
+            foundEvent.monitors = lerp
+          }
+        }
+
         console.log("Adjusting brightness automatically", foundEvent)
         lastTimeEvent = Object.assign({}, foundEvent)
         lastTimeEvent.day = new Date().getDate()
+
         refreshMonitors().then(() => {
           if (instant || settings.adjustmentTimeSpeed === "instant") {
             transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))

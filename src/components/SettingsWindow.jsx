@@ -496,7 +496,7 @@ export default class SettingsWindow extends PureComponent {
         } else {
             return this.state.adjustmentTimes.map((time, index) => {
                 return (
-                    <div className="item" key={index}>
+                    <div className="item" key={index + "_" + time.time}>
                         <div className="row">
                             <input type="time" min="00:00" max="23:59" onChange={(e) => {
                                 console.log("OUTVAL", e.target.value)
@@ -1025,6 +1025,11 @@ export default class SettingsWindow extends PureComponent {
                             <label>{T.t("SETTINGS_TIME_INDIVIDUAL_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_INDIVIDUAL_DESC")}</p>
                             { this.renderToggle("adjustmentTimeIndividualDisplays") }
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>{T.t("SETTINGS_TIME_ANIMATE_TITLE")}</label>
+                            <p>{T.t("SETTINGS_TIME_ANIMATE_DESC")}</p>
+                            { this.renderToggle("adjustmentTimeAnimate") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_TRANSITON_TITLE")}</label>

@@ -117,6 +117,8 @@
     "SETTINGS_TIME_STARTUP_DESC": "Adjust the brightness to match the most relevant time when Twinkle Tray starts.",
     "SETTINGS_TIME_IDLE_TITLE": "Idle Detection",
     "SETTINGS_TIME_IDLE_DESC": "When no input has been detected for a period of time, the brightness of all displays will be reduced.",
+    "SETTINGS_TIME_ANIMATE_TITLE": "Animate between times",
+    "SETTINGS_TIME_ANIMATE_DESC": "Brightness values will be animated between the current and next scheduled event. May increase CPU usage. Manual brightness adjustments will quickly be overwritten while this is active.",
     "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
     "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all displays.",
     "SETTINGS_HOTKEYS_ADD": "Add hotkey",

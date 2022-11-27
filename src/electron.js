@@ -364,6 +364,11 @@ const defaultSettings = {
   branch: "master"
 }
 
+const tempSettings = {
+  pauseTimeAdjustments: false,
+  pauseIdleDetection: false
+}
+
 Utils.unloadModule("uuid/v4")
 
 let settings = Object.assign({}, defaultSettings)
@@ -450,6 +455,7 @@ function writeSettings(newSettings = {}, processAfter = true) {
 function processSettings(newSettings = {}) {
 
   let doRestartPanel = false
+  let rebuildTray = false
 
   try {
 
@@ -470,6 +476,7 @@ function processSettings(newSettings = {}) {
     if (newSettings.adjustmentTimes !== undefined) {
       lastTimeEvent = false
       restartBackgroundUpdate()
+      rebuildTray = true
     }
 
     if (newSettings.hotkeys !== undefined) {
@@ -478,19 +485,15 @@ function processSettings(newSettings = {}) {
 
     if (newSettings.language !== undefined) {
       getLocalization()
-      setTrayMenu()
+      rebuildTray = true
     }
 
     if (newSettings.order !== undefined) {
       doRestartPanel = true
     }
 
-    if(newSettings.detectIdleTime || newSettings.isReadSettings) {
-      if(settings.detectIdleTime * 1 > 0) {
-        //startIdleDetection()
-      } else {
-        //stopIdleDetection()
-      }
+    if(newSettings.detectIdleTimeEnabled === true || newSettings.detectIdleTimeEnabled === false) {
+      rebuildTray = true
     }
 
     if(newSettings.windowsStyle !== undefined) {
@@ -527,6 +530,10 @@ function processSettings(newSettings = {}) {
       }
     }
 
+    if (newSettings.isDev === true || newSettings.isDev === false) {
+      rebuildTray = true
+    }
+
     if (newSettings.branch) {
       lastCheck = false
       settings.dismissedUpdate = false
@@ -546,7 +553,9 @@ function processSettings(newSettings = {}) {
       }
     }
 
-
+    if (rebuildTray) {
+      setTrayMenu()
+    }
 
     if (mainWindow && doRestartPanel) {
       restartPanel()
@@ -2321,6 +2330,20 @@ function setTrayMenu() {
   tray.setContextMenu(contextMenu)
 }
 
+function getTimeAdjustmentsMenuItem() {
+  if(settings.adjustmentTimes?.length) {
+    return { label: T.t("GENERIC_PAUSE_TOD"), type: 'checkbox', click: (e) => tempSettings.pauseTimeAdjustments = e.checked }
+  }
+  return { label: "", visible: false }
+}
+
+function getDetectIdleMenuItem() {
+  if(settings.detectIdleTimeEnabled) {
+    return { label: T.t("GENERIC_PAUSE_IDLE"), type: 'checkbox', click: (e) => tempSettings.pauseIdleDetection = e.checked }
+  }
+  return { label: "", visible: false }
+}
+
 function getDebugTrayMenuItems() {
   return { label: "DEBUG", visible: (settings.isDev ? true : false), submenu: [
     { label: "RESTART PANEL", type: 'normal', click: () => restartPanel() },
@@ -2931,6 +2954,7 @@ function getIdleSettingValue() {
 }
 
 function idleCheckLong() {
+  if(tempSettings.pauseIdleDetection) return false;
   //if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
   lastIdleTime = idleTime

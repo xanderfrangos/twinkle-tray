@@ -1049,6 +1049,7 @@ export default class SettingsWindow extends PureComponent {
                             { this.renderToggle("checkTimeAtStartup") }
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
+                            <div className="sectionTitle">{T.t("SETTINGS_TIME_IDLE_TITLE")}</div>
                             <label>{T.t("SETTINGS_TIME_IDLE_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>                            
                             { this.renderToggle("detectIdleTimeEnabled") }

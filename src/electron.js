@@ -2350,12 +2350,10 @@ function createTray() {
 function setTrayMenu() {
   if (tray === null) return false;
 
-  let willShowPausableItems = (settings.detectIdleTimeEnabled || settings.adjustmentTimes.length ? true : false)
-
   const contextMenu = Menu.buildFromTemplate([
     getTimeAdjustmentsMenuItem(),
     getDetectIdleMenuItem(),
-    { type: 'separator', visible: (willShowPausableItems) },
+    getPausableSeparatorMenuItem(),
     { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
     { type: 'separator' },
@@ -2363,6 +2361,13 @@ function setTrayMenu() {
     { label: T.t("GENERIC_QUIT"), type: 'normal', click: quitApp }
   ])
   tray.setContextMenu(contextMenu)
+}
+
+function getPausableSeparatorMenuItem() {
+  if(settings.detectIdleTimeEnabled || settings.adjustmentTimes.length > 0) {
+    return { type: 'separator' }
+  }
+  return { label: "", visible: false }
 }
 
 function getTimeAdjustmentsMenuItem() {

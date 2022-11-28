@@ -15,8 +15,24 @@ Napi::Boolean SetWindowPosition(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), result);
 }
 
+Napi::Number GetForegroundWin(const Napi::CallbackInfo& info) {
+    HWND result = GetForegroundWindow();
+
+    return Napi::Number::New(info.Env(), (long) result);
+}
+
+Napi::Boolean SetForegroundWin(const Napi::CallbackInfo& info) {
+    Napi::Number hwnd = info[0].As<Napi::Number>();
+
+    boolean result = SetForegroundWindow((HWND) hwnd.Int32Value());
+
+    return Napi::Boolean::New(info.Env(), result);
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "setWindowPos"), Napi::Function::New(env, SetWindowPosition));
+    exports.Set(Napi::String::New(env, "getForegroundWindow"), Napi::Function::New(env, GetForegroundWin));
+    exports.Set(Napi::String::New(env, "setForegroundWindow"), Napi::Function::New(env, SetForegroundWin));
     return exports;
 }
 

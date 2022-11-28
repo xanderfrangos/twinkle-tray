@@ -1,3 +1,7 @@
 "use strict";
 const addon = require("bindings")("setwindowpos");
-module.exports = addon.setWindowPos
+module.exports = {
+    setWindowPos: addon.setWindowPos,
+    setForegroundWindow: addon.setForegroundWindow,
+    getForegroundWindow: addon.getForegroundWindow
+}

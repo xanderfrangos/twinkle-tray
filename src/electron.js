@@ -3000,7 +3000,7 @@ function idleCheckShort() {
       }
     }
   
-    if(isUserIdle && idleTime < (lastIdleTime + 1)) {
+    if(isUserIdle && idleTime < lastIdleTime) {
       // Wake up
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)

@@ -1808,7 +1808,6 @@ function createPanel(toggleOnLoad = false) {
 
       panelReady = true
       console.log("Panel ready!")
-      sendMicaWallpaper()
       createTray()
 
       showPanel(false)
@@ -1858,7 +1857,7 @@ function createPanel(toggleOnLoad = false) {
         })
       }, 8000)
       
-      setTimeout(sendMicaWallpaper, 500)
+      setTimeout(sendMicaWallpaper, 1000)
       sendToAllWindows('panel-position', mainWindow.getPosition())
     } catch(e) { }
   })
@@ -3412,6 +3411,6 @@ async function getWallpaper() {
 
 async function sendMicaWallpaper() {
   // Skip if Win10
-  if(!settings?.isWin11) return false;
+  if(!settings?.isWin11 || !mainWindow) return false;
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

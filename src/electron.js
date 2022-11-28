@@ -40,7 +40,7 @@ const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-//const setWindowPos = require("setwindowpos-binding")
+const WindowUtils = require("setwindowpos-binding")
 const setWindowPos = () => {}
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -1867,7 +1867,7 @@ function createPanel(toggleOnLoad = false) {
 function setAlwaysOnTop(onTop = true) {
   if(!mainWindow) return false;
   if(onTop) {
-    mainWindow.setAlwaysOnTop(true, (isReallyWin11 ? 'screen-saver' : 'modal-panel'))
+    mainWindow.setAlwaysOnTop(true, 'modal-panel')
   } else {
     mainWindow.setAlwaysOnTop(false)
   }
@@ -2111,18 +2111,52 @@ function showPanel(show = true, height = 300) {
   }
 }
 
+function trySetForegroundWindow(hwnd) {
+  try {
+    console.log("trySetForegroundWindow: " + hwnd)
+    WindowUtils.setForegroundWindow(hwnd)
+  } catch(e) {
+    console.log("Couldn't focus window after minimize!", e)
+  }
+}
+
 let startHideTimeout
+let lastActiveWindow = 0
 function startHidePanel() {
+  const mainWindowHWND = mainWindow.getNativeWindowHandle().readInt32LE()
   if(!startHideTimeout) {
     startHideTimeout = setTimeout(() => {
+      lastActiveWindow = 0
       if(mainWindow) {
+        try {
+          lastActiveWindow = WindowUtils.getForegroundWindow()
+          console.log("getForegroundWindow: " + lastActiveWindow)
+        } catch(e) { 
+          console.log("Couldn't get foreground window!", e)
+        }
         mainWindow.minimize();
       }
       startHideTimeout = null
       setTimeout(() => {
         try { global.gc() } catch(e) {}
       }, 1000)
+
+      // Kill me
+      if(lastActiveWindow && lastActiveWindow != mainWindowHWND) {
+        trySetForegroundWindow(lastActiveWindow);
+        setTimeout(() => {
+          trySetForegroundWindow(lastActiveWindow);
+        }, 33)
+        setTimeout(() => {
+          trySetForegroundWindow(lastActiveWindow);
+        }, 50)
+        setTimeout(() => {
+          trySetForegroundWindow(lastActiveWindow);
+        }, 100)
+      }
+      
     }, 100)
+
     if(mainWindow) mainWindow.setOpacity(0);
   }
 }
@@ -2355,6 +2389,7 @@ function getDebugTrayMenuItems() {
     { label: "DO CURRENT TOD", type: 'normal', click: () => applyCurrentAdjustmentEvent(true) },
     { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
     { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
+    { label: "LAST ACTIVE WIN", type: 'normal', click: () => trySetForegroundWindow(lastActiveWindow) }
   ] }
 }
 

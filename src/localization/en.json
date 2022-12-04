@@ -145,5 +145,8 @@
     "SETTINGS_UPDATES_AVAILABLE": "New version of Twinkle Tray available!",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Up to date. The current version includes the following changes:",
     "SETTINGS_UPDATES_DOWNLOADING": "Downloading update…",
-    "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}",
+    "SETTINGS_UPDATES_CHANNEL": "Update channel",
+    "SETTINGS_UPDATES_BRANCH_STABLE": "Stable (default)",
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
 }

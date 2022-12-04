@@ -1188,6 +1188,15 @@ export default class SettingsWindow extends PureComponent {
                             { this.renderToggle("checkForUpdates") }
                         </div>
 
+
+                        <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
+                            <label>{T.t("SETTINGS_UPDATES_CHANNEL")}</label>
+                            <select value={this.state.rawSettings.branch} onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
+                                <option value="master">{T.t("SETTINGS_UPDATES_BRANCH_STABLE")}</option>
+                                <option value="beta">{T.t("SETTINGS_UPDATES_BRANCH_BETA")}</option>
+                            </select>
+                        </div>
+
                         <div className="pageSection debug" data-active={this.isSection("debug")}>
                             <div className="sectionTitle">All Displays</div>
                             <label>Every detected display (including those not compatible) is listed below.</label>
@@ -1203,17 +1212,6 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">Settings</div>
                             <label>These are your raw user settings.</label>
                             <p style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
-                        </div>
-
-
-                        <div className="pageSection debug" data-active={this.isSection("debug")}>
-                            <div className="sectionTitle">Update channel</div>
-                            <p>
-                                <select value={this.state.rawSettings.branch} onChange={(e) => { window.sendSettings({ branch: e.target.value }) }}>
-                                    <option value="master">Stable (default)</option>
-                                    <option value="beta">Beta</option>
-                                </select>
-                            </p>
                         </div>
 
                         <div className="pageSection debug" data-active={this.isSection("debug")}>

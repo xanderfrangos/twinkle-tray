@@ -90,7 +90,7 @@
     "SETTINGS_UPDATES_DOWNLOAD": "ダウンロード & インストール {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "更新する種類",
     "SETTINGS_UPDATES_BRANCH_STABLE": "安定版 (既定)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "ベータ版"
+    "SETTINGS_UPDATES_BRANCH_BETA": "ベータ版",
     "SETTINGS_GENERAL_SCROLL_TITLE": "トレイのアイコン上でスクロール",
     "SETTINGS_GENERAL_SCROLL_DESC": "トレイアイコン上でのスクロールで全ディスプレイの明るさを調整します。一部のタッチパッドでは動作しません。",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "トレイのアイコン",

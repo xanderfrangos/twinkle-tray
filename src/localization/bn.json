@@ -83,7 +83,7 @@
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "বর্তমান উজ্জ্বলতা",
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "সর্বোচ্চ উজ্জ্বলতা",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "উজ্জ্বলতা স্বাভাবিককরণ",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "অভ্যন্তরীণ প্রদর্শন লুকান",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "নিষ্ক্রিয় অভ্যন্তরীণ ডিসপ্লে লুকান",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "যখন ঢাকনা বন্ধ থাকে বা উইন্ডোজে অভ্যন্তরীণ প্রদর্শন অক্ষম করা হয়, তখন প্যানেলে উজ্জ্বলতা স্লাইডারটি লুকান।",
     "SETTINGS_FEATURES_DESCRIPTION": "উজ্জ্বলতা প্যানেলে নির্দিষ্ট DDC/CI বৈশিষ্ট্যগুলি সক্ষম বা অক্ষম করুন৷ আপনার মনিটরের উজ্জ্বলতা প্যানেলে দেখানোর জন্য অন্তত একটি বৈশিষ্ট্য সক্রিয় করা আবশ্যক। সমস্ত ডিসপ্লে এই বৈশিষ্ট্যগুলিকে সমর্থন করে না, যেমন ল্যাপটপ/ট্যাবলেট প্রদর্শন।",
     "SETTINGS_FEATURES_UNSUPPORTED": "এই মনিটর DDC/CI বৈশিষ্ট্য সমর্থন করে না।",

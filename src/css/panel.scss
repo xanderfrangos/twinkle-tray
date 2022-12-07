@@ -487,8 +487,12 @@ body[data-is-win11="true"] {
             box-shadow: inset 0 0 0 1px #c5c5c547, 0 8px 15px -5px rgb(0 0 0 / 75%);
             box-shadow: 0 8px 15px -5px rgb(0 0 0 / 75%);
             box-shadow: none;
-            filter: drop-shadow(0 5px 6px rgb(0 0 0 / 45%));
             border: none;
+
+            filter: drop-shadow(0 5px 6px rgb(0 0 0 / 40%));
+            @media screen and (prefers-color-scheme: dark) {
+                filter: drop-shadow(0 5px 6px rgb(0 0 0 / 45%));
+            }
     
             &:before {
                 pointer-events: none;
@@ -559,9 +563,14 @@ body[data-is-win11="true"] {
 
     #root[data-mode="overlay"] {
 
-        .window-base {
+        & > .window-base {
             transform: translateY(220px);
             padding: 12px 15px;
+
+            filter: drop-shadow(0 5px 5px rgb(0 0 0 / 18%));
+            @media screen and (prefers-color-scheme: dark) {
+                filter: drop-shadow(0 5px 5px rgb(0 0 0 / 36%));
+            }
         }
 
         .titlebar, .updateBar {

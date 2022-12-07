@@ -3021,7 +3021,6 @@ async function startIdleCheckShort() {
   console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
   if(notIdleMonitor) clearInterval(notIdleMonitor);
   notIdleMonitor = setInterval(idleCheckShort, 1000)
-  lastIdleTime = 1
 }
 
 function idleCheckShort() {
@@ -3045,14 +3044,33 @@ function idleCheckShort() {
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)
       notIdleMonitor = false
-      if(!settings.disableAutoApply) setKnownBrightness(false);
+
+      // Different behavior depending on if idle dimming is on
+      if(settings.detectIdleTimeEnabled) {
+        // Always restore when dimmed
+        setKnownBrightness(false)
+      } else {
+        // Not dimmed, try checking ToD first. sKB as backup.
+        const foundEvent = applyCurrentAdjustmentEvent(true, true)
+        if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false);
+      }
+      
       // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
       setTimeout(() => {
-        if(!settings.disableAutoApply) setKnownBrightness(false);
         isUserIdle = false
         userIdleDimmed = false
         lastIdleTime = 1
-        applyCurrentAdjustmentEvent(true, false) // Apply ToD adjustments, if needed
+
+        // Similar logic to above
+        if(settings.detectIdleTimeEnabled) {
+          // Always restore when dimmed, then check ToD
+          setKnownBrightness(false)
+          applyCurrentAdjustmentEvent(true, false)
+        } else {
+          // Not dimmed, try checking ToD first. sKB as backup.
+          const foundEvent = applyCurrentAdjustmentEvent(true, true)
+          if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
+        }
       }, 3000)
   
     }
@@ -3202,6 +3220,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           }
         })
+        return foundEvent
       }
     }
   } catch (e) {

@@ -141,5 +141,12 @@
     "SETTINGS_UPDATES_AVAILABLE": "Twinkle Tray 有新版本可用！",
     "SETTINGS_UPDATES_NONE_AVAILABLE": "已是最新版。目前的版本包括以下更新：",
     "SETTINGS_UPDATES_DOWNLOADING": "正在下载更新…",
-    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}"
+    "SETTINGS_UPDATES_DOWNLOAD": "下载并安装 {{1}}",
+    "GENERIC_PAUSE_IDLE": "暂停空闲检测",
+    "SETTINGS_TIME_ANIMATE_TITLE": "时间之间的动画",
+    "SETTINGS_TIME_ANIMATE_DESC": "亮度值将在当前和下一个预定事件之间进行动画处理。可能会增加CPU的使用率。当此功能激活时，手动亮度调整将很快被覆盖。",
+    "SETTINGS_UPDATES_CHANNEL": "更新渠道",
+    "GENERIC_PAUSE_TOD": "暂停时间的调整",
+    "SETTINGS_UPDATES_BRANCH_STABLE": "稳定（默认）",
+    "SETTINGS_UPDATES_BRANCH_BETA": "β"
 }

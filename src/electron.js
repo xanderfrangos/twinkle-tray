@@ -2335,16 +2335,6 @@ function createTray() {
     }
   })
 
-  nativeTheme.on('updated', async () => {
-    console.log("Event: theme updated");
-    await getThemeRegistry()
-    try {
-      tray.setImage(getTrayIconPath())
-    } catch (e) {
-      debug.log("Couldn't update tray icon!", e)
-    }
-  })
-
 }
 
 function setTrayMenu() {
@@ -2853,6 +2843,7 @@ let backgroundInterval = null
 function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
+  nativeTheme.on('updated', handleAccentChange)
 
   addDisplayChangeListener(handleMonitorChange)
 
@@ -2863,11 +2854,21 @@ function addEventListeners() {
 
 }
 
+let handleAccentChangeTimeout = false
 function handleAccentChange() {
-  console.log("Event: handleAccentChange");
-  sendToAllWindows('update-colors', getAccentColors())
-  getThemeRegistry()
-  sendMicaWallpaper()
+  if(handleAccentChangeTimeout) clearTimeout(handleAccentChangeTimeout);
+  handleAccentChangeTimeout = setTimeout(async () => {
+    console.log("Event: handleAccentChange");
+    sendToAllWindows('update-colors', getAccentColors())
+    await getThemeRegistry()
+    setTimeout(sendMicaWallpaper, 100)
+    try {
+      tray.setImage(getTrayIconPath())
+    } catch (e) {
+      debug.log("Couldn't update tray icon!", e)
+    }
+    handleAccentChangeTimeout = false
+  }, 2000)
 }
 
 let skipFirstMonChange = false
@@ -3242,6 +3243,11 @@ function handleBackgroundUpdate(force = false) {
     // Wallpaper updates
     sendMicaWallpaper()
 
+    // Unload sharp after 10 minutes
+    if(Date.now() - lastSharpTime > 1000 * 60 * 10) {
+      Utils.unloadModule("sharp")
+    }
+
     // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0 && !userIdleDimmed) {
       applyCurrentAdjustmentEvent(force, false)
@@ -3428,35 +3434,39 @@ function handleCommandLine(event, argv, directory, additionalData) {
 // Mica features
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
+let currentWallpaperFileSize = 0;
 let currentScreenSize = {width: 1280, height: 720}
 let sharpBusy = false
+let lastSharpTime = Date.now()
 const homeDir = require("os").homedir()
-const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
+const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.jpg`)
 async function getWallpaper() {
-  if(sharpBusy) return false;
+  if(sharpBusy) return { path: currentWallpaper, size: currentScreenSize };
   try {  
     const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
+    const newTime = file.mtime.getTime()
+    const newSize = file.size
 
     // If time on file changed, render new wallpaper
-    if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
+    if(file?.mtime && (newTime !== currentWallpaperTime || newSize !== currentWallpaperFileSize)) {
       sharpBusy = true
       currentScreenSize = screen.getPrimaryDisplay().workAreaSize
       const sharp = require('sharp')
-      currentWallpaper = "file://" + wallPath + "?" + Date.now()
+      sharp.cache(false)
       const wallpaperImage = sharp(wallPath)
-      //const wallpaperInfo = await wallpaperImage.metadata()
-      const image = await sharp({
+      await sharp({
         create: {
-          width: currentScreenSize.width,
-          height: currentScreenSize.height,
+          width: currentScreenSize.width * 0.5,
+          height: currentScreenSize.height * 0.5,
           channels: 4,
           background: "#202020FF"
         }
-      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
+      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width * 0.5, currentScreenSize.height * 0.5, { fit: "fill" }).blur(30).toBuffer(), blend: "source" }]).flatten().jpeg({ quality: 95 }).toFile(micaWallpaperPath)
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
-      currentWallpaperTime = file.mtime.getTime()
-      Utils.unloadModule("sharp")
+      currentWallpaperTime = newTime
+      currentWallpaperFileSize = newSize;
+      lastSharpTime = Date.now()
     }
     
     sharpBusy = false
@@ -3469,7 +3479,7 @@ async function getWallpaper() {
 }
 
 async function sendMicaWallpaper() {
-  // Skip if Win10
-  if(!settings?.isWin11 || !mainWindow) return false;
+  // Skip if Win10 or Mica disabled
+  if(!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

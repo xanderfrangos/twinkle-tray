@@ -3243,11 +3243,6 @@ function handleBackgroundUpdate(force = false) {
     // Wallpaper updates
     sendMicaWallpaper()
 
-    // Unload sharp after 10 minutes
-    if(Date.now() - lastSharpTime > 1000 * 60 * 10) {
-      Utils.unloadModule("sharp")
-    }
-
     // Time of Day Adjustments
     if (settings.adjustmentTimes.length > 0 && !userIdleDimmed) {
       applyCurrentAdjustmentEvent(force, false)
@@ -3469,6 +3464,7 @@ async function getWallpaper() {
       lastSharpTime = Date.now()
     }
     
+    Utils.unloadModule("sharp")
     sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
   } catch(e) {

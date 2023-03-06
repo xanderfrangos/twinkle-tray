@@ -45,6 +45,9 @@ const setWindowPos = () => {}
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
 
+const ActiveWindow = require('@paymoapp/active-window').default;
+ActiveWindow.initialize(10)
+
 const reg = require('native-reg');
 const Color = require('color')
 const Translate = require('./Translate');
@@ -361,6 +364,7 @@ const defaultSettings = {
   ddcPowerOffValue: 6,
   disableAutoRefresh: false,
   disableAutoApply: false,
+  profiles: [],
   uuid: uuid(),
   branch: "master"
 }
@@ -434,7 +438,7 @@ if(settings.forceLowPowerGPU) {
 }
 
 let writeSettingsTimeout = false
-function writeSettings(newSettings = {}, processAfter = true) {
+function writeSettings(newSettings = {}, processAfter = true, sendUpdate = true) {
   settings = Object.assign(settings, newSettings)
 
   if (!writeSettingsTimeout) {
@@ -449,11 +453,11 @@ function writeSettings(newSettings = {}, processAfter = true) {
     }, 333)
   }
 
-  if (processAfter) processSettings(newSettings);
+  if (processAfter) processSettings(newSettings, sendUpdate);
 }
 
 
-function processSettings(newSettings = {}) {
+function processSettings(newSettings = {}, sendUpdate = true) {
 
   let doRestartPanel = false
   let rebuildTray = false
@@ -575,7 +579,7 @@ function processSettings(newSettings = {}) {
     ddcBrightnessVCPs: getDDCBrightnessVCPs()
   })
 
-  sendToAllWindows('settings-updated', settings)
+  if(sendUpdate) sendToAllWindows('settings-updated', settings);
 }
 
 // Save all known displays to disk for future use
@@ -782,7 +786,7 @@ const doHotkey = async (hotkey) => {
 }
 
 function hotkeyOverlayStart(timeout = 3000, force = true) {
-  if(settings.disableOverlay) return false;
+  if(settings.disableOverlay || currentProfile?.overlayType === "disabled") return false;
   if (canReposition) {
     hotkeyOverlayShow()
   }
@@ -1083,9 +1087,9 @@ function sendToAllWindows(eventName, data) {
   }
 }
 
-ipcMain.on('send-settings', (event, newSettings) => {
-  console.log("Recieved new settings", newSettings)
-  writeSettings(newSettings)
+ipcMain.on('send-settings', (event, data) => {
+  console.log("Recieved new settings", data.newSettings)
+  writeSettings(data.newSettings, true, data.sendUpdate)
 })
 
 ipcMain.on('request-settings', (event) => {
@@ -1737,6 +1741,8 @@ ipcMain.on('set-vcp', (e, values) => {
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
 })
 
+ipcMain.on('get-window-history', () => sendToAllWindows('window-history', windowHistory))
+
 
 //
 //
@@ -1867,7 +1873,7 @@ function createPanel(toggleOnLoad = false) {
 function setAlwaysOnTop(onTop = true) {
   if(!mainWindow) return false;
   if(onTop) {
-    mainWindow.setAlwaysOnTop(true, 'modal-panel')
+    mainWindow.setAlwaysOnTop(true, (currentProfile?.overlayType === "disabled" ? 'screen-saver' : 'modal-panel'))
   } else {
     mainWindow.setAlwaysOnTop(false)
   }
@@ -2017,6 +2023,99 @@ function repositionPanel() {
 
 
 
+let forcedFocusID = 0
+let currentProfile
+const ignoreAppList = [
+  "twinkletray.exe",
+  "explorer.exe",
+  "electron.exe"
+]
+const windowHistory = []
+let preProfileBrightness = {}
+function startFocusTracking() {
+  ActiveWindow.subscribe( async window => {
+    const hwnd = WindowUtils.getForegroundWindow()
+    const profile = windowMatchesProfile(window)
+
+    if(ignoreAppList.includes(path.basename(window.path)) === false) {
+      // Remove from history if exists
+      const isInHistory = windowHistory.find( (w, idx) => {
+        if(w.path === window.path) {
+          windowHistory.splice(idx, 1)
+          return true
+        }
+        return false
+      })
+
+      // Add current window
+      windowHistory.unshift({
+        app: window.application,
+        path: window.path
+      }) 
+
+      // Limit history
+      while(windowHistory.length > 10) windowHistory.pop();
+      sendToAllWindows('window-history', windowHistory)
+    }
+
+    if(forcedFocusID > 0 && forcedFocusID !== hwnd && hwnd != getMainWindowHandle()) {
+      // This is the overlay
+      // We're going to force focus back to the previous window
+      trySetForegroundWindow(hwnd)
+    } else if(profile?.setBrightness) {
+      // Set brightness, if available
+    
+      // First, save current brightness for later
+      await updateKnownDisplays(true, true)
+      preProfileBrightness = Object.assign({}, lastKnownDisplays)
+
+      // Then apply user profile brightness
+      applyProfileBrightness(profile)
+    } else if(currentProfile?.setBrightness) {
+      // Last profile had brightness settings
+      // So we should restore the last known brightness
+      applyProfile(preProfileBrightness, false)
+    }
+    currentProfile = profile
+  })
+}
+
+function windowMatchesProfile(window) {
+  let foundProfile
+  if(settings.profiles?.length > 0) {
+    for(const profile of settings.profiles) {
+      if(window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
+        foundProfile = profile
+      }
+    }
+  }
+  return foundProfile
+}
+
+function applyProfileBrightness(profile) {
+  try {
+    Object.values(monitors)?.forEach(monitor => {
+      updateBrightness(monitor.id, profile.monitors[monitor.id], true, monitor.brightnessType)
+    })
+  } catch(e) {
+    console.log("Error applying profile brightness", e)
+  }
+}
+
+function getMainWindowHandle() {
+  try {
+    return mainWindow.getNativeWindowHandle().readInt32LE()
+  } catch(e) {
+    return 0
+  }
+}
+
+
+
+
+
+
+
 /*
 
 
@@ -2112,49 +2211,23 @@ function showPanel(show = true, height = 300) {
 }
 
 function trySetForegroundWindow(hwnd) {
+  if(!hwnd) return false;
   try {
     console.log("trySetForegroundWindow: " + hwnd)
     WindowUtils.setForegroundWindow(hwnd)
   } catch(e) {
-    console.log("Couldn't focus window after minimize!", e)
+    console.log("Couldn't focus window", e)
   }
 }
 
 let startHideTimeout
-let lastActiveWindow = 0
 function startHidePanel() {
-  const mainWindowHWND = mainWindow.getNativeWindowHandle().readInt32LE()
   if(!startHideTimeout) {
     startHideTimeout = setTimeout(() => {
-      lastActiveWindow = 0
       if(mainWindow) {
-        try {
-          lastActiveWindow = WindowUtils.getForegroundWindow()
-          console.log("getForegroundWindow: " + lastActiveWindow)
-        } catch(e) { 
-          console.log("Couldn't get foreground window!", e)
-        }
         mainWindow.minimize();
       }
-      startHideTimeout = null
-      setTimeout(() => {
-        try { global.gc() } catch(e) {}
-      }, 1000)
-
-      // Kill me
-      if(lastActiveWindow && lastActiveWindow != mainWindowHWND) {
-        trySetForegroundWindow(lastActiveWindow);
-        setTimeout(() => {
-          trySetForegroundWindow(lastActiveWindow);
-        }, 33)
-        setTimeout(() => {
-          trySetForegroundWindow(lastActiveWindow);
-        }, 50)
-        setTimeout(() => {
-          trySetForegroundWindow(lastActiveWindow);
-        }, 100)
-      }
-      
+      startHideTimeout = null      
     }, 100)
 
     if(mainWindow) mainWindow.setOpacity(0);
@@ -2394,7 +2467,7 @@ function getDebugTrayMenuItems() {
     { label: "DO CURRENT TOD", type: 'normal', click: () => applyCurrentAdjustmentEvent(true) },
     { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
     { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
-    { label: "LAST ACTIVE WIN", type: 'normal', click: () => trySetForegroundWindow(lastActiveWindow) }
+    { label: "LAST ACTIVE WIN", type: 'normal', click: () => trySetForegroundWindow(forcedFocusID) }
   ] }
 }
 
@@ -2861,6 +2934,7 @@ function addEventListeners() {
   // Disable mouse events at startup
   pauseMouseEvents(true)
 
+  startFocusTracking()
 }
 
 function handleAccentChange() {
@@ -3165,7 +3239,7 @@ function getCurrentAdjustmentEventLERP() {
 // If applicable, apply the current Time of Day Adjustment
 function applyCurrentAdjustmentEvent(force = false, instant = true) {
   try {
-    if (tempSettings.pauseTimeAdjustments) return false;
+    if (tempSettings.pauseTimeAdjustments || currentProfile?.setBrightness) return false;
     if (settings.adjustmentTimes.length === 0 || userIdleDimmed) return false;
 
     const date = new Date()

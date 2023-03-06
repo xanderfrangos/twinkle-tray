@@ -21,6 +21,8 @@ import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
 import FluentIcon from "../assets/tray-icons/dark/fluent@4x.png"
 
+const uuid = require('uuid/v4');
+
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -118,7 +120,8 @@ export default class SettingsWindow extends PureComponent {
                 contrast: 50,
                 volume: 50,
                 powerState: 0
-            }
+            },
+            windowHistory: []
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -143,6 +146,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages }); console.log(e.detail); T.setLocalizationData(e.detail.desired, e.detail.default) })
+        window.addEventListener("windowHistory", e => this.setState({windowHistory: e.detail }))
 
         if (window.isAppX === false) {
             window.addEventListener("updateUpdated", (e) => {
@@ -167,7 +171,7 @@ export default class SettingsWindow extends PureComponent {
             })
             window.checkForUpdates()
         }
-
+        window.ipc.send('get-window-history')
     }
 
 
@@ -1176,6 +1180,21 @@ export default class SettingsWindow extends PureComponent {
                             }
                         </div>
 
+                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
+                            <div className="sectionTitle">App Profiles</div>
+                            <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app.</p>
+                            <div className="hotkey-profiles">
+                                { this.state.rawSettings?.profiles?.map( profile => <AppProfile profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
+                                    profile[key] = value
+                                    sendSettingsImmediate({ profiles: this.state.rawSettings?.profiles })
+                                    this.forceUpdate()
+                                }} />) }
+                                <hr />
+                                <div className="add-new button" onClick={() => addNewProfile(this.state)}>+ New Profile</div>
+                            </div>
+
+                        </div>
+
 
                         <div className="pageSection" data-active={this.isSection("updates")}>
                             <div className="sectionTitle">{T.t("SETTINGS_UPDATES_TITLE")}</div>
@@ -1258,3 +1277,68 @@ export default class SettingsWindow extends PureComponent {
         );
     }
 }
+
+function addNewProfile(state) {
+    if(!state.rawSettings?.profiles) return false;
+    const id = uuid()
+    const profile = {
+        id,
+        name: "",
+        overlayType: "normal",
+        setBrightness: false,
+        monitors: {},
+        showInMenu: false
+    }
+    state.rawSettings.profiles.push(profile)
+    sendSettings({ profiles: state.rawSettings.profiles})
+}
+
+function getProfileMonitors(monitors, profile, onChange) {
+    return Object.values(monitors).map((monitor, idx) => {
+        if (monitor.type == "none") {
+            return (<div key={monitor.id + ".brightness"}></div>)
+        } else {
+            let level = (profile.monitors?.[monitor.id] ?? 50)
+            return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={monitor.name} onChange={level => {
+                profile.monitors[monitor.id] = level
+                onChange(profile, monitor.id, level)
+            }} level={level} scrolling={false} />)
+        }
+    })
+}
+
+function AppProfile(props) {
+    const { profile, updateValue, onDelete, monitors } = props
+    if(!profile.monitors) profile.monitors = {};
+  
+    return (
+      <div className="appProfileItem" key={profile.id}>
+        <hr />
+        <label>Profile name</label>
+        <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)}></input>
+        <label>App path (optional)</label>
+        <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE here.</p>
+        <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)}></input>
+        <label>Overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
+Aggressive: Applies the overlay in a way that will display over borderless fullscreen games. This will break exlusive fullscreen games.">i</sup></label>
+        <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
+          <option value="normal">Normal</option>
+          <option value="disabled">Disabled</option>
+          <option value="aggressive">Aggressive</option>
+        </select>
+
+        <div className="feature-toggle-row">
+            <input onChange={(e) => {updateValue("showInMenu", e.target.checked)}} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+            <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
+        </div>
+
+        <div className="feature-toggle-row">
+            <input onChange={(e) => {updateValue("setBrightness", e.target.checked)}} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
+            <div className="feature-toggle-label"><span>Set brightness when active</span></div>
+        </div>
+        { ( profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null )}
+        <br />
+        <div className="add-new button block" onClick={onDelete}><div className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></div> <span>Delete</span></div>
+      </div>
+    )
+  }

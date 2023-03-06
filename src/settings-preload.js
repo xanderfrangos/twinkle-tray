@@ -51,8 +51,18 @@ function sendSettings(newSettings = {}) {
     }
 }
 
+function sendSettingsImmediate(newSettings = {}) {
+    ipc.send('send-settings', {
+        newSettings,
+        sendUpdate: false
+    })
+}
+
 function actuallySendSettings() {
-    ipc.send('send-settings', sendSettingsObj)
+    ipc.send('send-settings', {
+        newSettings: sendSettingsObj,
+        sendUpdate: true
+    })
     sendSettingsObj = {}
 }
 
@@ -158,6 +168,13 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+ipc.on('window-history', (event, history) => {
+    window.windowHistory = history
+    window.dispatchEvent(new CustomEvent('windowHistory', {
+        detail: history
+    }))
+})
+
 // Localization recieved
 ipc.on('localization-updated', (event, localization) => {
     window.dispatchEvent(new CustomEvent('localizationUpdated', {
@@ -220,6 +237,7 @@ window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings
+window.sendSettingsImmediate = sendSettingsImmediate
 window.requestSettings = requestSettings
 window.resetSettings = resetSettings
 window.getUpdate = getUpdate

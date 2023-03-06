@@ -2408,16 +2408,6 @@ function createTray() {
     }
   })
 
-  nativeTheme.on('updated', async () => {
-    console.log("Event: theme updated");
-    await getThemeRegistry()
-    try {
-      tray.setImage(getTrayIconPath())
-    } catch (e) {
-      debug.log("Couldn't update tray icon!", e)
-    }
-  })
-
 }
 
 function setTrayMenu() {
@@ -2926,6 +2916,7 @@ let backgroundInterval = null
 function addEventListeners() {
   systemPreferences.on('accent-color-changed', handleAccentChange)
   systemPreferences.on('color-changed', handleAccentChange)
+  nativeTheme.on('updated', handleAccentChange)
 
   addDisplayChangeListener(handleMonitorChange)
 
@@ -2937,11 +2928,21 @@ function addEventListeners() {
   startFocusTracking()
 }
 
+let handleAccentChangeTimeout = false
 function handleAccentChange() {
-  console.log("Event: handleAccentChange");
-  sendToAllWindows('update-colors', getAccentColors())
-  getThemeRegistry()
-  sendMicaWallpaper()
+  if(handleAccentChangeTimeout) clearTimeout(handleAccentChangeTimeout);
+  handleAccentChangeTimeout = setTimeout(async () => {
+    console.log("Event: handleAccentChange");
+    sendToAllWindows('update-colors', getAccentColors())
+    await getThemeRegistry()
+    setTimeout(sendMicaWallpaper, 100)
+    try {
+      tray.setImage(getTrayIconPath())
+    } catch (e) {
+      debug.log("Couldn't update tray icon!", e)
+    }
+    handleAccentChangeTimeout = false
+  }, 2000)
 }
 
 let skipFirstMonChange = false
@@ -3095,7 +3096,6 @@ async function startIdleCheckShort() {
   console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
   if(notIdleMonitor) clearInterval(notIdleMonitor);
   notIdleMonitor = setInterval(idleCheckShort, 1000)
-  lastIdleTime = 1
 }
 
 function idleCheckShort() {
@@ -3119,14 +3119,33 @@ function idleCheckShort() {
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)
       notIdleMonitor = false
-      if(!settings.disableAutoApply) setKnownBrightness(false);
+
+      // Different behavior depending on if idle dimming is on
+      if(settings.detectIdleTimeEnabled) {
+        // Always restore when dimmed
+        setKnownBrightness(false)
+      } else {
+        // Not dimmed, try checking ToD first. sKB as backup.
+        const foundEvent = applyCurrentAdjustmentEvent(true, true)
+        if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false);
+      }
+      
       // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
       setTimeout(() => {
-        if(!settings.disableAutoApply) setKnownBrightness(false);
         isUserIdle = false
         userIdleDimmed = false
         lastIdleTime = 1
-        applyCurrentAdjustmentEvent(true, false) // Apply ToD adjustments, if needed
+
+        // Similar logic to above
+        if(settings.detectIdleTimeEnabled) {
+          // Always restore when dimmed, then check ToD
+          setKnownBrightness(false)
+          applyCurrentAdjustmentEvent(true, false)
+        } else {
+          // Not dimmed, try checking ToD first. sKB as backup.
+          const foundEvent = applyCurrentAdjustmentEvent(true, true)
+          if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
+        }
       }, 3000)
   
     }
@@ -3276,6 +3295,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           }
         })
+        return foundEvent
       }
     }
   } catch (e) {
@@ -3483,37 +3503,42 @@ function handleCommandLine(event, argv, directory, additionalData) {
 // Mica features
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
+let currentWallpaperFileSize = 0;
 let currentScreenSize = {width: 1280, height: 720}
 let sharpBusy = false
+let lastSharpTime = Date.now()
 const homeDir = require("os").homedir()
-const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.webp`)
+const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.jpg`)
 async function getWallpaper() {
-  if(sharpBusy) return false;
+  if(sharpBusy) return { path: currentWallpaper, size: currentScreenSize };
   try {  
     const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
+    const newTime = file.mtime.getTime()
+    const newSize = file.size
 
     // If time on file changed, render new wallpaper
-    if(file?.mtime && file.mtime.getTime() !== currentWallpaperTime) {
+    if(file?.mtime && (newTime !== currentWallpaperTime || newSize !== currentWallpaperFileSize)) {
       sharpBusy = true
       currentScreenSize = screen.getPrimaryDisplay().workAreaSize
       const sharp = require('sharp')
-      currentWallpaper = "file://" + wallPath + "?" + Date.now()
+      sharp.cache(false)
       const wallpaperImage = sharp(wallPath)
-      //const wallpaperInfo = await wallpaperImage.metadata()
-      const image = await sharp({
+      await sharp({
         create: {
-          width: currentScreenSize.width,
-          height: currentScreenSize.height,
+          width: currentScreenSize.width * 0.5,
+          height: currentScreenSize.height * 0.5,
           channels: 4,
           background: "#202020FF"
         }
-      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width, currentScreenSize.height, { fit: "fill" }).blur(80).toBuffer(), blend: "source" }]).flatten().webp({ quality: 95, nearLossless: true, reductionEffort: 0 }).toFile(micaWallpaperPath)
+      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width * 0.5, currentScreenSize.height * 0.5, { fit: "fill" }).blur(30).toBuffer(), blend: "source" }]).flatten().jpeg({ quality: 95 }).toFile(micaWallpaperPath)
       currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
-      currentWallpaperTime = file.mtime.getTime()
-      Utils.unloadModule("sharp")
+      currentWallpaperTime = newTime
+      currentWallpaperFileSize = newSize;
+      lastSharpTime = Date.now()
     }
     
+    Utils.unloadModule("sharp")
     sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
   } catch(e) {
@@ -3524,7 +3549,7 @@ async function getWallpaper() {
 }
 
 async function sendMicaWallpaper() {
-  // Skip if Win10
-  if(!settings?.isWin11 || !mainWindow) return false;
+  // Skip if Win10 or Mica disabled
+  if(!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }

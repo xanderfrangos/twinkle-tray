@@ -3294,6 +3294,10 @@ Example: --VCP="0xD6:5"
 Flag to show brightness levels in the overlay
 Example: --Overlay
 
+--Panel
+Flag to show brightness levels in the panel
+Example: --Panel
+
 */
 function handleCommandLine(event, argv, directory, additionalData) {
 
@@ -3373,6 +3377,11 @@ function handleCommandLine(event, argv, directory, additionalData) {
         // Show overlay
         if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
           hotkeyOverlayStart()
+        }
+
+        // Show panel
+        if (arg.indexOf("--panel") === 0 && panelState !== "visible") {
+          showPanel(true, panelSize.height)
         }
 
       })

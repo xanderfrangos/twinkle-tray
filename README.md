@@ -89,6 +89,7 @@ For example: `"%LocalAppData%\Programs\twinkle-tray\Twinkle Tray.exe" --MonitorN
 - `--Offset` Adjust brightness percentage. *Example: `--Offset=-20`*
 - `--VCP` Send a specific DDC/CI VCP code and value instead of brightness. The first part is the VCP code (decimal or hexadecimal), and the second is the value. *Example: `--VCP="0xD6:5"`* *(available in v1.14.4+)*
 - `--Overlay` Flag to show new brightness levels in the overlay *Example: `--Overlay`*
+- `--Panel` Flag to show new brightness levels in the panel *Example: `--Panel`*
 
 *This feature is not available on the Windows Store version of Twinkle Tray.*
 

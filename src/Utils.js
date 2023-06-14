@@ -65,6 +65,11 @@ module.exports = {
                 validArgs.ShowOverlay = true
             }
 
+            // Show panel
+            if (arg.indexOf("--panel") === 0) {
+                validArgs.ShowPanel = true
+            }
+
         })
 
         return validArgs
@@ -74,7 +79,9 @@ module.exports = {
 
         let failed
 
-        if(args.List) {
+        if(args.ShowPanel) {
+            console.log(`Showing panel`)
+        } else if(args.List) {
             const displays = getKnownDisplays(knownDisplaysPath)
             Object.values(displays).forEach(display => {
                 console.log(`
@@ -135,6 +142,10 @@ Send a specific DDC/CI VCP code and value instead of brightness. The first part 
 \x1b[36m--Overlay\x1b[0m
 Flag to show brightness levels in the overlay
 \x1b[2mExample: --Overlay\x1b[0m
+
+\x1b[36m--Panel\x1b[0m
+Flag to show brightness levels in the panel
+\x1b[2mExample: --Panel\x1b[0m
 `)
         } else {
             console.log("OK")

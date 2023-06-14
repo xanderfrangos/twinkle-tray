@@ -79,7 +79,9 @@ module.exports = {
 
         let failed
 
-        if(args.List) {
+        if(args.ShowPanel) {
+            console.log(`Showing panel`)
+        } else if(args.List) {
             const displays = getKnownDisplays(knownDisplaysPath)
             Object.values(displays).forEach(display => {
                 console.log(`

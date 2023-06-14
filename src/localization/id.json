@@ -83,7 +83,7 @@
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Kecerahaan Saat Ini",
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Kecerahan Maks",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Normalisasi Kecerahan",
-    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Sembunyikan Layar Internal",
+    "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Menyembunyikan Tampilan Internal Tidak Aktif",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Saat layar tertutup atau layar internal telah dinonaktifkan di Windows, sembunyikan slider kecerahan di panel.",
     "SETTINGS_FEATURES_DESCRIPTION": "Mengaktifkan atau menonaktifkan fitur DDC/CI tertentu di panel kecerahan. Setidaknya satu fitur harus diaktifkan agar monitor Anda muncul di panel kecerahan. Tidak semua layar mendukung fitur ini, seperti layar laptop/tablet.",
     "SETTINGS_FEATURES_UNSUPPORTED": "Monitor ini tidak mendukung fitur DDC/CI.",

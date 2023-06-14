@@ -3381,7 +3381,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
 
         // Show panel
         if (arg.indexOf("--panel") === 0 && panelState !== "visible") {
-          showPanel(true, panelSize.height)
+          toggleTray(true)
         }
 
       })

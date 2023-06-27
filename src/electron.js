@@ -1432,6 +1432,10 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
       console.log(`Monitor does not exist: ${index}`)
       return false
     }
+
+    if(settings.hideDisplays?.[monitor.key] === true) {
+      return false
+    }
     
     if(clearTransition && currentTransition) {
       clearInterval(currentTransition)

@@ -128,13 +128,28 @@
     "@babel/preset-react": "^7.12.13",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
-    "electron": "^20.3.7",
-    "electron-builder": "^23.6.0",
+    "electron": "^25.2.0",
+    "electron-builder": "^24.4.0",
     "parcel-bundler": "^1.12.5",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.0",
     "sass": "^1.54.0",
-    "wait-on": "^5.3.0"
+    "wait-on": "^5.3.0",
+    "node-gyp": "^9.4.0"
+  },
+  "overrides": {
+    "node-gyp": "$node-gyp",
+    "bindings@<1.5.0": "1.5.0",
+    "node-addon-api@<3.1.0": "3.1.0",
+    "global-mouse-events": {
+      "node-gyp": "$node-gyp"
+    },
+    "windows-accent-colors": {
+      "node-gyp": "$node-gyp"
+    },
+    "win32-displayconfig": {
+      "node-gyp": "$node-gyp"
+    }
   }
 }

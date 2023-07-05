@@ -1,0 +1,28 @@
+name: CI Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install -g node-gyp@9.4.0
+      - run: npm install
+      - run: npm run build --if-present
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v2
+        name: Upload Installer
+        with:
+          name: Twinkle-Tray-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/*.exe

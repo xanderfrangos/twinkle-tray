@@ -268,18 +268,31 @@ function willPauseMouseEvents(time = 10000) {
 
 // Analytics
 let analyticsInterval = false
-let analyticsFrequency = 1000 * 60 * 59 // 59 minutes
+let analyticsFrequency = 1000 * 60 * 29 // 29 minutes
+let lastAnalyticsPing = 0
 
 function pingAnalytics() {
-  const analytics = require('universal-analytics')('UA-146439005-2', settings.uuid)
+  // Skip if too recent
+  if(Date.now() < lastAnalyticsPing + (1000*60*28)) return false;
+  
+  const analytics = require('ga4-mp').createClient("Y1YTliQdTL-moveI0z1TLA", "G-BQ22ZK4BPY", settings.uuid)
   console.log("\x1b[34mAnalytics:\x1b[0m sending with UUID " + settings.uuid)
-  analytics.set("ds", "app")
-  analytics.pageview(app.name + "/" + "v" + app.getVersion()).send()
-  analytics.event({
-    ec: "Session Information",
-    ea: "OS Version",
-    el: require("os").release()
-  }).send()
+
+  let events = []
+  events.push({
+    name: "page_view",
+    params: {
+      page_location: app.name + "/" + "v" + app.getVersion(),
+      page_title: app.name + "/" + "v" + app.getVersion(),
+      page_referrer: app.name,
+      os_version: require("os").release(),
+      app_type: app.name,
+      app_version: app.getVersion(),
+      engagement_time_msec: 1
+    }
+  })
+  analytics.send(events)
+  lastAnalyticsPing = Date.now()
 }
 
 let monitors = {}
@@ -1421,6 +1434,10 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
 
     if(!monitor) {
       console.log(`Monitor does not exist: ${index}`)
+      return false
+    }
+
+    if(settings.hideDisplays?.[monitor.key] === true) {
       return false
     }
     
@@ -3114,7 +3131,7 @@ function idleCheckShort() {
       }
     }
   
-    if(isUserIdle && idleTime < lastIdleTime) {
+    if(isUserIdle && (idleTime < lastIdleTime || idleTime < getIdleSettingValue())) {
       // Wake up
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)
@@ -3368,6 +3385,10 @@ Example: --VCP="0xD6:5"
 Flag to show brightness levels in the overlay
 Example: --Overlay
 
+--Panel
+Flag to show brightness levels in the panel
+Example: --Panel
+
 */
 function handleCommandLine(event, argv, directory, additionalData) {
 
@@ -3447,6 +3468,11 @@ function handleCommandLine(event, argv, directory, additionalData) {
         // Show overlay
         if (arg.indexOf("--overlay") === 0 && panelState !== "visible") {
           hotkeyOverlayStart()
+        }
+
+        // Show panel
+        if (arg.indexOf("--panel") === 0 && panelState !== "visible") {
+          toggleTray(true)
         }
 
       })

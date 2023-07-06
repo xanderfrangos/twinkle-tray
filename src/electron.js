@@ -36,7 +36,6 @@ require('@electron/remote/main').initialize()
 const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
 const { fork, exec } = require('child_process');
-const uuid = require('uuid/v4');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
@@ -378,7 +377,7 @@ const defaultSettings = {
   disableAutoRefresh: false,
   disableAutoApply: false,
   profiles: [],
-  uuid: uuid(),
+  uuid: require('crypto').randomUUID(),
   branch: "master"
 }
 
@@ -386,8 +385,6 @@ const tempSettings = {
   pauseTimeAdjustments: false,
   pauseIdleDetection: false
 }
-
-Utils.unloadModule("uuid/v4")
 
 let settings = Object.assign({}, defaultSettings)
 

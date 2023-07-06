@@ -1,11 +1,33 @@
 const path = require('path');
 const fs = require('fs')
 
+function udpSendCommand(type, data, port = 14715) {
+    return new Promise((resolve, reject) => {
+        const client = require('dgram').createSocket('udp4')
+        const udpTimeout = setTimeout(() => {
+            clearTimeout(udpTimeout)
+            reject("No response")
+        }, 1000)
+        
+        client.on('message', (message, connection) => {
+          resolve(message.toString())
+        })
+        
+        client.send(JSON.stringify({type, data}), port, "localhost", err => {
+          if (err) {
+            reject('Failed to send command')
+          }
+        })
+    })
+}
+
 module.exports = {
     unloadModule: (name) => {
         try {
-            delete require.cache[require.resolve(name)];
-            console.log(`Unloaded module: ${name}`)
+            if(require.cache[require.resolve(name)]) {
+                delete require.cache[require.resolve(name)]
+                console.log(`Unloaded module: ${name}`)
+            }
         } catch(e) {
             console.log(`Couldn't unload module: ${name}`)
         }
@@ -75,14 +97,19 @@ module.exports = {
         return validArgs
     },
 
-    handleProcessedArgs(args = {}, knownDisplaysPath) {
+    async handleProcessedArgs(args = {}, knownDisplaysPath, settingsPath) {
 
         let failed
+        const settings = JSON.parse(fs.readFileSync(settingsPath))
 
         if(args.ShowPanel) {
             console.log(`Showing panel`)
         } else if(args.List) {
-            const displays = getKnownDisplays(knownDisplaysPath)
+            //const displays = getKnownDisplays(knownDisplaysPath)
+
+            const displays = JSON.parse(await udpSendCommand("list", false, settings.udpPortActive))
+            //console.log(displays)
+
             Object.values(displays).forEach(display => {
                 console.log(`
 \x1b[36mMonitorNum:\x1b[0m ${display.num}
@@ -91,6 +118,7 @@ module.exports = {
 \x1b[36mBrightness:\x1b[0m ${display.brightness}
 \x1b[36mType:\x1b[0m ${display.type}`)
             })
+
             failed = false;
             return true;
         } else {

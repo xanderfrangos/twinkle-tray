@@ -18,14 +18,16 @@ const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
 
+const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
+
 const knownDisplaysPath = path.join(configFilesDir, `\\known-displays${(isDev ? "-dev" : "")}.json`)
 let updateKnownDisplaysTimeout
 
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
 if (!singleInstanceLock) {
-  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath) } catch (e) { }
-  app.exit()
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath, settingsPath).then(() => app.exit()) } catch (e) { app.exit() }
+  return false
 } else {
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
@@ -321,8 +323,6 @@ if (!fs.existsSync(configFilesDir)) {
   }
 }
 
-const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
-
 const defaultSettings = {
   isDev,
   userClosedIntro: false,
@@ -376,6 +376,9 @@ const defaultSettings = {
   ddcPowerOffValue: 6,
   disableAutoRefresh: false,
   disableAutoApply: false,
+  udpEnabled: true,
+  udpPortStart: 14715,
+  udpPortActive: 14715,
   profiles: [],
   uuid: require('crypto').randomUUID(),
   branch: "master"
@@ -501,6 +504,12 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     if (newSettings.language !== undefined) {
       getLocalization()
       rebuildTray = true
+    }
+
+    if(settings.udpEnabled === true) {
+      if(!udp.server) udp.start(settings.udpPort);
+    } else if(settings.udpEnabled === false) {
+      if(!udp.server) udp.stop();
     }
 
     if (newSettings.order !== undefined) {
@@ -3575,4 +3584,86 @@ async function sendMicaWallpaper() {
   // Skip if Win10 or Mica disabled
   if(!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
   sendToAllWindows("mica-wallpaper", await getWallpaper())
+}
+
+
+
+
+
+
+//
+//
+//  UDP Server
+//
+//
+
+const udp = {
+  server: false,
+  start: function (port = 14715) {
+    if (udp.server) return false;
+
+    console.log("[UDP] Starting local UDP Server...")
+    const dgram = require('dgram')
+    const server = dgram.createSocket('udp4')
+    udp.server = server
+
+    server.on('error', error => {
+      console.log(`[UDP] UDP server error:\n${error.stack}`)
+      server.close()
+    });
+
+    server.on('message', (message, remote) => {
+
+      const sendResponse = response => server.send(response, remote.port, remote.address)
+
+      try {
+        console.log(`[UDP] Got UDP: ${message} from ${remote.address}:${remote.port}`)
+        const data = JSON.parse(message)
+        if (typeof data !== "object" || !data?.type) {
+          console.log("[UDP] Invalid UDP command")
+          return false
+        }
+
+        // Run recieved command
+        if (data.type === "list") {
+          sendResponse(JSON.stringify(monitors))
+        }
+
+      } catch (e) {
+        console.log('[UDP] Error:', e)
+      }
+
+    });
+
+    server.on('listening', () => {
+      const connection = server.address();
+      writeSettings({udpPortActive: connection.port})
+      console.log(`[UDP] UDP server listening at ${connection.address}:${connection.port}`);
+    });
+    
+    // Bind to default port, or another if it fails
+    try {
+      server.bind({ address: 'localhost', port })
+    } catch (e) {
+      try {
+        // Let's try another
+        server.bind({ address: 'localhost', port: (port + 13137) })
+      } catch (e2) {
+        try {
+          // Okay, one more?
+          server.bind({ address: 'localhost', port: (port + 1603) })
+        } catch (e3) {
+          console.log(e3)
+        }
+      }
+    }
+
+  },
+  stop: function () {
+    try {
+      if (udp.server) udp.server.close();
+    } catch (e) {
+      console.log("[UDP] Couldn't close UDP server.")
+    }
+  }
 }

@@ -45,7 +45,7 @@
     "native-reg": "^1.1.0",
     "node-fetch": "^2.6.1",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
-    "sharp": "^0.30.7",
+    "sharp": "^0.31.1",
     "win32-displayconfig": "^0.1.0",
     "windows-accent-colors": "^1.0.0",
     "wmi-bridge": "file:src/modules/wmi-bridge",

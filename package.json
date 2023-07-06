@@ -130,13 +130,13 @@
     "cross-env": "^7.0.3",
     "electron": "^25.2.0",
     "electron-builder": "^24.4.0",
+    "node-gyp": "^9.4.0",
     "parcel-bundler": "^1.12.5",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.0",
     "sass": "^1.54.0",
-    "wait-on": "^5.3.0",
-    "node-gyp": "^9.4.0"
+    "wait-on": "^5.3.0"
   },
   "overrides": {
     "node-gyp": "$node-gyp",

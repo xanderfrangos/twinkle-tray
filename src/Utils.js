@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs')
 
-function udpSendCommand(type, data, port = 14715) {
+function udpSendCommand(type, data, port = 14715, key) {
     return new Promise((resolve, reject) => {
         const client = require('dgram').createSocket('udp4')
         const udpTimeout = setTimeout(() => {
@@ -13,7 +13,7 @@ function udpSendCommand(type, data, port = 14715) {
           resolve(message.toString())
         })
         
-        client.send(JSON.stringify({type, data}), port, "localhost", err => {
+        client.send(JSON.stringify({type, data, key}), port, "localhost", err => {
           if (err) {
             reject('Failed to send command')
           }
@@ -107,7 +107,7 @@ module.exports = {
         } else if(args.List) {
             //const displays = getKnownDisplays(knownDisplaysPath)
 
-            const displays = JSON.parse(await udpSendCommand("list", false, settings.udpPortActive))
+            const displays = JSON.parse(await udpSendCommand("list", false, settings.udpPortActive, settings.udpKey))
             //console.log(displays)
 
             Object.values(displays).forEach(display => {

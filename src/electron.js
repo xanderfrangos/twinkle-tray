@@ -396,6 +396,7 @@ const defaultSettings = {
   udpRemote: false,
   udpPortStart: 14715,
   udpPortActive: 14715,
+  udpKey: require('crypto').randomUUID(),
   profiles: [],
   uuid: require('crypto').randomUUID(),
   branch: "master"
@@ -3639,6 +3640,11 @@ const udp = {
         const data = JSON.parse(message)
         if (typeof data !== "object" || !data?.type) {
           console.log("[UDP] Invalid UDP command")
+          return false
+        }
+
+        if(data.key !== settings.udpKey) {
+          console.log("[UDP] Missing or invalid key")
           return false
         }
 

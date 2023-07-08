@@ -143,6 +143,23 @@ function startMonitorThread() {
 }
 startMonitorThread()
 
+function getVCP(monitor, code) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      resolve(-1) // Timed out
+    }, 3000)
+    monitorsThread.once(`getVCP::${monitor}::${code}`, data => {
+      clearTimeout(timeout)
+      resolve(data?.value)
+    })
+    monitorsThread.send({
+      type: "getVCP",
+      code,
+      monitor: monitor.hwid.join("#")
+    })
+  })
+}
+
 
 
 // Test if wmi-bridge works properly on user's system

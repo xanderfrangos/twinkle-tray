@@ -393,7 +393,7 @@ const defaultSettings = {
   ddcPowerOffValue: 6,
   disableAutoRefresh: false,
   disableAutoApply: false,
-  udpEnabled: true,
+  udpRemote: false,
   udpPortStart: 14715,
   udpPortActive: 14715,
   profiles: [],
@@ -2121,6 +2121,7 @@ function startFocusTracking() {
 }
 
 function windowMatchesProfile(window) {
+  if(!window) return false;
   let foundProfile
   if(settings.profiles?.length > 0) {
     for(const profile of settings.profiles) {
@@ -3629,9 +3630,9 @@ const udp = {
       server.close()
     });
 
-    server.on('message', (message, remote) => {
+    server.on('message', async (message, remote) => {
 
-      const sendResponse = response => server.send(response, remote.port, remote.address)
+      const sendResponse = response => server.send(`${response}`, remote.port, remote.address)
 
       try {
         console.log(`[UDP] Got UDP: ${message} from ${remote.address}:${remote.port}`)
@@ -3641,10 +3642,116 @@ const udp = {
           return false
         }
 
-        // Run recieved command
-        if (data.type === "list") {
-          sendResponse(JSON.stringify(monitors))
+        const findMonitor = monitor => {
+          try {
+            const searchID = monitor.toLowerCase()
+            const monID = Object.keys(monitors).find(id => {
+              return id.toLowerCase().indexOf(searchID) >= 0
+            })
+            return monitors[monID]
+          } catch(e) { return false }
         }
+
+        const determineVCP = vcp => {
+          switch(vcp) {
+            case "brightness": return 0x10;
+            case "contrast": return 0x12;
+            case "power": return 0xD6;
+            case "volume": return 0x62;
+            default: return parseInt(vcp);
+          }
+        }
+
+
+        // Run recieved command
+
+        if (data.type === "list") {
+          // data.type === "list"
+          // List all current monitors
+          sendResponse(JSON.stringify(monitors))
+        } else if (data.type === "get") {
+          // data.type === "get"
+          // Get property of specific monitor
+
+          if(!(data.monitor && data.property)) return false;
+
+          const monitor = findMonitor(data.monitor)
+          if(!monitor) return false;
+
+          const getMonitorProperty = (monitor, property) => {
+            try {
+              const { features } = monitor 
+              switch(property) {
+                case "brightness": return monitor.brightness;
+                case "maxbrightness": return monitor.brightnessMax;
+                case "rawbrightness": return monitor.brightnessRaw;
+                case "brightnesstype": return monitor.brightnessType;
+                case "id": return monitor.id;
+                case "key": return monitor.key;
+                case "name": return monitor.name;
+                case "hwid": return monitor.hwid.join("#");
+                case "name": return monitor.name;
+                case "type": return monitor.type;
+                case "connector": return monitor.connector;
+                case "serial": return monitor.serial;
+                case "order": return monitor.order;
+                case "contrast": return (features.contrast ? features.contrast[0] : -1);
+                case "maxcontrast": return (features.contrast ? features.contrast[1] : -1);
+                case "powerstate": return (features.powerState ? features.powerState[0] : -1);
+                case "maxpowerstate": return (features.powerState ? features.powerState[1] : -1);
+                case "volume": return (features.volume ? features.volume[0] : -1);
+                case "maxvolume": return (features.volume ? features.volume[1] : -1);
+                default: return "-1";
+              }
+            } catch(e) {
+              console.log("[UDP] Error getting monitor property", e)
+              return -1
+            }
+          }
+
+          if(data.property === "vcp") {
+            sendResponse(await getVCP(monitor.hwid.join("#"), data.code))
+          } else {
+            sendResponse(getMonitorProperty(monitor, data.property))
+          }
+
+        } else if (data.type === "set" || data.type === "setvcp") {
+          // data.type === "set"
+          // Set property of specific monitor
+
+          if(!(data.monitor && data.vcp)) return false;
+
+          const value = parseInt(data.value)
+
+          if(data.monitor === "all") {
+            updateAllBrightness(value, (data.mode ?? "set"))
+            return true
+          }
+
+          const monitor = findMonitor(data.monitor)
+          if(!monitor) return false;
+
+          if(data.vcp === "brightness") {
+            const newBrightness = minMax(data.mode !== "offset" ? value : monitor.brightness + value)
+            updateBrightnessThrottle(monitor.id, newBrightness, true)
+          } else {
+            monitorsThread.send({
+              type: "vcp",
+              code: determineVCP(data.vcp),
+              value: value,
+              monitor: monitor.hwid.join("#")
+            })
+          }
+          
+        } else if (data.type === "checktime") {
+          // data.type === "checktime"
+          // Use time adjustments
+          applyCurrentAdjustmentEvent(true, false)
+        } else if (data.type === "refresh") {
+          // data.type === "refresh"
+          // Force refresh monitors
+          refreshMonitors(true, true)
+        } 
 
       } catch (e) {
         console.log('[UDP] Error:', e)
@@ -3659,16 +3766,17 @@ const udp = {
     });
     
     // Bind to default port, or another if it fails
+    const address = (!settings.udpRemote ? 'localhost' : undefined)
     try {
-      server.bind({ address: 'localhost', port })
+      server.bind({ address, port })
     } catch (e) {
       try {
         // Let's try another
-        server.bind({ address: 'localhost', port: (port + 13137) })
+        server.bind({ address, port: (port + 13137) })
       } catch (e2) {
         try {
           // Okay, one more?
-          server.bind({ address: 'localhost', port: (port + 1603) })
+          server.bind({ address, port: (port + 1603) })
         } catch (e3) {
           console.log(e3)
         }

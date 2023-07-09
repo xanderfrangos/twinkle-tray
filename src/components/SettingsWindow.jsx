@@ -1239,6 +1239,14 @@ export default class SettingsWindow extends PureComponent {
                             <p>Dev Mode</p>
                             { this.renderToggle("isDev") }
                             <br />
+                            <label>Enable remote UDP server</label>
+                            <p>Enable UDP commands outside of localhost</p>
+                            { this.renderToggle("udpRemote") }
+                            <br />
+                            <label>Default port for UDP commands</label>
+                            <input type="number" min="1" max="65535" value={window.settings.udpPortStart * 1} onChange={(e) => this.setSetting("udpPortStart", e.target.value)} />
+                            <br />
+                            <p><b>UDP key:</b> { window.settings.udpKey }</p><br />
                             <label>Disable Auto Apply</label>
                             <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
                             { this.renderToggle("disableAutoApply") }

@@ -1306,6 +1306,9 @@ export default class SettingsWindow extends PureComponent {
                             <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
                             { this.renderToggle("disableAutoApply") }
                             <br />
+                            <label>ddcPowerOffValue</label>
+                            <input type="number" min="4" max="6" value={window.settings.ddcPowerOffValue * 1} onChange={(e) => this.setSetting("ddcPowerOffValue", e.target.value)} />
+                            <br />
                             <label>Disable Auto Refresh</label>
                             <p>Prevent last known brightness from read after certain hardware/user events.</p>
                             { this.renderToggle("disableAutoRefresh") }

@@ -145,10 +145,11 @@ startMonitorThread()
 
 function getVCP(monitor, code) {
   return new Promise((resolve, reject) => {
+    if(!monitor || !code) resolve(-1);
     const timeout = setTimeout(() => {
       resolve(-1) // Timed out
     }, 3000)
-    monitorsThread.once(`getVCP::${monitor}::${code}`, data => {
+    monitorsThread.once(`getVCP::${monitor.hwid.join("#")}::${code}`, data => {
       clearTimeout(timeout)
       resolve(data?.value)
     })
@@ -3718,7 +3719,7 @@ const udp = {
           }
 
           if(data.property === "vcp") {
-            sendResponse(await getVCP(monitor.hwid.join("#"), data.code))
+            sendResponse(await getVCP(monitor, data.code))
           } else {
             sendResponse(getMonitorProperty(monitor, data.property))
           }

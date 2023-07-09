@@ -36,12 +36,12 @@ process.on('message', (data) => {
             canUseWmiBridge = true
         } else if(data.type === "getVCP") {
             getDDCCI()
-            const vcp = checkVCP(data.monitor, code)
+            const vcp = checkVCP(data.monitor, data.code)
             process.send({
                 type: `getVCP::${data.monitor}::${data.code}`,
                 monitor: data.monitor,
                 code: data.code,
-                value: vcp
+                value: vcp?.[0]
             })
         }
     } catch(e) {

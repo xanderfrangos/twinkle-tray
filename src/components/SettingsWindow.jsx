@@ -105,6 +105,7 @@ export default class SettingsWindow extends PureComponent {
             monitors: [],
             remaps: [],
             names: [],
+            hotkeys: [],
             adjustmentTimes: [],
             linkedLevelsActive: false,
             updateInterval: (window.settings.updateInterval || 500),
@@ -567,129 +568,174 @@ export default class SettingsWindow extends PureComponent {
         this.adjustmentTimesUpdated()
     }
 
-    getHotkeyMonitor = (displayName, id) => {
-        return (
-            <div key={id} className="hotkey-item">
-                <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{displayName}</div></div>
-                <div className="title">{T.t("SETTINGS_HOTKEYS_INCREASE")}</div>
-                <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey(id, 1)} type="text" readOnly={true} onKeyDown={
-                    (e) => {
-                        e.preventDefault()
-                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                        if (this.downKeys[key] === undefined) {
-                            this.downKeys[key] = true;
-                            this.updateHotkey(id, this.downKeys, 1);
+    getHotkeyList = () => {
+        return this.state.hotkeys?.map((hotkey, idx) => {
+            return (
+                <div key={hotkey.id} className="hotkey-item">
+                    <p><a className="button" onClick={() => this.deleteHotkey(idx)}>Delete hotkey</a></p>
+                    <div className="row">
+                        <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
+                        (e) => {
+                            e.preventDefault()
+                            let key = cleanUpKeyboardKeys(e.key, e.keyCode)
+                            if (this.downKeys[key] === undefined) {
+                                this.downKeys[key] = true;
+                                hotkey.accelerator = Object.keys(this.downKeys).join('+')
+                                this.updateHotkey(hotkey, idx);
+                            }
+                            return false
                         }
-                        return false
-                    }
-                } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
-                    <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
-                        this.downKeys = {}
-                        delete this.state.hotkeys[id + "__dir" + 1]
-                        window.sendSettings({ hotkeys: this.state.hotkeys })
-                        this.forceUpdate()
-                    }} />
-                    {this.getHotkeyStatusIcon(id, 1)}
+                    } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
+                        <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
+                            this.downKeys = {}
+                            hotkey.accelerator = ""
+                            this.updateHotkey(hotkey, idx);
+                        }} />
+                        {this.getHotkeyStatusIcon(hotkey)}
+                    </div>
+                    <select value={hotkey.type} onChange={e => {
+                        hotkey.type = e.target.value
+                        this.updateHotkey(hotkey, idx)
+                    }}>
+                        <option value="set">Set value</option>
+                        <option value="offset">Adjust value</option>
+                        <option value="cycle">Cycle list of values</option>
+                        <option value="off">Turn off display</option>
+                    </select>
+                    { this.getHotkeyInput(hotkey) }
+                    <label>Displays</label>
+                    <div className="inputToggle-generic">
+                        <input onChange={e => {
+                            hotkey.allMonitors = e.target.checked
+                            this.updateHotkey(hotkey, idx)
+                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
+                        <div className="text">All Displays</div>
+                    </div>
+                    { hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null }
                 </div>
-                <div className="title">{T.t("SETTINGS_HOTKEYS_DECREASE")}</div>
-                <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey(id, -1)} type="text" readOnly={true} onKeyDown={
-                    (e) => {
-                        e.preventDefault()
-                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                        if (this.downKeys[key] === undefined) {
-                            this.downKeys[key] = true;
-                            this.updateHotkey(id, this.downKeys, -1);
-                        }
-                        return false
-                    }
-                } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
-                    <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
-                        this.downKeys = {}
-                        delete this.state.hotkeys[id + "__dir" + -1]
-                        window.sendSettings({ hotkeys: this.state.hotkeys })
-                        this.forceUpdate()
-                    }} />
-                    {this.getHotkeyStatusIcon(id, -1)}
-                </div>
-                {this.getSleepHotkey(id)}
-            </div>
-        )
-    }
-
-    getSleepHotkey = (id) => {
-        if (id == "all") {
-            return (<>
-                <div className="title">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</div>
-                <div className="row"><input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={this.findHotkey("turn_off_displays", 1)} type="text" readOnly={true} onKeyDown={
-                    (e) => {
-                        e.preventDefault()
-                        let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                        if (this.downKeys[key] === undefined) {
-                            this.downKeys[key] = true;
-                            this.updateHotkey("turn_off_displays", this.downKeys, 1);
-                        }
-                        return false
-                    }
-                } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
-                    <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
-                        this.downKeys = {}
-                        delete this.state.hotkeys["turn_off_displays" + "__dir" + 1]
-                        window.sendSettings({ hotkeys: this.state.hotkeys })
-                        this.forceUpdate()
-                    }} />
-                    {this.getHotkeyStatusIcon("turn_off_displays", 1)}
-                </div>
-            </>)
-        } else {
-            return (<></>)
-        }
-    }
-
-    getHotkeyStatusIcon = (id, direction) => {
-        if (this.state.hotkeys && this.state.hotkeys[id + "__dir" + direction]) {
-            const status = this.state.hotkeys[id + "__dir" + direction].active
-            if (status) {
-                return (<div className="status icon active">&#xE73E;</div>)
-            } else {
-                return (<div className="status icon inactive"></div>)
-            }
-        }
-    }
-
-    getHotkeyMonitors = () => {
-        return Object.values(this.state.monitors).slice(0).sort(monitorSort).map((monitor, idx) => {
-            if (monitor.type == "none") {
-                return (<div key={monitor.id}></div>)
-            } else {
-                return this.getHotkeyMonitor(this.getMonitorName(monitor, this.state.names), monitor.id)
-            }
+            )
         })
     }
 
-    findHotkey = (id, direction) => {
-        if (this.state.hotkeys && this.state.hotkeys[id + "__dir" + direction]) {
-            return this.state.hotkeys[id + "__dir" + direction].accelerator
+    getHotkeyInput = (hotkey, idx) => {
+        if(hotkey.type === "off") {
+            return (<p>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</p>)
+        } else {
+            let selectBoxValue = hotkey.target
+            if(!(selectBoxValue === "brightness")) {
+                selectBoxValue = "vcp"
+            }
+            const selectBox = (
+                <select value={selectBoxValue} onChange={e => {
+                    const value = e.target.value
+                    if(value === "vcp") {
+                        hotkey.target = ""
+                    } else {
+                        hotkey.target = value
+                    }
+                    this.updateHotkey(hotkey, idx)
+                }}>
+                    <option value="brightness">Brightness</option>
+                    <option value="vcp">Specific VCP code</option>
+                </select>
+            )
+
+            const singleValue = () => (
+                <div className="hotkey-value">
+                    <label>Value</label>
+                    <input type="number" min="0" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
+                        const value = e.target.value
+                        hotkey.value = value ?? 0
+                        this.updateHotkey(hotkey, idx)
+                    }} />
+                </div>
+            )
+
+            const listOfValues = () => (
+                <div className="hotkey-values-list">
+                    <label>Values</label>
+                    { hotkey.values?.map((value, idx2) => {
+                        return (
+                            <div className="hotkey-value">
+                                <input type="number" min="0" max="65535" value={value ?? 0} placeholder={`Enter a number`}
+                                onChange={e => {
+                                    const value = e.target.value
+                                    hotkey.values[idx2] = value ?? 0
+                                    this.updateHotkey(hotkey, idx)
+                                }} />
+                                { idx2 ? (
+                                    <a className="button" onClick={() => {
+                                        hotkey.values.splice(idx2,1 )
+                                        this.updateHotkey(hotkey, idx)
+                                    }}>Remove</a>
+                                ) : null }
+                            </div>
+                        )
+                    }) }
+                    <p><a className="button" onClick={() => {
+                        hotkey.values.push([0])
+                        this.updateHotkey(hotkey, idx)
+                    }}>+ Add Value</a></p>
+                </div>
+            )
+
+            return (
+                <>
+                    {selectBox}
+                    <input style={{display: (selectBoxValue === "vcp" ? "block" : "none")}} value={hotkey.target} placeholder={`Enter a VCP code (Ex. 16 or 0x10)`}  onChange={e => {
+                        hotkey.target = e.target.value
+                        this.updateHotkey(hotkey, idx)
+                    }} />
+                    { hotkey.type === "cycle" ? listOfValues() : singleValue() }                    
+                </>
+            )
         }
-        return ""
     }
 
-
-
-    updateHotkey(id, keys, direction) {
-        const hotkey = {
-            monitor: id,
-            accelerator: Object.keys(keys).join('+'),
-            direction,
-            active: false
+    getHotkeyStatusIcon = hotkey => {
+        if (hotkey?.active) {
+            return (<div className="status icon active">&#xE73E;</div>)
+        } else {
+            return (<div className="status icon inactive"></div>)
         }
+    }
 
-        const key = id + "__dir" + direction
-        this.state.hotkeys[key] = hotkey
-        window.sendSettings({ hotkeys: { ...this.state.hotkeys } })
+    updateHotkey(hotkey, idx) {
+        this.state.hotkeys[idx] = Object.assign({}, hotkey)
+        window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
         this.forceUpdate()
-
     }
 
+    deleteHotkey(idx) {
+        this.state.hotkeys.splice(idx, 1)
+        window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
+        this.forceUpdate()
+    }
+
+    getHotkeyMonitors = (hotkey, idx) => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <div key={monitor.key} className="inputToggle-generic">
+                            <input onChange={e => {
+                                if(!hotkey.monitors) hotkey.monitors = {};
+                                hotkey.monitors[monitor.id] = e.target.checked
+                                this.updateHotkey(hotkey, idx)
+                                }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
+                            <div className="text" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                        </div>
+                    )
+    
+                })
+            }
+        } catch(e) {
+            console.log(e)
+        }
+    }
 
 
 
@@ -840,7 +886,7 @@ export default class SettingsWindow extends PureComponent {
         const checkForUpdates = (settings.checkForUpdates || false)
         const adjustmentTimeIndividualDisplays = (settings.adjustmentTimeIndividualDisplays || false)
         const language = (settings.language || "system")
-        const hotkeys = (settings.hotkeys || {})
+        const hotkeys = (settings.hotkeys || [])
         const hotkeyPercent = (settings.hotkeyPercent || 10)
         const analytics = settings.analytics
         const useAcrylic = settings.useAcrylic
@@ -1136,21 +1182,27 @@ export default class SettingsWindow extends PureComponent {
 
 
 
-
-
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
                             <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
                             <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
                             <div className="hotkey-monitors">
-                                {this.getHotkeyMonitor(T.t("GENERIC_ALL_DISPLAYS"), "all")}
-                                {this.getHotkeyMonitors()}
+                                {this.getHotkeyList()}
+                                <p><a className="button" onClick={() => {
+                                    this.state.hotkeys.push({
+                                        accelerator: "",
+                                        type: "set",
+                                        target: "brightness",
+                                        monitors: {},
+                                        allMonitors: false,
+                                        value: 0,
+                                        values: [0],
+                                        id: uuid()
+                                    })
+                                    window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
+                                    this.forceUpdate()
+                                }}>+ Add Hotkey</a></p>
                             </div>
 
-                        </div>
-                        <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                            <label>{T.t("SETTINGS_HOTKEYS_LEVEL_TITLE")}</label>
-                            <p>{T.t("SETTINGS_HOTKEYS_LEVEL_DESC")}</p>
-                            <Slider type="min" min={1} max={100} level={this.state.hotkeyPercent || 1} onChange={(e) => { this.setState({ hotkeyPercent: e * 1 }); window.sendSettings({ hotkeyPercent: e * 1 }) }} scrolling={false} />
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
@@ -1184,7 +1236,7 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">App Profiles</div>
                             <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app.</p>
                             <div className="hotkey-profiles">
-                                { this.state.rawSettings?.profiles?.map( profile => <AppProfile profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
+                                { this.state.rawSettings?.profiles?.map( (profile, idx) => <AppProfile key={`${idx}__${profile.name}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
                                     profile[key] = value
                                     sendSettingsImmediate({ profiles: this.state.rawSettings?.profiles })
                                     this.forceUpdate()

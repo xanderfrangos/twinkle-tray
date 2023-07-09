@@ -3,6 +3,7 @@ const fs = require('fs')
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
+const uuid = require('crypto').randomUUID
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
@@ -351,7 +352,7 @@ const defaultSettings = {
   brightnessAtStartup: true,
   killWhenIdle: false,
   remaps: {},
-  hotkeys: {},
+  hotkeys: [],
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
@@ -397,9 +398,9 @@ const defaultSettings = {
   udpRemote: false,
   udpPortStart: 14715,
   udpPortActive: 14715,
-  udpKey: require('crypto').randomUUID(),
+  udpKey: uuid(),
   profiles: [],
-  uuid: require('crypto').randomUUID(),
+  uuid: uuid(),
   branch: "master"
 }
 
@@ -429,9 +430,11 @@ function readSettings(doProcessSettings = true) {
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
   // Upgrade settings
-  if(Utils.getVersionValue(settings.settingsVer) < Utils.getVersionValue("v1.15.0")) {
+  const settingsVersion = Utils.getVersionValue(settings.settingsVer)
+  if(settingsVersion < Utils.getVersionValue("v1.15.0")) {
     // v1.15.0
     try {
+      // Upgrade adjustment times
       const upgradedTimes = Utils.upgradeAdjustmentTimes(settings.adjustmentTimes)
       settings.adjustmentTimes = upgradedTimes
       console.log("Upgraded Adjustment Times to v1.15.0 format!")
@@ -439,6 +442,7 @@ function readSettings(doProcessSettings = true) {
       console.log("Couldn't upgrade Adjustment Times", e)
     }
     try {
+      // Upgrade idle settings
       if(settings.detectIdleTime) {
         if(settings.detectIdleTime * 1 > 0) {
           settings.detectIdleTimeEnabled = true
@@ -450,6 +454,34 @@ function readSettings(doProcessSettings = true) {
       console.log("Upgraded Idle settings to v1.15.0 format!")
     } catch(e) {
       console.log("Couldn't upgrade Idle settings", e)
+    }
+  }
+  if(settingsVersion < Utils.getVersionValue("v1.16.0")) {
+    // v1.16.0
+    try {
+      // Upgrade hotkeys
+      if(settings.hotkeys && Object.values(settings.hotkeys)?.length > 0) {
+        const newHotkeys = []
+        for(const hotkey of Object.values(settings.hotkeys)) {
+          const newHotkey = {
+            accelerator: hotkey.accelerator,
+            id: uuid()
+          }
+          if(hotkey.monitor === "turn_off_displays") {
+            newHotkey.type = "off"
+          } else {
+            newHotkey.monitor = hotkey.monitor
+            newHotkey.type = "offset"
+            newHotkey.target = "brightness"
+            newHotkey.value = settings.hotkeyPercent * hotkey.direction
+          }
+          newHotkeys.push(newHotkey)
+        }
+        settings.hotkeys = newHotkeys
+      }
+      console.log(`Upgraded ${settings.hotkeys.length} hotkeys to v1.16.0 format!`)
+    } catch(e) {
+      console.log("Couldn't upgrade hotkeys", e)
     }
   }
 
@@ -724,10 +756,10 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
 function applyHotkeys(monitorList = monitors) {
   if (settings.hotkeys !== undefined) {
     globalShortcut.unregisterAll()
-    for (let hotkey of Object.values(settings.hotkeys)) {
+    for (const hotkey of settings.hotkeys) {
       try {
-        // Only apply if found
-        if (hotkey.monitor == "all" || hotkey.monitor == "turn_off_displays" || Object.values(monitorList).find(m => m.id == hotkey.monitor)) {
+        // Only apply if found/valid
+        if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || Object.keys(hotkey.monitors)?.length) {
           hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
             doHotkey(hotkey)
           })
@@ -744,69 +776,133 @@ function applyHotkeys(monitorList = monitors) {
 let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
-const doHotkey = async (hotkey) => {
+const hotkeyCycleIndexes = []
+async function doHotkey(hotkey) {
   const now = Date.now()
-  if (!doingHotkey && (hotkeyThrottle[hotkey.monitor] === undefined || now > hotkeyThrottle[hotkey.monitor] + 100)) {
-    hotkeyThrottle[hotkey.monitor] = now
+  if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
+    hotkeyThrottle[hotkey.id] = now
 
 
-    let showOverlay = true
+    let showOverlay = false
 
     doingHotkey = true
 
     try {
-      if (hotkey.monitor === "all" || ((settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels) && hotkey.monitor != "turn_off_displays")) {
 
-        // Wait for refresh if user hasn't done so recently
-        if(lastRefreshMonitors < Date.now() - 10000) {
-          await refreshMonitors()
-        }
+      // Wait for refresh if user hasn't done so recently
+      if (lastRefreshMonitors < Date.now() - 10000) {
+        await refreshMonitors()
+      }
 
-        let linkedLevelVal = false
-        for (let key in monitors) {
-          const monitor = monitors[key]
-          let normalizedAdjust = minMax((settings.hotkeyPercent * hotkey.direction) + monitor.brightness)
-
-          // Use linked levels, if applicable
-          if (settings.linkedLevelsActive) {
-            // Set shared brightness value if not set
-            if (linkedLevelVal) {
-              normalizedAdjust = linkedLevelVal
-            } else {
-              linkedLevelVal = normalizedAdjust
-            }
-          }
-
-          monitors[key].brightness = normalizedAdjust
-        }
-
-        sendToAllWindows('monitors-updated', monitors);
-        for (let key in monitors) {
-          updateBrightnessThrottle(monitors[key].id, monitors[key].brightness, true, false)
-        }
-        pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
-
-      } else if (hotkey.monitor == "turn_off_displays") {
+      if (hotkey.type === "off") {
         showOverlay = false
         sleepDisplays(settings.sleepAction)
-      } else {
-        if (Object.keys(monitors).length) {
-          const monitor = Object.values(monitors).find((m) => m.id == hotkey.monitor)
-          if (monitor) {
-            let normalizedAdjust = minMax((settings.hotkeyPercent * hotkey.direction) + monitor.brightness)
-            monitors[monitor.key].brightness = normalizedAdjust
-            sendToAllWindows('monitors-updated', monitors);
-            updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
-            pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
+      } else if (hotkey.type === "set" || hotkey.type === "offset" || hotkey.type === "cycle") {
 
-            // Break linked levels
-            if(settings.hotkeysBreakLinkedLevels && settings.linkedLevelsActive) {
-              console.log("Breaking linked levels due to hotkey.")
-              writeSettings({linkedLevelsActive: false})
-            } 
+        const determineHotkeyOutputValue = async monitor => {
+          switch(hotkey.type) {
+            case "offset":
+              let currentValue = 0
+              if(hotkey.target === "brightness") {
+                currentValue = monitor.brightness
+              } else {
+                // Get VCP
+                currentValue = await getVCP(monitor, parseInt(hotkey.target))
+              }
+              return currentValue + parseInt(hotkey.value);
+            case "cycle":
+              if(!hotkey.values?.length) return -1;
+              if(!hotkeyCycleIndexes[hotkey.id]) {
+                hotkeyCycleIndexes[hotkey.id] = 0
+              }
+
+              let currentCycleValue = 0
+              if(hotkey.target === "brightness") {
+                currentCycleValue = monitor.brightness
+              } else {
+                // Get VCP
+                currentCycleValue = await getVCP(monitor, parseInt(hotkey.target))
+              }
+
+              // If current value is same as measured, move onto next value. Else reset.
+              if(currentCycleValue == parseInt(hotkey.values[hotkeyCycleIndexes[hotkey.id]])) {
+
+                if(hotkeyCycleIndexes[hotkey.id] >= hotkey.values.length - 1) {
+                  // End of list, reset
+                  hotkeyCycleIndexes[hotkey.id] = 0
+                } else {
+                  // Next value
+                  hotkeyCycleIndexes[hotkey.id]++
+                }
+              } else {
+                // Reset
+                hotkeyCycleIndexes[hotkey.id] = 0
+              }
+              return hotkey.values[hotkeyCycleIndexes[hotkey.id]];
+
+            case "set": return parseInt(hotkey.value);
           }
         }
+
+        // Build list of all applicable monitors
+        const hotkeyMonitors = []
+        if (hotkey.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
+          // Target all monitors
+          for(const monitor of Object.values(monitors)) {
+            hotkeyMonitors.push({
+              monitor,
+              value: await determineHotkeyOutputValue(monitor)
+            })
+          }
+        } else {
+          // Use list, look up monitor objects
+          if(Object.keys(hotkey.monitors)?.length) {
+            for(const id in hotkey.monitors) {
+              if(hotkey.monitors[id]) {
+                const monitor = Object.values(monitors).find(m => m.id == id)
+                if(monitor) {
+                  hotkeyMonitors.push({
+                    monitor,
+                    value: await determineHotkeyOutputValue(monitor)
+                  });
+                }
+              }
+            }
+          }
+        }
+
+        // Apply change
+        if(hotkeyMonitors?.length) {
+          for(const hotkeyMonitor of hotkeyMonitors) {
+            const { monitor, value } = hotkeyMonitor
+            if (hotkey.target === "brightness") {
+              const normalizedAdjust = minMax(value)
+              monitors[monitor.key].brightness = normalizedAdjust
+              sendToAllWindows('monitors-updated', monitors);
+              updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
+              pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
+
+              // Break linked levels
+              if (settings.hotkeysBreakLinkedLevels && settings.linkedLevelsActive) {
+                console.log("Breaking linked levels due to hotkey.")
+                writeSettings({ linkedLevelsActive: false })
+              }
+              showOverlay = true
+            } else {
+              monitorsThread.send({
+                type: "vcp",
+                monitor: monitor.hwid.join("#"),
+                code: parseInt(hotkey.target),
+                value: parseInt(value)
+              })
+            }
+          }
+        }
+
+
+        
       }
+
 
       // Show brightness overlay, if applicable
       // If panel isn't open, use the overlay
@@ -819,7 +915,6 @@ const doHotkey = async (hotkey) => {
     }
 
     doingHotkey = false
-
   }
 }
 
@@ -2082,7 +2177,7 @@ let preProfileBrightness = {}
 function startFocusTracking() {
   ActiveWindow.subscribe( async window => {
     if(!window) return false;
-    
+
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
 

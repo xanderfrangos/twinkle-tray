@@ -47,7 +47,7 @@ function sendSettings(newSettings = {}) {
         sendSettingsThrottle = setTimeout(() => {
             actuallySendSettings()
             sendSettingsThrottle = false
-        }, 333)
+        }, 500)
     }
 }
 

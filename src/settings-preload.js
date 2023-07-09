@@ -252,3 +252,4 @@ window.accent = "cyan"
 
 window.version = 'v' + getArgumentVars().appVersion
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
+window.settingsPath = getArgumentVars().settingsPath

@@ -1143,6 +1143,11 @@ ipcMain.on('reset-settings', () => {
   writeSettings({ userClosedIntro: true })
 })
 
+ipcMain.on('open-settings-file', () => {
+  console.log("Opening settings file in default editor")
+  exec(`notepad.exe "${settingsPath}"`)
+})
+
 // Get the user's Windows Personalization settings
 async function getThemeRegistry() {
   console.log("Function: getThemeRegistry");
@@ -2710,7 +2715,8 @@ function createSettings() {
         appName: app.name,
         appVersion: app.getVersion(),
         settings,
-        lastTheme
+        lastTheme,
+        settingsPath
       })).toString('base64')]
     }
   });

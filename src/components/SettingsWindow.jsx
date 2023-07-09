@@ -1230,6 +1230,9 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection debug" data-active={this.isSection("debug")}>
                             <div className="sectionTitle">Settings</div>
                             <label>These are your raw user settings.</label>
+                            <p><b>Settings path:</b> { window.settingsPath }</p>
+                            <p><a className="button" onClick={() => window.ipc.send('open-settings-file')} >Open Settings</a></p>
+                            <br />
                             <p style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
                         </div>
 

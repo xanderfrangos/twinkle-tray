@@ -147,17 +147,18 @@ startMonitorThread()
 function getVCP(monitor, code) {
   return new Promise((resolve, reject) => {
     if(!monitor || !code) resolve(-1);
+    const hwid = (typeof monitor === "object" ? monitor.hwid.join("#") : monitor)
     const timeout = setTimeout(() => {
       resolve(-1) // Timed out
     }, 3000)
-    monitorsThread.once(`getVCP::${monitor.hwid.join("#")}::${code}`, data => {
+    monitorsThread.once(`getVCP::${hwid}::${code}`, data => {
       clearTimeout(timeout)
       resolve(data?.value)
     })
     monitorsThread.send({
       type: "getVCP",
       code,
-      monitor: monitor.hwid.join("#")
+      monitor: hwid
     })
   })
 }
@@ -1744,12 +1745,12 @@ function transitionlessBrightness(level, eventMonitors = []) {
 function sleepDisplays(mode = "ps") {
   try {
 
-    setTimeout(() => {
+    setTimeout(async () => {
       startIdleCheckShort()
       if(mode === "ddcci" || mode === "ps_ddcci") {
         for(let monitorID in monitors) {
           const monitor = monitors[monitorID]
-          turnOffDisplayDDC(monitor.hwid.join("#"))
+          await turnOffDisplayDDC(monitor.hwid.join("#"))
         }
       }
   
@@ -1764,9 +1765,21 @@ function sleepDisplays(mode = "ps") {
   }
 }
 
-function turnOffDisplayDDC(hwid) {
+async function turnOffDisplayDDC(hwid, toggle = false) {
   try {
     const offVal = parseInt(settings.ddcPowerOffValue)
+    if(toggle) {
+      const currentValue = await getVCP(hwid, 0xD6)
+      if(currentValue > 1) {
+        monitorsThread.send({
+          type: "vcp",
+          monitor: hwid,
+          code: 0xD6,
+          value: 1
+        })
+        return true
+      }
+    }
     if(offVal === 4 || offVal === 6) {
       monitorsThread.send({
         type: "vcp",
@@ -1886,7 +1899,7 @@ ipcMain.on('show-acrylic', () => {
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
-ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid))
+ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
 })

@@ -21,7 +21,7 @@ import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
 import FluentIcon from "../assets/tray-icons/dark/fluent@4x.png"
 
-const uuid = self.crypto.randomUUID
+const uuid = () => crypto.randomUUID()
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);

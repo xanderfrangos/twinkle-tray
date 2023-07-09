@@ -465,14 +465,22 @@ function readSettings(doProcessSettings = true) {
         for(const hotkey of Object.values(settings.hotkeys)) {
           const newHotkey = {
             accelerator: hotkey.accelerator,
-            id: uuid()
+            id: uuid(),
+            monitors: {},
+            target: "brightness",
+            values: [0],
+            allMonitors: false
           }
           if(hotkey.monitor === "turn_off_displays") {
             newHotkey.type = "off"
           } else {
-            newHotkey.monitor = hotkey.monitor
+            newHotkey.monitors = {}
+            if(hotkey.monitor === "all") {
+              newHotkey.allMonitors = true
+            } else {
+              newHotkey.monitors[hotkey.monitor] = true
+            }
             newHotkey.type = "offset"
-            newHotkey.target = "brightness"
             newHotkey.value = settings.hotkeyPercent * hotkey.direction
           }
           newHotkeys.push(newHotkey)
@@ -2482,7 +2490,7 @@ function doAnimationStep() {
 app.on("ready", async () => {
   await getAllLanguages()
   await getThemeRegistry()
-  readSettings()
+  //readSettings()
   getLocalization()
 
   refreshMonitors(true, true).then(() => {

@@ -2075,6 +2075,8 @@ const windowHistory = []
 let preProfileBrightness = {}
 function startFocusTracking() {
   ActiveWindow.subscribe( async window => {
+    if(!window) return false;
+    
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
 

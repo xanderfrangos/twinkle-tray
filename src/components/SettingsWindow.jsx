@@ -1179,8 +1179,19 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC")}</p>
                             { this.renderToggle("getDDCBrightnessUpdates") }
                         </div>
-
-
+                        <div className="pageSection" data-active={this.isSection("features")}>
+                        <div className="sectionTitle">Power State Signal</div>
+                        <p>When sending the DDC/CI command to turn off your display, the following value(s) will be sent.</p>
+                        <select value={this.state.rawSettings.ddcPowerOffValue} onChange={e => {
+                                this.setState({ ddcPowerOffValue: parseInt(e.target.value) })
+                                window.sendSettings({ ddcPowerOffValue: parseInt(e.target.value) })
+                            }}>
+                                <option value={4}>Standby (4) ⚠️</option>
+                                <option value={5}>Power off (5)</option>
+                                <option value={6}>Most compatible (4 &amp; 5)</option>
+                            </select>
+                            <p><em>⚠️ The "Standby" option is more likely to allow toggling the monitor on/off from Twinkle Tray. However, many monitors do not respond correctly to changing power state. Use at your own risk.</em></p>
+                        </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
                             <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
@@ -1304,9 +1315,6 @@ export default class SettingsWindow extends PureComponent {
                             <label>Disable Auto Apply</label>
                             <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
                             { this.renderToggle("disableAutoApply") }
-                            <br />
-                            <label>ddcPowerOffValue</label>
-                            <input type="number" min="4" max="6" value={window.settings.ddcPowerOffValue * 1} onChange={(e) => this.setSetting("ddcPowerOffValue", e.target.value)} />
                             <br />
                             <label>Disable Auto Refresh</label>
                             <p>Prevent last known brightness from read after certain hardware/user events.</p>

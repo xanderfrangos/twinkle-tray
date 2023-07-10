@@ -604,12 +604,12 @@ export default class SettingsWindow extends PureComponent {
                     </select>
                     { this.getHotkeyInput(hotkey) }
                     <label>Displays</label>
-                    <div className="inputToggle-generic">
+                    <div className="feature-toggle-row">
                         <input onChange={e => {
                             hotkey.allMonitors = e.target.checked
                             this.updateHotkey(hotkey, idx)
                             }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
-                        <div className="text">All Displays</div>
+                        <div className="feature-toggle-label">All Displays</div>
                     </div>
                     { hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null }
                 </div>
@@ -720,13 +720,13 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
 
                     return (
-                        <div key={monitor.key} className="inputToggle-generic">
+                        <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {
                                 if(!hotkey.monitors) hotkey.monitors = {};
                                 hotkey.monitors[monitor.id] = e.target.checked
                                 this.updateHotkey(hotkey, idx)
                                 }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
-                            <div className="text" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                            <div className="feature-toggle-label" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
                         </div>
                     )
     
@@ -812,9 +812,9 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
 
                     return (
-                        <div key={monitor.key} className="inputToggle-generic">
+                        <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={(e) => {this.setHideMonitor(e.target.checked, monitor)}}  checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} type="checkbox" />
-                            <div className="text" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                            <div className="feature-toggle-label" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
                         </div>
                     )
     

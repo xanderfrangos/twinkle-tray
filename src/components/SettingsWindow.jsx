@@ -134,7 +134,7 @@ export default class SettingsWindow extends PureComponent {
 
     sendSettingsThrottle = (newSetting = {}) => {
         this.sendSettingsValues = Object.assign(this.sendSettingsValues, newSetting)
-        if(this.sendSettingsTimeout) {
+        if (this.sendSettingsTimeout) {
             clearTimeout(this.sendSettingsTimeout)
         }
         this.sendSettingsTimeout = setTimeout(() => {
@@ -147,7 +147,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages }); console.log(e.detail); T.setLocalizationData(e.detail.desired, e.detail.default) })
-        window.addEventListener("windowHistory", e => this.setState({windowHistory: e.detail }))
+        window.addEventListener("windowHistory", e => this.setState({ windowHistory: e.detail }))
 
         if (window.isAppX === false) {
             window.addEventListener("updateUpdated", (e) => {
@@ -575,17 +575,17 @@ export default class SettingsWindow extends PureComponent {
                     <p><a className="button" onClick={() => this.deleteHotkey(idx)}>Delete hotkey</a></p>
                     <div className="row">
                         <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
-                        (e) => {
-                            e.preventDefault()
-                            let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                            if (this.downKeys[key] === undefined) {
-                                this.downKeys[key] = true;
-                                hotkey.accelerator = Object.keys(this.downKeys).join('+')
-                                this.updateHotkey(hotkey, idx);
+                            (e) => {
+                                e.preventDefault()
+                                let key = cleanUpKeyboardKeys(e.key, e.keyCode)
+                                if (this.downKeys[key] === undefined) {
+                                    this.downKeys[key] = true;
+                                    hotkey.accelerator = Object.keys(this.downKeys).join('+')
+                                    this.updateHotkey(hotkey, idx);
+                                }
+                                return false
                             }
-                            return false
-                        }
-                    } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
+                        } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
                         <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
                             this.downKeys = {}
                             hotkey.accelerator = ""
@@ -602,33 +602,33 @@ export default class SettingsWindow extends PureComponent {
                         <option value="cycle">Cycle list of values</option>
                         <option value="off">Turn off display</option>
                     </select>
-                    { this.getHotkeyInput(hotkey) }
+                    {this.getHotkeyInput(hotkey)}
                     <label>Displays</label>
                     <div className="feature-toggle-row">
                         <input onChange={e => {
                             hotkey.allMonitors = e.target.checked
                             this.updateHotkey(hotkey, idx)
-                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
+                        }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
                         <div className="feature-toggle-label">All Displays</div>
                     </div>
-                    { hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null }
+                    {hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null}
                 </div>
             )
         })
     }
 
     getHotkeyInput = (hotkey, idx) => {
-        if(hotkey.type === "off") {
+        if (hotkey.type === "off") {
             return (<p>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</p>)
         } else {
             let selectBoxValue = hotkey.target
-            if(!(selectBoxValue === "brightness")) {
+            if (!(selectBoxValue === "brightness")) {
                 selectBoxValue = "vcp"
             }
             const selectBox = (
                 <select value={selectBoxValue} onChange={e => {
                     const value = e.target.value
-                    if(value === "vcp") {
+                    if (value === "vcp") {
                         hotkey.target = ""
                     } else {
                         hotkey.target = value
@@ -654,24 +654,24 @@ export default class SettingsWindow extends PureComponent {
             const listOfValues = () => (
                 <div className="hotkey-values-list">
                     <label>Values</label>
-                    { hotkey.values?.map((value, idx2) => {
+                    {hotkey.values?.map((value, idx2) => {
                         return (
                             <div className="hotkey-value">
                                 <input type="number" min="0" max="65535" value={value ?? 0} placeholder={`Enter a number`}
-                                onChange={e => {
-                                    const value = e.target.value
-                                    hotkey.values[idx2] = value ?? 0
-                                    this.updateHotkey(hotkey, idx)
-                                }} />
-                                { idx2 ? (
+                                    onChange={e => {
+                                        const value = e.target.value
+                                        hotkey.values[idx2] = value ?? 0
+                                        this.updateHotkey(hotkey, idx)
+                                    }} />
+                                {idx2 ? (
                                     <a className="button" onClick={() => {
-                                        hotkey.values.splice(idx2,1 )
+                                        hotkey.values.splice(idx2, 1)
                                         this.updateHotkey(hotkey, idx)
                                     }}>Remove</a>
-                                ) : null }
+                                ) : null}
                             </div>
                         )
-                    }) }
+                    })}
                     <p><a className="button" onClick={() => {
                         hotkey.values.push([0])
                         this.updateHotkey(hotkey, idx)
@@ -682,11 +682,11 @@ export default class SettingsWindow extends PureComponent {
             return (
                 <>
                     {selectBox}
-                    <input style={{display: (selectBoxValue === "vcp" ? "block" : "none")}} value={hotkey.target} placeholder={`Enter a VCP code (Ex. 16 or 0x10)`}  onChange={e => {
+                    <input style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }} value={hotkey.target} placeholder={`Enter a VCP code (Ex. 16 or 0x10)`} onChange={e => {
                         hotkey.target = e.target.value
                         this.updateHotkey(hotkey, idx)
                     }} />
-                    { hotkey.type === "cycle" ? listOfValues() : singleValue() }                    
+                    {hotkey.type === "cycle" ? listOfValues() : singleValue()}
                 </>
             )
         }
@@ -722,17 +722,17 @@ export default class SettingsWindow extends PureComponent {
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {
-                                if(!hotkey.monitors) hotkey.monitors = {};
+                                if (!hotkey.monitors) hotkey.monitors = {};
                                 hotkey.monitors[monitor.id] = e.target.checked
                                 this.updateHotkey(hotkey, idx)
-                                }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
-                            <div className="feature-toggle-label" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                            }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
+                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{this.getMonitorName(monitor, this.state.names)}</div>
                         </div>
                     )
-    
+
                 })
             }
-        } catch(e) {
+        } catch (e) {
             console.log(e)
         }
     }
@@ -796,10 +796,10 @@ export default class SettingsWindow extends PureComponent {
                     return (
                         <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} />
                     )
-    
+
                 })
             }
-        } catch(e) {
+        } catch (e) {
 
         }
     }
@@ -813,14 +813,14 @@ export default class SettingsWindow extends PureComponent {
 
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
-                            <input onChange={(e) => {this.setHideMonitor(e.target.checked, monitor)}}  checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} type="checkbox" />
-                            <div className="feature-toggle-label" style={{display:"flex", alignItems:"center", gap:"8px"}}>{this.getMonitorName(monitor, this.state.names)}</div>
+                            <input onChange={(e) => { this.setHideMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{this.getMonitorName(monitor, this.state.names)}</div>
                         </div>
                     )
-    
+
                 })
             }
-        } catch(e) {
+        } catch (e) {
             console.log(e)
         }
     }
@@ -833,7 +833,7 @@ export default class SettingsWindow extends PureComponent {
 
     toggleFeature = (monitor, feature) => {
         const newFeatures = Object.assign({}, this.state.rawSettings.monitorFeatures)
-        if(!newFeatures[monitor]) newFeatures[monitor] = {};
+        if (!newFeatures[monitor]) newFeatures[monitor] = {};
         newFeatures[monitor][feature] = (newFeatures[monitor][feature] ? false : true);
 
         window.sendSettings({ monitorFeatures: newFeatures })
@@ -945,8 +945,8 @@ export default class SettingsWindow extends PureComponent {
 
     setSetting = (setting, sentVal) => {
         let value = sentVal;
-        if(sentVal === "on") value = true;
-        if(sentVal === "off") value = false;
+        if (sentVal === "on") value = true;
+        if (sentVal === "off") value = false;
 
         const newState = {}
         newState[setting] = value
@@ -955,9 +955,9 @@ export default class SettingsWindow extends PureComponent {
     }
 
     renderToggle = (setting, showText = true) => {
-        return(<div className="inputToggle-generic">
-            <input onChange={(e) => {this.setSetting(setting, e.target.checked)}} checked={(this.state.rawSettings?.[setting] ? true : false)} data-checked={(this.state.rawSettings?.[setting] ? true : false)} type="checkbox" />
-            <div className="text">{(this.state.rawSettings?.[setting] ? T.t("GENERIC_ON") : T.t("GENERIC_OFF") )}</div>
+        return (<div className="inputToggle-generic">
+            <input onChange={(e) => { this.setSetting(setting, e.target.checked) }} checked={(this.state.rawSettings?.[setting] ? true : false)} data-checked={(this.state.rawSettings?.[setting] ? true : false)} type="checkbox" />
+            <div className="text">{(this.state.rawSettings?.[setting] ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
         </div>)
     }
 
@@ -975,13 +975,13 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
                             <div style={{ display: (window.isAppX ? "none" : "block") }}>
                                 <label>{T.t("SETTINGS_GENERAL_STARTUP")}</label>
-                                { this.renderToggle("openAtLogin") }
+                                {this.renderToggle("openAtLogin")}
                                 <br />
                             </div>
                             <div>
                                 <label>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")}</label>
                                 <p>{T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")}</p>
-                                { this.renderToggle("brightnessAtStartup") }
+                                {this.renderToggle("brightnessAtStartup")}
                                 <br />
                             </div>
                             <label>{T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")}</label>
@@ -1011,7 +1011,7 @@ export default class SettingsWindow extends PureComponent {
                             <p className="win10only">{T.t("SETTINGS_GENERAL_ACRYLIC_DESC")}</p>
                             <label className="win11only">{T.t("SETTINGS_GENERAL_MICA_TITLE")}</label>
                             <p className="win11only">{T.t("SETTINGS_GENERAL_MICA_DESC")}</p>
-                            { this.renderToggle("useAcrylic") }
+                            {this.renderToggle("useAcrylic")}
 
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_TRAY_ICON_TITLE")}</label>
@@ -1029,7 +1029,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")}</label>
                             <p>{T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
-                            { this.renderToggle("analytics") }
+                            {this.renderToggle("analytics")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("general")}>
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TROUBLESHOOTING")}</div>
@@ -1037,27 +1037,27 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')}</p>
                             <div className="feature-toggle-list">
                                 <div className="feature-toggle-row">
-                                 <input onChange={(e) => {this.setSetting("disableWMIC", e.target.checked)}} checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} type="checkbox" />
+                                    <input onChange={(e) => { this.setSetting("disableWMIC", e.target.checked) }} checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMIC"] ? true : false)} type="checkbox" />
                                     <div className="feature-toggle-label"><span>WMIC</span></div>
                                 </div>
                                 <div className="feature-toggle-row">
-                                    <input onChange={(e) => {this.setSetting("disableWMI", e.target.checked)}} checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} type="checkbox" />
+                                    <input onChange={(e) => { this.setSetting("disableWMI", e.target.checked) }} checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWMI"] ? true : false)} type="checkbox" />
                                     <div className="feature-toggle-label"><span>WMI-Bridge</span></div>
                                 </div>
                                 <div className="feature-toggle-row">
-                                    <input onChange={(e) => {this.setSetting("disableWin32", e.target.checked)}} checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} type="checkbox" />
+                                    <input onChange={(e) => { this.setSetting("disableWin32", e.target.checked) }} checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} data-checked={(this.state.rawSettings?.["disableWin32"] ? true : false)} type="checkbox" />
                                     <div className="feature-toggle-label"><span>Win32-DisplayConfig</span></div>
                                 </div>
                             </div>
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</label>
                             <p>{T.h("SETTINGS_GENERAL_DIS_OVERLAY_DESC")}</p>
-                            { this.renderToggle("disableOverlay") }
+                            {this.renderToggle("disableOverlay")}
                             <br />
                             <label>{T.t("SETTINGS_GENERAL_RESET_TITLE")}</label>
                             <p>{T.t("SETTINGS_GENERAL_RESET_DESC")}</p>
-                            
-                            <div style={{paddingBottom:"8px"}}><a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a></div>
+
+                            <div style={{ paddingBottom: "8px" }}><a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a></div>
                         </div>
 
 
@@ -1074,16 +1074,16 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_INDIVIDUAL_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_INDIVIDUAL_DESC")}</p>
-                            { this.renderToggle("adjustmentTimeIndividualDisplays") }
+                            {this.renderToggle("adjustmentTimeIndividualDisplays")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_ANIMATE_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_ANIMATE_DESC")}</p>
-                            { this.renderToggle("adjustmentTimeAnimate") }
+                            {this.renderToggle("adjustmentTimeAnimate")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_TRANSITON_TITLE")}</label>
-                            <p>{T.t("SETTINGS_TIME_TRANSITON_DESC")}</p>                            
+                            <p>{T.t("SETTINGS_TIME_TRANSITON_DESC")}</p>
                             <select value={window.settings.adjustmentTimeSpeed} onChange={(e) => this.setSetting("adjustmentTimeSpeed", e.target.value)}>
                                 <option value="slowest">{T.t("GENERIC_SPEED_VERY_SLOW")}</option>
                                 <option value="slow">{T.t("GENERIC_SPEED_SLOW")}</option>
@@ -1096,20 +1096,20 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <label>{T.t("SETTINGS_TIME_STARTUP_TITLE")}</label>
                             <p>{T.t("SETTINGS_TIME_STARTUP_DESC")}</p>
-                            { this.renderToggle("checkTimeAtStartup") }
+                            {this.renderToggle("checkTimeAtStartup")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>
                             <div className="sectionTitle">{T.t("SETTINGS_TIME_IDLE_TITLE")}</div>
                             <label>{T.t("SETTINGS_TIME_IDLE_TITLE")}</label>
-                            <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>                            
-                            { this.renderToggle("detectIdleTimeEnabled") }
-                            <div style={{"display":(window.settings?.detectIdleTimeEnabled === true ? "flex" : "none")}}>
-                                <div style={{"marginRight":"6px"}}>
-                                    <label style={{"textTransform":"capitalize"}}>{T.t("GENERIC_MINUTES")}</label>
+                            <p>{T.t("SETTINGS_TIME_IDLE_DESC")}</p>
+                            {this.renderToggle("detectIdleTimeEnabled")}
+                            <div style={{ "display": (window.settings?.detectIdleTimeEnabled === true ? "flex" : "none") }}>
+                                <div style={{ "marginRight": "6px" }}>
+                                    <label style={{ "textTransform": "capitalize" }}>{T.t("GENERIC_MINUTES")}</label>
                                     <input type="number" min="0" max="600" value={window.settings.detectIdleTimeMinutes * 1} onChange={(e) => this.setSetting("detectIdleTimeMinutes", e.target.value)} />
                                 </div>
                                 <div>
-                                    <label style={{"textTransform":"capitalize"}}>{T.t("GENERIC_SECONDS")}</label>
+                                    <label style={{ "textTransform": "capitalize" }}>{T.t("GENERIC_SECONDS")}</label>
                                     <input type="number" min="0" max="600" value={window.settings.detectIdleTimeSeconds * 1} onChange={(e) => this.setSetting("detectIdleTimeSeconds", e.target.value)} />
                                 </div>
                             </div>
@@ -1138,12 +1138,12 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("monitors")}>
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_TITLE")}</div>
                             <p>{T.t("SETTINGS_MONITORS_HIDE_INTERNAL_DESC")}</p>
-                            { this.renderToggle("hideClosedLid") }
+                            {this.renderToggle("hideClosedLid")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("monitors")}>
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")}</div>
                             <p>{T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")}</p>
-                            { this.getHideMonitors() }
+                            {this.getHideMonitors()}
                         </div>
                         <div className="pageSection" data-active={this.isSection("monitors")}>
                             <div className="sectionTitle">{T.t("SETTINGS_MONITORS_RENAME_TITLE")}</div>
@@ -1175,14 +1175,14 @@ export default class SettingsWindow extends PureComponent {
                             <div className="ddc-warning">⚠️ <em>{T.t("GENERIC_DDC_WARNING")}</em></div>
                         </div>
                         <div className="pageSection" data-active={this.isSection("features")}>
-                        <div className="sectionTitle">{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE")}</div>
+                            <div className="sectionTitle">{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE")}</div>
                             <p>{T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC")}</p>
-                            { this.renderToggle("getDDCBrightnessUpdates") }
+                            {this.renderToggle("getDDCBrightnessUpdates")}
                         </div>
                         <div className="pageSection" data-active={this.isSection("features")}>
-                        <div className="sectionTitle">Power State Signal</div>
-                        <p>When sending the DDC/CI command to turn off your display, the following value(s) will be sent.</p>
-                        <select value={this.state.rawSettings.ddcPowerOffValue} onChange={e => {
+                            <div className="sectionTitle">Power State Signal</div>
+                            <p>When sending the DDC/CI command to turn off your display, the following value(s) will be sent.</p>
+                            <select value={this.state.rawSettings.ddcPowerOffValue} onChange={e => {
                                 this.setState({ ddcPowerOffValue: parseInt(e.target.value) })
                                 window.sendSettings({ ddcPowerOffValue: parseInt(e.target.value) })
                             }}>
@@ -1219,13 +1219,13 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
                             <label>{T.t("SETTINGS_HOTKEYS_BREAK_TITLE")}</label>
                             <p>{T.t("SETTINGS_HOTKEYS_BREAK_DESC")}</p>
-                            { this.renderToggle("hotkeysBreakLinkedLevels") }
+                            {this.renderToggle("hotkeysBreakLinkedLevels")}
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</div>
                             <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
-                            { this.renderToggle("scrollShortcut") }
+                            {this.renderToggle("scrollShortcut")}
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
@@ -1247,11 +1247,11 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">App Profiles</div>
                             <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app.</p>
                             <div className="hotkey-profiles">
-                                { this.state.rawSettings?.profiles?.map( (profile, idx) => <AppProfile key={`${idx}__${profile.name}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
+                                {this.state.rawSettings?.profiles?.map((profile, idx) => <AppProfile key={`${idx}__${profile.name}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
                                     profile[key] = value
                                     sendSettingsImmediate({ profiles: this.state.rawSettings?.profiles })
                                     this.forceUpdate()
-                                }} />) }
+                                }} />)}
                                 <hr />
                                 <div className="add-new button" onClick={() => addNewProfile(this.state)}>+ New Profile</div>
                             </div>
@@ -1267,7 +1267,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="pageSection" data-active={this.isSection("updates")} style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>
                             <label>{T.t("SETTINGS_UPDATES_AUTOMATIC_TITLE")}</label>
                             <p>{T.t("SETTINGS_UPDATES_AUTOMATIC_DESC")}</p>
-                            { this.renderToggle("checkForUpdates") }
+                            {this.renderToggle("checkForUpdates")}
                         </div>
 
 
@@ -1292,7 +1292,7 @@ export default class SettingsWindow extends PureComponent {
 
                         <div className="pageSection debug" data-active={this.isSection("debug")}>
                             <div className="sectionTitle">Settings</div>
-                            <p style={{fontSize: "12px"}}><b>Settings path:</b> { window.settingsPath }</p>
+                            <p style={{ fontSize: "12px" }}><b>Settings path:</b> {window.settingsPath}</p>
                             <p><a className="button" onClick={() => window.ipc.send('open-settings-file')} >Open Settings</a></p>
                             <br />
                             <p style={{ whiteSpace: "pre-wrap", fontFamily: '"Cascadia Code", "Consolas", sans-serif' }}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
@@ -1302,41 +1302,41 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">Other</div>
                             <br />
                             <p>Dev Mode</p>
-                            { this.renderToggle("isDev") }
+                            {this.renderToggle("isDev")}
                             <br />
                             <label>Enable remote UDP server</label>
                             <p>Enable UDP commands outside of localhost</p>
-                            { this.renderToggle("udpRemote") }
+                            {this.renderToggle("udpRemote")}
                             <br />
                             <label>Default port for UDP commands</label>
                             <input type="number" min="1" max="65535" value={window.settings.udpPortStart * 1} onChange={(e) => this.setSetting("udpPortStart", e.target.value)} />
-                            <div style={{fontSize:"12px"}}>Active port: { window.settings.udpPortActive }</div>
-                            <p><b>UDP key:</b> { window.settings.udpKey }</p><br />
+                            <div style={{ fontSize: "12px" }}>Active port: {window.settings.udpPortActive}</div>
+                            <p><b>UDP key:</b> {window.settings.udpKey}</p><br />
                             <label>Disable Auto Apply</label>
                             <p>Prevent last known brightness from re-applying after certain hardware/user events.</p>
-                            { this.renderToggle("disableAutoApply") }
+                            {this.renderToggle("disableAutoApply")}
                             <br />
                             <label>Disable Auto Refresh</label>
                             <p>Prevent last known brightness from read after certain hardware/user events.</p>
-                            { this.renderToggle("disableAutoRefresh") }
+                            {this.renderToggle("disableAutoRefresh")}
                             <br />
                             <p>Use Native Animation (depricated)</p>
-                            { this.renderToggle("useNativeAnimation") }
+                            {this.renderToggle("useNativeAnimation")}
                             <br />
                             <p>Use Taskbar Registry</p>
-                            { this.renderToggle("useTaskbarRegistry") }
+                            {this.renderToggle("useTaskbarRegistry")}
                             <br />
                             <p>Disable WMIC (requires restart)</p>
-                            { this.renderToggle("disableWMIC") }
+                            {this.renderToggle("disableWMIC")}
                             <br />
                             <p>Disable WMI (requires restart)</p>
-                            { this.renderToggle("disableWMI") }
+                            {this.renderToggle("disableWMI")}
                             <br />
                             <p>Disable Win32 (requires restart)</p>
-                            { this.renderToggle("disableWin32") }
+                            {this.renderToggle("disableWin32")}
                             <br />
                             <p>Disable Mouse Events (requires restart)</p>
-                            { this.renderToggle("disableMouseEvents") }
+                            {this.renderToggle("disableMouseEvents")}
 
                             <div className="sectionTitle">Raw Monitor Data</div>
                             <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(window.allMonitors, undefined, 2)}</pre>
@@ -1352,7 +1352,7 @@ export default class SettingsWindow extends PureComponent {
 }
 
 function addNewProfile(state) {
-    if(!state.rawSettings?.profiles) return false;
+    if (!state.rawSettings?.profiles) return false;
     const id = uuid()
     const profile = {
         id,
@@ -1363,7 +1363,7 @@ function addNewProfile(state) {
         showInMenu: false
     }
     state.rawSettings.profiles.push(profile)
-    sendSettings({ profiles: state.rawSettings.profiles})
+    sendSettings({ profiles: state.rawSettings.profiles })
 }
 
 function getProfileMonitors(monitors, profile, onChange) {
@@ -1382,36 +1382,36 @@ function getProfileMonitors(monitors, profile, onChange) {
 
 function AppProfile(props) {
     const { profile, updateValue, onDelete, monitors } = props
-    if(!profile.monitors) profile.monitors = {};
-  
+    if (!profile.monitors) profile.monitors = {};
+
     return (
-      <div className="appProfileItem" key={profile.id}>
-        <hr />
-        <label>Profile name</label>
-        <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)}></input>
-        <label>App path (optional)</label>
-        <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE here.</p>
-        <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)}></input>
-        <label>Overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
+        <div className="appProfileItem" key={profile.id}>
+            <hr />
+            <label>Profile name</label>
+            <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)}></input>
+            <label>App path (optional)</label>
+            <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE here.</p>
+            <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)}></input>
+            <label>Overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
 Aggressive: Applies the overlay in a way that will display over borderless fullscreen games. This will break exlusive fullscreen games.">i</sup></label>
-        <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-          <option value="normal">Normal</option>
-          <option value="disabled">Disabled</option>
-          <option value="aggressive">Aggressive</option>
-        </select>
+            <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
+                <option value="normal">Normal</option>
+                <option value="disabled">Disabled</option>
+                <option value="aggressive">Aggressive</option>
+            </select>
 
-        <div className="feature-toggle-row">
-            <input onChange={(e) => {updateValue("showInMenu", e.target.checked)}} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-            <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
-        </div>
+            <div className="feature-toggle-row">
+                <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+                <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
+            </div>
 
-        <div className="feature-toggle-row">
-            <input onChange={(e) => {updateValue("setBrightness", e.target.checked)}} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
-            <div className="feature-toggle-label"><span>Set brightness when active</span></div>
+            <div className="feature-toggle-row">
+                <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
+                <div className="feature-toggle-label"><span>Set brightness when active</span></div>
+            </div>
+            {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+            <br />
+            <div className="add-new button block" onClick={onDelete}><div className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></div> <span>Delete</span></div>
         </div>
-        { ( profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null )}
-        <br />
-        <div className="add-new button block" onClick={onDelete}><div className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></div> <span>Delete</span></div>
-      </div>
     )
-  }
+}

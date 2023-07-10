@@ -8,15 +8,15 @@ function udpSendCommand(type, data, port = 14715, key) {
             clearTimeout(udpTimeout)
             reject("No response")
         }, 1000)
-        
+
         client.on('message', (message, connection) => {
-          resolve(message.toString())
+            resolve(message.toString())
         })
-        
-        client.send(JSON.stringify({type, data, key}), port, "localhost", err => {
-          if (err) {
-            reject('Failed to send command')
-          }
+
+        client.send(JSON.stringify({ type, data, key }), port, "localhost", err => {
+            if (err) {
+                reject('Failed to send command')
+            }
         })
     })
 }
@@ -24,11 +24,11 @@ function udpSendCommand(type, data, port = 14715, key) {
 module.exports = {
     unloadModule: (name) => {
         try {
-            if(require.cache[require.resolve(name)]) {
+            if (require.cache[require.resolve(name)]) {
                 delete require.cache[require.resolve(name)]
                 console.log(`Unloaded module: ${name}`)
             }
-        } catch(e) {
+        } catch (e) {
             console.log(`Couldn't unload module: ${name}`)
         }
     },
@@ -102,9 +102,9 @@ module.exports = {
         let failed
         const settings = JSON.parse(fs.readFileSync(settingsPath))
 
-        if(args.ShowPanel) {
+        if (args.ShowPanel) {
             console.log(`Showing panel`)
-        } else if(args.List) {
+        } else if (args.List) {
             //const displays = getKnownDisplays(knownDisplaysPath)
 
             const displays = JSON.parse(await udpSendCommand("list", false, settings.udpPortActive, settings.udpKey))
@@ -197,7 +197,7 @@ function upgradeAdjustmentTimes(times = []) {
     const newTimes = []
 
     times.forEach(time => {
-        if(time.time) {
+        if (time.time) {
             newTimes.push(time)
             return
         }
@@ -221,7 +221,7 @@ function upgradeAdjustmentTimes(times = []) {
 
 // Convert version to a numeric value (v1.2.3 = 10020003)
 function getVersionValue(version = 'v1.0.0') {
-    let out = version.split('-')[0].replace("v","").split(".")
+    let out = version.split('-')[0].replace("v", "").split(".")
     out = (out[0] * 10000 * 10000) + (out[1] * 10000) + (out[2] * 1)
     return parseInt(out)
 }
@@ -238,12 +238,12 @@ function parseTime(time) {
 function getKnownDisplays(knownDisplaysPath) {
     let known
     try {
-      // Load known displays DB
-      known = fs.readFileSync(knownDisplaysPath)
-      known = JSON.parse(known)
+        // Load known displays DB
+        known = fs.readFileSync(knownDisplaysPath)
+        known = JSON.parse(known)
     } catch (e) {
-      known = {}
+        known = {}
     }
-  
+
     return known
-  }
+}

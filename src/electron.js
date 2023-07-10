@@ -12,7 +12,7 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 // Remove window animations
 app.commandLine.appendSwitch('wm-window-animations-disabled');
 
-let isDev = app.commandLine.hasSwitch("dev") 
+let isDev = app.commandLine.hasSwitch("dev")
 
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
@@ -43,7 +43,7 @@ const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-
 const refreshCtx = new VerticalRefreshRateContext();
 
 const WindowUtils = require("setwindowpos-binding")
-const setWindowPos = () => {}
+const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
 
@@ -85,7 +85,7 @@ const debug = {
   error: log
 }
 
-if (!isDev && !app.commandLine.hasSwitch("console") ) console.log = () => { };
+if (!isDev && !app.commandLine.hasSwitch("console")) console.log = () => { };
 
 
 const windowMenu = Menu.buildFromTemplate([{
@@ -101,13 +101,13 @@ const windowMenu = Menu.buildFromTemplate([{
 // Handles WMI + DDC/CI activity
 
 let monitorsThread = {
-  send: function(data) {
+  send: function (data) {
     try {
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
       }
       monitorsThreadReal.send(data)
-    } catch(e) {
+    } catch (e) {
       console.log("Couldn't communicate with Monitor thread.", e)
     }
   },
@@ -127,9 +127,9 @@ let monitorsEventEmitter = new EventEmitter()
 function startMonitorThread() {
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
   monitorsThreadReal.on("message", (data) => {
-    if(data?.type) {
+    if (data?.type) {
       monitorsEventEmitter.emit(data.type, data)
-      if(data.type === "ready") {
+      if (data.type === "ready") {
         monitorsThreadReal.send({
           type: "settings",
           settings
@@ -146,7 +146,7 @@ startMonitorThread()
 
 function getVCP(monitor, code) {
   return new Promise((resolve, reject) => {
-    if(!monitor || !code) resolve(-1);
+    if (!monitor || !code) resolve(-1);
     const hwid = (typeof monitor === "object" ? monitor.hwid.join("#") : monitor)
     const timeout = setTimeout(() => {
       resolve(-1) // Timed out
@@ -170,10 +170,10 @@ let monitorsThreadTest
 function startMonitorTestThread() {
   monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
   monitorsThreadTest.on("message", (data) => {
-    if(data?.type === "ready") {
+    if (data?.type === "ready") {
       console.log("WMI-BRIDGE TEST: READY")
     }
-    if(data?.type === "ok") {
+    if (data?.type === "ok") {
       console.log("WMI-BRIDGE TEST: OK")
       monitorsThread.send({
         type: "wmi-bridge-ok"
@@ -183,11 +183,11 @@ function startMonitorTestThread() {
   // Close after timeout
   setTimeout(() => {
     try {
-      if(monitorsThreadTest.connected) {
+      if (monitorsThreadTest.connected) {
         console.log("WMI-BRIDGE TEST: Killing thread")
         monitorsThreadTest.kill()
       }
-    } catch(e) { console.log(e) }
+    } catch (e) { console.log(e) }
   }, 2000)
 }
 startMonitorTestThread()
@@ -241,7 +241,7 @@ function enableMouseEvents() {
             hotkeyOverlayHide(true)
           } else {
             // Panel is displayed
-            if(!mainWindow.webContents.isDevToolsOpened()) {
+            if (!mainWindow.webContents.isDevToolsOpened()) {
               sendToAllWindows("panelBlur")
               showPanel(false)
             }
@@ -260,15 +260,15 @@ function enableMouseEvents() {
 function pauseMouseEvents(paused) {
 
   // Clear timeout if set
-  if(willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
+  if (willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
 
-  if(paused) {
-    if(mouseEvents && !mouseEvents.getPaused()) {
+  if (paused) {
+    if (mouseEvents && !mouseEvents.getPaused()) {
       console.log("Pausing mouse events...")
       mouseEvents.pauseMouseEvents()
     }
   } else {
-    if(mouseEvents && mouseEvents.getPaused()) {
+    if (mouseEvents && mouseEvents.getPaused()) {
       console.log("Resuming mouse events...")
       mouseEvents.resumeMouseEvents()
     }
@@ -277,7 +277,7 @@ function pauseMouseEvents(paused) {
 
 let willPauseMouseEventsTimeout
 function willPauseMouseEvents(time = 10000) {
-  if(willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
+  if (willPauseMouseEventsTimeout) clearTimeout(willPauseMouseEventsTimeout);
   willPauseMouseEventsTimeout = setTimeout(() => {
     pauseMouseEvents(true)
     willPauseMouseEventsTimeout = null
@@ -294,8 +294,8 @@ let lastAnalyticsPing = 0
 
 function pingAnalytics() {
   // Skip if too recent
-  if(Date.now() < lastAnalyticsPing + (1000*60*28)) return false;
-  
+  if (Date.now() < lastAnalyticsPing + (1000 * 60 * 28)) return false;
+
   const analytics = require('ga4-mp').createClient("Y1YTliQdTL-moveI0z1TLA", "G-BQ22ZK4BPY", settings.uuid)
   console.log("\x1b[34mAnalytics:\x1b[0m sending with UUID " + settings.uuid)
 
@@ -428,24 +428,24 @@ function readSettings(doProcessSettings = true) {
   settings.isDev = isDev
   settings.killWhenIdle = false
 
-  if(settings.updateInterval === 999) settings.updateInterval = 100;
+  if (settings.updateInterval === 999) settings.updateInterval = 100;
 
   // Upgrade settings
   const settingsVersion = Utils.getVersionValue(settings.settingsVer)
-  if(settingsVersion < Utils.getVersionValue("v1.15.0")) {
+  if (settingsVersion < Utils.getVersionValue("v1.15.0")) {
     // v1.15.0
     try {
       // Upgrade adjustment times
       const upgradedTimes = Utils.upgradeAdjustmentTimes(settings.adjustmentTimes)
       settings.adjustmentTimes = upgradedTimes
       console.log("Upgraded Adjustment Times to v1.15.0 format!")
-    } catch(e) {
+    } catch (e) {
       console.log("Couldn't upgrade Adjustment Times", e)
     }
     try {
       // Upgrade idle settings
-      if(settings.detectIdleTime) {
-        if(settings.detectIdleTime * 1 > 0) {
+      if (settings.detectIdleTime) {
+        if (settings.detectIdleTime * 1 > 0) {
           settings.detectIdleTimeEnabled = true
           settings.detectIdleTimeSeconds = (settings.detectIdleTime * 1) % 60
           settings.detectIdleTimeMinutes = Math.floor((settings.detectIdleTime * 1) / 60)
@@ -453,17 +453,17 @@ function readSettings(doProcessSettings = true) {
         delete settings.detectIdleTime
       }
       console.log("Upgraded Idle settings to v1.15.0 format!")
-    } catch(e) {
+    } catch (e) {
       console.log("Couldn't upgrade Idle settings", e)
     }
   }
-  if(settingsVersion < Utils.getVersionValue("v1.16.0")) {
+  if (settingsVersion < Utils.getVersionValue("v1.16.0")) {
     // v1.16.0
     try {
       // Upgrade hotkeys
-      if(settings.hotkeys && Object.values(settings.hotkeys)?.length > 0) {
+      if (settings.hotkeys && Object.values(settings.hotkeys)?.length > 0) {
         const newHotkeys = []
-        for(const hotkey of Object.values(settings.hotkeys)) {
+        for (const hotkey of Object.values(settings.hotkeys)) {
           const newHotkey = {
             accelerator: hotkey.accelerator,
             id: uuid(),
@@ -472,11 +472,11 @@ function readSettings(doProcessSettings = true) {
             values: [0],
             allMonitors: false
           }
-          if(hotkey.monitor === "turn_off_displays") {
+          if (hotkey.monitor === "turn_off_displays") {
             newHotkey.type = "off"
           } else {
             newHotkey.monitors = {}
-            if(hotkey.monitor === "all") {
+            if (hotkey.monitor === "all") {
               newHotkey.allMonitors = true
             } else {
               newHotkey.monitors[hotkey.monitor] = true
@@ -489,24 +489,24 @@ function readSettings(doProcessSettings = true) {
         settings.hotkeys = newHotkeys
       }
       console.log(`Upgraded ${settings.hotkeys.length} hotkeys to v1.16.0 format!`)
-    } catch(e) {
+    } catch (e) {
       console.log("Couldn't upgrade hotkeys", e)
     }
   }
 
 
-  if(doProcessSettings) processSettings({isReadSettings: true});
+  if (doProcessSettings) processSettings({ isReadSettings: true });
 }
 
 readSettings(false)
-if(settings.disableThrottling) {
+if (settings.disableThrottling) {
   // Prevent background throttling
   app.commandLine.appendSwitch('disable-renderer-backgrounding');
   app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
   app.commandLine.appendSwitch('disable-background-timer-throttling');
 }
 
-if(settings.forceLowPowerGPU) {
+if (settings.forceLowPowerGPU) {
   app.commandLine.appendSwitch('force_low_power_gpu')
 }
 
@@ -566,24 +566,24 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
-    if(settings.udpEnabled === true) {
-      if(!udp.server) udp.start(settings.udpPort);
-    } else if(settings.udpEnabled === false) {
-      if(!udp.server) udp.stop();
+    if (settings.udpEnabled === true) {
+      if (!udp.server) udp.start(settings.udpPort);
+    } else if (settings.udpEnabled === false) {
+      if (!udp.server) udp.stop();
     }
 
     if (newSettings.order !== undefined) {
       doRestartPanel = true
     }
 
-    if(newSettings.detectIdleTimeEnabled === true || newSettings.detectIdleTimeEnabled === false) {
+    if (newSettings.detectIdleTimeEnabled === true || newSettings.detectIdleTimeEnabled === false) {
       rebuildTray = true
     }
 
-    if(newSettings.windowsStyle !== undefined) {
-      if(newSettings.windowsStyle === "win11") {
+    if (newSettings.windowsStyle !== undefined) {
+      if (newSettings.windowsStyle === "win11") {
         settings.isWin11 = true
-      } else if(newSettings.windowsStyle === "win10") {
+      } else if (newSettings.windowsStyle === "win10") {
         settings.isWin11 = false
       } else {
         settings.isWin11 = isReallyWin11
@@ -658,14 +658,14 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     ddcBrightnessVCPs: getDDCBrightnessVCPs()
   })
 
-  if(sendUpdate) sendToAllWindows('settings-updated', settings);
+  if (sendUpdate) sendToAllWindows('settings-updated', settings);
 }
 
 // Save all known displays to disk for future use
 async function updateKnownDisplays(force = false, immediate = false) {
 
   // Skip when idle
-  if(!force && isUserIdle) return false;
+  if (!force && isUserIdle) return false;
 
   const doFunc = () => {
     try {
@@ -686,7 +686,7 @@ async function updateKnownDisplays(force = false, immediate = false) {
   // Reset timeout
   if (updateKnownDisplaysTimeout) clearTimeout(updateKnownDisplaysTimeout);
 
-  if(immediate) {
+  if (immediate) {
     doFunc()
   } else {
     // Wait a moment
@@ -699,7 +699,7 @@ async function updateKnownDisplays(force = false, immediate = false) {
 let lastKnownDisplays
 function getKnownDisplays(useCurrentMonitors) {
   let known
-  if(!lastKnownDisplays) {
+  if (!lastKnownDisplays) {
     try {
       // Load known displays DB
       known = fs.readFileSync(knownDisplaysPath)
@@ -732,9 +732,9 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
 function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) {
 
   applyOrder(profile)
-  applyRemaps(profile)  
+  applyRemaps(profile)
 
-  if(useTransition) {
+  if (useTransition) {
     // If using smooth transition
     let transitionMonitors = []
     for (const hwid in profile) {
@@ -749,7 +749,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
     for (const hwid in profile) {
       try {
         const monitor = profile[hwid]
-  
+
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
           updateBrightness(monitor.id, monitor.brightness)
@@ -757,7 +757,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
   }
-  
+
   sendToAllWindows('monitors-updated', monitors);
 }
 
@@ -809,10 +809,10 @@ async function doHotkey(hotkey) {
       } else if (hotkey.type === "set" || hotkey.type === "offset" || hotkey.type === "cycle") {
 
         const determineHotkeyOutputValue = async monitor => {
-          switch(hotkey.type) {
+          switch (hotkey.type) {
             case "offset":
               let currentValue = 0
-              if(hotkey.target === "brightness") {
+              if (hotkey.target === "brightness") {
                 currentValue = monitor.brightness
               } else {
                 // Get VCP
@@ -820,13 +820,13 @@ async function doHotkey(hotkey) {
               }
               return currentValue + parseInt(hotkey.value);
             case "cycle":
-              if(!hotkey.values?.length) return -1;
-              if(!hotkeyCycleIndexes[hotkey.id]) {
+              if (!hotkey.values?.length) return -1;
+              if (!hotkeyCycleIndexes[hotkey.id]) {
                 hotkeyCycleIndexes[hotkey.id] = 0
               }
 
               let currentCycleValue = 0
-              if(hotkey.target === "brightness") {
+              if (hotkey.target === "brightness") {
                 currentCycleValue = monitor.brightness
               } else {
                 // Get VCP
@@ -834,9 +834,9 @@ async function doHotkey(hotkey) {
               }
 
               // If current value is same as measured, move onto next value. Else reset.
-              if(currentCycleValue == parseInt(hotkey.values[hotkeyCycleIndexes[hotkey.id]])) {
+              if (currentCycleValue == parseInt(hotkey.values[hotkeyCycleIndexes[hotkey.id]])) {
 
-                if(hotkeyCycleIndexes[hotkey.id] >= hotkey.values.length - 1) {
+                if (hotkeyCycleIndexes[hotkey.id] >= hotkey.values.length - 1) {
                   // End of list, reset
                   hotkeyCycleIndexes[hotkey.id] = 0
                 } else {
@@ -857,7 +857,7 @@ async function doHotkey(hotkey) {
         const hotkeyMonitors = []
         if (hotkey.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
           // Target all monitors
-          for(const monitor of Object.values(monitors)) {
+          for (const monitor of Object.values(monitors)) {
             hotkeyMonitors.push({
               monitor,
               value: await determineHotkeyOutputValue(monitor)
@@ -865,11 +865,11 @@ async function doHotkey(hotkey) {
           }
         } else {
           // Use list, look up monitor objects
-          if(Object.keys(hotkey.monitors)?.length) {
-            for(const id in hotkey.monitors) {
-              if(hotkey.monitors[id]) {
+          if (Object.keys(hotkey.monitors)?.length) {
+            for (const id in hotkey.monitors) {
+              if (hotkey.monitors[id]) {
                 const monitor = Object.values(monitors).find(m => m.id == id)
-                if(monitor) {
+                if (monitor) {
                   hotkeyMonitors.push({
                     monitor,
                     value: await determineHotkeyOutputValue(monitor)
@@ -881,8 +881,8 @@ async function doHotkey(hotkey) {
         }
 
         // Apply change
-        if(hotkeyMonitors?.length) {
-          for(const hotkeyMonitor of hotkeyMonitors) {
+        if (hotkeyMonitors?.length) {
+          for (const hotkeyMonitor of hotkeyMonitors) {
             const { monitor, value } = hotkeyMonitor
             if (hotkey.target === "brightness") {
               const normalizedAdjust = minMax(value)
@@ -909,7 +909,7 @@ async function doHotkey(hotkey) {
         }
 
 
-        
+
       }
 
 
@@ -928,23 +928,23 @@ async function doHotkey(hotkey) {
 }
 
 function hotkeyOverlayStart(timeout = 3000, force = true) {
-  if(settings.disableOverlay || currentProfile?.overlayType === "disabled") return false;
+  if (settings.disableOverlay || currentProfile?.overlayType === "disabled") return false;
   if (canReposition) {
     hotkeyOverlayShow()
   }
   // Resume mouse events if disabled
   pauseMouseEvents(false)
 
-  if(hotkeyOverlayTimeout) clearTimeout(hotkeyOverlayTimeout);
+  if (hotkeyOverlayTimeout) clearTimeout(hotkeyOverlayTimeout);
   hotkeyOverlayTimeout = setTimeout(() => hotkeyOverlayHide(force), timeout)
 }
 
 async function hotkeyOverlayShow() {
-  if(settings.disableOverlay) return false;
+  if (settings.disableOverlay) return false;
   if (!mainWindow) return false;
-  if(startHideTimeout) clearTimeout(startHideTimeout);
+  if (startHideTimeout) clearTimeout(startHideTimeout);
   startHideTimeout = null;
-  
+
   mainWindow.showInactive()
 
   setAlwaysOnTop(true)
@@ -965,7 +965,7 @@ async function hotkeyOverlayShow() {
   }
   await toggleTray(true, true)
 
-  if(settings?.isWin11) {
+  if (settings?.isWin11) {
     const panelHeight = 14 + 36 + (28 * monitorCount)
     const panelWidth = 216
     const primaryDisplay = screen.getPrimaryDisplay()
@@ -1010,7 +1010,7 @@ function hotkeyOverlayHide(force = true) {
   clearTimeout(hotkeyOverlayTimeout)
   setAlwaysOnTop(false)
   canReposition = true
-  if(!mainWindow.webContents.isDevToolsOpened()) {
+  if (!mainWindow.webContents.isDevToolsOpened()) {
     sendToAllWindows("panelBlur")
     showPanel(false)
     sendToAllWindows("display-mode", "normal")
@@ -1021,7 +1021,7 @@ function hotkeyOverlayHide(force = true) {
   pauseMouseEvents(true)
 
   mainWindow.setSize(0, 0)
-  
+
   if (!settings.useAcrylic || !settings.useNativeAnimation) {
     tryVibrancy(mainWindow, false)
   }
@@ -1120,11 +1120,11 @@ function getLocalization() {
   // Detect language
   let detected = app.getLocale()
 
-  if(detected === "zh-CN") {
+  if (detected === "zh-CN") {
     detected = "zh_Hans"
-  } else if(detected === "zh-TW" || detected === "zh-HK" || detected === "zh-MO") {
+  } else if (detected === "zh-TW" || detected === "zh-HK" || detected === "zh-MO") {
     detected = "zh-Hant"
-  } else if(detected?.split("-")[0] === "pt") {
+  } else if (detected?.split("-")[0] === "pt") {
     detected = app.getLocale()
   } else {
     detected = detected?.split("-")[0]
@@ -1207,11 +1207,11 @@ function getSettings() {
 function getDDCBrightnessVCPs() {
   try {
     let ids = Object.assign(knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
-    for(let mon in ids) {
+    for (let mon in ids) {
       ids[mon] = parseInt(ids[mon])
     }
     return ids
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't generate DDC Brightness IDs!", e)
     return {}
   }
@@ -1266,7 +1266,7 @@ async function getThemeRegistry() {
     themeSettings.EnableTransparency = reg.getValue(key, null, 'EnableTransparency');
     themeSettings.SystemUsesLightTheme = reg.getValue(key, null, 'SystemUsesLightTheme');
     themeSettings.ColorPrevalence = reg.getValue(key, null, 'ColorPrevalence');
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't access theme registry", e)
   }
 
@@ -1302,7 +1302,7 @@ async function getThemeRegistry() {
         case 3: detectedTaskbarPos = "BOTTOM"; break;
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't access taskbar registry", e)
   }
 
@@ -1348,14 +1348,14 @@ function getAccentColors() {
 
   // Merge in new format
   outColors = Object.assign(outColors, colors)
-  
+
   return outColors
 }
 
 function tryVibrancy(window, value = null) {
   if (!window) return false;
   try {
-    if(!settings.useAcrylic || settings.isWin11 || value === false) {
+    if (!settings.useAcrylic || settings.isWin11 || value === false) {
       window.setBackgroundColor("#00000000")
       Acrylic.disableAcrylic(window.getNativeWindowHandle().readInt32LE(0))
       return false
@@ -1392,7 +1392,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
         // Attempt to fix common issue with wmi-bridge by relying only on Win32
         // However, if user re-enables WMI, don't disable it again
-        if(!settings.autoDisabledWMI && !recentlyWokeUp) {
+        if (!settings.autoDisabledWMI && !recentlyWokeUp) {
           settings.autoDisabledWMI = true
           settings.disableWMI = true
         }
@@ -1401,11 +1401,11 @@ refreshMonitorsJob = async (fullRefresh = false) => {
       function listen(resolve) {
         monitorsThread.once("refreshMonitors", data => {
           clearTimeout(timeout)
-            resolve(data.monitors)
-          })
+          resolve(data.monitors)
+        })
       }
       listen(resolve)
-    } catch(e) {
+    } catch (e) {
       reject("Monitor thread failed to send.")
     }
   })
@@ -1452,7 +1452,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   let failed = false
   try {
     newMonitors = await refreshMonitorsJob(fullRefresh)
-    if(!newMonitors) {
+    if (!newMonitors) {
       failed = true;
       throw "No monitors recieved!";
     }
@@ -1463,17 +1463,17 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   isRefreshing = false
 
-  if(!failed) {
+  if (!failed) {
     applyOrder(newMonitors)
     applyRemaps(newMonitors)
     applyHotkeys(newMonitors)
-  
-    for(let id in newMonitors) {
+
+    for (let id in newMonitors) {
       newMonitors[id].brightness = normalizeBrightness(newMonitors[id].brightness, true, newMonitors[id].min, newMonitors[id].max)
     }
-    
+
     monitors = newMonitors;
-  
+
     // Only send update if something changed
     if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
       setTrayPercent()
@@ -1552,7 +1552,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 function updateBrightness(index, level, useCap = true, vcp = "brightness", clearTransition = true) {
   try {
-      
+
     let monitor = false
     if (typeof index == "string" && index * 1 != index) {
       monitor = Object.values(monitors).find((display) => {
@@ -1566,16 +1566,16 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
       monitor = monitors[index]
     }
 
-    if(!monitor) {
+    if (!monitor) {
       console.log(`Monitor does not exist: ${index}`)
       return false
     }
 
-    if(settings.hideDisplays?.[monitor.key] === true) {
+    if (settings.hideDisplays?.[monitor.key] === true) {
       return false
     }
-    
-    if(clearTransition && currentTransition) {
+
+    if (clearTransition && currentTransition) {
       clearInterval(currentTransition)
       currentTransition = null
     }
@@ -1590,8 +1590,8 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
         id: monitor.id
       })
-    } else if(monitor.type == "ddcci") {
-      if(Utils.vcpMap[vcp] && monitor.features[Utils.vcpMap[vcp]]) {
+    } else if (monitor.type == "ddcci") {
+      if (Utils.vcpMap[vcp] && monitor.features[Utils.vcpMap[vcp]]) {
         monitor.features[Utils.vcpMap[vcp]][0] = level
       }
       monitorsThread.send({
@@ -1682,7 +1682,7 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
 
   // Slow down transition
   let transitionIntervalMult = 1
-  switch(settings.adjustmentTimeSpeed) {
+  switch (settings.adjustmentTimeSpeed) {
     case "slow": transitionIntervalMult = 4; break;
     case "slowest": transitionIntervalMult = 10; break;
     default: transitionIntervalMult = 1; break;
@@ -1690,7 +1690,7 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
 
   // Speed up transition
   let stepSpeedMult = 1
-  switch(settings.adjustmentTimeSpeed) {
+  switch (settings.adjustmentTimeSpeed) {
     case "fast": stepSpeedMult = 3; break;
     case "fastest": stepSpeedMult = 6; break;
     default: stepSpeedMult = 1; break;
@@ -1747,20 +1747,20 @@ function sleepDisplays(mode = "ps") {
 
     setTimeout(async () => {
       startIdleCheckShort()
-      if(mode === "ddcci" || mode === "ps_ddcci") {
-        for(let monitorID in monitors) {
+      if (mode === "ddcci" || mode === "ps_ddcci") {
+        for (let monitorID in monitors) {
           const monitor = monitors[monitorID]
           await turnOffDisplayDDC(monitor.hwid.join("#"))
         }
       }
-  
-      if(mode === "ps" || mode === "ps_ddcci") {
+
+      if (mode === "ps" || mode === "ps_ddcci") {
         exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
       }
-      
+
     }, 333)
 
-  } catch(e) {
+  } catch (e) {
     console.log(e)
   }
 }
@@ -1768,9 +1768,9 @@ function sleepDisplays(mode = "ps") {
 async function turnOffDisplayDDC(hwid, toggle = false) {
   try {
     const offVal = parseInt(settings.ddcPowerOffValue)
-    if(toggle) {
+    if (toggle) {
       const currentValue = await getVCP(hwid, 0xD6)
-      if(currentValue > 1) {
+      if (currentValue > 1) {
         monitorsThread.send({
           type: "vcp",
           monitor: hwid,
@@ -1780,7 +1780,7 @@ async function turnOffDisplayDDC(hwid, toggle = false) {
         return true
       }
     }
-    if(offVal === 4 || offVal === 6) {
+    if (offVal === 4 || offVal === 6) {
       monitorsThread.send({
         type: "vcp",
         monitor: hwid,
@@ -1788,7 +1788,7 @@ async function turnOffDisplayDDC(hwid, toggle = false) {
         value: 4
       })
     }
-    if(offVal === 5 || offVal === 6) {
+    if (offVal === 5 || offVal === 6) {
       monitorsThread.send({
         type: "vcp",
         monitor: hwid,
@@ -1796,7 +1796,7 @@ async function turnOffDisplayDDC(hwid, toggle = false) {
         value: 5
       })
     }
-  } catch(e) {
+  } catch (e) {
     console.log("turnOffDisplayDDC failed", e)
   }
 }
@@ -1824,7 +1824,7 @@ ipcMain.on('update-brightness', function (event, data) {
   updateBrightness(data.index, data.level)
 
   // If overlay is visible, keep it open
-  if(hotkeyOverlayTimeout) {
+  if (hotkeyOverlayTimeout) {
     hotkeyOverlayStart()
   }
 })
@@ -1864,7 +1864,7 @@ ipcMain.on('get-update', (event, version) => {
 })
 
 ipcMain.on('panel-height', (event, height) => {
-  if(panelState === "overlay") return;
+  if (panelState === "overlay") return;
   panelSize.height = height + (settings?.isWin11 ? 24 : 0)
   panelSize.width = 356 + (settings?.isWin11 ? 24 : 0)
   if (panelSize.visible && !isAnimatingPanel) {
@@ -1879,7 +1879,7 @@ ipcMain.on('panel-hidden', () => {
 })
 
 ipcMain.on('blur-panel', () => {
-  if(mainWindow) mainWindow.blur();
+  if (mainWindow) mainWindow.blur();
 })
 
 ipcMain.on('show-acrylic', () => {
@@ -1972,7 +1972,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.on("restore", () => { console.log("~~~~~ MAIN WINDOW RESTORED ~~~~~~") });
 
   mainWindow.once('ready-to-show', () => {
-    if(mainWindow) {
+    if (mainWindow) {
       mainWindow.setMenu(windowMenu)
 
       panelReady = true
@@ -1982,12 +1982,12 @@ function createPanel(toggleOnLoad = false) {
       showPanel(false)
 
       setTimeout(() => {
-        if(!settings.useAcrylic || settings.isWin11) {
+        if (!settings.useAcrylic || settings.isWin11) {
           tryVibrancy(mainWindow, false)
           mainWindow.setBackgroundColor("#00000000")
         }
       }, 100)
-  
+
       if (toggleOnLoad) setTimeout(() => { toggleTray(false) }, 33);
     }
   })
@@ -1995,7 +1995,7 @@ function createPanel(toggleOnLoad = false) {
   mainWindow.on("blur", () => {
     // Only run when not in an overlay
     if (canReposition) {
-      if(!mainWindow.webContents.isDevToolsOpened()) {
+      if (!mainWindow.webContents.isDevToolsOpened()) {
         sendToAllWindows("panelBlur")
         showPanel(false)
       }
@@ -2006,14 +2006,14 @@ function createPanel(toggleOnLoad = false) {
     try {
       e.preventDefault()
       sendToAllWindows('panel-position', mainWindow.getPosition())
-    } catch(e) { }
+    } catch (e) { }
   })
 
   mainWindow.on('resize', (e) => {
     try {
       e.preventDefault()
       sendToAllWindows('panel-position', mainWindow.getPosition())
-    } catch(e) { }
+    } catch (e) { }
   })
 
   mainWindow.webContents.once('dom-ready', () => {
@@ -2025,17 +2025,17 @@ function createPanel(toggleOnLoad = false) {
           sendToAllWindows('monitors-updated', monitors)
         })
       }, 8000)
-      
+
       setTimeout(sendMicaWallpaper, 1000)
       sendToAllWindows('panel-position', mainWindow.getPosition())
-    } catch(e) { }
+    } catch (e) { }
   })
 
 }
 
 function setAlwaysOnTop(onTop = true) {
-  if(!mainWindow) return false;
-  if(onTop) {
+  if (!mainWindow) return false;
+  if (onTop) {
     mainWindow.setAlwaysOnTop(true, (currentProfile?.overlayType === "disabled" ? 'screen-saver' : 'modal-panel'))
   } else {
     mainWindow.setAlwaysOnTop(false)
@@ -2049,7 +2049,7 @@ function restartPanel(show = false) {
     mainWindow.setOpacity(1)
     mainWindow.restore()
     mainWindow.show()
-    mainWindow.setBounds({x:0,y:0,width:0,height:0})
+    mainWindow.setBounds({ x: 0, y: 0, width: 0, height: 0 })
   }
   setTimeout(() => {
     if (mainWindow) {
@@ -2095,10 +2095,10 @@ function repositionPanel() {
       return false
     }
     let primaryDisplay = getPrimaryDisplay()
-  
+
     const taskbarPosition = () => {
       let primaryDisplay = getPrimaryDisplay()
-  
+
       const bounds = primaryDisplay.bounds
       const workArea = primaryDisplay.workArea
       let gap = 0
@@ -2116,7 +2116,7 @@ function repositionPanel() {
         position = "BOTTOM"
         gap = bounds.height - workArea.height
       }
-  
+
       // Use taskbar position from registry if auto-hide is on
       if (detectedTaskbarHide) {
         position = detectedTaskbarPos
@@ -2125,25 +2125,25 @@ function repositionPanel() {
         }
       }
 
-      if(typeof settings.overrideTaskbarPosition === "string") {
+      if (typeof settings.overrideTaskbarPosition === "string") {
         const pos = settings.overrideTaskbarPosition.toUpperCase()
-        if(pos === "BOTTOM" || pos === "TOP" || pos === "LEFT" || pos === "RIGHT") {
+        if (pos === "BOTTOM" || pos === "TOP" || pos === "LEFT" || pos === "RIGHT") {
           position = pos
         }
       }
 
-      if(typeof settings.overrideTaskbarGap === "number") {
+      if (typeof settings.overrideTaskbarGap === "number") {
         gap = settings.overrideTaskbarGap
         console.log(gap)
       }
-  
+
       return { position, gap }
     }
-  
+
     const taskbar = taskbarPosition()
     panelSize.taskbar = taskbar
     sendToAllWindows('taskbar', taskbar)
-  
+
     if (mainWindow && !isAnimatingPanel) {
       if (taskbar.position == "LEFT") {
         mainWindow.setBounds({
@@ -2177,9 +2177,9 @@ function repositionPanel() {
       }
       panelSize.base = mainWindow.getBounds().y
     }
-    
+
     sendToAllWindows('panel-position', mainWindow.getPosition())
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't reposition panel", e)
   }
 }
@@ -2196,16 +2196,16 @@ const ignoreAppList = [
 const windowHistory = []
 let preProfileBrightness = {}
 function startFocusTracking() {
-  ActiveWindow.subscribe( async window => {
-    if(!window) return false;
+  ActiveWindow.subscribe(async window => {
+    if (!window) return false;
 
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
 
-    if(ignoreAppList.includes(path.basename(window.path)) === false) {
+    if (ignoreAppList.includes(path.basename(window.path)) === false) {
       // Remove from history if exists
-      const isInHistory = windowHistory.find( (w, idx) => {
-        if(w.path === window.path) {
+      const isInHistory = windowHistory.find((w, idx) => {
+        if (w.path === window.path) {
           windowHistory.splice(idx, 1)
           return true
         }
@@ -2216,27 +2216,27 @@ function startFocusTracking() {
       windowHistory.unshift({
         app: window.application,
         path: window.path
-      }) 
+      })
 
       // Limit history
-      while(windowHistory.length > 10) windowHistory.pop();
+      while (windowHistory.length > 10) windowHistory.pop();
       sendToAllWindows('window-history', windowHistory)
     }
 
-    if(forcedFocusID > 0 && forcedFocusID !== hwnd && hwnd != getMainWindowHandle()) {
+    if (forcedFocusID > 0 && forcedFocusID !== hwnd && hwnd != getMainWindowHandle()) {
       // This is the overlay
       // We're going to force focus back to the previous window
       trySetForegroundWindow(hwnd)
-    } else if(profile?.setBrightness) {
+    } else if (profile?.setBrightness) {
       // Set brightness, if available
-    
+
       // First, save current brightness for later
       await updateKnownDisplays(true, true)
       preProfileBrightness = Object.assign({}, lastKnownDisplays)
 
       // Then apply user profile brightness
       applyProfileBrightness(profile)
-    } else if(currentProfile?.setBrightness) {
+    } else if (currentProfile?.setBrightness) {
       // Last profile had brightness settings
       // So we should restore the last known brightness
       applyProfile(preProfileBrightness, false)
@@ -2246,11 +2246,11 @@ function startFocusTracking() {
 }
 
 function windowMatchesProfile(window) {
-  if(!window) return false;
+  if (!window) return false;
   let foundProfile
-  if(settings.profiles?.length > 0) {
-    for(const profile of settings.profiles) {
-      if(window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
+  if (settings.profiles?.length > 0) {
+    for (const profile of settings.profiles) {
+      if (window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
         foundProfile = profile
       }
     }
@@ -2263,7 +2263,7 @@ function applyProfileBrightness(profile) {
     Object.values(monitors)?.forEach(monitor => {
       updateBrightness(monitor.id, profile.monitors[monitor.id], true, monitor.brightnessType)
     })
-  } catch(e) {
+  } catch (e) {
     console.log("Error applying profile brightness", e)
   }
 }
@@ -2271,7 +2271,7 @@ function applyProfileBrightness(profile) {
 function getMainWindowHandle() {
   try {
     return mainWindow.getNativeWindowHandle().readInt32LE()
-  } catch(e) {
+  } catch (e) {
     return 0
   }
 }
@@ -2311,7 +2311,7 @@ function showPanel(show = true, height = 300) {
 
   if (show) {
     // Show panel
-    if(startHideTimeout) clearTimeout(startHideTimeout); // Reset "hide" timeout
+    if (startHideTimeout) clearTimeout(startHideTimeout); // Reset "hide" timeout
     startHideTimeout = null
     mainWindow.restore()
     mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
@@ -2377,26 +2377,26 @@ function showPanel(show = true, height = 300) {
 }
 
 function trySetForegroundWindow(hwnd) {
-  if(!hwnd) return false;
+  if (!hwnd) return false;
   try {
     console.log("trySetForegroundWindow: " + hwnd)
     WindowUtils.setForegroundWindow(hwnd)
-  } catch(e) {
+  } catch (e) {
     console.log("Couldn't focus window", e)
   }
 }
 
 let startHideTimeout
 function startHidePanel() {
-  if(!startHideTimeout) {
+  if (!startHideTimeout) {
     startHideTimeout = setTimeout(() => {
-      if(mainWindow) {
+      if (mainWindow) {
         mainWindow.minimize();
       }
-      startHideTimeout = null      
+      startHideTimeout = null
     }, 100)
 
-    if(mainWindow) mainWindow.setOpacity(0);
+    if (mainWindow) mainWindow.setOpacity(0);
   }
 }
 
@@ -2558,16 +2558,16 @@ function createTray() {
   let lastMouseMove = Date.now()
   tray.on('mouse-move', async () => {
     const now = Date.now()
-    if(lastMouseMove + 500 > now) return false;
+    if (lastMouseMove + 500 > now) return false;
     lastMouseMove = now
     bounds = tray.getBounds()
     bounds = screen.dipToScreenRect(null, bounds)
     tryEagerUpdate(false)
     sendToAllWindows('panel-unsleep')
 
-    if(settings.scrollShortcut) {
+    if (settings.scrollShortcut) {
       // Start tracking cursor to determine when it leaves the tray
-      if(mouseEvents && mouseEvents.getPaused()) {
+      if (mouseEvents && mouseEvents.getPaused()) {
         pauseMouseEvents(false)
       }
       willPauseMouseEvents()
@@ -2593,38 +2593,40 @@ function setTrayMenu() {
 }
 
 function getPausableSeparatorMenuItem() {
-  if(settings.detectIdleTimeEnabled || settings.adjustmentTimes.length > 0) {
+  if (settings.detectIdleTimeEnabled || settings.adjustmentTimes.length > 0) {
     return { type: 'separator' }
   }
   return { label: "", visible: false }
 }
 
 function getTimeAdjustmentsMenuItem() {
-  if(settings.adjustmentTimes?.length) {
+  if (settings.adjustmentTimes?.length) {
     return { label: T.t("GENERIC_PAUSE_TOD"), type: 'checkbox', click: (e) => tempSettings.pauseTimeAdjustments = e.checked }
   }
   return { label: "", visible: false }
 }
 
 function getDetectIdleMenuItem() {
-  if(settings.detectIdleTimeEnabled) {
+  if (settings.detectIdleTimeEnabled) {
     return { label: T.t("GENERIC_PAUSE_IDLE"), type: 'checkbox', click: (e) => tempSettings.pauseIdleDetection = e.checked }
   }
   return { label: "", visible: false }
 }
 
 function getDebugTrayMenuItems() {
-  return { label: "DEBUG", visible: (settings.isDev ? true : false), submenu: [
-    { label: "RESTART PANEL", type: 'normal', click: () => restartPanel() },
-    { label: "MINIMIZE PANEL", type: 'normal', click: () => mainWindow?.minimize() },
-    { label: "HIDE PANEL", type: 'normal', click: () => showPanel(false) },
-    { label: "OPACITY 0", type: 'normal', click: () => mainWindow?.setOpacity(0) },
-    { label: "OPACITY 1", type: 'normal', click: () => mainWindow?.setOpacity(1) },
-    { label: "DO CURRENT TOD", type: 'normal', click: () => applyCurrentAdjustmentEvent(true) },
-    { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
-    { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
-    { label: "LAST ACTIVE WIN", type: 'normal', click: () => trySetForegroundWindow(forcedFocusID) }
-  ] }
+  return {
+    label: "DEBUG", visible: (settings.isDev ? true : false), submenu: [
+      { label: "RESTART PANEL", type: 'normal', click: () => restartPanel() },
+      { label: "MINIMIZE PANEL", type: 'normal', click: () => mainWindow?.minimize() },
+      { label: "HIDE PANEL", type: 'normal', click: () => showPanel(false) },
+      { label: "OPACITY 0", type: 'normal', click: () => mainWindow?.setOpacity(0) },
+      { label: "OPACITY 1", type: 'normal', click: () => mainWindow?.setOpacity(1) },
+      { label: "DO CURRENT TOD", type: 'normal', click: () => applyCurrentAdjustmentEvent(true) },
+      { label: "REMOVE ACRYLIC", type: 'normal', click: () => tryVibrancy(mainWindow, false) },
+      { label: "PAUSE MOUSE", type: 'normal', click: () => pauseMouseEvents(true) },
+      { label: "LAST ACTIVE WIN", type: 'normal', click: () => trySetForegroundWindow(forcedFocusID) }
+    ]
+  }
 }
 
 function setTrayPercent() {
@@ -2837,7 +2839,7 @@ function createSettings() {
     }
   });
 
-  
+
   require("@electron/remote/main").enable(settingsWindow.webContents);
 
   settingsWindow.loadURL(
@@ -2867,7 +2869,7 @@ function createSettings() {
 
   // Sort Time of Day Adjustments
   // We're doing it here as it's least obtrusive to the UI. Refreshing when re-opening the window.
-  if(settings.adjustmentTimes?.length) {
+  if (settings.adjustmentTimes?.length) {
     settings.adjustmentTimes.sort((a, b) => {
       const aVal = Utils.parseTime(a.time)
       const bVal = Utils.parseTime(b.time)
@@ -2894,7 +2896,7 @@ checkForUpdates = async (force = false) => {
     if (!settings.checkForUpdates) return false;
     if (lastCheck && lastCheck == new Date().getDate()) return false;
   }
-  if(isPortable || isAppX) return false;
+  if (isPortable || isAppX) return false;
   lastCheck = new Date().getDate()
   try {
     const fetch = require('node-fetch');
@@ -3097,7 +3099,7 @@ function addEventListeners() {
 
 let handleAccentChangeTimeout = false
 function handleAccentChange() {
-  if(handleAccentChangeTimeout) clearTimeout(handleAccentChangeTimeout);
+  if (handleAccentChangeTimeout) clearTimeout(handleAccentChangeTimeout);
   handleAccentChangeTimeout = setTimeout(async () => {
     console.log("Event: handleAccentChange");
     sendToAllWindows('update-colors', getAccentColors())
@@ -3132,14 +3134,14 @@ function handleMonitorChange(e, d) {
     clearTimeout(handleChangeTimeout0)
   }
   handleChangeTimeout0 = setTimeout(() => {
-    if(!settings.disableAutoApply) setKnownBrightness();
+    if (!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout0 = false
   }, 150)
   if (handleChangeTimeout1) {
     clearTimeout(handleChangeTimeout1)
   }
   handleChangeTimeout1 = setTimeout(() => {
-    if(!settings.disableAutoApply) setKnownBrightness();
+    if (!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout1 = false
   }, 750)
   if (handleChangeTimeout2) {
@@ -3148,8 +3150,8 @@ function handleMonitorChange(e, d) {
   handleChangeTimeout2 = setTimeout(() => {
 
     // Reset all known displays
-    if(!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
-      if(!settings.disableAutoApply) setKnownBrightness();
+    if (!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+      if (!settings.disableAutoApply) setKnownBrightness();
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
       // If displays not shown, refresh mainWindow
@@ -3164,11 +3166,11 @@ function handleMonitorChange(e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
-  if(!settings.disableAutoApply) setKnownBrightness();
+  if (!settings.disableAutoApply) setKnownBrightness();
   setTimeout(
     () => {
-      if(!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
-        if(!settings.disableAutoApply) setKnownBrightness();
+      if (!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+        if (!settings.disableAutoApply) setKnownBrightness();
         //restartPanel()
 
         // Check if time adjustments should apply
@@ -3177,10 +3179,10 @@ powerMonitor.on("resume", () => {
     },
     3000 // Give Windows a few seconds to... you know... wake up.
   )
-  if(!settings.disableAutoRefresh) setTimeout(() => {
+  if (!settings.disableAutoRefresh) setTimeout(() => {
     refreshMonitors(true)
   },
-  10000 // Additional full refresh
+    10000 // Additional full refresh
   )
 
 
@@ -3189,26 +3191,26 @@ powerMonitor.on("resume", () => {
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
-powerMonitor.on("suspend", () => {  console.log("Event: suspend"); recentlyWokeUp = true })
-powerMonitor.on("lock-screen", () => {  console.log("Event: lock-screen"); recentlyWokeUp = true })
+powerMonitor.on("suspend", () => { console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => { console.log("Event: lock-screen"); recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");
   recentlyWokeUp = true
-  if(!settings.disableAutoRefresh) refreshMonitors(true);
-    setTimeout(() => {
-      recentlyWokeUp = false
-    }, 
+  if (!settings.disableAutoRefresh) refreshMonitors(true);
+  setTimeout(() => {
+    recentlyWokeUp = false
+  },
     15000
-    )
+  )
 })
 powerMonitor.on("resume", () => {
   console.log("Event: resume");
-    recentlyWokeUp = true
-    setTimeout(() => {
-      recentlyWokeUp = false
-    }, 
+  recentlyWokeUp = true
+  setTimeout(() => {
+    recentlyWokeUp = false
+  },
     15000
-    )
+  )
 })
 
 
@@ -3247,11 +3249,11 @@ function getIdleSettingValue() {
 }
 
 function idleCheckLong() {
-  if(tempSettings.pauseIdleDetection) return false;
+  if (tempSettings.pauseIdleDetection) return false;
   //if(powerMonitor.onBatteryPower) return false;
   const idleTime = powerMonitor.getSystemIdleTime()
   lastIdleTime = idleTime
-  if(idleTime >= (settings.detectIdleTimeEnabled ? getIdleSettingValue() : 180) && !notIdleMonitor) {
+  if (idleTime >= (settings.detectIdleTimeEnabled ? getIdleSettingValue() : 180) && !notIdleMonitor) {
     startIdleCheckShort()
   }
 }
@@ -3261,7 +3263,7 @@ async function startIdleCheckShort() {
   await updateKnownDisplays(true, true)
   preIdleMonitors = Object.assign({}, lastKnownDisplays)
   console.log(`\x1b[36mStarted short idle monitor.\x1b[0m`)
-  if(notIdleMonitor) clearInterval(notIdleMonitor);
+  if (notIdleMonitor) clearInterval(notIdleMonitor);
   notIdleMonitor = setInterval(idleCheckShort, 1000)
 }
 
@@ -3276,27 +3278,27 @@ function idleCheckShort() {
         Object.values(monitors)?.forEach((monitor) => {
           updateBrightness(monitor.id, 0, true, monitor.brightnessType)
         })
-      } catch(e) {
+      } catch (e) {
         console.log(`Error dimming displays`, e)
       }
     }
-  
-    if(isUserIdle && (idleTime < lastIdleTime || idleTime < getIdleSettingValue())) {
+
+    if (isUserIdle && (idleTime < lastIdleTime || idleTime < getIdleSettingValue())) {
       // Wake up
       console.log(`\x1b[36mUser no longer idle after ${lastIdleTime} seconds.\x1b[0m`)
       clearInterval(notIdleMonitor)
       notIdleMonitor = false
 
       // Different behavior depending on if idle dimming is on
-      if(settings.detectIdleTimeEnabled) {
+      if (settings.detectIdleTimeEnabled) {
         // Always restore when dimmed
         setKnownBrightness(false)
       } else {
         // Not dimmed, try checking ToD first. sKB as backup.
         const foundEvent = applyCurrentAdjustmentEvent(true, true)
-        if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false);
+        if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false);
       }
-      
+
       // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
       setTimeout(() => {
         isUserIdle = false
@@ -3304,20 +3306,20 @@ function idleCheckShort() {
         lastIdleTime = 1
 
         // Similar logic to above
-        if(settings.detectIdleTimeEnabled) {
+        if (settings.detectIdleTimeEnabled) {
           // Always restore when dimmed, then check ToD
           setKnownBrightness(false)
           applyCurrentAdjustmentEvent(true, false)
         } else {
           // Not dimmed, try checking ToD first. sKB as backup.
           const foundEvent = applyCurrentAdjustmentEvent(true, true)
-          if(!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
+          if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
         }
       }, 3000)
-  
+
     }
     lastIdleTime = idleTime
-  } catch(e) {
+  } catch (e) {
     console.log('Error in idleCheckShort', e)
   }
 }
@@ -3354,7 +3356,7 @@ function getCurrentAdjustmentEvent() {
 
 function getNextAdjustmentEvent() {
   const currentEvent = getCurrentAdjustmentEvent()
-  if(!currentEvent) return false
+  if (!currentEvent) return false
 
   let earliestEvent = false
   let closestEvent = false
@@ -3390,25 +3392,25 @@ function getCurrentAdjustmentEventLERP() {
   try {
     const current = getCurrentAdjustmentEvent()
     const next = getNextAdjustmentEvent()
-  
-    if(!current || !next) return false;
-  
+
+    if (!current || !next) return false;
+
     const date = new Date()
     const nowValue = (date.getHours() * 60) + (date.getMinutes() * 1)
-  
-    if(current.value > next.value) {
+
+    if (current.value > next.value) {
       next.value += 1440 // Add 24hr if next event is tomorrow
     }
-  
+
     // Calculate 0-1 percentage of progress
     const percent = (next.value - nowValue) / (next.value - current.value)
-  
+
     // Generate result depending on if displays are linked
-    if(settings.adjustmentTimeIndividualDisplays) {
+    if (settings.adjustmentTimeIndividualDisplays) {
       const keys = Object.keys(next.monitors)
       const monitors = Object.assign(current.monitors)
       keys.forEach(key => {
-        if(monitors[key] > -1) {
+        if (monitors[key] > -1) {
           monitors[key] = Math.round(Utils.lerp(current.monitors[key], next.monitors[key], percent))
         }
       })
@@ -3416,7 +3418,7 @@ function getCurrentAdjustmentEventLERP() {
     } else {
       return Math.round(Utils.lerp(current.brightness, next.brightness, percent))
     }
-  } catch(e) {
+  } catch (e) {
     console.log("Error generating Adjustment Time LERP", e)
     return false
   }
@@ -3441,12 +3443,12 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
     if (foundEvent) {
       if (lastTimeEvent == false || lastTimeEvent.value < foundEvent.value) {
 
-        if(settings.adjustmentTimeAnimate) {
+        if (settings.adjustmentTimeAnimate) {
           // If LERPing, override foundEvent with interpolated value
           lerp = getCurrentAdjustmentEventLERP()
-          if(typeof lerp === "number") {
+          if (typeof lerp === "number") {
             foundEvent.brightness = lerp
-          } else if(typeof lerp === "object") {
+          } else if (typeof lerp === "object") {
             foundEvent.monitors = lerp
           }
         }
@@ -3492,11 +3494,11 @@ function handleBackgroundUpdate(force = false) {
     console.error(e)
   }
 
-  if(!force) checkForUpdates(); // Ignore when forced update, since it should just be about fixing brightness.
+  if (!force) checkForUpdates(); // Ignore when forced update, since it should just be about fixing brightness.
 
   // GC
   setTimeout(() => {
-    try { global.gc() } catch(e) {}
+    try { global.gc() } catch (e) { }
   }, 1000)
 }
 
@@ -3552,7 +3554,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
   try {
     // Extract flags
     additionalData.forEach((flag) => {
-      if(flag.indexOf('--') == 0) {
+      if (flag.indexOf('--') == 0) {
         commandLine.push(flag.toLowerCase())
       }
     })
@@ -3563,7 +3565,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
 
         // List all displays
         if (arg.indexOf("--list=") === 0) {
-          
+
         }
 
         // Get display by index
@@ -3603,16 +3605,16 @@ function handleCommandLine(event, argv, directory, additionalData) {
 
         // DDC/CI command
         if (arg.indexOf("--vcp=") === 0 && arg.indexOf(":")) {
-            try {
-              const values = arg.substring(6).replace('"').replace('"').split(":")
-              ddcciVCP = {
-                code: parseInt(values[0]),
-                value: parseInt(values[1])
-              }
-            } catch(e) {
-              console.log("Couldn't parse VCP code!")
+          try {
+            const values = arg.substring(6).replace('"').replace('"').split(":")
+            ddcciVCP = {
+              code: parseInt(values[0]),
+              value: parseInt(values[1])
             }
-            
+          } catch (e) {
+            console.log("Couldn't parse VCP code!")
+          }
+
         }
 
         // Show overlay
@@ -3641,8 +3643,8 @@ function handleCommandLine(event, argv, directory, additionalData) {
 
       }
 
-      if(display && ddcciVCP) {
-        if(display === "all") {
+      if (display && ddcciVCP) {
+        if (display === "all") {
           Object.values(monitors).forEach(monitor => {
             monitorsThread.send({
               type: "vcp",
@@ -3661,7 +3663,7 @@ function handleCommandLine(event, argv, directory, additionalData) {
         }
       }
 
-      if(usetime) {
+      if (usetime) {
         applyCurrentAdjustmentEvent(true, false)
       }
 
@@ -3680,21 +3682,21 @@ function handleCommandLine(event, argv, directory, additionalData) {
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentWallpaperFileSize = 0;
-let currentScreenSize = {width: 1280, height: 720}
+let currentScreenSize = { width: 1280, height: 720 }
 let sharpBusy = false
 let lastSharpTime = Date.now()
 const homeDir = require("os").homedir()
 const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.jpg`)
 async function getWallpaper() {
-  if(sharpBusy) return { path: currentWallpaper, size: currentScreenSize };
-  try {  
+  if (sharpBusy) return { path: currentWallpaper, size: currentScreenSize };
+  try {
     const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
     const file = fs.statSync(wallPath)
     const newTime = file.mtime.getTime()
     const newSize = file.size
 
     // If time on file changed, render new wallpaper
-    if(file?.mtime && (newTime !== currentWallpaperTime || newSize !== currentWallpaperFileSize)) {
+    if (file?.mtime && (newTime !== currentWallpaperTime || newSize !== currentWallpaperFileSize)) {
       sharpBusy = true
       currentScreenSize = screen.getPrimaryDisplay().workAreaSize
       const sharp = require('sharp')
@@ -3713,11 +3715,11 @@ async function getWallpaper() {
       currentWallpaperFileSize = newSize;
       lastSharpTime = Date.now()
     }
-    
+
     Utils.unloadModule("sharp")
     sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
-  } catch(e) {
+  } catch (e) {
     console.log("Wallpaper file not found or unavailable.", e)
     sharpBusy = false
     return { path: currentWallpaper, size: currentScreenSize }
@@ -3726,7 +3728,7 @@ async function getWallpaper() {
 
 async function sendMicaWallpaper() {
   // Skip if Win10 or Mica disabled
-  if(!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
+  if (!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
   sendToAllWindows("mica-wallpaper", await getWallpaper())
 }
 
@@ -3768,7 +3770,7 @@ const udp = {
           return false
         }
 
-        if(data.key !== settings.udpKey) {
+        if (data.key !== settings.udpKey) {
           console.log("[UDP] Missing or invalid key")
           return false
         }
@@ -3780,11 +3782,11 @@ const udp = {
               return id.toLowerCase().indexOf(searchID) >= 0
             })
             return monitors[monID]
-          } catch(e) { return false }
+          } catch (e) { return false }
         }
 
         const determineVCP = vcp => {
-          switch(vcp) {
+          switch (vcp) {
             case "brightness": return 0x10;
             case "contrast": return 0x12;
             case "power": return 0xD6;
@@ -3804,15 +3806,15 @@ const udp = {
           // data.type === "get"
           // Get property of specific monitor
 
-          if(!(data.monitor && data.property)) return false;
+          if (!(data.monitor && data.property)) return false;
 
           const monitor = findMonitor(data.monitor)
-          if(!monitor) return false;
+          if (!monitor) return false;
 
           const getMonitorProperty = (monitor, property) => {
             try {
-              const { features } = monitor 
-              switch(property) {
+              const { features } = monitor
+              switch (property) {
                 case "brightness": return monitor.brightness;
                 case "maxbrightness": return monitor.brightnessMax;
                 case "rawbrightness": return monitor.brightnessRaw;
@@ -3834,13 +3836,13 @@ const udp = {
                 case "maxvolume": return (features.volume ? features.volume[1] : -1);
                 default: return "-1";
               }
-            } catch(e) {
+            } catch (e) {
               console.log("[UDP] Error getting monitor property", e)
               return -1
             }
           }
 
-          if(data.property === "vcp") {
+          if (data.property === "vcp") {
             sendResponse(await getVCP(monitor, data.code))
           } else {
             sendResponse(getMonitorProperty(monitor, data.property))
@@ -3850,19 +3852,19 @@ const udp = {
           // data.type === "set"
           // Set property of specific monitor
 
-          if(!(data.monitor && data.vcp)) return false;
+          if (!(data.monitor && data.vcp)) return false;
 
           const value = parseInt(data.value)
 
-          if(data.monitor === "all") {
+          if (data.monitor === "all") {
             updateAllBrightness(value, (data.mode ?? "set"))
             return true
           }
 
           const monitor = findMonitor(data.monitor)
-          if(!monitor) return false;
+          if (!monitor) return false;
 
-          if(data.vcp === "brightness") {
+          if (data.vcp === "brightness") {
             const newBrightness = minMax(data.mode !== "offset" ? value : monitor.brightness + value)
             updateBrightnessThrottle(monitor.id, newBrightness, true)
           } else {
@@ -3873,7 +3875,7 @@ const udp = {
               monitor: monitor.hwid.join("#")
             })
           }
-          
+
         } else if (data.type === "checktime") {
           // data.type === "checktime"
           // Use time adjustments
@@ -3882,7 +3884,7 @@ const udp = {
           // data.type === "refresh"
           // Force refresh monitors
           refreshMonitors(true, true)
-        } 
+        }
 
       } catch (e) {
         console.log('[UDP] Error:', e)
@@ -3892,10 +3894,10 @@ const udp = {
 
     server.on('listening', () => {
       const connection = server.address();
-      writeSettings({udpPortActive: connection.port})
+      writeSettings({ udpPortActive: connection.port })
       console.log(`[UDP] UDP server listening at ${connection.address}:${connection.port}`);
     });
-    
+
     // Bind to default port, or another if it fails
     const address = (!settings.udpRemote ? 'localhost' : undefined)
     try {

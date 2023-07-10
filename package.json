@@ -92,11 +92,29 @@
       "!node_modules/**/*.log",
       "!node_modules/**/*.tlog",
       "!node_modules/**/*.vcxproj",
-      "!node_modules/**/*.filters"
+      "!node_modules/**/*.filters",
+      "!node_modules/**/wmic_centos_x64",
+      "!node_modules/**/wmic_ubuntu_x64",
+      "!node_modules/sharp/vendor/*",
+      "!node_modules/wmi-bridge/bin/*",
+      "!node_modules/native-reg/prebuilds/win32-ia32/*",
+      "!node_modules/acrylic/bin/**/*.node",
+      "!node_modules/setwindowpos-binding/bin/**/*.node",
+      "!node_modules/win32-displayconfig/bin/**/*.node",
+      "!node_modules/@paymoapp/active-window/module/linux/*",
+      "!node_modules/@paymoapp/active-window/module/macox/*"
     ],
     "extraResources": [
+      "node_modules\\wmi-client\\lib\\*",
+      "node_modules\\wmi-client\\scripts\\*",
+      "node_modules\\wmi-client\\lib\\index.js",
+      "node_modules\\wmi-client\\lib\\package.json",
+      "node_modules\\wmi-client\\lib\\.jscsrc"
+    ],
+    "asar": true,
+    "asarUnpack": [
       "node_modules\\wmi-client\\**\\*",
-      "!node_modules\\wmi-client\\bin"
+      "node_modules\\sharp\\**\\*"
     ],
     "win": {
       "target": [

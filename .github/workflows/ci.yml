@@ -4,30 +4,27 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: windows-2019
-
-    strategy:
-      matrix:
-        node-version: [18.x]
+    runs-on: windows-2022
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
       - run: npm install -g node-gyp@9.4.0
       - run: npm install
-      - run: npm run build-all
+      - run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
         name: Upload Windows Installer
         with:
-          name: twinkle-tray-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
           path: dist/*.exe
+      - run: npm run appx
       - uses: actions/upload-artifact@v3
-        name: Upload AppX Files
+        name: Upload AppX
         with:
-          name: twinkle-tray-${{ github.ref_name }}-${{ github.sha }}
-          path: dist/*.appx
+          name: twinkle-tray-appx-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/*-store.appx

@@ -91,7 +91,7 @@ if (!isDev && !app.commandLine.hasSwitch("console")) console.log = () => { };
 const windowMenu = Menu.buildFromTemplate([{
   label: "Dev Tools",
   role: "toggleDevTools",
-  accelerator: "Ctrl+Shift+I"
+  accelerator: "Ctrl+I"
 }])
 
 

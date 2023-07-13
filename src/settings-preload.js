@@ -1,6 +1,4 @@
 const { ipcRenderer: ipc } = require('electron');
-const remote = require('@electron/remote')
-let browser = remote.getCurrentWindow()
 
 function getArgumentVars() {
     try {
@@ -247,7 +245,6 @@ window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
 window.settings = getArgumentVars().settings
-window.thisWindow = browser
 window.accent = "cyan"
 
 window.version = 'v' + getArgumentVars().appVersion

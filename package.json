@@ -33,7 +33,6 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
-    "@electron/remote": "^2.0.8",
     "@hensm/ddcci": "^0.1.0",
     "@paymoapp/active-window": "^1.2.0",
     "acrylic": "file:src/modules/acrylic",

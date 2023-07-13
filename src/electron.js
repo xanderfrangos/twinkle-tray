@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs')
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
-const { nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
+const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 const uuid = require('crypto').randomUUID
 
@@ -34,8 +34,6 @@ if (!singleInstanceLock) {
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
 }
-
-require('@electron/remote/main').initialize()
 
 const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
@@ -1921,7 +1919,6 @@ function createPanel(toggleOnLoad = false) {
 
   console.log("Creating panel...")
 
-  const { BrowserWindow } = require('electron')
   mainWindow = new BrowserWindow({
     width: panelSize.width,
     height: panelSize.height,
@@ -1943,7 +1940,6 @@ function createPanel(toggleOnLoad = false) {
     webPreferences: {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true,
       nodeIntegration: true,
       contextIsolation: false,
       plugins: false,
@@ -2740,7 +2736,6 @@ function showIntro() {
     return false;
   }
 
-  const { BrowserWindow } = require('electron')
   introWindow = new BrowserWindow({
     width: 500,
     height: 650,
@@ -2755,7 +2750,6 @@ function showIntro() {
     webPreferences: {
       preload: path.join(__dirname, 'intro-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true,
       nodeIntegration: true,
       zoomFactor: 1.0,
       contextIsolation: false
@@ -2807,7 +2801,6 @@ function createSettings() {
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
-  const { BrowserWindow } = require('electron')
   settingsWindow = new BrowserWindow({
     width: (width >= 1200 ? 1024 : 600),
     height: (height >= 768 ? 720 : 500),
@@ -2824,7 +2817,6 @@ function createSettings() {
     webPreferences: {
       preload: path.join(__dirname, 'settings-preload.js'),
       devTools: settings.isDev,
-      enableRemoteModule: true,
       nodeIntegration: true,
       contextIsolation: false,
       allowRunningInsecureContent: true,
@@ -2840,9 +2832,6 @@ function createSettings() {
     }
   });
 
-
-  require("@electron/remote/main").enable(settingsWindow.webContents);
-
   settingsWindow.loadURL(
     isDev
       ? "http://localhost:3000/settings.html"
@@ -2850,6 +2839,12 @@ function createSettings() {
   );
 
   settingsWindow.on("closed", () => (settingsWindow = null));
+
+  settingsWindow.on("move", sendSettingsBounds)
+  settingsWindow.on("resize", sendSettingsBounds)
+  settingsWindow.on("maximize", sendSettingsBounds)
+  settingsWindow.on("unmaximize", sendSettingsBounds)
+  settingsWindow.on("restore", sendSettingsBounds)
 
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.setMenu(windowMenu)
@@ -2880,7 +2875,28 @@ function createSettings() {
 
 }
 
+function sendSettingsBounds() {
+  const newBounds = settingsWindow.getBounds()
+  settingsWindow.webContents.send("settingsWindowMove", [newBounds.x, newBounds.y])
+}
 
+ipcMain.on("sendSettingsWindowPos", sendSettingsBounds)
+ipcMain.on("windowMinimize", e => {
+  BrowserWindow.fromWebContents(e.sender).minimize()
+})
+
+ipcMain.on("windowToggleMaximize", e => {
+  const window = BrowserWindow.fromWebContents(e.sender);
+  if(window.isMaximized()) {
+    window.unmaximize()
+  } else {
+    window.maximize()
+  }
+})
+
+ipcMain.on("windowClose", e => {
+  BrowserWindow.fromWebContents(e.sender).close()
+})
 
 //
 //

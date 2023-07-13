@@ -1,0 +1,28 @@
+{
+	"parser": "@typescript-eslint/parser",
+	"env": {
+		"es2021": true,
+		"node": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended",
+		"prettier",
+		"plugin:import/recommended",
+		"plugin:import/typescript"
+	],
+	"plugins": ["@typescript-eslint", "prettier", "import"],
+	"parserOptions": {
+		"ecmaVersion": 2021,
+		"project": "./tsconfig.json",
+		"tsconfigRootDir": "."
+	},
+	"rules": {
+		"no-console": 1,
+		"prettier/prettier": 2,
+		"import/no-dynamic-require": 2,
+		"import/no-useless-path-segments": 1,
+		"import/order": [1, { "newlines-between": "always" }],
+		"import/no-named-as-default": 0
+	}
+}

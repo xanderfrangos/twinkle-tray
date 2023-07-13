@@ -7,6 +7,7 @@ const uuid = require('crypto').randomUUID
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
+app.commandLine.appendSwitch('disable-http-cache')
 require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runInNewContext('gc');
 
 // Remove window animations

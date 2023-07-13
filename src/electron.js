@@ -47,7 +47,7 @@ const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
 
 const ActiveWindow = require('@paymoapp/active-window').default;
-ActiveWindow.initialize(10)
+ActiveWindow.initialize()
 
 const reg = require('native-reg');
 const Color = require('color')
@@ -2198,6 +2198,7 @@ function startFocusTracking() {
 
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
+    window.icon = "" // Don't need icon, wastes RAM
 
     if (ignoreAppList.includes(path.basename(window.path)) === false) {
       // Remove from history if exists
@@ -2216,7 +2217,7 @@ function startFocusTracking() {
       })
 
       // Limit history
-      while (windowHistory.length > 10) windowHistory.pop();
+      while (windowHistory.length > 8) windowHistory.pop();
       sendToAllWindows('window-history', windowHistory)
     }
 

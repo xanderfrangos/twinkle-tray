@@ -1,5 +1,8 @@
 const { ipcRenderer: ipc } = require('electron');
-require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
+const { setPriority } = require("os")
+const { priority } = require("os").constants
+
+setPriority(0, priority.PRIORITY_BELOW_NORMAL)
 
 // Send logs to main thread
 const log = console.log
@@ -28,6 +31,7 @@ function setPanelVisibility(visible) {
     window.showPanel = visible
 
     if (visible) {
+        setPriority(0, priority.PRIORITY_ABOVE_NORMAL)
         window.document.body.dataset["visible"] = true
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: false
@@ -41,6 +45,7 @@ function setPanelVisibility(visible) {
         }
         window.updateMica?.()
     } else {
+        setPriority(0, priority.PRIORITY_BELOW_NORMAL)
         window.document.body.dataset["visible"] = false
         window.document.body.dataset["acrylicShow"] = false
         if (window.isAcrylic) {

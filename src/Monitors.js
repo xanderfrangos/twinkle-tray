@@ -2,7 +2,7 @@ console.log("\x1b[45mMonitor.js starting. If you see this more than once, someth
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const { exec } = require('child_process');
-require("os").setPriority(0, require("os").constants.priority.PRIORITY_LOW)
+require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 
 process.on('message', (data) => {

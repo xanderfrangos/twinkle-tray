@@ -5,6 +5,6 @@ node_modules/
 .eslintcache
 
 # build artifacts
-#dist/
+!dist/
 **/build/
 prebuilds/

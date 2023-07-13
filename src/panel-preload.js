@@ -1,4 +1,6 @@
 const { ipcRenderer: ipc } = require('electron');
+const StackBlur = require('stackblur-canvas');
+window.StackBlur = StackBlur
 const { setPriority } = require("os")
 const { priority } = require("os").constants
 
@@ -327,8 +329,9 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
     if(!wallpaper) {
         mica.style.visibility = "hidden"
         window.micaState.visibility = "hidden"
-    } else {
+    } else if(window.micaState.src !== wallpaper.path) {
         window.micaState.visibility = "visible"
+        window.micaState.wallpaper = wallpaper
         window.micaState.src = wallpaper.path
         mica.style.visibility = "visible"
         micaIMG.src = wallpaper.path
@@ -336,6 +339,47 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
         micaIMG.height = wallpaper.size?.height
     }
 })
+
+let lastPath = ""
+ipc.on('mica-wallpaper-create', (event, wallpaper) => {
+    if(lastPath === wallpaper.path) {
+        lastPath = wallpaper.path
+        ipc.send('mica-wallpaper-same')
+        return false
+    }
+    lastPath = wallpaper.path
+    const img = new Image()
+
+    const ratio = wallpaper.size.width / wallpaper.size.height
+    
+    const canvas = document.createElement("canvas")
+    canvas.width = 500 * wallpaper.size.scale
+    canvas.height = (500 / ratio) * wallpaper.size.scale
+
+    img.addEventListener("load", () => {
+        fitImageToCanvas(img, canvas)
+        StackBlur.canvasRGB(canvas, 0, 0, canvas.width, canvas.height, 30 * wallpaper.size.scale )
+        const data = canvas.toDataURL("image/jpeg", 0.95)
+        ipc.send('mica-wallpaper-data', data)
+         
+    })
+    img.src = wallpaper.path
+})
+
+const fitImageToCanvas = (image,canvas) => {
+    const canvasContext = canvas.getContext("2d");
+    const ratio = image.width / image.height;
+    let newWidth = canvas.width;
+    let newHeight = newWidth / ratio;
+    if (newHeight < canvas.height) {
+      newHeight = canvas.height;
+      newWidth = newHeight * ratio;
+    }
+    const xOffset = newWidth > canvas.width ? (canvas.width - newWidth) / 2 : 0;
+    const yOffset =
+      newHeight > canvas.height ? (canvas.height - newHeight) / 2 : 0;
+    canvasContext.drawImage(image, xOffset, yOffset, newWidth, newHeight);
+  };
 
 // Request startup data
 window.addEventListener('DOMContentLoaded', () => {

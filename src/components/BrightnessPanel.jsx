@@ -389,26 +389,22 @@ export default class BrightnessPanel extends PureComponent {
   }
 
   render() {
-    if (this.state.sleeping) {
-      return (<div className="window-base" data-theme={window.settings.theme || "default"} id="panel"></div>)
-    } else {
-      return (
-        <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
-          <div className="titlebar">
-            <div className="title">{T.t("PANEL_TITLE")}</div>
-            <div className="icons">
-              {this.getLinkIcon()}
-              {this.getSleepIcon()}
-              <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
-            </div>
+    const monitorsElem = (this.state.sleeping ? (<div></div>) : this.getMonitors())
+    return (
+      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
+        <div className="titlebar">
+          <div className="title">{T.t("PANEL_TITLE")}</div>
+          <div className="icons">
+            {this.getLinkIcon()}
+            {this.getSleepIcon()}
+            <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
           </div>
-          {this.getMonitors()}
-          {this.getUpdateBar()}
-          {this.renderMica()}
         </div>
-      );
-    }
-
+        { monitorsElem }
+        {this.getUpdateBar()}
+        {this.renderMica()}
+      </div>
+    )
   }
 
   renderMica() {
@@ -423,6 +419,5 @@ export default class BrightnessPanel extends PureComponent {
       </div>
     )
   }
-
 
 }

@@ -3699,55 +3699,65 @@ function handleCommandLine(event, argv, directory, additionalData) {
 let currentWallpaper = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs%3D";
 let currentWallpaperTime = false;
 let currentWallpaperFileSize = 0;
-let currentScreenSize = { width: 1280, height: 720 }
-let sharpBusy = false
-let lastSharpTime = Date.now()
+let currentScreenSize = { width: 1280, height: 720, scale: 1 }
+let micaBusy = false
+let lastMicaTime = Date.now()
 const homeDir = require("os").homedir()
 const micaWallpaperPath = path.join(configFilesDir, `\\mica${(isDev ? "-dev" : "")}.jpg`)
-async function getWallpaper() {
-  if (sharpBusy) return { path: currentWallpaper, size: currentScreenSize };
+const windowWallpaperPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
+
+function checkMicaWallpaper() {
+  if (micaBusy) {
+    sendToAllWindows("mica-wallpaper", { path: currentWallpaper, size: currentScreenSize })
+    return false
+  }
   try {
-    const wallPath = path.join(homeDir, "AppData", "Roaming", "Microsoft", "Windows", "Themes", "TranscodedWallpaper");
-    const file = fs.statSync(wallPath)
+    const file = fs.statSync(windowWallpaperPath)
     const newTime = file.mtime.getTime()
     const newSize = file.size
 
-    // If time on file changed, render new wallpaper
+    currentScreenSize = screen.getPrimaryDisplay().workAreaSize
+    currentScreenSize.scale = screen.getPrimaryDisplay().scaleFactor
     if (file?.mtime && (newTime !== currentWallpaperTime || newSize !== currentWallpaperFileSize)) {
-      sharpBusy = true
-      currentScreenSize = screen.getPrimaryDisplay().workAreaSize
-      const sharp = require('sharp')
-      sharp.cache(false)
-      const wallpaperImage = sharp(wallPath)
-      await sharp({
-        create: {
-          width: currentScreenSize.width * 0.5,
-          height: currentScreenSize.height * 0.5,
-          channels: 4,
-          background: "#202020FF"
-        }
-      }).composite([{ input: await wallpaperImage.ensureAlpha(1).resize(currentScreenSize.width * 0.5, currentScreenSize.height * 0.5, { fit: "fill" }).blur(30).toBuffer(), blend: "source" }]).flatten().jpeg({ quality: 95 }).toFile(micaWallpaperPath)
-      currentWallpaper = "file://" + micaWallpaperPath + "?" + Date.now()
+      micaBusy = true
       currentWallpaperTime = newTime
       currentWallpaperFileSize = newSize;
-      lastSharpTime = Date.now()
-    }
 
-    Utils.unloadModule("sharp")
-    sharpBusy = false
-    return { path: currentWallpaper, size: currentScreenSize }
-  } catch (e) {
-    console.log("Wallpaper file not found or unavailable.", e)
-    sharpBusy = false
-    return { path: currentWallpaper, size: currentScreenSize }
+      // Send off wallpaper to be Mica'd in "panel" renderer
+      sendToAllWindows("mica-wallpaper-create", { path: "file://" + windowWallpaperPath + "?" + newTime, size: currentScreenSize })
+    }
+    sendToAllWindows("mica-wallpaper", { path: currentWallpaper, size: currentScreenSize })
+
+  } catch(e) {
+    micaBusy = false
+    sendToAllWindows("mica-wallpaper", { path: currentWallpaper, size: currentScreenSize })
   }
 }
+
+ipcMain.on('mica-wallpaper-data', (event, data) => {
+  try {
+    console.log("Created Mica wallpaper:", micaWallpaperPath)
+    fs.writeFileSync(micaWallpaperPath, Buffer.from(data.split(',')[1], 'base64'))
+    lastMicaTime = Date.now()
+    currentWallpaper = "file://" + micaWallpaperPath + "?" + lastMicaTime
+    sendToAllWindows("mica-wallpaper", { path: currentWallpaper, size: currentScreenSize })
+  } catch(e) { 
+    console.log(e)
+  }
+  micaBusy = false
+})
+
+ipcMain.on('mica-wallpaper-same', (event, data) => {
+  sendToAllWindows("mica-wallpaper", { path: currentWallpaper, size: currentScreenSize })
+})
 
 async function sendMicaWallpaper() {
   // Skip if Win10 or Mica disabled
   if (!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
-  sendToAllWindows("mica-wallpaper", await getWallpaper())
+  checkMicaWallpaper()
 }
+
+ipcMain.on('get-mica-wallpaper', sendMicaWallpaper)
 
 
 

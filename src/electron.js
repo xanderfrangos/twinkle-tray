@@ -2198,7 +2198,6 @@ function startFocusTracking() {
 
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
-    window.icon = "" // Don't need icon, wastes RAM
 
     if (ignoreAppList.includes(path.basename(window.path)) === false) {
       // Remove from history if exists

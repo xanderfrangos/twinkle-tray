@@ -12,9 +12,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-      - run: npm install -g node-gyp@9.4.0
-      - run: npm install
-      - run: npm run build
+      - run: npm run build-all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
@@ -22,9 +20,13 @@ jobs:
         with:
           name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
           path: dist/*.exe
-      - run: npm run appx
       - uses: actions/upload-artifact@v3
-        name: Upload AppX
+        name: Upload x64 AppX
         with:
-          name: twinkle-tray-appx-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-appx-x64-${{ github.ref_name }}-${{ github.sha }}
           path: dist/*-store.appx
+      - uses: actions/upload-artifact@v3
+        name: Upload ARM64 AppX
+        with:
+          name: twinkle-tray-appx-arm64-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/*-store-arm64.appx

@@ -337,6 +337,12 @@ label {
     }
 }
 
+.hotkey-item {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--page-text-mid);
+}
+
 p {
     font-size: 14px;
     color: var(--page-text-mid);

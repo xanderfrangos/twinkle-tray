@@ -1249,6 +1249,9 @@ export default class SettingsWindow extends PureComponent {
                             <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
                             <div className="hotkey-monitors">
                                 {this.getHotkeyList()}
+                                <br />
+                                <hr />
+                                <br />
                                 <p><a className="button" onClick={() => {
                                     this.state.hotkeys.push({
                                         accelerator: "",
@@ -1438,6 +1441,7 @@ function AppProfile(props) {
     return (
         <div className="appProfileItem" key={profile.id}>
             <hr />
+            <br />
             <label>Profile name</label>
             <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)}></input>
             <label>App path (optional)</label>
@@ -1462,7 +1466,10 @@ Aggressive: Applies the overlay in a way that will display over borderless fulls
             </div>
             {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
             <br />
-            <div className="add-new button block" onClick={onDelete}><div className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></div> <span>Delete</span></div>
+            <p>
+                <a className="add-new button block" onClick={onDelete}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>
+            </p>
+            <br />
         </div>
     )
 }

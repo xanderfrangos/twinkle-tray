@@ -871,10 +871,20 @@ body[data-is-win11="true"] {
     ::-webkit-scrollbar-thumb {
         border-radius: 20px;
     }
+
+    &[data-focused="false"] {
+        #mica img {
+            opacity: 0;
+        }
+    }
 }
 
 #mica {
     background: none !important;
+    img {
+        transition: opacity 0.5s;
+        opacity: 1;
+    }
 }
 
 body[data-is-win11="false"] {

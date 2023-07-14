@@ -231,6 +231,16 @@ window.addEventListener("setVCP", e => {
     ipc.send("set-vcp", { monitor, code, value })
 })
 
+const SunCalc = require('suncalc')
+function getSunCalcTimes(lat, long) {
+    const localTimes = SunCalc.getTimes(new Date(), lat, long)
+    for (const timeName in localTimes) {
+        const time = localTimes[timeName].toLocaleTimeString()
+        localTimes[timeName] = `${time.slice(0,4)}${time.slice(7)}`
+    }
+    return localTimes
+}
+
 window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
@@ -246,6 +256,7 @@ window.lastUpdate = Date.now()
 window.showPanel = false
 window.settings = getArgumentVars().settings
 window.accent = "cyan"
+window.getSunCalcTimes = getSunCalcTimes
 
 window.version = 'v' + getArgumentVars().appVersion
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)

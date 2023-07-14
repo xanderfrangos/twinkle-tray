@@ -57,6 +57,8 @@ const { EventEmitter } = require("events");
 const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
 const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
 
+const SunCalc = require('suncalc')
+
 app.allowRendererProcessReuse = true
 
 // Logging
@@ -358,6 +360,8 @@ const defaultSettings = {
   adjustmentTimeIndividualDisplays: false,
   adjustmentTimeSpeed: "normal",
   adjustmentTimeAnimate: false,
+  adjustmentTimeLongitude: 0,
+  adjustmentTimeLatitude: 0,
   checkTimeAtStartup: true,
   order: [],
   monitorFeatures: {},
@@ -490,6 +494,16 @@ function readSettings(doProcessSettings = true) {
       console.log(`Upgraded ${settings.hotkeys.length} hotkeys to v1.16.0 format!`)
     } catch (e) {
       console.log("Couldn't upgrade hotkeys", e)
+    }
+    try {
+      // Upgrade Adjustment Times for SunCalc
+      for(const time of settings.adjustmentTimes) {
+        time.useSunCalc = false
+        time.sunCalc = "sunrise"
+      }
+      console.log("Upgraded Adjustment Times to v1.16.0 format!")
+    } catch(e) {
+      console.log("Couldn't upgrade Adjustment Times", e)
     }
   }
 
@@ -3352,7 +3366,8 @@ function getCurrentAdjustmentEvent() {
   let foundEvent = false
   try {
     for (let event of settings.adjustmentTimes) {
-      const eventValue = Utils.parseTime(event.time)
+      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc) : event.time)
+      const eventValue = Utils.parseTime(eventTime)
 
       // Check if event is not later than current time, last event time, or last found time
       if (eventValue <= nowValue) {
@@ -3380,7 +3395,8 @@ function getNextAdjustmentEvent() {
 
   try {
     for (let event of settings.adjustmentTimes) {
-      const eventValue = Utils.parseTime(event.time)
+      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc) : event.time)
+      const eventValue = Utils.parseTime(eventTime)
 
       // Check if event is later than current time, and less than the last found event
       if (eventValue > currentEvent.value && (!closestEvent || eventValue < closestEvent.value)) {
@@ -3439,6 +3455,21 @@ function getCurrentAdjustmentEventLERP() {
     console.log("Error generating Adjustment Time LERP", e)
     return false
   }
+}
+
+function getSunCalcTime(timeName = "solarNoon") {
+  const localTimes = SunCalc.getTimes(new Date(), settings.adjustmentTimeLatitude, settings.adjustmentTimeLongitude)
+  const time = new Date(localTimes[timeName])
+  return `${time.getHours()}:${time.getMinutes()}`
+}
+
+function getSunCalcTimes() {
+  const localTimes = SunCalc.getTimes(new Date(), settings.adjustmentTimeLatitude, settings.adjustmentTimeLongitude)
+  for(const timeName in localTimes) {
+    const time = new Date(localTimes[timeName])
+    localTimes[timeName] = `${time.getHours()}:${time.getMinutes()}`
+  }
+  return localTimes
 }
 
 // If applicable, apply the current Time of Day Adjustment

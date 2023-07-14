@@ -495,24 +495,59 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    updateAdjustmentTime(time, idx) {
+        this.state.adjustmentTimes[idx] = Object.assign({}, time)
+        window.sendSettings({ adjustmentTimes: this.state.adjustmentTimes.slice() })
+        this.forceUpdate()
+    }
+
     getAdjustmentTimes = () => {
         if (this.state.adjustmentTimes == undefined || this.state.adjustmentTimes.length == 0) {
             return (<div></div>)
         } else {
+            const times = window.getSunCalcTimes(window.settings.adjustmentTimeLatitude, window.settings.adjustmentTimeLongitude)
             return this.state.adjustmentTimes.map((time, index) => {
+                let timeElem = (
+                    <input type="time" min="00:00" max="23:59" onChange={(e) => {
+                        console.log("OUTVAL", e.target.value)
+                        this.setAdjustmentTimeValue(index, e.target.value)
+                    }} value={time.time}></input>
+                )
+                if(time.useSunCalc) {
+                    timeElem = (
+                        <select value={time.sunCalc ?? "solarNoon"} onChange={e => {
+                            time.sunCalc = e.target.value
+                            this.updateAdjustmentTime(time, index)
+                        }}>
+                            <option value="dawn">Dawn ({ times.dawn })</option>
+                            <option value="sunrise">Sunrise ({ times.sunrise })</option>
+                            <option value="goldenHour">Golden Hour ({ times.goldenHour })</option>
+                            <option value="solarNoon">Solar Noon ({ times.solarNoon })</option>
+                            <option value="sunsetStart">Sunset Start ({ times.sunsetStart })</option>
+                            <option value="sunset">Sunset ({ times.sunset })</option>
+                            <option value="dusk">Dusk ({ times.dusk })</option>
+                            <option value="night">Night ({ times.night })</option>
+                        </select>
+                    )
+                } 
                 return (
                     <div className="item" key={index + "_" + time.time}>
+                        <div className="feature-toggle-row">
+                            <input onChange={e => {
+                                time.useSunCalc = e.target.checked
+                                this.updateAdjustmentTime(time, index)
+                            }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
+                            <div className="feature-toggle-label">Use sun position</div>
+                        </div>
                         <div className="row">
-                            <input type="time" min="00:00" max="23:59" onChange={(e) => {
-                                console.log("OUTVAL", e.target.value)
-                                this.setAdjustmentTimeValue(index, e.target.value)
-                            }} value={time.time}></input>
+                            { timeElem }
                             <a className="button" onClick={() => {
                                 this.state.adjustmentTimes.splice(index, 1)
                                 this.forceUpdate()
                                 this.adjustmentTimesUpdated()
                             }}>{T.t("SETTINGS_TIME_REMOVE")}</a>
                         </div>
+                        <br />
                         <div className="row">
                             {this.getAdjustmentTimesMonitors(time, index)}
 
@@ -931,7 +966,9 @@ export default class SettingsWindow extends PureComponent {
         this.state.adjustmentTimes.push({
             brightness: 50,
             time: "12:30",
-            monitors: {}
+            monitors: {},
+            useSunCalc: false,
+            sunCalc: "sunrise"
         })
         this.forceUpdate()
         this.adjustmentTimesUpdated()
@@ -1069,6 +1106,20 @@ export default class SettingsWindow extends PureComponent {
                             <p><br /><a className="button" onClick={this.addAdjustmentTime}>+ {T.t("SETTINGS_TIME_ADD")}</a></p>
                             <div className="adjustmentTimes">
                                 {this.getAdjustmentTimes()}
+                            </div>
+                        </div>
+                        <div className="pageSection" data-active={this.isSection("time")}>
+                            <label>Coordinates for sun position</label>
+                            <p>If you are using "sun position" for any time adjustments, enter your current latitude and longitude so the correct times can be determined. Twinkle Tray does not detect this for you.</p>
+                            <div style={{ "display": (window.settings?.detectIdleTimeEnabled === true ? "flex" : "none") }}>
+                                <div style={{ marginRight: "6px", flex: 1 }}>
+                                    <label style={{ "textTransform": "capitalize" }}>Latitude</label>
+                                    <input type="number" min="-90" max="90" value={window.settings.adjustmentTimeLatitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLatitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
+                                </div>
+                                <div style={{flex: 1}}>
+                                    <label style={{ "textTransform": "capitalize" }}>Longitude</label>
+                                    <input type="number" min="-180" max="180" value={window.settings.adjustmentTimeLongitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLongitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
+                                </div>
                             </div>
                         </div>
                         <div className="pageSection" data-active={this.isSection("time")}>

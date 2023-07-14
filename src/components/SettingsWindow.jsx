@@ -1280,6 +1280,14 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</div>
                             <p>{T.t("SETTINGS_GENERAL_SCROLL_DESC")}</p>
                             {this.renderToggle("scrollShortcut")}
+                            <br />
+                            <label>Amount to scroll</label>
+                            <input type="number" min={1} max={100} step={1}
+                            value={this.state.rawSettings.scrollShortcutAmount} onChange={e => {
+                                this.state.rawSettings.scrollShortcutAmount = parseInt(e.target.value)
+                                window.sendSettings({ scrollShortcutAmount: parseInt(e.target.value) })
+                                this.forceUpdate()
+                            }} />
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>

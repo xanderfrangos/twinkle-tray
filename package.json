@@ -163,7 +163,7 @@
     "@babel/preset-react": "^7.12.13",
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
-    "electron": "^25.2.0",
+    "electron": "^25.3.1",
     "electron-builder": "^24.4.0",
     "node-gyp": "^9.4.0",
     "parcel-bundler": "^1.12.5",

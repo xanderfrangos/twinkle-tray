@@ -211,7 +211,7 @@ getAllMonitors = async () => {
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
             const { features, id, hwid } = monitor
-            let brightnessType = (features.luminance ? 0x10 : (features.brightness ? 0x13 : 0x00))
+            let brightnessType = (features["0x10"] ? 0x10 : (features["0x13"] ? 0x13 : 0x00))
 
             // Use DDC Brightness overrides, if relevant
             if (typeof ddcBrightnessVCPs === "object" && Object.keys(ddcBrightnessVCPs).indexOf(hwid[1]) > -1) {
@@ -227,7 +227,7 @@ getAllMonitors = async () => {
                 min: 0,
                 max: 100,
                 brightnessType: brightnessType,
-                brightnessValues: (features.luminance ? features.luminance : (features.brightness ? features.brightness : [50, 100]))
+                brightnessValues: (features["0x10"] ? features["0x10"] : (features["0x13"] ? features["0x13"] : [50, 100]))
             }
             ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
             ddcciInfo.brightnessMax = ddcciInfo.brightnessValues[1]
@@ -439,28 +439,24 @@ getFeaturesDDC = () => {
 }
 
 checkMonitorFeatures = async (monitor) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const features = {}
-        const featureTestTime = 200
+        const featureTestTime = 100
         try {
             // This part is flaky, so we'll do it slowly
-            features.luminance = checkVCPIfEnabled(monitor, 0x10, "luminance")
-            setTimeout(() => {
-                features.brightness = checkVCPIfEnabled(monitor, 0x13, "brightness")
-                setTimeout(() => {
-                    features.contrast = checkVCPIfEnabled(monitor, 0x12, "contrast")
-                    setTimeout(() => {
-                        features.powerState = checkVCPIfEnabled(monitor, 0xD6, "powerState")
-                        setTimeout(() => {
-                            features.volume = checkVCPIfEnabled(monitor, 0x62, "volume")
-                            resolve(features)
-                        }, featureTestTime)
-                    }, featureTestTime)
-                }, featureTestTime)
-            }, featureTestTime)
+            features["0x10"] = checkVCPIfEnabled(monitor, 0x10, "luminance")
+            await wait(featureTestTime)
+            features["0x13"] = checkVCPIfEnabled(monitor, 0x13, "brightness")
+            await wait(featureTestTime)
+            features["0x12"] = checkVCPIfEnabled(monitor, 0x12, "contrast")
+            await wait(featureTestTime)
+            features["0xD6"] = checkVCPIfEnabled(monitor, 0xD6, "powerState")
+            await wait(featureTestTime)
+            features["0x62"] = checkVCPIfEnabled(monitor, 0x62, "volume")
         } catch (e) {
-            resolve(features)
+            console.log(e)
         }
+        resolve(features)
     })
 }
 
@@ -612,7 +608,7 @@ let vcpCache = {}
 function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     try {
         const hwid = monitor.split("#")
-        const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[setting]
+        const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[code]
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
         if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
@@ -853,12 +849,11 @@ const getBrightnessWMIC = async () => {
 
 }
 
-// For testing timeouts
-function wait2s() {
+function wait(time = 2000) {
     return new Promise(resolve => {
         setTimeout(() => {
             resolve(true);
-        }, 2000);
+        }, time);
     });
 }
 

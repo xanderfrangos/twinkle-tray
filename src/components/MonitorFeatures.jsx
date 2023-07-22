@@ -7,31 +7,34 @@ export default function MonitorFeatures(props) {
 
     if(monitor.type === "ddcci" && monitor?.features && Object.keys(monitor.features).length > 0) {
 
-        if (monitor.features.contrast) {
-            const enabled = monitorFeatures?.contrast;
+        // Contrast
+        if (monitor.features["0x12"]) {
+            const enabled = monitorFeatures?.["0x12"];
             extraHTML.push(
                 <div className="feature-toggle-row" key="contrast">
-                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "contrast")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0x12")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
                     <div className="feature-toggle-label"><span className="icon vfix">&#xE793;</span><span>{T.t("PANEL_LABEL_CONTRAST")}</span></div>
                 </div>
             )
         }
     
-        if (monitor.features.volume) {
-            const enabled = monitorFeatures?.volume;
+        // Volume
+        if (monitor.features["0x62"]) {
+            const enabled = monitorFeatures?.["0x62"];
             extraHTML.push(
                 <div className="feature-toggle-row" key="volume">
-                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "volume")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0x62")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
                     <div className="feature-toggle-label"><span className="icon vfix">&#xE767;</span><span>{T.t("PANEL_LABEL_VOLUME")}</span></div>
                 </div>
             )
         }
     
-        if (monitor.features.powerState) {
-            const enabled = monitorFeatures?.powerState;
+        // Power State
+        if (monitor.features["0xD6"]) {
+            const enabled = monitorFeatures?.["0xD6"];
             extraHTML.push(
                 <div className="feature-toggle-row" key="powerState">
-                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "powerState")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0xD6")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
                     <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_OFF_ON")} ⚠️</span></div>
                 </div>
             )

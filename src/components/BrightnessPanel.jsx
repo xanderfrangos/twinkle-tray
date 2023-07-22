@@ -43,7 +43,7 @@ export default class BrightnessPanel extends PureComponent {
         // Check if we should use the extended DDC/CI layout or simple layout
         for(const {hwid} of sorted) {
           const monitorFeatures = window.settings?.monitorFeatures?.[hwid[1]]
-          if(monitorFeatures?.contrast || monitorFeatures?.volume) {
+          if(monitorFeatures?.["0x12"] || monitorFeatures?.["0x62"]) {
             useFeatures = true
           }
         }
@@ -57,7 +57,7 @@ export default class BrightnessPanel extends PureComponent {
               let hasFeatures = true
               let featureCount = 0
               const monitorFeatures = window.settings?.monitorFeatures?.[monitor.hwid[1]]
-              const features = ["contrast", "volume", "powerState"]
+              const features = ["0x12", "0xD6", "0x62"]
               if (monitor.features) {
                 features.forEach(f => {
                   // Check monitor features
@@ -75,7 +75,7 @@ export default class BrightnessPanel extends PureComponent {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
               }
               const showPowerButton = () => {
-                if(monitorFeatures?.powerState && monitor.features?.powerState) {
+                if(monitorFeatures?.["0xD6"] && monitor.features?.["0xD6"]) {
                   return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
                 }
               }

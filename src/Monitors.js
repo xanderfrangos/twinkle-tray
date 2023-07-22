@@ -453,6 +453,22 @@ checkMonitorFeatures = async (monitor) => {
             features["0xD6"] = checkVCPIfEnabled(monitor, 0xD6, "powerState")
             await wait(featureTestTime)
             features["0x62"] = checkVCPIfEnabled(monitor, 0x62, "volume")
+
+            // Get custom DDC/CI features
+            const hwid = monitor.split("#")
+            const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
+            if(settingsFeatures) {
+                for(const vcp in settingsFeatures) {
+                    if(vcp == "0x10" || vcp == "0x12" || vcp == "0x13" || vcp == "0x62" || vcp == "0xD6") {
+                        continue; // Skip if built-in feature
+                    }
+                    if(settingsFeatures[vcp]) {
+                        await wait(featureTestTime)
+                        features[vcp] = checkVCPIfEnabled(monitor, parseInt(vcp), vcp)
+                    }
+                }
+            }
+            
         } catch (e) {
             console.log(e)
         }

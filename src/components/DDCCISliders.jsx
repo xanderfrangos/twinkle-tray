@@ -1,42 +1,60 @@
 import React, { useState } from "react"
+import { useObject } from "../hooks/useObject"
 import Slider from "./Slider"
 
 export default function DDCCISliders(props) {
     const { monitor, name, monitorFeatures } = props
-    const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? monitor?.features?.["0x12"][0] : 50)
-    const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
+
+    const defaultValues = {}
+    for(const vcp in monitor?.features) {
+        defaultValues[vcp] = monitor?.features?.[vcp]?.[0] ?? 0
+    }
+
+    const [values, setValues] = useObject(defaultValues)
 
     let extraHTML = []
     const featureSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]
 
-    if (monitor?.features?.["0x12"] && monitorFeatures?.["0x12"] && !(featureSettings?.["0x12"]?.linked)) {
-        extraHTML.push(
-            <div className="feature-row feature-contrast" key={monitor.key + "_contrast"}>
-                <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features["0x12"][1] / 100)) }} />
-            </div>
-        )
-    }
-
-    if (monitor?.features?.["0x62"] && monitorFeatures?.["0x62"] && !(featureSettings?.["0x62"]?.linked)) {
-        extraHTML.push(
-            <div className="feature-row feature-volume" key={monitor.key + "_volume"}>
-                <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features["0x62"][1] / 100)) }} />
-            </div>
-        )
-    }
-
-    if (monitor?.customFeatures?.length) {
+    if(monitor?.features) {
         let i = 0
-        for(const feature of monitor?.customFeatures) {
+        for(const vcp in monitor.features) {
             i++
-            extraHTML.push(
-                <div className="feature-row feature-custom" key={monitor.key + "_custom" + i}>
-                    <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                    <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} />
-                </div>
-            )
+
+            if(vcp == "0x10" || vcp == "0x13" || vcp == "0xD6") {
+                continue; // Skip if brightness or power state
+            }
+
+            const feature = monitor.features[vcp]
+            if(feature && monitorFeatures?.[vcp] && !(featureSettings?.[vcp]?.linked)) {
+                // Feature has a value, is enabled, and not linked
+                if(vcp === "0x12") {
+                    // Contrast
+                    extraHTML.push(
+                        <div className="feature-row feature-contrast" key={monitor.key + "_" + vcp}>
+                            <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
+                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                        </div>
+                    )
+                } else if(vcp === "0x62") {
+                    // Volume
+                    extraHTML.push(
+                        <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
+                            <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
+                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                        </div>
+                    )
+                } else {
+                    // Custom
+                    const settings = featureSettings?.[vcp] ?? {}
+                    extraHTML.push(
+                        <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
+                            <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
+                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                        </div>
+                    )
+                }
+            }
+
         }
     }
 

@@ -43,8 +43,23 @@ export default class BrightnessPanel extends PureComponent {
         // Check if we should use the extended DDC/CI layout or simple layout
         for(const {hwid} of sorted) {
           const monitorFeatures = window.settings?.monitorFeatures?.[hwid[1]]
-          if(monitorFeatures?.["0x12"] || monitorFeatures?.["0x62"]) {
-            useFeatures = true
+          for(const vcp in monitorFeatures) {
+
+            if(vcp == "0x10" || vcp == "0x13" || vcp == "0xD6") {
+              continue; // Skip if brightness or power state
+            }
+
+            const feature = monitorFeatures[vcp]
+            if(feature) {
+              // Feature is active
+              // Now we check if there are any settings active for the feature
+              const featureSettings = window.settings.monitorFeaturesSettings?.[hwid[1]]
+              if( !(featureSettings?.[vcp]?.linked) ) {
+                // Isn't linked
+                useFeatures = true
+              }
+            }
+
           }
         }
 
@@ -186,6 +201,7 @@ export default class BrightnessPanel extends PureComponent {
     } else if (this.numMonitors > 0) {
       // Update single monitor
       if (sliderMonitor) sliderMonitor.brightness = level;
+      
       this.setState({
         monitors
       }, () => {

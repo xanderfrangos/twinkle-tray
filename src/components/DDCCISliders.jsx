@@ -7,8 +7,9 @@ export default function DDCCISliders(props) {
     const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
 
     let extraHTML = []
+    const featureSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]
 
-    if (monitor?.features?.["0x12"] && monitorFeatures?.["0x12"]) {
+    if (monitor?.features?.["0x12"] && monitorFeatures?.["0x12"] && !(featureSettings?.["0x12"]?.linked)) {
         extraHTML.push(
             <div className="feature-row feature-contrast" key={monitor.key + "_contrast"}>
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
@@ -17,7 +18,7 @@ export default function DDCCISliders(props) {
         )
     }
 
-    if (monitor?.features?.["0x62"] && monitorFeatures?.["0x62"]) {
+    if (monitor?.features?.["0x62"] && monitorFeatures?.["0x62"] && !(featureSettings?.["0x62"]?.linked)) {
         extraHTML.push(
             <div className="feature-row feature-volume" key={monitor.key + "_volume"}>
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>

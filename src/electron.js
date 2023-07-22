@@ -365,6 +365,7 @@ const defaultSettings = {
   checkTimeAtStartup: true,
   order: [],
   monitorFeatures: {},
+  monitorFeaturesSettings: {},
   hideDisplays: {},
   checkForUpdates: !isDev,
   dismissedUpdate: '',
@@ -1482,8 +1483,23 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     applyRemaps(newMonitors)
     applyHotkeys(newMonitors)
 
+    // Normalize values
     for (let id in newMonitors) {
-      newMonitors[id].brightness = normalizeBrightness(newMonitors[id].brightness, true, newMonitors[id].min, newMonitors[id].max)
+      const monitor = newMonitors[id]
+      // Brightness
+      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+
+      // Other DDC/CI normalizations
+      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+      if(featuresSettings) {
+        // For each feature, check for matching normalization data
+        for(const vcp in monitor.features) {
+          if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+            monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
+          }
+        }
+      }
+
     }
 
     monitors = newMonitors;
@@ -1564,8 +1580,10 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 
-function updateBrightness(index, level, useCap = true, vcp = "brightness", clearTransition = true) {
+function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   try {
+    let level = newLevel
+    let vcp = (vcpValue === "brightness" ? "brightness" : `0x${parseInt(vcpValue).toString(16)}`)
 
     let monitor = false
     if (typeof index == "string" && index * 1 != index) {
@@ -1604,13 +1622,33 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
         id: monitor.id
       })
-    } else if (monitor.type == "ddcci") {
-      if (Utils.vcpMap[vcp] && monitor.features[Utils.vcpMap[vcp]]) {
-        monitor.features[Utils.vcpMap[vcp]][0] = level
+
+      // Apply linked DDC/CI features
+      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+      if(featuresSettings) {
+        // For each feature, check for linked value
+        for(const vcp in monitor.features) {
+          if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
+            updateBrightness(index, newLevel, useCap, vcp, clearTransition)
+          }
+        }
       }
+
+    } else if (monitor.type == "ddcci") {
+
+      // Normalize VCP value, if applicable
+      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+      if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+        level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
+      }
+
+      if (monitor.features[vcp]) {
+        monitor.features[vcp][0] = level
+      }
+
       monitorsThread.send({
         type: "vcp",
-        code: vcp,
+        code: parseInt(vcp),
         value: level,
         monitor: monitor.hwid.join("#")
       })

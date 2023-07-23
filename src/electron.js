@@ -1638,7 +1638,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
 
       // Normalize VCP value, if applicable
       const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-      if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+      if(featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
         level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
       }
 

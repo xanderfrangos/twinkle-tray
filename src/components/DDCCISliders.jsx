@@ -46,9 +46,18 @@ export default function DDCCISliders(props) {
                 } else {
                     // Custom
                     const settings = featureSettings?.[vcp] ?? {}
+                    let icon
+                    if(settings?.iconType === "windows" && settings?.icon) {
+                        icon = (<span className="icon vfix" dangerouslySetInnerHTML={{__html: `&#x${settings.icon};` }}></span>)
+                    } else if(settings?.iconType === "text" && settings?.iconText) {
+                        icon = (<span className="icon icon-text vfix">{settings.iconText}</span>)
+                    } else {
+                        // Default
+                        icon = (<span className="icon vfix">&#xe897;</span>)
+                    }
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
-                            <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
+                            <div className="feature-icon">{ icon }</div>
                             <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
                         </div>
                     )

@@ -219,6 +219,10 @@ body[data-use-native-animation="false"] {
 
 .icon {
     font-family: "Segoe MDL2 Assets";
+    &.icon-text {
+        font-family: inherit !important;
+        font-size: 13px;
+    }
 }
 
 .monitor-item {

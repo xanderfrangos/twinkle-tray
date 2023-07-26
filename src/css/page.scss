@@ -568,6 +568,14 @@ select {
         margin: 0;
     }
 }
+.feature-toggle-set[data-active="true"] {
+    margin-bottom: 30px;
+    margin-top: 10px;
+    background: var(--page-section-bg);
+    padding: 10px 20px;
+    margin-left: -20px;
+    width: 100%;   
+}
 .feature-toggle-label {
     padding-left: 15px;
     .icon {

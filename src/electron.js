@@ -581,6 +581,33 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
+    if (newSettings.monitorFeatures !== undefined) {
+      try {
+        for(const monitorID in newSettings.monitorFeatures) {
+          for(const vcp in newSettings.monitorFeatures[monitorID]) {
+            // Add settings for VCP code if it doesn't exist
+            if(!newSettings.monitorFeaturesSettings?.[monitorID]?.[vcp] && !settings.monitorFeaturesSettings?.[monitorID]?.[vcp]) {
+              if(!settings.monitorFeaturesSettings[monitorID]) {
+                settings.monitorFeaturesSettings[monitorID] = {}
+              }
+              settings.monitorFeaturesSettings[monitorID][vcp] = {
+                icon: "e897",
+                iconType: "windows",
+                iconText: "",
+                iconPath: "",
+                min: 0,
+                max: 100,
+                maxVisual: 100,
+                linked: false
+              }
+            }
+          }
+        }
+      } catch(e) {
+        console.log("Couldn't read monitorFeatures", e)
+      }
+    }
+
     if (settings.udpEnabled === true) {
       if (!udp.server) udp.start(settings.udpPort);
     } else if (settings.udpEnabled === false) {

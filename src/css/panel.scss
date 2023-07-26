@@ -222,6 +222,8 @@ body[data-use-native-animation="false"] {
     &.icon-text {
         font-family: inherit !important;
         font-size: 13px;
+        min-width: 22px;
+        text-align: center;
     }
 }
 

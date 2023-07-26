@@ -27,7 +27,7 @@ export default class Slider extends Component {
         if (this.props.name) {
             return (
                 <div className="name-row">
-                    <div className="icon">{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
+                    <div className="icon" style={{display: (this.props.icon === false ? "none" : "block")}}>{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
                     <div className="title">{this.props.name}</div>
                     {this.props.afterName}
                 </div>
@@ -77,7 +77,7 @@ export default class Slider extends Component {
         return (
             <div className="monitor-item">
                 {this.getName()}
-                <div className="input--range">
+                <div className="input--range" data-height={this.props.height}>
                     <div className="rangeGroup">
                         <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} onWheel={this.handleWheel} className="range" />
                         <div className="progress" style={this.progressStyle()}></div>

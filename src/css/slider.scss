@@ -105,6 +105,19 @@
         }
 
     }
+
+    &[data-height="short"] {
+        padding-top: 4px;
+        .val {
+            text-align: left;
+            padding: 0;
+            font-size: 16px;
+            width: 32px;
+            margin-left: 12px;
+            line-height: 1;
+            margin-bottom: -1px;
+        }
+    }
 }
 
 

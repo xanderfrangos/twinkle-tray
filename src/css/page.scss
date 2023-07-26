@@ -568,18 +568,64 @@ select {
         margin: 0;
     }
 }
+.feature-toggle-set {
+    margin: 0 0 0 -20px;
+    padding: 0 20px;
+    transition:  margin 0.3s, padding 0.3s, background 0.3s;
+    background-color: rgba(0,0,0,0);
+}
 .feature-toggle-set[data-active="true"] {
     margin-bottom: 30px;
     margin-top: 10px;
     background: var(--page-section-bg);
     padding: 10px 20px;
-    margin-left: -20px;
-    width: 100%;   
+    margin-left: -19px;
+    width: calc(100% - 2px);
+}
+.feature-toggle-settings {
+    padding: 10px 0 10px 30px;
+    animation: featureToggleSettingsIn 0.3s;
+    @keyframes featureToggleSettingsIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+    }
 }
 .feature-toggle-label {
     padding-left: 15px;
     .icon {
         margin-right: 8px
+    }
+}
+.input-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 15px;
+
+    & > * {
+        //flex: 1;
+    }
+
+    input[type="text"], select {
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+        height: 40px;
+    }
+
+    label + input, label + select {
+        margin-top: 8px !important;
+    }
+
+    .monitor-item {
+        flex: 1;
+        & + .monitor-item {
+            margin-top: 0;
+        }
+    }
+
+    & + .input-row  {
+        margin-top: 15px;
     }
 }
 

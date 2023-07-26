@@ -110,33 +110,51 @@ function MonitorFeaturesSettings(props) {
       }
 
       const iconType = (
-        <select value={settingsObj.iconType} onChange={e => onChangeHandler("iconType", e.target.value)}>
-            <option value="windows">Icon</option>
-            <option value="text">Text</option>
-        </select>
+        <div className="field">
+            <label>Slider Indicator Type</label>
+            <select value={settingsObj.iconType} onChange={e => onChangeHandler("iconType", e.target.value)} style={{flex: "0.65"}}>
+                <option value="windows">Icon</option>
+                <option value="text">Text</option>
+            </select>
+        </div>
       )
 
       const icon = (
-        <select style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`}} onChange={e => onChangeHandler("icon", e.target.value)}>
-            <WindowsIconsOptions />
-        </select>
+        <div className="field">
+            <label>Slider Icon</label>
+            <select style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`}} onChange={e => onChangeHandler("icon", e.target.value)}>
+                <WindowsIconsOptions />
+            </select>
+        </div>
       )
 
       const iconText = (
-        <input value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} />
+        <div className="field">
+            <label>Slider Text</label>
+            <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={"Enter name for slider"} />
+        </div>
+      )
+
+      const iconSettings = (
+        <div className="input-row">
+            { iconType }
+            { settingsObj.iconType === "windows" ? icon : null }
+            { settingsObj.iconType === "text" ? iconText : null }
+        </div>
       )
 
     return(
         <div className="feature-toggle-settings">
-            { ignoreCodes.indexOf(vcp) === -1 ? iconType : null }
-            { ignoreCodes.indexOf(vcp) === -1 && settingsObj.iconType === "windows" ? icon : null }
-            { ignoreCodes.indexOf(vcp) === -1 && settingsObj.iconType === "text" ? iconText : null }
-            <br />
-            <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} />
-            <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} />
-            <div className="feature-toggle-row">
-                <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
-                <div className="feature-toggle-label"><span>Linked to brightness</span></div>
+            { ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null }
+            <div className="input-row">
+                <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false}   />
+            </div>
+            <div className="input-row">
+                <div className="feature-toggle-row">
+                    <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
+                    <div className="feature-toggle-label"><span>Linked to brightness</span></div>
+                </div>
             </div>
         </div>
     )

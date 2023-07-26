@@ -600,17 +600,21 @@ select {
     display: flex;
     justify-content: flex-start;
     align-items: stretch;
-    gap: 15px;
+    gap: 10px;
 
     & > * {
         //flex: 1;
     }
 
-    input[type="text"], select {
+    input[type="text"], input[type="number"], input[type="button"], input[type="time"], select {
         margin: 0;
-        width: 100%;
+        width: auto;
         box-sizing: border-box;
         height: 40px;
+    }
+
+    input[type="button"] {
+        width: auto;
     }
 
     label + input, label + select {

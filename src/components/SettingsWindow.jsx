@@ -532,20 +532,22 @@ export default class SettingsWindow extends PureComponent {
                 } 
                 return (
                     <div className="item" key={index + "_" + time.time}>
-                        <div className="feature-toggle-row">
-                            <input onChange={e => {
-                                time.useSunCalc = e.target.checked
-                                this.updateAdjustmentTime(time, index)
-                            }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
-                            <div className="feature-toggle-label">Use sun position</div>
+                        <div className="input-row">
+                            <div className="feature-toggle-row">
+                                <input onChange={e => {
+                                    time.useSunCalc = e.target.checked
+                                    this.updateAdjustmentTime(time, index)
+                                }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
+                                <div className="feature-toggle-label">Use sun position</div>
+                            </div>
                         </div>
-                        <div className="row">
+                        <div className="input-row">
                             { timeElem }
-                            <a className="button" onClick={() => {
+                            <input type="button" className="button" value={T.t("SETTINGS_TIME_REMOVE")} onClick={() => {
                                 this.state.adjustmentTimes.splice(index, 1)
                                 this.forceUpdate()
                                 this.adjustmentTimesUpdated()
-                            }}>{T.t("SETTINGS_TIME_REMOVE")}</a>
+                            }} />
                         </div>
                         <br />
                         <div className="row">
@@ -607,46 +609,67 @@ export default class SettingsWindow extends PureComponent {
         return this.state.hotkeys?.map((hotkey, idx) => {
             return (
                 <div key={hotkey.id} className="hotkey-item">
-                    <p><a className="button" onClick={() => this.deleteHotkey(idx)}>Delete hotkey</a></p>
-                    <div className="row">
-                        <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
-                            (e) => {
-                                e.preventDefault()
-                                let key = cleanUpKeyboardKeys(e.key, e.keyCode)
-                                if (this.downKeys[key] === undefined) {
-                                    this.downKeys[key] = true;
-                                    hotkey.accelerator = Object.keys(this.downKeys).join('+')
-                                    this.updateHotkey(hotkey, idx);
+                    <div>
+                        <div className="row">
+                            <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
+                                (e) => {
+                                    e.preventDefault()
+                                    let key = cleanUpKeyboardKeys(e.key, e.keyCode)
+                                    if (this.downKeys[key] === undefined) {
+                                        this.downKeys[key] = true;
+                                        hotkey.accelerator = Object.keys(this.downKeys).join('+')
+                                        this.updateHotkey(hotkey, idx);
+                                    }
+                                    return false
                                 }
-                                return false
-                            }
-                        } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
-                        <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
-                            this.downKeys = {}
-                            hotkey.accelerator = ""
-                            this.updateHotkey(hotkey, idx);
-                        }} />
-                        {this.getHotkeyStatusIcon(hotkey)}
+                            } onKeyUp={(e) => { delete this.downKeys[cleanUpKeyboardKeys(e.key, e.keyCode)] }} />
+                            <input type="button" value={T.t("GENERIC_CLEAR")} onClick={() => {
+                                this.downKeys = {}
+                                hotkey.accelerator = ""
+                                this.updateHotkey(hotkey, idx);
+                            }} />
+                            {this.getHotkeyStatusIcon(hotkey)}
+                        </div>
                     </div>
-                    <select value={hotkey.type} onChange={e => {
-                        hotkey.type = e.target.value
-                        this.updateHotkey(hotkey, idx)
-                    }}>
-                        <option value="set">Set value</option>
-                        <option value="offset">Adjust value</option>
-                        <option value="cycle">Cycle list of values</option>
-                        <option value="off">Turn off display</option>
-                    </select>
-                    {this.getHotkeyInput(hotkey)}
-                    <label>Displays</label>
-                    <div className="feature-toggle-row">
-                        <input onChange={e => {
-                            hotkey.allMonitors = e.target.checked
-                            this.updateHotkey(hotkey, idx)
-                        }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
-                        <div className="feature-toggle-label">All Displays</div>
+                    
+
+                    <div className="input-row">
+                        <div className="field">
+                            <label>Hotkey Action</label>
+                            <select value={hotkey.type} onChange={e => {
+                                hotkey.type = e.target.value
+                                this.updateHotkey(hotkey, idx)
+                            }}>
+                                <option value="set">Set value</option>
+                                <option value="offset">Adjust value</option>
+                                <option value="cycle">Cycle list of values</option>
+                                <option value="off">Turn off display</option>
+                            </select>
+                        </div>
                     </div>
-                    {hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null}
+                    <div className="input-row">
+                        {this.getHotkeyInput(hotkey)}
+                    </div>
+
+                    
+                    <div className="input-row">
+                        <div className="field">
+                        <label style={{marginBottom: "8px"}}>Displays</label>
+                        <div className="feature-toggle-row">
+                            <input onChange={e => {
+                                hotkey.allMonitors = e.target.checked
+                                this.updateHotkey(hotkey, idx)
+                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
+                            <div className="feature-toggle-label">All Displays</div>
+                        </div>
+                        {hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null}
+                        </div>
+                    </div>
+
+                    <div className="input-row">
+                        <input type="button" className="button" onClick={() => this.deleteHotkey(idx)} value={"Delete hotkey"} />
+                    </div>
+
                 </div>
             )
         })
@@ -654,29 +677,32 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyInput = (hotkey, idx) => {
         if (hotkey.type === "off") {
-            return (<p>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</p>)
+            return (<label>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</label>)
         } else {
             let selectBoxValue = hotkey.target
             if (!(selectBoxValue === "brightness")) {
                 selectBoxValue = "vcp"
             }
             const selectBox = (
-                <select value={selectBoxValue} onChange={e => {
-                    const value = e.target.value
-                    if (value === "vcp") {
-                        hotkey.target = ""
-                    } else {
-                        hotkey.target = value
-                    }
-                    this.updateHotkey(hotkey, idx)
-                }}>
-                    <option value="brightness">Brightness</option>
-                    <option value="vcp">Specific VCP code</option>
-                </select>
+                <div className="field">
+                    <label>Action Type</label>
+                    <select value={selectBoxValue} onChange={e => {
+                        const value = e.target.value
+                        if (value === "vcp") {
+                            hotkey.target = ""
+                        } else {
+                            hotkey.target = value
+                        }
+                        this.updateHotkey(hotkey, idx)
+                    }}>
+                        <option value="brightness">Brightness</option>
+                        <option value="vcp">Specific VCP code</option>
+                    </select>
+                </div>
             )
 
             const singleValue = () => (
-                <div className="hotkey-value">
+                <div className="hotkey-value field">
                     <label>Value</label>
                     <input type="number" min="0" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
                         const value = e.target.value

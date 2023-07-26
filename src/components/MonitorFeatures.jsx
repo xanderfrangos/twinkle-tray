@@ -61,14 +61,20 @@ export default function MonitorFeatures(props) {
                 extraHTML.push(
                     <div className="feature-toggle-set" key={vcp} data-active={enabled}>
                         <div className="feature-toggle-row" key={vcp}>
-                            <span className="icon vfix" style={{cursor: "pointer"}} onClick={() => {props?.toggleFeature(monitor.hwid[1], vcp)}}>&#xe74d;</span>
-                            <div className="feature-toggle-label"><span>Custom ({vcp})</span></div>
+                            <input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                            <div className="feature-toggle-label"><span>Custom Feature ({vcp})</span></div>
                         </div>
                         <MonitorFeaturesSettings onChange={onChange} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
                     </div>
                 )
             }
         }
+
+        extraHTML.push(
+            <div className="input-row" key="add">
+                <p><a onClick={() => {props.onAddFeature()}} className="button">+ Add Feature</a></p>
+            </div>
+        )
 
     } else {
         extraHTML.push(<p key="none">{T.t("SETTINGS_FEATURES_UNSUPPORTED")}</p>)

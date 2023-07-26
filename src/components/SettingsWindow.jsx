@@ -122,7 +122,11 @@ export default class SettingsWindow extends PureComponent {
                 volume: 50,
                 powerState: 0
             },
-            windowHistory: []
+            windowHistory: [],
+            showAddFeatureOverlay: false,
+            addFeatureMonitor: "",
+            addFeatureValue: "",
+            addFeatureError: false
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -130,6 +134,9 @@ export default class SettingsWindow extends PureComponent {
         this.onDragEnd = this.onDragEnd.bind(this);
         this.sendSettingsTimeout = false
         this.sendSettingsValues = {}
+        this.addFeatureInputRef = React.createRef()
+        this.addFeatureOKRef = React.createRef()
+        this.addFeatureCancelRef = React.createRef()
     }
 
     sendSettingsThrottle = (newSetting = {}) => {
@@ -858,7 +865,16 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
                     const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
                     return (
-                        <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} onChange={onChange} />
+                        <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} onChange={onChange} onAddFeature={() => {
+                            this.setState({
+                                showAddFeatureOverlay: true,
+                                addFeatureMonitor: monitor.hwid[1],
+                                addFeatureValue: "",
+                                addFeatureError: false
+                            }, () => {
+                                this.addFeatureInputRef.current.focus()
+                            })
+                        }} />
                     )
 
                 })
@@ -895,7 +911,12 @@ export default class SettingsWindow extends PureComponent {
         this.setSetting("hideDisplays", hideDisplays)
     }
 
-    toggleFeature = (monitor, feature) => {
+    toggleFeature = (monitor, featureRaw) => {
+        const feature = `0x${parseInt(featureRaw).toString(16)}`
+
+        if(feature === "0x10" || feature === "0x13") return false; // Skip brightness
+        if(feature === "0x" || feature === "0xNaN") return false; // Skip invalid
+
         const newFeatures = Object.assign({}, this.state.rawSettings.monitorFeatures)
         if (!newFeatures[monitor]) newFeatures[monitor] = {};
         newFeatures[monitor][feature] = (newFeatures[monitor][feature] ? false : true);
@@ -1436,6 +1457,47 @@ export default class SettingsWindow extends PureComponent {
 
                     </div>
                 </div>
+
+                <div className="add-feature-overlay" data-show={this.state.showAddFeatureOverlay}>
+                    <div className="inner">
+                        <div className="input-row">
+                            <div className="field">
+                                <p>Enter the VCP code for the feature you would like to add to your display. Please note that Twinkle Tray does not validate if your display actually supports this VCP code. Use at your own risk.</p>
+                                <label>VCP Code</label>
+                                <input type="text" placeholder="ex. 0x62" ref={this.addFeatureInputRef} value={this.state.addFeatureValue} onChange={e => this.setState({ addFeatureValue: e.target.value})} onKeyUp={e => {
+                                    console.log(e)
+                                    if(e.which === 13 && this.state.addFeatureValue) {
+                                        // Enter
+                                        this.addFeatureOKRef.current.click()
+                                    } else if(e.which === 27) {
+                                        // Escape
+                                        this.addFeatureCancelRef.current.click()
+                                    }
+                                }} />
+                            </div>
+                        </div>
+                        <div className="input-row" style={{display: (this.state.addFeatureError ? "block" : "none")}}>
+                            <p><b>This feature is already active.</b></p>
+                        </div>
+                        <div className="input-row flex-end">
+                            <input type="button" ref={this.addFeatureCancelRef} value={"Cancel"} className="button" onClick={()=> this.setState({showAddFeatureOverlay: false})} />
+                            <input type="button" ref={this.addFeatureOKRef} value={"OK"} className="button" onClick={() => {
+                                let isActive = false
+                                try {
+                                    isActive = this.state.rawSettings.monitorFeatures[this.state.addFeatureMonitor][this.state.addFeatureValue];
+                                } catch(e) { }
+                                if(isActive) {
+                                    this.setState({ addFeatureError: true })
+                                } else {
+                                    this.setState({ showAddFeatureOverlay: false })
+                                    this.toggleFeature(this.state.addFeatureMonitor, this.state.addFeatureValue)
+                                }
+                                
+                            }}/>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         );

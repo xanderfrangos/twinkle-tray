@@ -507,6 +507,26 @@ function readSettings(doProcessSettings = true) {
     } catch(e) {
       console.log("Couldn't upgrade Adjustment Times", e)
     }
+    try {
+      // Upgrade Monitor Features for v1.16.0
+      const newMonitorFeatures = {}
+      for(const monitorID in settings.monitorFeatures) {
+        newMonitorFeatures[monitorID] = {}
+        for(const featureName in settings.monitorFeatures[monitorID]) {
+          if(featureName === "contrast") {
+            newMonitorFeatures[monitorID]["0x12"] = settings.monitorFeatures[monitorID][featureName]
+          } else if(featureName === "volume") {
+            newMonitorFeatures[monitorID]["0x62"] = settings.monitorFeatures[monitorID][featureName]
+          } else if(featureName === "powerState") {
+            newMonitorFeatures[monitorID]["0xD6"] = settings.monitorFeatures[monitorID][featureName]
+          }
+        }
+      }
+      settings.monitorFeatures = newMonitorFeatures
+      console.log("Upgraded Monitor Features to v1.16.0 format!")
+    } catch(e) {
+      console.log("Couldn't upgrade Monitor Features", e)
+    }
   }
 
 

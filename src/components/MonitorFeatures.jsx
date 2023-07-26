@@ -108,6 +108,12 @@ function MonitorFeaturesSettings(props) {
       const onChangeHandler = (settingName, value) => {
         try {
             updateSettings({[settingName]: value})
+            if(!window.settings.monitorFeaturesSettings[hwid]) {
+                window.settings.monitorFeaturesSettings[hwid] = {}
+            }
+            if(!window.settings.monitorFeaturesSettings[hwid][vcp]) {
+                window.settings.monitorFeaturesSettings[hwid][vcp] = {}
+            }
             window.settings.monitorFeaturesSettings[hwid][vcp][settingName] = value
             if(onChange) onChange(settingName, value);
         } catch(e) {

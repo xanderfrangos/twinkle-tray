@@ -549,6 +549,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
   let doRestartPanel = false
   let rebuildTray = false
+  let shouldRefreshMonitors = false
 
   try {
 
@@ -582,6 +583,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     }
 
     if (newSettings.monitorFeatures !== undefined) {
+      shouldRefreshMonitors = true
       try {
         for(const monitorID in newSettings.monitorFeatures) {
           for(const vcp in newSettings.monitorFeatures[monitorID]) {
@@ -701,6 +703,9 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   })
 
   if (sendUpdate) sendToAllWindows('settings-updated', settings);
+  if (shouldRefreshMonitors) {
+    refreshMonitors(true, true)
+  }
 }
 
 // Save all known displays to disk for future use

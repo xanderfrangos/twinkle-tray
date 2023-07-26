@@ -1356,8 +1356,8 @@ export default class SettingsWindow extends PureComponent {
                         </div>
 
                         <div className="pageSection" data-active={this.isSection("hotkeys")}>
-                            <div className="sectionTitle">App Profiles</div>
-                            <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app.</p>
+                            <div className="sectionTitle">Profiles</div>
+                            <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app. You can also add profiles to the right-click menu in the system tray to quickly change the brightness to pre-defined profiles.</p>
                             <div className="hotkey-profiles">
                                 {this.state.rawSettings?.profiles?.map((profile, idx) => <AppProfile key={`${idx}__${profile.name}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
                                     profile[key] = value
@@ -1546,7 +1546,7 @@ function AppProfile(props) {
             <label>App path (optional)</label>
             <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE here.</p>
             <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)}></input>
-            <label>Overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
+            <label>Override overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
 Aggressive: Applies the overlay in a way that will display over borderless fullscreen games. This will break exlusive fullscreen games.">i</sup></label>
             <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
                 <option value="normal">Normal</option>
@@ -1555,14 +1555,17 @@ Aggressive: Applies the overlay in a way that will display over borderless fulls
             </select>
 
             <div className="feature-toggle-row">
-                <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-                <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
-            </div>
-
-            <div className="feature-toggle-row">
                 <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
                 <div className="feature-toggle-label"><span>Set brightness when active</span></div>
             </div>
+        
+            {( profile.setBrightness ? (
+                <div className="feature-toggle-row">
+                    <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+                    <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
+                </div>
+            ) : null )}
+
             {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
             <br />
             <p>

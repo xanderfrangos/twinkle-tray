@@ -682,6 +682,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
+    if (newSettings.profiles) {
+      rebuildTray = true
+    }
+
     if (newSettings.branch) {
       lastCheck = false
       settings.dismissedUpdate = false
@@ -2684,6 +2688,7 @@ function setTrayMenu() {
   const contextMenu = Menu.buildFromTemplate([
     getTimeAdjustmentsMenuItem(),
     getDetectIdleMenuItem(),
+    getProfilesMenuItem(),
     getPausableSeparatorMenuItem(),
     { label: T.t("GENERIC_REFRESH_DISPLAYS"), type: 'normal', click: () => refreshMonitors(true, true) },
     { label: T.t("GENERIC_SETTINGS"), type: 'normal', click: createSettings },
@@ -2712,6 +2717,24 @@ function getDetectIdleMenuItem() {
   if (settings.detectIdleTimeEnabled) {
     return { label: T.t("GENERIC_PAUSE_IDLE"), type: 'checkbox', click: (e) => tempSettings.pauseIdleDetection = e.checked }
   }
+  return { label: "", visible: false }
+}
+
+function getProfilesMenuItem() {
+  try {
+    if(settings.profiles?.length) {
+      const profiles = []
+      for(const profile of settings.profiles) {
+        if(profile.showInMenu && profile.setBrightness) {
+          profiles.push({ label: profile.name, type: 'normal', click: (e) => applyProfileBrightness(profile) })
+        }
+      }
+      if(profiles.length) {
+        const submenu = Menu.buildFromTemplate(profiles)
+        return { label: "Profiles", submenu: submenu }
+      }
+    }
+  } catch(e) { }
   return { label: "", visible: false }
 }
 

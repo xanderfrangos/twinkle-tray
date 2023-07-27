@@ -654,9 +654,8 @@ export default class SettingsWindow extends PureComponent {
                             </select>
                         </div>
                     </div>
-                    <div className="input-row">
-                        {this.getHotkeyInput(hotkey)}
-                    </div>
+
+                    {this.getHotkeyInput(hotkey)}
 
                     
                     <div className="input-row">
@@ -684,10 +683,10 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyInput = (hotkey, idx) => {
         if (hotkey.type === "off") {
-            return (<label>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</label>)
+            return (<div className="input-row"><label>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</label></div>)
         } else {
             let selectBoxValue = hotkey.target
-            if (!(selectBoxValue === "brightness")) {
+            if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
                 selectBoxValue = "vcp"
             }
             const selectBox = (
@@ -703,58 +702,69 @@ export default class SettingsWindow extends PureComponent {
                         this.updateHotkey(hotkey, idx)
                     }}>
                         <option value="brightness">Brightness</option>
+                        <option value="contrast">Contrast (if supported)</option>
+                        <option value="volume">Volume (if supported)</option>
                         <option value="vcp">Specific VCP code</option>
                     </select>
                 </div>
             )
 
             const singleValue = () => (
-                <div className="hotkey-value field">
-                    <label>Value</label>
-                    <input type="number" min="0" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
-                        const value = e.target.value
-                        hotkey.value = value ?? 0
-                        this.updateHotkey(hotkey, idx)
-                    }} />
+                <div className="input-row">
+                    <div className="hotkey-value field">
+                        <label>Value</label>
+                        <input type="number" min="0" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
+                            const value = e.target.value
+                            hotkey.value = value ?? 0
+                            this.updateHotkey(hotkey, idx)
+                        }} />
+                    </div>
                 </div>
             )
 
             const listOfValues = () => (
-                <div className="hotkey-values-list">
-                    <label>Values</label>
-                    {hotkey.values?.map((value, idx2) => {
-                        return (
-                            <div className="hotkey-value">
-                                <input type="number" min="0" max="65535" value={value ?? 0} placeholder={`Enter a number`}
-                                    onChange={e => {
-                                        const value = e.target.value
-                                        hotkey.values[idx2] = value ?? 0
-                                        this.updateHotkey(hotkey, idx)
-                                    }} />
-                                {idx2 ? (
-                                    <a className="button" onClick={() => {
-                                        hotkey.values.splice(idx2, 1)
-                                        this.updateHotkey(hotkey, idx)
-                                    }}>Remove</a>
-                                ) : null}
-                            </div>
-                        )
-                    })}
-                    <p><a className="button" onClick={() => {
-                        hotkey.values.push([0])
-                        this.updateHotkey(hotkey, idx)
-                    }}>+ Add Value</a></p>
+                <div className="input-row">
+                    <div className="hotkey-values-list">
+                        <label>Values</label>
+                        {hotkey.values?.map((value, idx2) => {
+                            return (
+                                <div className="hotkey-value">
+                                    <input type="number" min="0" max="65535" value={value ?? 0} placeholder={`Enter a number`}
+                                        onChange={e => {
+                                            const value = e.target.value
+                                            hotkey.values[idx2] = value ?? 0
+                                            this.updateHotkey(hotkey, idx)
+                                        }} />
+                                    {idx2 ? (
+                                        <input type="button" className="button" onClick={() => {
+                                            hotkey.values.splice(idx2, 1)
+                                            this.updateHotkey(hotkey, idx)
+                                        }} value={"Remove"} />
+                                    ) : null}
+                                </div>
+                            )
+                        })}
+                        <p><a className="button" onClick={() => {
+                            hotkey.values.push([0])
+                            this.updateHotkey(hotkey, idx)
+                        }}>+ Add Value</a></p>
+                    </div>
                 </div>
             )
 
             return (
                 <>
+                <div className="input-row">
                     {selectBox}
-                    <input style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }} value={hotkey.target} placeholder={`Enter a VCP code (Ex. 16 or 0x10)`} onChange={e => {
-                        hotkey.target = e.target.value
-                        this.updateHotkey(hotkey, idx)
-                    }} />
-                    {hotkey.type === "cycle" ? listOfValues() : singleValue()}
+                        <div className="field" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
+                            <label>VCP Code</label>
+                            <input value={hotkey.target} type="text" placeholder={`Enter a VCP code (Ex. 16 or 0x10)`} onChange={e => {
+                            hotkey.target = e.target.value
+                            this.updateHotkey(hotkey, idx)
+                        }} />
+                    </div>
+                </div>
+                {hotkey.type === "cycle" ? listOfValues() : singleValue()}
                 </>
             )
         }

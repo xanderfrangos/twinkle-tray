@@ -885,6 +885,12 @@ async function doHotkey(hotkey) {
               let currentValue = 0
               if (hotkey.target === "brightness") {
                 currentValue = monitor.brightness
+              } else if (hotkey.target === "contrast") {
+                currentValue = await getVCP(monitor, parseInt("0x12"))
+              } else if (hotkey.target === "volume") {
+                currentValue = await getVCP(monitor, parseInt("0x62"))
+              } else if (hotkey.target === "powerState") {
+                currentValue = await getVCP(monitor, parseInt("0xD6"))
               } else {
                 // Get VCP
                 currentValue = await getVCP(monitor, parseInt(hotkey.target))

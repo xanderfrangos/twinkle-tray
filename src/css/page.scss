@@ -688,6 +688,22 @@ html body[data-is-win11="true"] {
 }
 
 
+
+.hotkey-values-list {
+    
+    label {
+        margin-bottom: 8px;
+    }
+    
+    input[type="button"] {
+        margin-left: 8px;
+    }
+    .hotkey-value {
+        margin-bottom: 8px;
+    }
+}
+
+
 // Sidebar
 #sidebar {
     position: relative;

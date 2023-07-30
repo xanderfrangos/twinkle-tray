@@ -529,6 +529,15 @@ function readSettings(doProcessSettings = true) {
     }
   }
 
+  // Fix missing UUIDs for app profiles
+  if(settings.profiles?.length) {
+    for(const profile of settings.profiles) {
+      if(!profile.uuid) {
+        profile.uuid = uuid()
+      }
+    }
+  }
+
 
   if (doProcessSettings) processSettings({ isReadSettings: true });
 }

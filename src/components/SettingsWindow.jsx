@@ -1369,11 +1369,18 @@ export default class SettingsWindow extends PureComponent {
                             <div className="sectionTitle">Profiles</div>
                             <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app. You can also add profiles to the right-click menu in the system tray to quickly change the brightness to pre-defined profiles.</p>
                             <div className="hotkey-profiles">
-                                {this.state.rawSettings?.profiles?.map((profile, idx) => <AppProfile key={`${idx}__${profile.name}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
+                                {this.state.rawSettings?.profiles?.map((profile, idx) => <AppProfile key={`${idx}__${profile.uuid}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
                                     profile[key] = value
+                                    sendSettings({ profiles: this.state.rawSettings?.profiles })
+                                    this.forceUpdate()
+                                }}
+                                onDelete={
+                                    () => {
+                                    this.state.rawSettings?.profiles.splice(idx)
                                     sendSettingsImmediate({ profiles: this.state.rawSettings?.profiles })
                                     this.forceUpdate()
-                                }} />)}
+                                    }
+                                } />)}
                                 <hr />
                                 <div className="add-new button" onClick={() => addNewProfile(this.state)}>+ New Profile</div>
                             </div>
@@ -1519,6 +1526,7 @@ function addNewProfile(state) {
     const id = uuid()
     const profile = {
         id,
+        uuid: uuid(),
         name: "",
         overlayType: "normal",
         setBrightness: false,

@@ -124,9 +124,9 @@
     "extraResources": [
       "node_modules\\wmi-client\\lib\\*",
       "node_modules\\wmi-client\\scripts\\*",
-      "node_modules\\wmi-client\\lib\\index.js",
-      "node_modules\\wmi-client\\lib\\package.json",
-      "node_modules\\wmi-client\\lib\\.jscsrc"
+      "node_modules\\wmi-client\\index.js",
+      "node_modules\\wmi-client\\package.json",
+      "node_modules\\wmi-client\\.jscsrc"
     ],
     "asar": true,
     "asarUnpack": [

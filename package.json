@@ -109,7 +109,6 @@
       "!node_modules/iconv-lite",
       "!node_modules/axios",
       "!node_modules/cacache",
-      "!node_modules/tr46",
       "!node_modules/path-scurry",
       "!node_modules/tar",
       "!node_modules/@isaacs",

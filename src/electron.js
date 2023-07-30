@@ -918,6 +918,12 @@ async function doHotkey(hotkey) {
               let currentCycleValue = 0
               if (hotkey.target === "brightness") {
                 currentCycleValue = monitor.brightness
+              } else if (hotkey.target === "contrast") {
+                currentCycleValue = await getVCP(monitor, parseInt("0x12"))
+              } else if (hotkey.target === "volume") {
+                currentCycleValue = await getVCP(monitor, parseInt("0x62"))
+              } else if (hotkey.target === "powerState") {
+                currentCycleValue = await getVCP(monitor, parseInt("0xD6"))
               } else {
                 // Get VCP
                 currentCycleValue = await getVCP(monitor, parseInt(hotkey.target))
@@ -988,10 +994,18 @@ async function doHotkey(hotkey) {
               }
               showOverlay = true
             } else {
+              let vcpCode = hotkey.target
+              if(hotkey.target === "contrast") {
+                vcpCode = "0x12"
+              } else if(hotkey.target === "volume") {
+                vcpCode = "0x62"
+              } else if(hotkey.target === "powerState") {
+                vcpCode = "0xD2"
+              } 
               monitorsThread.send({
                 type: "vcp",
                 monitor: monitor.hwid.join("#"),
-                code: parseInt(hotkey.target),
+                code: parseInt(vcpCode),
                 value: parseInt(value)
               })
             }

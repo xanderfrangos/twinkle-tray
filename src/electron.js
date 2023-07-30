@@ -843,23 +843,27 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
 
 
 function applyHotkeys(monitorList = monitors) {
-  if (settings.hotkeys !== undefined) {
-    globalShortcut.unregisterAll()
-    for (const hotkey of settings.hotkeys) {
-      try {
-        // Only apply if found/valid
-        if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || Object.keys(hotkey.monitors)?.length) {
-          hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
-            doHotkey(hotkey)
-          })
+  try {
+    if (settings.hotkeys !== undefined && settings.hotkeys?.length) {
+      globalShortcut.unregisterAll()
+      for (const hotkey of settings.hotkeys) {
+        try {
+          // Only apply if found/valid
+          if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || Object.keys(hotkey.monitors)?.length) {
+            hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
+              doHotkey(hotkey)
+            })
+          }
+        } catch (e) {
+          // Couldn't register hotkey
         }
-      } catch (e) {
-        // Couldn't register hotkey
+  
       }
-
     }
-    sendToAllWindows('settings-updated', settings)
+  } catch(e) {
+    console.log("Couldn't apply hotkeys:", e)
   }
+  sendToAllWindows('settings-updated', settings)
 }
 
 let hotkeyOverlayTimeout

@@ -922,7 +922,7 @@ export default class SettingsWindow extends PureComponent {
     }
 
     toggleFeature = (monitor, featureRaw) => {
-        const feature = `0x${parseInt(featureRaw).toString(16)}`
+        const feature = `0x${parseInt(featureRaw).toString(16).toUpperCase()}`
 
         if(feature === "0x10" || feature === "0x13") return false; // Skip brightness
         if(feature === "0x" || feature === "0xNaN") return false; // Skip invalid
@@ -1500,14 +1500,15 @@ export default class SettingsWindow extends PureComponent {
                             <input type="button" ref={this.addFeatureCancelRef} value={"Cancel"} className="button" onClick={()=> this.setState({showAddFeatureOverlay: false})} />
                             <input type="button" ref={this.addFeatureOKRef} value={"OK"} className="button" onClick={() => {
                                 let isActive = false
+                                const vcp = this.state.addFeatureValue.toUpperCase()
                                 try {
-                                    isActive = this.state.rawSettings.monitorFeatures[this.state.addFeatureMonitor][this.state.addFeatureValue];
+                                    isActive = this.state.rawSettings.monitorFeatures[this.state.addFeatureMonitor][vcp];
                                 } catch(e) { }
                                 if(isActive) {
                                     this.setState({ addFeatureError: true })
                                 } else {
                                     this.setState({ showAddFeatureOverlay: false })
-                                    this.toggleFeature(this.state.addFeatureMonitor, this.state.addFeatureValue)
+                                    this.toggleFeature(this.state.addFeatureMonitor, vcp)
                                 }
                                 
                             }}/>

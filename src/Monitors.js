@@ -364,31 +364,32 @@ getMonitorsWin32 = () => {
         try {
             const timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 4000)
             let displays = []
-            let config = await w32disp.queryDisplayConfig()
+            const displayConfig = await w32disp.extractDisplayConfig()
 
             // Filter results
-            for (const display of config.nameArray) {
-                if (display.monitorDevicePath) {
-                    // Must also have a valid mode
-                    let found = config.modeArray.find(mode => mode.value.id === display.id)
-                    // If mode found, add to list
-                    if (found) displays.push(display);
+            for (const display of displayConfig) {
+                // Must be an active display
+                if(display.inUse) {
+                    displays.push(display)
                 }
             }
 
             // Prepare results
             for (const monitor of displays) {
-                const hwid = monitor.monitorDevicePath.split("#")
+                const hwid = monitor.devicePath.split("#")
                 hwid[2] = hwid[2].split("_")[0]
 
                 const win32Info = {
                     id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
                     key: hwid[2],
                     connector: monitor.outputTechnology,
-                    hwid: hwid
+                    hwid: hwid,
+                    sourceID: monitor.sourceConfigId?.id,
+                    scaling: monitor.scaling,
+                    bounds: monitor.sourceMode
                 }
-                if (monitor.monitorFriendlyDeviceName?.length > 0) {
-                    win32Info.name = monitor.monitorFriendlyDeviceName;
+                if (monitor.displayName?.length > 0) {
+                    win32Info.name = monitor.displayName;
                 }
 
                 foundDisplays[hwid[2]] = win32Info

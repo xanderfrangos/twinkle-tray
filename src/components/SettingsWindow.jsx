@@ -713,7 +713,7 @@ export default class SettingsWindow extends PureComponent {
                 <div className="input-row">
                     <div className="hotkey-value field">
                         <label>Value</label>
-                        <input type="number" min="0" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
+                        <input type="number" min="-65535" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
                             const value = e.target.value
                             hotkey.value = value ?? 0
                             this.updateHotkey(hotkey, idx)
@@ -729,7 +729,7 @@ export default class SettingsWindow extends PureComponent {
                         {hotkey.values?.map((value, idx2) => {
                             return (
                                 <div className="hotkey-value">
-                                    <input type="number" min="0" max="65535" value={value ?? 0} placeholder={`Enter a number`}
+                                    <input type="number" min="-65535" max="65535" value={value ?? 0} placeholder={`Enter a number`}
                                         onChange={e => {
                                             const value = e.target.value
                                             hotkey.values[idx2] = value ?? 0

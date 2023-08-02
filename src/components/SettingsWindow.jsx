@@ -614,6 +614,7 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyList = () => {
         return this.state.hotkeys?.map((hotkey, idx) => {
+            const showDisplaysList = (hotkey.type != "off" && hotkey.type != "refresh" && !hotkey.allMonitors)
             return (
                 <div key={hotkey.id} className="hotkey-item">
                     <div>
@@ -650,7 +651,8 @@ export default class SettingsWindow extends PureComponent {
                                 <option value="set">Set value</option>
                                 <option value="offset">Adjust value</option>
                                 <option value="cycle">Cycle list of values</option>
-                                <option value="off">Turn off display</option>
+                                <option value="off">Turn off displays</option>
+                                <option value="refresh">Refresh displays</option>
                             </select>
                         </div>
                     </div>
@@ -658,7 +660,7 @@ export default class SettingsWindow extends PureComponent {
                     {this.getHotkeyInput(hotkey)}
 
                     
-                    <div className="input-row">
+                    <div className="input-row" style={{display: (showDisplaysList ? "block" : "none")}}>
                         <div className="field">
                         <label style={{marginBottom: "8px"}}>Displays</label>
                         <div className="feature-toggle-row">
@@ -668,7 +670,7 @@ export default class SettingsWindow extends PureComponent {
                             }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
                             <div className="feature-toggle-label">All Displays</div>
                         </div>
-                        {hotkey.type != "off" && !hotkey.allMonitors ? this.getHotkeyMonitors(hotkey, idx) : null}
+                        { this.getHotkeyMonitors(hotkey, idx) }
                         </div>
                     </div>
 
@@ -684,6 +686,8 @@ export default class SettingsWindow extends PureComponent {
     getHotkeyInput = (hotkey, idx) => {
         if (hotkey.type === "off") {
             return (<div className="input-row"><label>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</label></div>)
+        } else if (hotkey.type === "refresh") {
+            return null
         } else {
             let selectBoxValue = hotkey.target
             if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {

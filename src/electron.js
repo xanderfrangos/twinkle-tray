@@ -849,7 +849,7 @@ function applyHotkeys(monitorList = monitors) {
       for (const hotkey of settings.hotkeys) {
         try {
           // Only apply if found/valid
-          if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || Object.keys(hotkey.monitors)?.length) {
+          if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || hotkey.type == "refresh" || Object.keys(hotkey.monitors)?.length) {
             hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
               doHotkey(hotkey)
             })
@@ -883,13 +883,16 @@ async function doHotkey(hotkey) {
     try {
 
       // Wait for refresh if user hasn't done so recently
-      if (lastRefreshMonitors < Date.now() - 10000) {
+      if (hotkey.type !== "refresh" && lastRefreshMonitors < Date.now() - 10000) {
         await refreshMonitors()
       }
 
       if (hotkey.type === "off") {
         showOverlay = false
         sleepDisplays(settings.sleepAction)
+      } else if(hotkey.type === "refresh") {
+        showOverlay = false
+        await refreshMonitors(true, true)
       } else if (hotkey.type === "set" || hotkey.type === "offset" || hotkey.type === "cycle") {
 
         const determineHotkeyOutputValue = async monitor => {

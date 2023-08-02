@@ -2189,7 +2189,7 @@ function createPanel(toggleOnLoad = false) {
 function setAlwaysOnTop(onTop = true) {
   if (!mainWindow) return false;
   if (onTop) {
-    mainWindow.setAlwaysOnTop(true, (currentProfile?.overlayType === "disabled" ? 'screen-saver' : 'modal-panel'))
+    mainWindow.setAlwaysOnTop(true, (currentProfile?.overlayType === "aggressive" ? 'screen-saver' : 'modal-panel'))
   } else {
     mainWindow.setAlwaysOnTop(false)
   }

@@ -1002,12 +1002,8 @@ async function doHotkey(hotkey) {
               } else if(hotkey.target === "powerState") {
                 vcpCode = "0xD2"
               } 
-              monitorsThread.send({
-                type: "vcp",
-                monitor: monitor.hwid.join("#"),
-                code: parseInt(vcpCode),
-                value: parseInt(value)
-              })
+              updateBrightness(monitor.id, parseInt(value), false, parseInt(vcpCode))
+              sendToAllWindows('monitors-updated', monitors);
             }
           }
         }
@@ -1703,14 +1699,29 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
 
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
 
-    if (monitor.type == "ddcci" && vcp === "brightness") {
-      monitor.brightness = level
-      monitor.brightnessRaw = normalized
-      monitorsThread.send({
-        type: "brightness",
-        brightness: normalized * ((monitor.brightnessMax || 100) / 100),
-        id: monitor.id
-      })
+    if (monitor.type == "ddcci") {
+      if (vcp === "brightness") {
+        monitor.brightness = level
+        monitor.brightnessRaw = normalized
+        monitorsThread.send({
+          type: "brightness",
+          brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+          id: monitor.id
+        })
+      } else {
+        const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
+        try {
+          monitor.features[vcpString][0] = parseInt(level)
+        } catch(e) {
+          console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`)
+        }
+        monitorsThread.send({
+          type: "vcp",
+          monitor: monitor.hwid.join("#"),
+          code: parseInt(vcp),
+          value: parseInt(level)
+        })
+      }
 
       // Apply linked DDC/CI features
       const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]

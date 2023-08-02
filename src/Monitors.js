@@ -657,6 +657,11 @@ function setVCP(monitor, code, value) {
         if (vcpCache[monitor]?.["vcp_" + code]) {
             vcpCache[monitor]["vcp_" + code][0] = (value * 1)
         }
+        const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+        const hwid = monitor.split("#")
+        if(monitors[hwid[2]]?.features?.[vcpString]) {
+            monitors[hwid[2]].features[vcpString][0] = parseInt(value)
+        }
         return result
     } catch (e) {
         return false

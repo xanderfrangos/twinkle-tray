@@ -2189,7 +2189,12 @@ function createPanel(toggleOnLoad = false) {
 function setAlwaysOnTop(onTop = true) {
   if (!mainWindow) return false;
   if (onTop) {
-    mainWindow.setAlwaysOnTop(true, (currentProfile?.overlayType === "aggressive" ? 'screen-saver' : 'modal-panel'))
+    if(currentProfile?.overlayType === "aggressive") {
+      mainWindow.setAlwaysOnTop(true, 'screen-saver')
+      settingsWindow?.minimize() // Workaround for weird bug when settings window is open
+    } else {
+      mainWindow.setAlwaysOnTop(true, 'modal-panel')
+    }
   } else {
     mainWindow.setAlwaysOnTop(false)
   }

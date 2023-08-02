@@ -625,10 +625,11 @@ let vcpCache = {}
 function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     try {
         const hwid = monitor.split("#")
-        const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[code]
+        const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+        const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
-        if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + code]) return vcpCache[monitor]["vcp_" + code];
+        if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return vcpCache[monitor]["vcp_" + vcpString];
 
         const vcpResult = checkVCP(monitor, code)
         return vcpResult
@@ -641,9 +642,10 @@ function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
 function checkVCP(monitor, code, skipCacheWrite = false) {
     try {
         let result = ddcci._getVCP(monitor, code)
+        const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
-            vcpCache[monitor]["vcp_" + code] = result
+            vcpCache[monitor]["vcp_" + vcpString] = result
         }
         return result
     } catch (e) {
@@ -653,11 +655,12 @@ function checkVCP(monitor, code, skipCacheWrite = false) {
 
 function setVCP(monitor, code, value) {
     try {
-        let result = ddcci._setVCP(monitor, code, (value * 1))
-        if (vcpCache[monitor]?.["vcp_" + code]) {
-            vcpCache[monitor]["vcp_" + code][0] = (value * 1)
-        }
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+        let result = ddcci._setVCP(monitor, code, (value * 1))
+        if (vcpCache[monitor]?.["vcp_" + vcpString]) {
+            vcpCache[monitor]["vcp_" + vcpString][0] = (value * 1)
+        }
+        
         const hwid = monitor.split("#")
         if(monitors[hwid[2]]?.features?.[vcpString]) {
             monitors[hwid[2]].features[vcpString][0] = parseInt(value)

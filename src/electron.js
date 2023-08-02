@@ -2191,7 +2191,9 @@ function setAlwaysOnTop(onTop = true) {
   if (onTop) {
     if(currentProfile?.overlayType === "aggressive") {
       mainWindow.setAlwaysOnTop(true, 'screen-saver')
-      settingsWindow?.minimize() // Workaround for weird bug when settings window is open
+      if(settingsWindow?.isMinimized() === false) {
+        settingsWindow?.minimize() // Workaround for weird bug when settings window is open
+      }
     } else {
       mainWindow.setAlwaysOnTop(true, 'modal-panel')
     }

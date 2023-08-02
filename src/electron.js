@@ -2403,11 +2403,12 @@ function windowMatchesProfile(window) {
   let foundProfile
   if (settings.profiles?.length > 0) {
     for (const profile of settings.profiles) {
-      if (window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
+      if (profile.path?.length > 0 && window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
         foundProfile = profile
       }
     }
   }
+  if(foundProfile) console.log(`Matched window to profile ${foundProfile.name}`);
   return foundProfile
 }
 

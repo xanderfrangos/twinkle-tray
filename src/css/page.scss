@@ -414,6 +414,16 @@ select {
         margin-top: -5px;
         margin-left: 8px;
     }
+
+    &[data-textSide="left"] {
+        input {
+            order: 2;
+        }
+        .text {
+            margin-left: 0;
+            margin-right: 8px;
+        }
+    }
 }
 
 
@@ -794,7 +804,7 @@ html body[data-is-win11="true"] {
         }
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 880px) {
         width: $sidebarWidthSmall;
 
         .item {

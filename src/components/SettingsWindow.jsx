@@ -1376,7 +1376,7 @@ export default class SettingsWindow extends PureComponent {
                                 }}
                                 onDelete={
                                     () => {
-                                    this.state.rawSettings?.profiles.splice(idx)
+                                    this.state.rawSettings?.profiles.splice(idx, 1)
                                     sendSettingsImmediate({ profiles: this.state.rawSettings?.profiles })
                                     this.forceUpdate()
                                     }

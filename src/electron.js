@@ -1711,6 +1711,17 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           brightness: normalized * ((monitor.brightnessMax || 100) / 100),
           id: monitor.id
         })
+
+        // Apply linked DDC/CI features
+        const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+        if(featuresSettings) {
+          // For each feature, check for linked value
+          for(const vcp in monitor.features) {
+            if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
+              updateBrightness(index, newLevel, useCap, vcp, clearTransition)
+            }
+          }
+        }
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {
@@ -1724,17 +1735,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           code: parseInt(vcp),
           value: parseInt(level)
         })
-      }
-
-      // Apply linked DDC/CI features
-      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-      if(featuresSettings) {
-        // For each feature, check for linked value
-        for(const vcp in monitor.features) {
-          if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
-            updateBrightness(index, newLevel, useCap, vcp, clearTransition)
-          }
-        }
       }
 
     } else if (monitor.type == "ddcci") {

@@ -318,6 +318,12 @@ label {
     }
 }
 
+.monitorItem-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
 .adjustmentTimes {
     padding-top: 5px;
 
@@ -429,6 +435,7 @@ select {
 
 .reorderList {
     max-width: 360px;
+    width: 100%;
     border: 1px solid var(--window-border);
 
     .sectionSubtitle {
@@ -594,12 +601,7 @@ select {
     width: calc(100% - 2px);
 }
 .feature-toggle-settings {
-    padding: 10px 0 10px 30px;
-    animation: featureToggleSettingsIn 0.3s;
-    @keyframes featureToggleSettingsIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
+    padding: 0;
 }
 .feature-toggle-label {
     padding-left: 15px;
@@ -697,7 +699,9 @@ html body[data-is-win11="true"] {
     }
 }
 
-
+.hotkey-combo-input {
+    margin: -10px 0 -12px;
+}
 
 .hotkey-values-list {
     
@@ -988,17 +992,21 @@ body[data-is-win11="true"] {
         border-color: var(--input-border);
         border-width: 1.5px;
         border-radius: 5px;
+        max-width: none;
     }
     .pageSection {
         padding-bottom: 40px;
         max-width: 800px;
-        background: var(--page-section-bg);
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+        &.is-panel {
+            background: var(--page-section-bg);
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
     }
-    .pageSection[data-active=true] {
+    .settings-page {
         animation: pageSectionIn 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
         @keyframes pageSectionIn {
             0% { opacity: 0; transform: translateY(90px); }

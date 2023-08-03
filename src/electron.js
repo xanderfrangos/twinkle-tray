@@ -2988,7 +2988,7 @@ function createSettings() {
     width: (width >= 1200 ? 1024 : 600),
     height: (height >= 768 ? 720 : 500),
     minHeight: 450,
-    minWidth: 400,
+    minWidth: 560,
     show: false,
     maximizable: true,
     resizable: true,

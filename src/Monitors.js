@@ -5,7 +5,7 @@ const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 
-process.on('message', (data) => {
+process.on('message', async (data) => {
     try {
         if (data.type === "refreshMonitors") {
             refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
@@ -36,7 +36,7 @@ process.on('message', (data) => {
             canUseWmiBridge = true
         } else if (data.type === "getVCP") {
             getDDCCI()
-            const vcp = checkVCP(data.monitor, data.code)
+            const vcp = await checkVCP(data.monitor, data.code)
             process.send({
                 type: `getVCP::${data.monitor}::${data.code}`,
                 monitor: data.monitor,
@@ -410,12 +410,13 @@ getFeaturesDDC = () => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 14000)
+            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 80000)
             getDDCCI()
             ddcci._refresh()
             const ddcciMonitors = ddcci.getMonitorList()
 
             for (let monitor of ddcciMonitors) {
+                const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", monitor); reject({}) }, 15000)
                 const hwid = monitor.split("#")
                 let features = []
 
@@ -428,6 +429,7 @@ getFeaturesDDC = () => {
                     hwid,
                     features
                 }
+                clearTimeout(featureTimeout)
             }
             clearTimeout(timeout)
         } catch (e) {
@@ -442,18 +444,13 @@ getFeaturesDDC = () => {
 checkMonitorFeatures = async (monitor) => {
     return new Promise(async (resolve, reject) => {
         const features = {}
-        const featureTestTime = 100
         try {
             // This part is flaky, so we'll do it slowly
-            features["0x10"] = checkVCPIfEnabled(monitor, 0x10, "luminance")
-            await wait(featureTestTime)
-            features["0x13"] = checkVCPIfEnabled(monitor, 0x13, "brightness")
-            await wait(featureTestTime)
-            features["0x12"] = checkVCPIfEnabled(monitor, 0x12, "contrast")
-            await wait(featureTestTime)
-            features["0xD6"] = checkVCPIfEnabled(monitor, 0xD6, "powerState")
-            await wait(featureTestTime)
-            features["0x62"] = checkVCPIfEnabled(monitor, 0x62, "volume")
+            features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance")
+            features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness")
+            features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast")
+            features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState")
+            features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume")
 
             // Get custom DDC/CI features
             const hwid = monitor.split("#")
@@ -464,8 +461,7 @@ checkMonitorFeatures = async (monitor) => {
                         continue; // Skip if built-in feature
                     }
                     if(settingsFeatures[vcp]) {
-                        await wait(featureTestTime)
-                        features[vcp] = checkVCPIfEnabled(monitor, parseInt(vcp), vcp)
+                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp)
                     }
                 }
             }
@@ -520,7 +516,7 @@ getBrightnessWMI = () => {
 }
 
 getBrightnessDDC = (monitorObj) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         let monitor = Object.assign({}, monitorObj)
 
         try {
@@ -535,7 +531,7 @@ getBrightnessDDC = (monitorObj) => {
             }
 
             // Determine / get brightness
-            let brightnessValues = checkVCP(ddcciPath, monitor.brightnessType)
+            let brightnessValues = await checkVCP(ddcciPath, monitor.brightnessType)
 
             // If something goes wrong and there are previous values, use those
             if (!brightnessValues) {
@@ -622,7 +618,7 @@ function setBrightness(brightness, id) {
 }
 
 let vcpCache = {}
-function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
+async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     try {
         const hwid = monitor.split("#")
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
@@ -631,7 +627,7 @@ function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
         // If we previously saw that a feature was supported, we shouldn't have to check again.
         if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return vcpCache[monitor]["vcp_" + vcpString];
 
-        const vcpResult = checkVCP(monitor, code)
+        const vcpResult = await checkVCP(monitor, code)
         return vcpResult
     } catch (e) {
         console.log(e)
@@ -639,7 +635,7 @@ function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     }
 }
 
-function checkVCP(monitor, code, skipCacheWrite = false) {
+async function checkVCP(monitor, code, skipCacheWrite = false) {
     try {
         let result = ddcci._getVCP(monitor, code)
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
@@ -647,6 +643,7 @@ function checkVCP(monitor, code, skipCacheWrite = false) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
         }
+        await wait(200)
         return result
     } catch (e) {
         return false

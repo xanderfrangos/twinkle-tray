@@ -1,209 +1,152 @@
-body[data-is-win11="true"] {
-    .settings-option-elem {
-        width: 100%;
-        max-width: 840px;
-        margin-bottom: 6px;
-    
-        .parent-panel {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 10px;
-            background-color: var(--page-section-bg);
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-            border-radius: 4px;
-    
-            & > .option-icon {
-                width: 40px;
-                text-align: center;
-                box-sizing: border-box;
-                font-size: 20px;
-                padding-left: 4px;
-            }
-    
-            & > .content-area {
-                padding: 10px;
-                margin: 0 auto 0 0;
-                flex: 1;
-            }
-    
-            & > .input-area {
-                padding: 10px;
-    
-                select {
-                    margin: 0;
-                }
-    
-                input[type="text"], input[type="number"] {
-                    margin: 0;
-                }
-    
-                .inputToggle-generic {
-                    input {
-                        order: 2;
-                        margin-top: 0;
-                        margin-bottom: 0;
-                    }
-                    .text {
-                        margin-left: 0;
-                        margin-right: 8px;
-                        margin-top: 0;
-                    }
-                }
-    
-                .icons-row {
-                    margin: -7px -5px -11px;
-                }
-    
-            }
-    
-            & > .expand {
-                display: none;
-                width: 60px;
-                margin: 0 -10px;
-                padding-right: 4px;
-                text-align: center;
-                box-sizing: border-box;
-                user-select: none;
-                cursor: pointer;
-                align-self: stretch;
-                justify-content: center;
-                align-items: center;
+.settings-option-elem {
+    width: 100%;
+    max-width: 840px;
+    margin-bottom: 5px;
 
-                .icon {
-                    transition: transform 0.2s;
-                    transform: rotate(0deg);
-                    transform-origin: 50% 50%;
-                }
-            }
+    .parent-panel {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 10px;
+        background-color: var(--page-section-bg);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        border-radius: 4px;
+
+        & > .option-icon {
+            width: 40px;
+            text-align: center;
+            box-sizing: border-box;
+            font-size: 20px;
+            padding-left: 4px;
         }
-    
-        .option-title {
-            font-size: 16px;
-            font-weight: 400;
+
+        & > .content-area {
+            padding: 10px;
+            margin: 0 auto 0 0;
         }
-    
-        .option-description {
-            font-size: 12.5px;
-            margin-top: 2px;
-            opacity: 0.75;
-            font-family: "Segoe UI Variable Small", "Segoe UI";
+
+        & > .input-area {
+            padding: 10px;
+
+            select {
+                margin: 0;
+            }
+
+            input[type="text"] {
+                margin: 0;
+            }
+
+            .inputToggle-generic {
+                input {
+                    order: 2;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                }
+                .text {
+                    margin-left: 0;
+                    margin-right: 8px;
+                    margin-top: 0;
+                }
+            }
+
+            .icons-row {
+                margin: -7px -5px -11px;
+            }
+
         }
-    
-        &[data-expandable="true"] {
-            .expand {
-                display: flex;
-            }
-            .settings-option-children {
-                display: none;
-            }
-            &[data-expanded="true"] {
-                .expand .icon {
-                    transform: rotate(-180deg);
-                }
-    
-                .parent-panel {
-                    border-radius: 4px 4px 0 0;
-                }
-    
-                .settings-option-children {
-                    display: block;
-                    overflow: hidden;
-                    & > .children-inner {
-                        animation: settingsOptionChildrenIn 0.3s;
-                        @keyframes settingsOptionChildrenIn {
-                            0% {
-                                transform: translateY(-30px);
-                                opacity: 0;
-                            }
-                            10% {
-                                transform: translateY(-30px);
-                                opacity: 0;
-                            }
-                            100% {
-                                transform: translateY(0px);
-                                opacity: 1;
-                            }
-                        }
-                    }
-                }
-            }
+
+        & > .expand {
+            display: none;
+            width: 40px;
+            padding-right: 4px;
+            text-align: center;
+            box-sizing: border-box;
+            transition: transform 0.2s;
+            transform: rotate(0deg);
         }
     }
-    
-    .settings-child-elem {
-        margin-top: 1px;
-    
-        &:last-of-type {
-            & > .child-panel {
-                border-radius: 0 0 4px 4px;
+
+    .option-title {
+        font-size: 15px;
+        font-weight: 400;
+    }
+
+    .option-description {
+        font-size: 13px;
+        margin-top: 2px;
+        opacity: 0.75;
+    }
+
+    &[data-expandable="true"] {
+        .expand {
+            display: block;
+        }
+        .settings-option-children {
+            display: none;
+        }
+        &[data-expanded="true"] {
+
+            .expand {
+                transform: rotate(-180deg);
+            }
+
+            .parent-panel {
+                border-radius: 4px 4px 0 0;
+            }
+
+            .settings-option-children {
+                display: block;
             }
         }
-    
-        & > .child-panel {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            background-color: var(--page-section-bg);
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-            padding: 5px 50px;
-            padding: 5px 20px;
-
-            & > .option-icon {
-                padding-right: 10px;
-            }
-    
-            & > .content-area {
-                padding: 10px 0px;
-                margin: 0 auto 0 0;
-                flex: 1;
-    
-                .child-option-title {
-                    font-size: 14px;
-                }
-
-                .child-option-description {
-                    font-size: 12.5px;
-                    margin-top: 2px;
-                    opacity: 0.75;
-                    font-family: "Segoe UI Variable Small", "Segoe UI";
-                }
-            }
-    
-            & > .input-area {
-                padding: 10px 0;
-    
-                input[type="text"], input[type="number"] {
-                    margin: 0;
-                }
-    
-                .inputToggle-generic {
-                    input {
-                        order: 2;
-                        margin-top: 0;
-                        margin-bottom: 0;
-                    }
-                    .text {
-                        margin-left: 0;
-                        margin-right: 8px;
-                        margin-top: 0;
-                    }
-                }
-            }
-        }
-    
     }
 }
 
-body[data-is-win11="false"] {
-    .settings-option-elem {
-        margin-bottom: 20px;
-        .expand {
-            display: none !important;
+.settings-child-elem {
+    margin-top: 1px;
+
+    &:last-of-type {
+        & > .child-panel {
+            border-radius: 0 0 4px 4px;
         }
     }
 
-    .settings-child-elem {
+    & > .child-panel {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        background-color: var(--page-section-bg);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        padding: 5px 50px;
 
+        & > .content-area {
+            padding: 10px;
+            margin: 0 auto 0 0;
+
+            .child-option-title {
+                font-size: 14px;
+            }
+        }
+
+        & > .input-area {
+            padding: 10px;
+
+            input[type="text"] {
+                margin: 0;
+            }
+
+            .inputToggle-generic {
+                input {
+                    order: 2;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                }
+                .text {
+                    margin-left: 0;
+                    margin-right: 8px;
+                    margin-top: 0;
+                }
+            }
+        }
     }
+
 }

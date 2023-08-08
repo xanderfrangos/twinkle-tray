@@ -35,7 +35,6 @@ export function SettingsChild(props) {
     const icon = (props.icon ? <div className="option-icon icon" dangerouslySetInnerHTML={{__html: `&#x${props.icon};` }}></div> : null)
     const description = (props.description ? <div className="child-option-description">{props.description}</div> : null)
     const elem = (props.content ? <div className="option-elem">{props.content}</div> : null)
-    const children = (props.children ? <div className="option-elem">{props.children}</div> : null)
     const input = (props.input ? <div className="input-area">{props.input}</div> : null)
 
     return (
@@ -46,7 +45,6 @@ export function SettingsChild(props) {
                     { title }
                     { description }
                     { elem }
-                    { children }
                 </div>
                 { input }
             </div>

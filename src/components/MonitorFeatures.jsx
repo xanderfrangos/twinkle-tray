@@ -1,6 +1,5 @@
 import React, { useState } from "react"
 import { useObject } from "../hooks/useObject"
-import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
 const ignoreCodes = ["0x10", "0x12", "0x13", "0x62", "0xD6"]
 
@@ -17,13 +16,13 @@ export default function MonitorFeatures(props) {
             const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
             const enabled = monitorFeatures?.["0x12"];
             extraHTML.push(
-                <SettingsOption key={vcp} icon="E793" title={T.t("PANEL_LABEL_CONTRAST")} expandable={true} input={
-                    <div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
-                }>
-                    <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
-                    </SettingsChild>
-                </SettingsOption>
+                <div className="feature-toggle-set" key={vcp} data-active={enabled}>
+                    <div className="feature-toggle-row" key="contrast">
+                        <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0x12")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                        <div className="feature-toggle-label"><span className="icon vfix">&#xE793;</span><span>{T.t("PANEL_LABEL_CONTRAST")}</span></div>
+                    </div>
+                    <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
+                </div>
             )
         }
     
@@ -33,13 +32,13 @@ export default function MonitorFeatures(props) {
             const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
             const enabled = monitorFeatures?.["0x62"];
             extraHTML.push(
-                <SettingsOption key={vcp} icon="E767" title={T.t("PANEL_LABEL_VOLUME")} expandable={true}  input={
-                    <div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
-                }>
-                    <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
-                    </SettingsChild>
-                </SettingsOption>
+                <div className="feature-toggle-set" key={vcp} data-active={enabled}>
+                    <div className="feature-toggle-row" key="volume">
+                        <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0x62")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                        <div className="feature-toggle-label"><span className="icon vfix">&#xE767;</span><span>{T.t("PANEL_LABEL_VOLUME")}</span></div>
+                    </div>
+                    <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
+                </div>
             )
         }
     
@@ -48,29 +47,25 @@ export default function MonitorFeatures(props) {
             const vcp = "0xD6"
             const enabled = monitorFeatures?.["0xD6"];
             extraHTML.push(
-                <SettingsOption key={vcp} icon="E7E8" title={`${T.t("PANEL_LABEL_OFF_ON")} ⚠️`} expandable={true}  input={
-                    <div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
-                }>
-                    <SettingsChild description={`⚠️ ${T.t("GENERIC_DDC_WARNING")}`} />
-                </SettingsOption>
+                <div className="feature-toggle-row" key="powerState">
+                    <input onChange={() => {props?.toggleFeature(monitor.hwid[1], "0xD6")}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                    <div className="feature-toggle-label"><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_OFF_ON")} ⚠️</span></div>
+                </div>
             )
         }
 
-        // Custom Features
         for(const vcp in monitorFeatures) {
             if(ignoreCodes.indexOf(vcp) === -1 && monitorFeatures[vcp]) {
                 const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
                 const enabled = monitorFeatures?.[vcp];
-                const name = (settings?.iconType === "text" && settings?.iconText?.length ? settings.iconText : "Custom Feature")
-                const icon = (settings?.iconType === "windows" && settings?.icon ? settings.icon : "E9E9")
                 extraHTML.push(
-                    <SettingsOption key={vcp} icon={icon} title={`${name} (${vcp})`} expandable={true}  input={
-                        <div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
-                    }>
-                        <SettingsChild>
-                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
-                        </SettingsChild>
-                    </SettingsOption>
+                    <div className="feature-toggle-set" key={vcp} data-active={enabled}>
+                        <div className="feature-toggle-row" key={vcp}>
+                            <input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" />
+                            <div className="feature-toggle-label"><span>Custom Feature ({vcp})</span></div>
+                        </div>
+                        <MonitorFeaturesSettings onChange={onChange} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
+                    </div>
                 )
             }
         }
@@ -89,7 +84,7 @@ export default function MonitorFeatures(props) {
         <div key={monitor.key}>
             <br />
             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-            {extraHTML}
+            <div className="feature-toggle-list">{extraHTML}</div>
             <br />
         </div>
     )
@@ -139,7 +134,7 @@ function MonitorFeaturesSettings(props) {
       const icon = (
         <div className="field">
             <label>Slider Icon</label>
-            <select style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`}} value={settingsObj.icon} onChange={e => onChangeHandler("icon", e.target.value)}>
+            <select style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`}} onChange={e => onChangeHandler("icon", e.target.value)}>
                 <WindowsIconsOptions />
             </select>
         </div>
@@ -234,6 +229,6 @@ const windowsIcons = [
 
 function WindowsIconsOptions(props) {
     return windowsIcons.map(icon => {
-        return (<option style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`, fontSize: "18px"}} key={icon} value={icon} dangerouslySetInnerHTML={{__html: `&#x${icon};` }}></option>)
+        return (<option style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`, fontSize: "18px"}} key={icon} value={icon} dangerouslySetInnerHTML={{__html: `&#x${icon}; (${icon})` }}></option>)
     })
 }

@@ -393,7 +393,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   autoDisabledWMI: false,
-  disableOverlay: false,
+  defaultOverlayType: "safe",
   disableMouseEvents: false,
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
@@ -526,6 +526,17 @@ function readSettings(doProcessSettings = true) {
       console.log("Upgraded Monitor Features to v1.16.0 format!")
     } catch(e) {
       console.log("Couldn't upgrade Monitor Features", e)
+    }
+    try {
+      // Remove disableOverlay
+      if(settings.disableOverlay === true) {
+        settings.defaultOverlayType = "disabled"
+      }
+      if(settings.disableOverlay !== undefined) {
+        delete settings.disableOverlay
+      }
+    } catch(e) {
+      console.log("Couldn't remove disableOverlay")
     }
   }
 
@@ -1031,7 +1042,7 @@ async function doHotkey(hotkey) {
 }
 
 function hotkeyOverlayStart(timeout = 3000, force = true) {
-  if (settings.disableOverlay || currentProfile?.overlayType === "disabled") return false;
+  if (currentOverlayType() === "disabled") return false;
   if (canReposition) {
     hotkeyOverlayShow()
   }
@@ -1043,7 +1054,7 @@ function hotkeyOverlayStart(timeout = 3000, force = true) {
 }
 
 async function hotkeyOverlayShow() {
-  if (settings.disableOverlay) return false;
+  if (currentOverlayType() === "disabled") return false;
   if (!mainWindow) return false;
   if (startHideTimeout) clearTimeout(startHideTimeout);
   startHideTimeout = null;
@@ -2186,10 +2197,19 @@ function createPanel(toggleOnLoad = false) {
 
 }
 
+function currentOverlayType() {
+  let overlayType = currentProfile?.overlayType
+  if(!overlayType || overlayType == "normal") {
+    overlayType = settings.defaultOverlayType
+  }
+  console.log(`overlayType: ${overlayType}`)
+  return overlayType
+}
+
 function setAlwaysOnTop(onTop = true) {
   if (!mainWindow) return false;
   if (onTop) {
-    if(currentProfile?.overlayType === "aggressive") {
+    if(currentOverlayType() === "aggressive") {
       mainWindow.setAlwaysOnTop(true, 'screen-saver')
       if(settingsWindow?.isMinimized() === false) {
         settingsWindow?.minimize() // Workaround for weird bug when settings window is open

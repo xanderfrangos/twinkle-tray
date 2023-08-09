@@ -1161,7 +1161,21 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32")} />
                                 </SettingsOption>
 
-                                <SettingsOption title={T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")} description={T.h("SETTINGS_GENERAL_DIS_OVERLAY_DESC")} input={this.renderToggle("disableOverlay")} />
+                                <SettingsOption title={"Default overlay behavior"} description={"How forcefully the brightness hotkey overlay will attempt to display over other apps. You should not need to adjust this."} input={
+                                <select value={window.settings.defaultOverlayType} onChange={(e) => this.setSetting("defaultOverlayType", e.target.value)}>
+                                    <option value="disabled">Disabled</option>
+                                    <option value="safe">Safe</option>
+                                    <option value="aggressive">Aggressive</option>
+                                </select>
+                                } expandable={true}>
+                                    <SettingsChild>
+                                        <p><i>
+                                            <b>Disabled:</b> Do not show overlay. <br />
+                                            <b>Safe:</b> The overlay will display over most windows, but will not force itself above apps that are marked as "always on top". <br />
+                                            <b>Aggressive:</b> Always try to show the overlay on top of other windows. This can cause issues with exclusive fullscreen games and other fullscreen apps. It can also trigger anti-cheat in some games.
+                                        </i></p>
+                                    </SettingsChild>
+                                </SettingsOption>
 
                                 <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />
 
@@ -1556,16 +1570,16 @@ function AppProfile(props) {
             </SettingsChild>
             <SettingsChild>
                 <div className="option-title">App trigger settings (optional)</div>
-                <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE below.</p>
                 <br />
 
                 <label>App path</label>
+                <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE below.</p>
                 <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
-                <label>Override overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
-    Aggressive: Applies the overlay in a way that will display over borderless fullscreen games. This will break exlusive fullscreen games.">i</sup></label>
+                <label>Override overlay type</label>
                 <p>Changes the behavior of the hotkey overlay when the specified app is focused. This feature does not work when the profile is manually activated.</p>
                 <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-                    <option value="normal">Normal</option>
+                    <option value="normal">Default</option>
+                    <option value="safe">Safe</option>
                     <option value="disabled">Disabled</option>
                     <option value="aggressive">Aggressive</option>
                 </select>

@@ -135,6 +135,7 @@ export default class SettingsWindow extends PureComponent {
         this.onDragEnd = this.onDragEnd.bind(this);
         this.sendSettingsTimeout = false
         this.sendSettingsValues = {}
+        this.settingsPageRef = React.createRef()
         this.addFeatureInputRef = React.createRef()
         this.addFeatureOKRef = React.createRef()
         this.addFeatureCancelRef = React.createRef()
@@ -353,7 +354,7 @@ export default class SettingsWindow extends PureComponent {
             }
         ]
         return items.map((item, index) => {
-            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.reloadReactMonitors(); window.requestMonitors(); }}>
+            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.currentSettingsPage = item.id; this.scrollToTop(); window.reloadReactMonitors(); window.requestMonitors(); }}>
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })
@@ -366,6 +367,12 @@ export default class SettingsWindow extends PureComponent {
                 return (<option key={value.id} value={value.id}>{value.name}</option>)
             })
         }
+    }
+
+    scrollToTop = () => {
+        try {
+            this.settingsPageRef.current.scrollTop = 0
+        } catch(e) { }
     }
 
 
@@ -1083,7 +1090,7 @@ export default class SettingsWindow extends PureComponent {
                     <div id="sidebar">
                         {this.getSidebar()}
                     </div>
-                    <div id="page">
+                    <div id="page" ref={this.settingsPageRef}>
 
                         <SettingsPage current={this.state.activePage} id="general">
                             <div className="pageSection">

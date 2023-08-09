@@ -8,9 +8,10 @@ export function SettingsOption(props) {
     const description = (props.description ? <div className="option-description">{props.description}</div> : null)
     const elem = (props.content ? <div className="option-elem">{props.content}</div> : null)
     const input = (props.input ? <div className="input-area">{props.input}</div> : null)
+    const className = `settings-option-elem ${props.className ?? ""}`
 
     return (
-        <div className="settings-option-elem" data-expandable={props.expandable} data-expanded={expanded}>
+        <div className={className} data-expandable={props.expandable} data-expanded={expanded}>
             <div className="parent-panel">
                 { icon }
                 <div className="content-area">
@@ -37,9 +38,10 @@ export function SettingsChild(props) {
     const elem = (props.content ? <div className="option-elem">{props.content}</div> : null)
     const children = (props.children ? <div className="option-elem">{props.children}</div> : null)
     const input = (props.input ? <div className="input-area">{props.input}</div> : null)
+    const className = `settings-child-elem ${props.className ?? ""}`
 
     return (
-        <div className="settings-child-elem">
+        <div className={className}>
             <div className="child-panel">
                 { icon }
                 <div className="content-area">

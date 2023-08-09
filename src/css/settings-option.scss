@@ -1,17 +1,17 @@
-body[data-is-win11="true"] {
+body[data-is-win11="true"], body[data-is-win11="false"] {
     .settings-option-elem {
         width: 100%;
         max-width: 840px;
         margin-bottom: 6px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        background-color: var(--page-section-bg);
+        border-radius: 4px;
     
         .parent-panel {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             padding: 10px;
-            background-color: var(--page-section-bg);
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-            border-radius: 4px;
     
             & > .option-icon {
                 width: 40px;
@@ -144,10 +144,10 @@ body[data-is-win11="true"] {
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            background-color: var(--page-section-bg);
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+            border-top: 1px solid var(--button-border);
             padding: 5px 50px;
             padding: 5px 20px;
+            margin-top: -1px;
 
             & > .option-icon {
                 padding-right: 10px;
@@ -196,14 +196,143 @@ body[data-is-win11="true"] {
 }
 
 body[data-is-win11="false"] {
+    .pageSection {
+        max-width: 540px;
+    }
     .settings-option-elem {
-        margin-bottom: 20px;
+        //margin-bottom: 20px;
+        margin: 0 -10px 20px;
+        box-shadow: none;
+        border-radius: 0;
+        
+        .parent-panel {
+            display: block;
+            padding: 0;
+
+            .input-area {
+
+                .inputToggle-generic {
+                    input {
+                        order: 0;
+                        margin-left: 0;
+                        margin-right: 0;
+                    }
+                    .text {
+                        order: 3;
+                        margin-left: 8px;
+                    }
+                }
+
+            }
+
+        }
+
         .expand {
             display: none !important;
         }
+
+        .option-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+    
+        .option-description {
+            font-size: 13px;
+            margin-top: 2px;
+            opacity: 0.7;
+            font-family: "Segoe UI";
+        }
+        
+        &[data-expandable="true"] {
+            .parent-panel {
+                display: flex;
+            }
+            .settings-option-children {
+                display: block;
+            }
+        }
+        
     }
 
     .settings-child-elem {
 
+        & > .child-panel {
+            padding: 0 10px;
+            & > .content-area, & > .input-area {
+                padding: 7px 0;
+            }
+        }
+
+        .child-option-title {
+            font-size: 14px;
+        }
+
+        .child-option-description {
+            font-size: 12.5px;
+            margin-top: 2px;
+            opacity: 0.75;
+            font-family: "Segoe UI";
+        }
     }
+
+    // Show background in Win10
+    .settings-option-elem.win10-has-background {
+        background-color: var(--tray-background-base);
+        margin-left: 0px;
+        margin-top: 15px;
+
+        & > .parent-panel {
+            display: flex;
+            padding: 5px 10px;
+        }
+
+        .settings-child-elem {
+            border-top: 1px solid var(--page-background);
+            padding: 10px 10px 10px 10px;
+        }
+    }
+
+    // DDC/CI Features
+    .settings-option-elem.monitor-feature-item {
+        background-color: var(--tray-background-base);
+        margin-left: 0px;
+        margin-top: 15px;
+
+        // Enable/Disable toggle
+        .input-area {
+            order: -1;
+        }
+
+        // "+ Add Feature" button
+        & + .input-row {
+            display: block;
+            margin-bottom: 20px;
+            p {
+                margin: 0;
+                .button {
+                    display: block;
+                    width: 100%;
+                    padding: 20px;
+                    text-align: center;
+                    box-sizing: border-box;
+                }
+            }
+        }
+
+        .option-icon.icon {
+            margin: 0 -8px 0 -5px;
+        }
+
+        .settings-child-elem {
+            border-top: 1px solid var(--page-background);
+            padding: 10px 10px 10px 10px;
+        }
+    }
+
+    .win10-stack-input {
+        & > .child-panel {
+            display: block;
+        }
+    }
+
 }

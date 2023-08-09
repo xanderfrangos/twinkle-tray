@@ -10,7 +10,7 @@ body {
     background: var(--page-background);
     background: none;
     color: var(--tray-text);
-    font-family: 'Segoe UI Variable Text', 'Segoe UI';
+    font-family: 'Segoe UI', sans-serif;
     position: absolute;
     top: 0;
     left: 0;
@@ -62,7 +62,7 @@ body {
     box-sizing: border-box;
     width: calc(100% - 2px);
     padding: 0 0px;
-    overflow: hidden;
+    overflow: visible;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
@@ -189,10 +189,11 @@ input {
     padding: 8px;
     line-height: 1.3;
     font-size: 14px;
-    font-family: 'Segoe UI Variable Text', 'Segoe UI';;
+    font-family: inherit;
     font-weight: 400;
     margin-top: 10px;
     margin-bottom: 15px;
+    box-sizing: border-box;
 
     &:hover {
         border-color: var(--input-border-hover);
@@ -259,7 +260,7 @@ label {
 
 .sectionTitle {
     font-size: 28px;
-    font-weight: 300;
+    font-weight: 400;
     margin-bottom: 20px;
     line-height: 1;
 }
@@ -394,14 +395,21 @@ select {
 
 
 .button {
-    background: var(--window-border);
-    border: 2px solid var(--window-border);
+    background: var(--button-background);
+    border: 2px solid var(--button-background);
     line-height: 0;
-    padding: 6px 12px;
-    margin-top: 10px;
-    display: inline;
+    padding: 15px 12px;
+    //margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 14px;
+    font-weight: 500;
     text-decoration: none;
+
+    .icon {
+        margin-right: 8px;
+    }
 
     &:hover {
         border-color: var(--input-border);
@@ -609,6 +617,12 @@ select {
         margin-right: 8px
     }
 }
+.profile-monitors {
+    margin: 13px 0;
+    &:empty {
+        margin: 0;
+    }
+}
 .input-row {
     display: flex;
     justify-content: flex-start;
@@ -715,6 +729,53 @@ html body[data-is-win11="true"] {
     .hotkey-value {
         margin-bottom: 8px;
     }
+}
+
+.hotkey-action-fields {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .input-row {
+        margin-top: 0 !important;
+    }
+}
+
+.hotkey-action-type {
+
+    select {
+        width: 100%;
+    }
+}
+
+.hotkey-action-code {
+    input {
+        min-width: 220px;
+    }
+}
+
+.hotkey-action-value {
+    input {
+        min-width: 100px;
+    }
+}
+
+.hotkey-action-values {
+    width: 100%;
+    padding-top: 10px;
+    input {
+        min-width: 100px;
+    }
+}
+
+.hotkey-monitors-list {
+    margin: -35px 0px auto 0px;
+    width: 200px;
+    background: rgba(122, 122, 122, .1);
+    padding: 25px;
+    order: 2;
+    border-radius: 4px;
 }
 
 
@@ -850,23 +911,6 @@ body[data-fluent-icons="true"] {
         font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
     }
 }
-body[data-segoe-u-i-variable="true"] {
-    .window-titlebar .window-title {
-        font-family: "Segoe UI Variable", "Segoe UI";
-        font-weight: 400;
-        font-size: 12px;
-    }
-    #sidebar .item .label {
-        font-family: "Segoe UI Variable", "Segoe UI";
-        font-size: 13px;
-        font-weight: 400;
-    }
-    .sectionTitle {
-        font-weight: 500;
-        font-family: "Segoe UI Variable Display", "Segoe UI";
-        font-size: 28px;
-    }
-}
 
 // Windows 11 style
 body[data-is-win11="true"] {
@@ -878,7 +922,28 @@ body[data-is-win11="true"] {
     #settings > .window-base {
         background-color: var(--page-background);
         background: none;
+        font-family: 'Segoe UI Variable Text', 'Segoe UI';
     }
+
+    &[data-segoe-u-i-variable="true"] {
+        .window-titlebar .window-title {
+            font-family: "Segoe UI Variable", "Segoe UI";
+            font-weight: 400;
+            font-size: 12px;
+        }
+        #sidebar .item .label {
+            font-family: "Segoe UI Variable", "Segoe UI";
+            font-size: 13px;
+            font-weight: 400;
+        }
+        .sectionTitle {
+            font-weight: 500;
+            font-family: "Segoe UI Variable Display", "Segoe UI";
+            font-size: 28px;
+        }
+    }
+
+
     #sidebar, #page {
         background: none !important;
     }
@@ -920,8 +985,16 @@ body[data-is-win11="true"] {
         border-radius: 6px;
         border: 0;
         box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
+        font-weight: 400;
         &:hover {
             background: var(--button-highlight);
+        }
+        &.button-primary {
+            background-color: var(--button-primary-background);
+            color: var(--page-background);
+            &:hover {
+                background-color: var(--button-primary-background-hover);
+            }
         }
     }
     .window-titlebar .window-title {
@@ -988,9 +1061,13 @@ body[data-is-win11="true"] {
             }
         }
     }
+    .icon-option img {
+        border-radius: 4px;
+    }
     .reorderList {
-        border-color: var(--input-border);
+        border-color: var(--button-border);
         border-width: 1.5px;
+        border-width: 0;
         border-radius: 5px;
         max-width: none;
     }

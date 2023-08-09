@@ -547,10 +547,10 @@ export default class SettingsWindow extends PureComponent {
                     )
                 }
                 return (
-                    <SettingsOption key={index + "_" + time.time} content={
+                    <SettingsOption className="win10-has-background" key={index + "_" + time.time} content={
                         <div className="input-row">
                             {timeElem}
-                            <input type="button" className="button" value={T.t("SETTINGS_TIME_REMOVE")} onClick={() => {
+                            <input type="button" className="button button-primary" value={T.t("SETTINGS_TIME_REMOVE")} onClick={() => {
                                 this.state.adjustmentTimes.splice(index, 1)
                                 this.forceUpdate()
                                 this.adjustmentTimesUpdated()
@@ -621,9 +621,9 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyList = () => {
         return this.state.hotkeys?.map((hotkey, idx) => {
-            const showDisplaysList = (hotkey.type != "off" && hotkey.type != "refresh" && !hotkey.allMonitors)
+            const showDisplaysList = (hotkey.type != "off" && hotkey.type != "refresh")
             return (
-                <SettingsOption key={hotkey.id} content={
+                <SettingsOption className="win10-has-background" key={hotkey.id} content={
                     <div className="row hotkey-combo-input">
                         <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
                             (e) => {
@@ -646,12 +646,27 @@ export default class SettingsWindow extends PureComponent {
                         {this.getHotkeyStatusIcon(hotkey)}
                     </div>
                 } expandable={true} input={
-                    <a className="button" onClick={() => this.deleteHotkey(idx)}>Delete hotkey</a>
+                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>
                 }>
                     <SettingsChild>
-                        <div>Action</div>
+                        <div className="option-title">Action</div><br />
                         <div className="row">
-                            <div>
+                            <div className="hotkey-monitors-list" style={{ display: (showDisplaysList ? "block" : "none") }}>
+                                <div className="input-row">
+                                    <div className="field">
+                                        <label style={{ marginBottom: "8px" }}>Displays</label>
+                                        <div className="feature-toggle-row">
+                                            <input onChange={e => {
+                                                hotkey.allMonitors = e.target.checked
+                                                this.updateHotkey(hotkey, idx)
+                                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
+                                            <div className="feature-toggle-label">All Displays</div>
+                                        </div>
+                                        {this.getHotkeyMonitors(hotkey, idx)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="hotkey-action-fields">
                                 <div className="input-row">
                                     <div className="field">
                                         <label>Hotkey Action</label>
@@ -669,23 +684,6 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                                 {this.getHotkeyInput(hotkey)}
                             </div>
-                            <div>
-
-                                <div className="input-row" style={{ display: (showDisplaysList ? "block" : "none") }}>
-                                    <div className="field">
-                                        <label style={{ marginBottom: "8px" }}>Displays</label>
-                                        <div className="feature-toggle-row">
-                                            <input onChange={e => {
-                                                hotkey.allMonitors = e.target.checked
-                                                this.updateHotkey(hotkey, idx)
-                                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
-                                            <div className="feature-toggle-label">All Displays</div>
-                                        </div>
-                                        {this.getHotkeyMonitors(hotkey, idx)}
-                                    </div>
-                                </div>
-
-                            </div>
                         </div>
                     </SettingsChild>
                 </SettingsOption>
@@ -695,7 +693,7 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyInput = (hotkey, idx) => {
         if (hotkey.type === "off") {
-            return (<div className="input-row"><label>This hotkey will use the option selected under <b>Turn Off Displays action</b>.</label></div>)
+            return (<div className="input-row"><p style={{lineHeight: 1.2}}>This hotkey will use the option selected under <b>Turn Off Displays action</b>. If you wish to turn off specific displays instead, use the "Set" or "Cycle" Hotkey Action instead.</p></div>)
         } else if (hotkey.type === "refresh") {
             return null
         } else {
@@ -724,7 +722,7 @@ export default class SettingsWindow extends PureComponent {
             )
 
             const singleValue = () => (
-                <div className="input-row">
+                <div className="input-row hotkey-action-value">
                     <div className="hotkey-value field">
                         <label>Value</label>
                         <input type="number" min="-65535" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
@@ -737,7 +735,7 @@ export default class SettingsWindow extends PureComponent {
             )
 
             const listOfValues = () => (
-                <div className="input-row">
+                <div className="input-row hotkey-action-values">
                     <div className="hotkey-values-list">
                         <label>Values</label>
                         {hotkey.values?.map((value, idx2) => {
@@ -758,7 +756,7 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             )
                         })}
-                        <p><a className="button" onClick={() => {
+                        <p><a className="button button-primary" onClick={() => {
                             hotkey.values.push([0])
                             this.updateHotkey(hotkey, idx)
                         }}>+ Add Value</a></p>
@@ -768,11 +766,13 @@ export default class SettingsWindow extends PureComponent {
 
             return (
                 <>
-                    <div className="input-row">
+                    <div className="input-row hotkey-action-type">
                         {selectBox}
+                    </div>
+                    <div className="input-row hotkey-action-code">
                         <div className="field" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
                             <label>VCP Code</label>
-                            <input value={hotkey.target} type="text" placeholder={`Enter a VCP code (Ex. 16 or 0x10)`} onChange={e => {
+                            <input value={hotkey.target} type="text" placeholder={`VCP code (Ex. 16 or 0x10)`} onChange={e => {
                                 hotkey.target = e.target.value
                                 this.updateHotkey(hotkey, idx)
                             }} />
@@ -806,11 +806,12 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyMonitors = (hotkey, idx) => {
         try {
+            if(hotkey.allMonitors) return (null)
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
-                return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
+                return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
             } else {
                 return Object.values(this.state.monitors).map((monitor, index) => {
-
+                    if(monitor.type !== "ddcci") return null;
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {
@@ -1171,12 +1172,18 @@ export default class SettingsWindow extends PureComponent {
                             </div>
                             <div className="pageSection">
                                 <SettingsOption title={"Coordinates for sun position"} description={"To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined. Twinkle Tray does not detect this for you."} expandable={true}>
-                                    <SettingsChild title={"Latitude"} input={
-                                        <input type="number" min="-90" max="90" value={window.settings.adjustmentTimeLatitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLatitude", e.target.value)} style={{ width: "100px", boxSizing: "border-box" }} />
-                                    } />
-                                    <SettingsChild title={"Longitude"} input={
-                                        <input type="number" min="-180" max="180" value={window.settings.adjustmentTimeLongitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLongitude", e.target.value)} style={{ width: "100px", boxSizing: "border-box" }} />
-                                    } />
+                                    <SettingsChild>
+                                        <div style={{ "display": "flex" }}>
+                                            <div style={{ marginRight: "6px", flex: 1 }}>
+                                                <label style={{ "textTransform": "capitalize" }}>Latitude</label>
+                                                <input type="number" min="-90" max="90" value={window.settings.adjustmentTimeLatitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLatitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
+                                            </div>
+                                            <div style={{flex: 1}}>
+                                                <label style={{ "textTransform": "capitalize" }}>Longitude</label>
+                                                <input type="number" min="-180" max="180" value={window.settings.adjustmentTimeLongitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLongitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
+                                            </div>
+                                        </div>
+                                    </SettingsChild>
                                 </SettingsOption>
                                 <SettingsOption title={T.t("SETTINGS_TIME_INDIVIDUAL_TITLE")} description={T.t("SETTINGS_TIME_INDIVIDUAL_DESC")} input={this.renderToggle("adjustmentTimeIndividualDisplays")} />
                                 <SettingsOption title={T.t("SETTINGS_TIME_ANIMATE_TITLE")} description={T.t("SETTINGS_TIME_ANIMATE_DESC")} input={this.renderToggle("adjustmentTimeAnimate")} />
@@ -1315,7 +1322,7 @@ export default class SettingsWindow extends PureComponent {
                             <div className="pageSection">
                                 <div className="sectionTitle">{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</div>
                                 <SettingsOption title={T.t("SETTINGS_GENERAL_SCROLL_TITLE")} description={T.t("SETTINGS_GENERAL_SCROLL_DESC")} input={this.renderToggle("scrollShortcut")}>
-                                    <SettingsChild title={"Amount to scroll"} input={
+                                    <SettingsChild title={"Amount to scroll"} className="win10-stack-input" input={
                                         <input type="number" min={1} max={100} step={1}
                                         value={this.state.rawSettings.scrollShortcutAmount} onChange={e => {
                                             this.state.rawSettings.scrollShortcutAmount = parseInt(e.target.value)
@@ -1503,10 +1510,10 @@ function addNewProfile(state) {
 function getProfileMonitors(monitors, profile, onChange) {
     return Object.values(monitors).map((monitor, idx) => {
         if (monitor.type == "none") {
-            return (<div key={monitor.id + ".brightness"}></div>)
+            return (null)
         } else {
             let level = (profile.monitors?.[monitor.id] ?? 50)
-            return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={monitor.name} onChange={level => {
+            return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={monitor.name} height="short" onChange={level => {
                 profile.monitors[monitor.id] = level
                 onChange(profile, monitor.id, level)
             }} level={level} scrolling={false} />)
@@ -1519,17 +1526,19 @@ function AppProfile(props) {
     if (!profile.monitors) profile.monitors = {};
 
     return (
-        <SettingsOption title={profile.name ?? "New Profile"} expandable={true} input={<a className="add-new button block" onClick={onDelete}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>} className="appProfileItem" key={profile.id}>
+        <SettingsOption title={profile.name ?? "New Profile"} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
             <SettingsChild>
-                <div>General Settings</div><br />
+                <div className="option-title">General Settings</div><br />
                 <label>Profile name</label>
-                <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)}></input>
+                <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>
                 <div className="feature-toggle-row">
                     <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
                     <div className="feature-toggle-label"><span>Set brightness when active</span></div>
                 </div>
 
-                {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+                <div className="profile-monitors">
+                    {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+                </div>
 
                 {(profile.setBrightness ? (
                     <div className="feature-toggle-row">
@@ -1539,13 +1548,15 @@ function AppProfile(props) {
                 ) : null)}
             </SettingsChild>
             <SettingsChild>
-                <div>App trigger settings (optional)</div>
+                <div className="option-title">App trigger settings (optional)</div>
                 <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE below.</p>
+                <br />
 
                 <label>App path</label>
-                <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)}></input>
+                <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
                 <label>Override overlay type <sup className="info-circle" title="Disabled: Do not show overlay. Useful for exclusive fullscreen games.
     Aggressive: Applies the overlay in a way that will display over borderless fullscreen games. This will break exlusive fullscreen games.">i</sup></label>
+                <p>Changes the behavior of the hotkey overlay when the specified app is focused. This feature does not work when the profile is manually activated.</p>
                 <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
                     <option value="normal">Normal</option>
                     <option value="disabled">Disabled</option>

@@ -2457,7 +2457,7 @@ function windowMatchesProfile(window) {
 function applyProfileBrightness(profile) {
   try {
     Object.values(monitors)?.forEach(monitor => {
-      updateBrightness(monitor.id, profile.monitors[monitor.id], true, monitor.brightnessType)
+      updateBrightness(monitor.id, profile.monitors[monitor.id], true, "brightness")
     })
   } catch (e) {
     console.log("Error applying profile brightness", e)
@@ -3511,7 +3511,7 @@ function idleCheckShort() {
       userIdleDimmed = true
       try {
         Object.values(monitors)?.forEach((monitor) => {
-          updateBrightness(monitor.id, 0, true, monitor.brightnessType)
+          updateBrightness(monitor.id, 0, true, "brightness")
         })
       } catch (e) {
         console.log(`Error dimming displays`, e)

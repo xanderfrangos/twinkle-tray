@@ -43,6 +43,8 @@ const monitorSort = (a, b) => {
     return aSort - bSort
 }
 
+const deleteIcon = (<span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span>)
+
 const cleanUpKeyboardKeys = (inKey, inCode = false) => {
     let key = inKey
     let code = inCode
@@ -89,6 +91,16 @@ const cleanUpKeyboardKeys = (inKey, inCode = false) => {
     }
 
     return key;
+}
+
+const defaultAction = {
+    type: "set",
+    target: "brightness",
+    monitors: {},
+    allMonitors: false,
+    value: 0,
+    values: [0],
+    id: uuid()
 }
 
 let T = new TranslateReact({}, {})
@@ -627,6 +639,17 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getHotkeyList = () => {
+
+        const deleteHotkeyAction = (idx, actionIdx) => {
+            try {
+                this.state.hotkeys[idx].actions.splice(actionIdx, 1)
+                window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
+                this.forceUpdate()
+            } catch(e) {
+                console.log(e)
+            }
+        }
+
         return this.state.hotkeys?.map((hotkey, idx) => {
             return (
                 <SettingsOption className="win10-has-background" key={hotkey.id} content={
@@ -652,107 +675,27 @@ export default class SettingsWindow extends PureComponent {
                         {this.getHotkeyStatusIcon(hotkey)}
                     </div>
                 } expandable={true} input={
-                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>
+                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>Delete</span></a>
                 }>
+                    { hotkey.actions?.map((action, actionIdx) => {
+                        return (
+                            <SettingsChild>
+                                <ActionItem title={`Action ${actionIdx + 1}`} action={action} onChange={updatedAction => this.updateHotkeyAction(updatedAction, idx, actionIdx)} onDelete={() => { deleteHotkeyAction(idx, actionIdx) }} monitors={this.state.monitors} monitorNames={this.state.names} />
+                            </SettingsChild>
+                        )
+                    }) }
                     <SettingsChild>
-                        <ActionItem action={hotkey} onChange={updatedAction => this.updateHotkey(updatedAction, idx)} monitors={this.state.monitors} monitorNames={this.state.names} />
+                        <a className="button full-width" onClick={() => {
+                            if(!hotkey.actions?.length) {
+                                hotkey.actions = []
+                            }
+                            hotkey.actions.push(Object.assign({}, defaultAction))
+                            this.updateHotkey(hotkey, idx)
+                        }}>+ Add Action</a>
                     </SettingsChild>
                 </SettingsOption>
             )
         })
-    }
-
-    getHotkeyInput = (hotkey, idx) => {
-        if (hotkey.type === "off") {
-            return (<div className="input-row"><p style={{lineHeight: 1.2}}>This hotkey will use the option selected under <b>Turn Off Displays action</b>. If you wish to turn off specific displays instead, use the "Set" or "Cycle" Hotkey Action instead.</p></div>)
-        } else if (hotkey.type === "refresh") {
-            return null
-        } else {
-            let selectBoxValue = hotkey.target
-            if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
-                selectBoxValue = "vcp"
-            }
-            const selectBox = (
-                <div className="field">
-                    <label>Action Type</label>
-                    <select value={selectBoxValue} onChange={e => {
-                        const value = e.target.value
-                        if (value === "vcp") {
-                            hotkey.target = ""
-                        } else {
-                            hotkey.target = value
-                        }
-                        this.updateHotkey(hotkey, idx)
-                    }}>
-                        <option value="brightness">Brightness</option>
-                        <option value="contrast">Contrast (if supported)</option>
-                        <option value="volume">Volume (if supported)</option>
-                        <option value="vcp">Specific VCP code</option>
-                    </select>
-                </div>
-            )
-
-            const singleValue = () => (
-                <div className="input-row hotkey-action-value">
-                    <div className="hotkey-value field">
-                        <label>Value</label>
-                        <input type="number" min="-65535" max="65535" value={hotkey.value ?? 0} placeholder={`Enter a number`} onChange={e => {
-                            const value = e.target.value
-                            hotkey.value = value ?? 0
-                            this.updateHotkey(hotkey, idx)
-                        }} />
-                    </div>
-                </div>
-            )
-
-            const listOfValues = () => (
-                <div className="input-row hotkey-action-values">
-                    <div className="hotkey-values-list">
-                        <label>Values</label>
-                        {hotkey.values?.map((value, idx2) => {
-                            return (
-                                <div className="hotkey-value">
-                                    <input type="number" min="-65535" max="65535" value={value ?? 0} placeholder={`Enter a number`}
-                                        onChange={e => {
-                                            const value = e.target.value
-                                            hotkey.values[idx2] = value ?? 0
-                                            this.updateHotkey(hotkey, idx)
-                                        }} />
-                                    {idx2 ? (
-                                        <input type="button" className="button" onClick={() => {
-                                            hotkey.values.splice(idx2, 1)
-                                            this.updateHotkey(hotkey, idx)
-                                        }} value={"Remove"} />
-                                    ) : null}
-                                </div>
-                            )
-                        })}
-                        <p><a className="button button-primary" onClick={() => {
-                            hotkey.values.push([0])
-                            this.updateHotkey(hotkey, idx)
-                        }}>+ Add Value</a></p>
-                    </div>
-                </div>
-            )
-
-            return (
-                <>
-                    <div className="input-row hotkey-action-type">
-                        {selectBox}
-                    </div>
-                    <div className="input-row hotkey-action-code">
-                        <div className="field" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
-                            <label>VCP Code</label>
-                            <input value={hotkey.target} type="text" placeholder={`VCP code (Ex. 16 or 0x10)`} onChange={e => {
-                                hotkey.target = e.target.value
-                                this.updateHotkey(hotkey, idx)
-                            }} />
-                        </div>
-                    </div>
-                    {hotkey.type === "cycle" ? listOfValues() : singleValue()}
-                </>
-            )
-        }
     }
 
     getHotkeyStatusIcon = hotkey => {
@@ -769,38 +712,17 @@ export default class SettingsWindow extends PureComponent {
         this.forceUpdate()
     }
 
+    updateHotkeyAction(action, idx, actionIdx) {
+        this.state.hotkeys[idx].actions[actionIdx] = Object.assign({}, action)
+        window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
+        this.forceUpdate()
+    }
+
     deleteHotkey(idx) {
         this.state.hotkeys.splice(idx, 1)
         window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
         this.forceUpdate()
     }
-
-    getHotkeyMonitors = (hotkey, idx) => {
-        try {
-            if(hotkey.allMonitors) return (null)
-            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
-                return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
-            } else {
-                return Object.values(this.state.monitors).map((monitor, index) => {
-                    if(monitor.type !== "ddcci") return null;
-                    return (
-                        <div key={monitor.key} className="feature-toggle-row">
-                            <input onChange={e => {
-                                if (!hotkey.monitors) hotkey.monitors = {};
-                                hotkey.monitors[monitor.id] = e.target.checked
-                                this.updateHotkey(hotkey, idx)
-                            }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
-                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{getMonitorName(monitor, this.state.names)}</div>
-                        </div>
-                    )
-
-                })
-            }
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
 
 
     getInfoMonitors = () => {
@@ -1285,12 +1207,9 @@ export default class SettingsWindow extends PureComponent {
                                     <p><a className="button" onClick={() => {
                                         this.state.hotkeys.push({
                                             accelerator: "",
-                                            type: "set",
-                                            target: "brightness",
-                                            monitors: {},
-                                            allMonitors: false,
-                                            value: 0,
-                                            values: [0],
+                                            actions: [
+                                                Object.assign({}, defaultAction)
+                                            ],
                                             id: uuid()
                                         })
                                         window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
@@ -1519,7 +1438,7 @@ function AppProfile(props) {
     if (!profile.monitors) profile.monitors = {};
 
     return (
-        <SettingsOption title={profile.name ?? "New Profile"} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
+        <SettingsOption title={profile.name ?? "New Profile"} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>Delete</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
             <SettingsChild>
                 <div className="option-title">General Settings</div><br />
                 <label>Profile name</label>
@@ -1677,8 +1596,8 @@ function ActionItem(props) {
                     <div className="input-row hotkey-action-type">
                         {selectBox}
                     </div>
-                    <div className="input-row hotkey-action-code">
-                        <div className="field" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
+                    <div className="input-row hotkey-action-code" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
+                        <div className="field">
                             <label>VCP Code</label>
                             <input value={action.target} type="text" placeholder={`VCP code (Ex. 16 or 0x10)`} onChange={e => {
                                 action.target = e.target.value
@@ -1694,8 +1613,12 @@ function ActionItem(props) {
 
     return (
         <div className="action-item-base">
-            <div className="option-title">{props.title ?? "Action"}</div><br />
-            <div className="row">
+            { props.onDelete ?
+                <div className=""><a className="button button-primary" onClick={() => props.onDelete?.(action)}>{deleteIcon} <span>Delete {props.title ?? "Action"}</span></a><br /><br /></div>
+            : <div className="option-title">{props.title ?? "Action"}</div> }
+            
+            
+            <div className="input-row">
                 <div className="hotkey-monitors-list" style={{ display: (showDisplaysList ? "block" : "none") }}>
                     <div className="input-row">
                         <div className="field">

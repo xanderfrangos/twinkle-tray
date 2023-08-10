@@ -472,22 +472,27 @@ function readSettings(doProcessSettings = true) {
           const newHotkey = {
             accelerator: hotkey.accelerator,
             id: uuid(),
-            monitors: {},
-            target: "brightness",
-            values: [0],
-            allMonitors: false
+            actions: [
+              {
+                monitors: {},
+                target: "brightness",
+                values: [0],
+                value: 0,
+                allMonitors: false
+              }
+            ]
           }
           if (hotkey.monitor === "turn_off_displays") {
-            newHotkey.type = "off"
+            newHotkey.actions[0].type = "off"
           } else {
             newHotkey.monitors = {}
             if (hotkey.monitor === "all") {
-              newHotkey.allMonitors = true
+              newHotkey.actions[0].allMonitors = true
             } else {
-              newHotkey.monitors[hotkey.monitor] = true
+              newHotkey.actions[0].monitors[hotkey.monitor] = true
             }
-            newHotkey.type = "offset"
-            newHotkey.value = settings.hotkeyPercent * hotkey.direction
+            newHotkey.actions[0].type = "offset"
+            newHotkey.actions[0].value = settings.hotkeyPercent * hotkey.direction
           }
           newHotkeys.push(newHotkey)
         }
@@ -884,157 +889,168 @@ const hotkeyCycleIndexes = []
 async function doHotkey(hotkey) {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
+
+    if (!hotkey.actions?.length) return false;
+
     hotkeyThrottle[hotkey.id] = now
-
-
     let showOverlay = false
-
     doingHotkey = true
 
-    try {
+    // First let's figure out where we're at in the cycle, if applicable
 
-      // Wait for refresh if user hasn't done so recently
-      if (hotkey.type !== "refresh" && lastRefreshMonitors < Date.now() - 10000) {
-        await refreshMonitors()
-      }
+    let hasCheckedFirstCycleAction = false
 
-      if (hotkey.type === "off") {
-        showOverlay = false
-        sleepDisplays(settings.sleepAction)
-      } else if(hotkey.type === "refresh") {
-        showOverlay = false
-        await refreshMonitors(true, true)
-      } else if (hotkey.type === "set" || hotkey.type === "offset" || hotkey.type === "cycle") {
+    for (const action of hotkey.actions) {
+      try {
 
-        const determineHotkeyOutputValue = async monitor => {
-          switch (hotkey.type) {
-            case "offset":
-              let currentValue = 0
-              if (hotkey.target === "brightness") {
-                currentValue = monitor.brightness
-              } else if (hotkey.target === "contrast") {
-                currentValue = await getVCP(monitor, parseInt("0x12"))
-              } else if (hotkey.target === "volume") {
-                currentValue = await getVCP(monitor, parseInt("0x62"))
-              } else if (hotkey.target === "powerState") {
-                currentValue = await getVCP(monitor, parseInt("0xD6"))
-              } else {
-                // Get VCP
-                currentValue = await getVCP(monitor, parseInt(hotkey.target))
-              }
-              return currentValue + parseInt(hotkey.value);
-            case "cycle":
-              if (!hotkey.values?.length) return -1;
-              if (!hotkeyCycleIndexes[hotkey.id]) {
-                hotkeyCycleIndexes[hotkey.id] = 0
-              }
+        // Wait for refresh if user hasn't done so recently
+        if (action.type !== "refresh" && lastRefreshMonitors < Date.now() - 10000) {
+          await refreshMonitors()
+        }
 
-              let currentCycleValue = 0
-              if (hotkey.target === "brightness") {
-                currentCycleValue = monitor.brightness
-              } else if (hotkey.target === "contrast") {
-                currentCycleValue = await getVCP(monitor, parseInt("0x12"))
-              } else if (hotkey.target === "volume") {
-                currentCycleValue = await getVCP(monitor, parseInt("0x62"))
-              } else if (hotkey.target === "powerState") {
-                currentCycleValue = await getVCP(monitor, parseInt("0xD6"))
-              } else {
-                // Get VCP
-                currentCycleValue = await getVCP(monitor, parseInt(hotkey.target))
-              }
+        if (action.type === "off") {
+          showOverlay = false
+          sleepDisplays(settings.sleepAction)
+        } else if (action.type === "refresh") {
+          showOverlay = false
+          await refreshMonitors(true, true)
+        } else if (action.type === "set" || action.type === "offset" || action.type === "cycle") {
 
-              // If current value is same as measured, move onto next value. Else reset.
-              if (currentCycleValue == parseInt(hotkey.values[hotkeyCycleIndexes[hotkey.id]])) {
-
-                if (hotkeyCycleIndexes[hotkey.id] >= hotkey.values.length - 1) {
-                  // End of list, reset
-                  hotkeyCycleIndexes[hotkey.id] = 0
+          const determineHotkeyOutputValue = async monitor => {
+            switch (action.type) {
+              case "offset":
+                let currentValue = 0
+                if (action.target === "brightness") {
+                  currentValue = monitor.brightness
+                } else if (action.target === "contrast") {
+                  currentValue = await getVCP(monitor, parseInt("0x12"))
+                } else if (action.target === "volume") {
+                  currentValue = await getVCP(monitor, parseInt("0x62"))
+                } else if (action.target === "powerState") {
+                  currentValue = await getVCP(monitor, parseInt("0xD6"))
                 } else {
-                  // Next value
-                  hotkeyCycleIndexes[hotkey.id]++
+                  // Get VCP
+                  currentValue = await getVCP(monitor, parseInt(action.target))
                 }
+                return currentValue + parseInt(action.value);
+              case "cycle":
+                if (!action.values?.length) return -1;
+                if (!hotkeyCycleIndexes[hotkey.id]) {
+                  hotkeyCycleIndexes[hotkey.id] = 0
+                }
+
+                let currentCycleValue = 0
+                if (action.target === "brightness") {
+                  currentCycleValue = monitor.brightness
+                } else if (action.target === "contrast") {
+                  currentCycleValue = await getVCP(monitor, parseInt("0x12"))
+                } else if (action.target === "volume") {
+                  currentCycleValue = await getVCP(monitor, parseInt("0x62"))
+                } else if (action.target === "powerState") {
+                  currentCycleValue = await getVCP(monitor, parseInt("0xD6"))
+                } else {
+                  // Get VCP
+                  currentCycleValue = await getVCP(monitor, parseInt(action.target))
+                }
+
+                // Update cycle if it's the first "cycle" action
+                if(!hasCheckedFirstCycleAction) {
+                  hasCheckedFirstCycleAction = true
+                  // If current value is same as measured, move onto next value. Else reset.
+                  if (currentCycleValue == parseInt(action.values[hotkeyCycleIndexes[hotkey.id]])) {
+
+                    if (hotkeyCycleIndexes[hotkey.id] >= action.values.length - 1) {
+                      // End of list, reset
+                      hotkeyCycleIndexes[hotkey.id] = 0
+                    } else {
+                      // Next value
+                      hotkeyCycleIndexes[hotkey.id]++
+                    }
+                  } else {
+                    // Reset
+                    hotkeyCycleIndexes[hotkey.id] = 0
+                  }
+                }
+                
+                return action.values[hotkeyCycleIndexes[hotkey.id]];
+
+              case "set": return parseInt(action.value);
+            }
+          }
+
+          // Build list of all applicable monitors
+          const hotkeyMonitors = []
+          if (action.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
+            // Target all monitors
+            for (const monitor of Object.values(monitors)) {
+              hotkeyMonitors.push({
+                monitor,
+                value: await determineHotkeyOutputValue(monitor)
+              })
+            }
+          } else {
+            // Use list, look up monitor objects
+            if (Object.keys(action.monitors)?.length) {
+              for (const id in action.monitors) {
+                if (action.monitors[id]) {
+                  const monitor = Object.values(monitors).find(m => m.id == id)
+                  if (monitor) {
+                    hotkeyMonitors.push({
+                      monitor,
+                      value: await determineHotkeyOutputValue(monitor)
+                    });
+                  }
+                }
+              }
+            }
+          }
+
+          // Apply change
+          if (hotkeyMonitors?.length) {
+            for (const hotkeyMonitor of hotkeyMonitors) {
+              const { monitor, value } = hotkeyMonitor
+              if (action.target === "brightness") {
+                const normalizedAdjust = minMax(value)
+                monitors[monitor.key].brightness = normalizedAdjust
+                sendToAllWindows('monitors-updated', monitors);
+                updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
+                pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
+
+                // Break linked levels
+                if (settings.hotkeysBreakLinkedLevels && settings.linkedLevelsActive) {
+                  console.log("Breaking linked levels due to hotkey.")
+                  writeSettings({ linkedLevelsActive: false })
+                }
+                showOverlay = true
               } else {
-                // Reset
-                hotkeyCycleIndexes[hotkey.id] = 0
-              }
-              return hotkey.values[hotkeyCycleIndexes[hotkey.id]];
-
-            case "set": return parseInt(hotkey.value);
-          }
-        }
-
-        // Build list of all applicable monitors
-        const hotkeyMonitors = []
-        if (hotkey.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
-          // Target all monitors
-          for (const monitor of Object.values(monitors)) {
-            hotkeyMonitors.push({
-              monitor,
-              value: await determineHotkeyOutputValue(monitor)
-            })
-          }
-        } else {
-          // Use list, look up monitor objects
-          if (Object.keys(hotkey.monitors)?.length) {
-            for (const id in hotkey.monitors) {
-              if (hotkey.monitors[id]) {
-                const monitor = Object.values(monitors).find(m => m.id == id)
-                if (monitor) {
-                  hotkeyMonitors.push({
-                    monitor,
-                    value: await determineHotkeyOutputValue(monitor)
-                  });
+                let vcpCode = action.target
+                if (action.target === "contrast") {
+                  vcpCode = "0x12"
+                } else if (action.target === "volume") {
+                  vcpCode = "0x62"
+                } else if (action.target === "powerState") {
+                  vcpCode = "0xD2"
                 }
+                updateBrightness(monitor.id, parseInt(value), false, parseInt(vcpCode))
+                sendToAllWindows('monitors-updated', monitors);
               }
             }
           }
-        }
 
-        // Apply change
-        if (hotkeyMonitors?.length) {
-          for (const hotkeyMonitor of hotkeyMonitors) {
-            const { monitor, value } = hotkeyMonitor
-            if (hotkey.target === "brightness") {
-              const normalizedAdjust = minMax(value)
-              monitors[monitor.key].brightness = normalizedAdjust
-              sendToAllWindows('monitors-updated', monitors);
-              updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
-              pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
 
-              // Break linked levels
-              if (settings.hotkeysBreakLinkedLevels && settings.linkedLevelsActive) {
-                console.log("Breaking linked levels due to hotkey.")
-                writeSettings({ linkedLevelsActive: false })
-              }
-              showOverlay = true
-            } else {
-              let vcpCode = hotkey.target
-              if(hotkey.target === "contrast") {
-                vcpCode = "0x12"
-              } else if(hotkey.target === "volume") {
-                vcpCode = "0x62"
-              } else if(hotkey.target === "powerState") {
-                vcpCode = "0xD2"
-              } 
-              updateBrightness(monitor.id, parseInt(value), false, parseInt(vcpCode))
-              sendToAllWindows('monitors-updated', monitors);
-            }
-          }
+
         }
 
 
+        // Show brightness overlay, if applicable
+        // If panel isn't open, use the overlay
+        if (showOverlay && panelState !== "visible") {
+          hotkeyOverlayStart(undefined, true)
+        }
 
+      } catch (e) {
+        console.log("HOTKEY ERROR:", e)
       }
-
-
-      // Show brightness overlay, if applicable
-      // If panel isn't open, use the overlay
-      if (showOverlay && panelState !== "visible") {
-        hotkeyOverlayStart(undefined, true)
-      }
-
-    } catch (e) {
-      console.log("HOTKEY ERROR:", e)
     }
 
     doingHotkey = false

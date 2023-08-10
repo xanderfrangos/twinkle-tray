@@ -1752,36 +1752,27 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {
+
+          // Normalize VCP value, if applicable
+          const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+          if(featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+            level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
+          }
+
           monitor.features[vcpString][0] = parseInt(level)
+
+          monitorsThread.send({
+            type: "vcp",
+            monitor: monitor.hwid.join("#"),
+            code: parseInt(vcp),
+            value: parseInt(level)
+          })
+
         } catch(e) {
           console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`)
         }
-        monitorsThread.send({
-          type: "vcp",
-          monitor: monitor.hwid.join("#"),
-          code: parseInt(vcp),
-          value: parseInt(level)
-        })
       }
 
-    } else if (monitor.type == "ddcci") {
-
-      // Normalize VCP value, if applicable
-      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-      if(featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
-        level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
-      }
-
-      if (monitor.features[vcp]) {
-        monitor.features[vcp][0] = level
-      }
-
-      monitorsThread.send({
-        type: "vcp",
-        code: parseInt(vcp),
-        value: level,
-        monitor: monitor.hwid.join("#")
-      })
     } else if (monitor.type == "wmi") {
       monitor.brightness = level
       monitor.brightnessRaw = normalized

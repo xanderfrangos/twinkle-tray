@@ -164,13 +164,17 @@ function MonitorFeaturesSettings(props) {
             { ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null }
             <div className="input-row">
                 <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
-                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false}   />
+                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
             </div>
             <div className="input-row">
                 <div className="feature-toggle-row">
                     <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
                     <div className="feature-toggle-label"><span>Linked to brightness</span></div>
                 </div>
+            </div>
+            <div style={{display: (settingsObj.linked ? "block" : "none")}}>
+                <br />
+                <Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
             </div>
         </div>
     )

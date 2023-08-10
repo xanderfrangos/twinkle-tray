@@ -1745,7 +1745,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           // For each feature, check for linked value
           for(const vcp in monitor.features) {
             if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
-              updateBrightness(index, newLevel, useCap, vcp, clearTransition)
+
+              const maxBrightness = (featuresSettings[vcp].maxVisual ?? 100)
+              let processedLevel = newLevel
+              if(processedLevel > maxBrightness) {
+                processedLevel = maxBrightness
+              }
+
+              const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
+              updateBrightness(index, capped, useCap, vcp, clearTransition)
             }
           }
         }

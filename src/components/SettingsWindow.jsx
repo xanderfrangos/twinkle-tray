@@ -428,7 +428,7 @@ export default class SettingsWindow extends PureComponent {
                         remap = this.getRemap(monitor.name)
                     }
                     return (
-                        <SettingsOption key={monitor.id} icon="E7F4" title={this.getMonitorName(monitor, this.state.names)}>
+                        <SettingsOption key={monitor.id} icon="E7F4" title={getMonitorName(monitor, this.state.names)}>
                             <SettingsChild content={
                                 <div className="input-row">
                                     <div className="monitor-item">
@@ -497,7 +497,7 @@ export default class SettingsWindow extends PureComponent {
                                                             provided.draggableProps.style
                                                         )}
                                                     >
-                                                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{this.getMonitorName(monitor, this.state.names)}</div></div>
+                                                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{getMonitorName(monitor, this.state.names)}</div></div>
                                                     </div>
                                                 )}
                                             </Draggable>
@@ -596,7 +596,7 @@ export default class SettingsWindow extends PureComponent {
                         this.state.adjustmentTimes[index].monitors[monitor.id] = level
                         this.adjustmentTimesUpdated()
                     }
-                    return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={this.getMonitorName(monitor, this.state.names)} onChange={(value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
+                    return (<Slider key={monitor.id + ".brightness"} min={0} max={100} name={getMonitorName(monitor, this.state.names)} onChange={(value) => { this.getAdjustmentTimesMonitorsChanged(index, monitor, value) }} level={level} scrolling={false} />)
                 }
             })
         } else {
@@ -628,7 +628,6 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyList = () => {
         return this.state.hotkeys?.map((hotkey, idx) => {
-            const showDisplaysList = (hotkey.type != "off" && hotkey.type != "refresh")
             return (
                 <SettingsOption className="win10-has-background" key={hotkey.id} content={
                     <div className="row hotkey-combo-input">
@@ -656,42 +655,7 @@ export default class SettingsWindow extends PureComponent {
                     <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}><span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span> <span>Delete</span></a>
                 }>
                     <SettingsChild>
-                        <div className="option-title">Action</div><br />
-                        <div className="row">
-                            <div className="hotkey-monitors-list" style={{ display: (showDisplaysList ? "block" : "none") }}>
-                                <div className="input-row">
-                                    <div className="field">
-                                        <label style={{ marginBottom: "8px" }}>Displays</label>
-                                        <div className="feature-toggle-row">
-                                            <input onChange={e => {
-                                                hotkey.allMonitors = e.target.checked
-                                                this.updateHotkey(hotkey, idx)
-                                            }} checked={hotkey.allMonitors} data-checked={hotkey.allMonitors} type="checkbox" />
-                                            <div className="feature-toggle-label">All Displays</div>
-                                        </div>
-                                        {this.getHotkeyMonitors(hotkey, idx)}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="hotkey-action-fields">
-                                <div className="input-row">
-                                    <div className="field">
-                                        <label>Hotkey Action</label>
-                                        <select value={hotkey.type} onChange={e => {
-                                            hotkey.type = e.target.value
-                                            this.updateHotkey(hotkey, idx)
-                                        }}>
-                                            <option value="set">Set value</option>
-                                            <option value="offset">Adjust value</option>
-                                            <option value="cycle">Cycle list of values</option>
-                                            <option value="off">Turn off displays</option>
-                                            <option value="refresh">Refresh displays</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                {this.getHotkeyInput(hotkey)}
-                            </div>
-                        </div>
+                        <ActionItem action={hotkey} onChange={updatedAction => this.updateHotkey(updatedAction, idx)} monitors={this.state.monitors} monitorNames={this.state.names} />
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -826,7 +790,7 @@ export default class SettingsWindow extends PureComponent {
                                 hotkey.monitors[monitor.id] = e.target.checked
                                 this.updateHotkey(hotkey, idx)
                             }} checked={(hotkey.monitors?.[monitor.id] ? true : false)} data-checked={(hotkey.monitors?.[monitor.id] ? true : false)} type="checkbox" />
-                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{this.getMonitorName(monitor, this.state.names)}</div>
+                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{getMonitorName(monitor, this.state.names)}</div>
                         </div>
                     )
 
@@ -857,7 +821,7 @@ export default class SettingsWindow extends PureComponent {
                     <div key={monitor.key} className="monitorItem">
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                        <p>Name: <b>{this.getMonitorName(monitor, this.state.names)}</b>
+                        <p>Name: <b>{getMonitorName(monitor, this.state.names)}</b>
                             <br />Internal name: <b>{monitor.hwid[1]}</b>
                             <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
                             <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
@@ -879,7 +843,7 @@ export default class SettingsWindow extends PureComponent {
             return Object.values(this.state.monitors).map((monitor, index) => {
 
                 return (
-                    <MonitorInfo key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} debug={true} />
+                    <MonitorInfo key={monitor.key} name={getMonitorName(monitor, this.state.names)} monitor={monitor} debug={true} />
                 )
 
             })
@@ -897,7 +861,7 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
                     const features = this.state?.rawSettings.monitorFeatures[monitor.hwid[1]]
                     return (
-                        <MonitorFeatures key={monitor.key} name={this.getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} onChange={onChange} onAddFeature={() => {
+                        <MonitorFeatures key={monitor.key} name={getMonitorName(monitor, this.state.names)} monitor={monitor} monitorFeatures={features} toggleFeature={this.toggleFeature} T={T} onChange={onChange} onAddFeature={() => {
                             this.setState({
                                 showAddFeatureOverlay: true,
                                 addFeatureMonitor: monitor.hwid[1],
@@ -924,7 +888,7 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
 
                     return (
-                        <SettingsChild key={monitor.key} icon="E7F4" title={this.getMonitorName(monitor, this.state.names)} input={
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
                             <div className="inputToggle-generic">
                                 <input onChange={(e) => { this.setHideMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hideDisplays?.[monitor.key] ? true : false)} type="checkbox" />
                             </div>
@@ -1542,6 +1506,14 @@ function getProfileMonitors(monitors, profile, onChange) {
     })
 }
 
+function getMonitorName(monitor, renames) {
+    if (Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
+        return renames[monitor.id] + ` (${monitor.name})`
+    } else {
+        return monitor.name
+    }
+}
+
 function AppProfile(props) {
     const { profile, updateValue, onDelete, monitors } = props
     if (!profile.monitors) profile.monitors = {};
@@ -1595,4 +1567,169 @@ function SettingsPage(props) {
         )
     }
     return null
+}
+
+function ActionItem(props) {
+    const { action, monitors, monitorNames } = props
+    const showDisplaysList = (action.type != "off" && action.type != "refresh")
+
+    const getHotkeyMonitors = () => {
+        try {
+            if(action.allMonitors) return (null)
+            if (monitors == undefined || Object.keys(monitors).length == 0) {
+                return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
+            } else {
+                return Object.values(monitors).map((monitor, index) => {
+                    if(monitor.type !== "ddcci") return null;
+                    return (
+                        <div key={monitor.key} className="feature-toggle-row">
+                            <input onChange={e => {
+                                if (!action.monitors) action.monitors = {};
+                                action.monitors[monitor.id] = e.target.checked
+                                props.onChange?.(action)
+                            }} checked={(action.monitors?.[monitor.id] ? true : false)} data-checked={(action.monitors?.[monitor.id] ? true : false)} type="checkbox" />
+                            <div className="feature-toggle-label" style={{ display: "flex", alignItems: "center", gap: "8px" }}>{getMonitorName(monitor, monitorNames)}</div>
+                        </div>
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const getHotkeyInput = () => {
+        if (action.type === "off") {
+            return (<div className="input-row"><p style={{lineHeight: 1.2}}>This action will use the option selected under <b>Turn Off Displays action</b>. If you wish to turn off specific displays instead, use the "Set" or "Cycle" Hotkey Action instead.</p></div>)
+        } else if (action.type === "refresh") {
+            return null
+        } else {
+            let selectBoxValue = action.target
+            if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
+                selectBoxValue = "vcp"
+            }
+            const selectBox = (
+                <div className="field">
+                    <label>Action Target</label>
+                    <select value={selectBoxValue} onChange={e => {
+                        const value = e.target.value
+                        if (value === "vcp") {
+                            action.target = ""
+                        } else {
+                            action.target = value
+                        }
+                        props.onChange?.(action)
+                    }}>
+                        <option value="brightness">Brightness</option>
+                        <option value="contrast">Contrast (if supported)</option>
+                        <option value="volume">Volume (if supported)</option>
+                        <option value="vcp">Specific VCP code</option>
+                    </select>
+                </div>
+            )
+
+            const singleValue = () => (
+                <div className="input-row hotkey-action-value">
+                    <div className="hotkey-value field">
+                        <label>Value</label>
+                        <input type="number" min="-65535" max="65535" value={action.value ?? 0} placeholder={`Enter a number`} onChange={e => {
+                            const value = e.target.value
+                            action.value = value ?? 0
+                            props.onChange?.(action)
+                        }} />
+                    </div>
+                </div>
+            )
+
+            const listOfValues = () => (
+                <div className="input-row hotkey-action-values">
+                    <div className="hotkey-values-list">
+                        <label>Values</label>
+                        {action.values?.map((value, idx2) => {
+                            return (
+                                <div className="hotkey-value">
+                                    <input type="number" min="-65535" max="65535" value={value ?? 0} placeholder={`Enter a number`}
+                                        onChange={e => {
+                                            const value = e.target.value
+                                            action.values[idx2] = value ?? 0
+                                            props.onChange?.(action)
+                                        }} />
+                                    {idx2 ? (
+                                        <input type="button" className="button" onClick={() => {
+                                            action.values.splice(idx2, 1)
+                                            props.onChange?.(action)
+                                        }} value={"Remove"} />
+                                    ) : null}
+                                </div>
+                            )
+                        })}
+                        <p><a className="button button-primary" onClick={() => {
+                            action.values.push([0])
+                            props.onChange?.(action)
+                        }}>+ Add Value</a></p>
+                    </div>
+                </div>
+            )
+
+            return (
+                <>
+                    <div className="input-row hotkey-action-type">
+                        {selectBox}
+                    </div>
+                    <div className="input-row hotkey-action-code">
+                        <div className="field" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
+                            <label>VCP Code</label>
+                            <input value={action.target} type="text" placeholder={`VCP code (Ex. 16 or 0x10)`} onChange={e => {
+                                action.target = e.target.value
+                                props.onChange?.(action)
+                            }} />
+                        </div>
+                    </div>
+                    {action.type === "cycle" ? listOfValues() : singleValue()}
+                </>
+            )
+        }
+    }
+
+    return (
+        <div className="action-item-base">
+            <div className="option-title">{props.title ?? "Action"}</div><br />
+            <div className="row">
+                <div className="hotkey-monitors-list" style={{ display: (showDisplaysList ? "block" : "none") }}>
+                    <div className="input-row">
+                        <div className="field">
+                            <label style={{ marginBottom: "8px" }}>Displays</label>
+                            <div className="feature-toggle-row">
+                                <input onChange={e => {
+                                    action.allMonitors = e.target.checked
+                                    props.onChange?.(action)
+                                }} checked={action.allMonitors} data-checked={action.allMonitors} type="checkbox" />
+                                <div className="feature-toggle-label">All Displays</div>
+                            </div>
+                            {getHotkeyMonitors()}
+                        </div>
+                    </div>
+                </div>
+                <div className="hotkey-action-fields">
+                    <div className="input-row">
+                        <div className="field">
+                            <label>Action</label>
+                            <select value={action.type} onChange={e => {
+                                action.type = e.target.value
+                                props.onChange?.(action)
+                            }}>
+                                <option value="set">Set value</option>
+                                <option value="offset">Adjust value</option>
+                                <option value="cycle">Cycle list of values</option>
+                                <option value="off">Turn off displays</option>
+                                <option value="refresh">Refresh displays</option>
+                            </select>
+                        </div>
+                    </div>
+                    {getHotkeyInput()}
+                </div>
+            </div>
+        </div>
+    )
 }

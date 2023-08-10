@@ -1077,7 +1077,8 @@ body[data-is-win11="true"] {
     }
     .pageSection {
         padding-bottom: 40px;
-        max-width: 800px;
+        max-width: 1000px;
+        width: 100%;
 
         &.is-panel {
             background: var(--page-section-bg);
@@ -1088,6 +1089,9 @@ body[data-is-win11="true"] {
         }
     }
     .settings-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         animation: pageSectionIn 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
         @keyframes pageSectionIn {
             0% { opacity: 0; transform: translateY(90px); }

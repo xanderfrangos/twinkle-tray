@@ -12,6 +12,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+      - name: package.json info
+        id: info
+        uses: jaywcjlove/github-action-package@main
       - run: npm run build-all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -19,7 +22,7 @@ jobs:
         name: Upload Windows Installer
         with:
           name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
-          path: dist/*.exe
+          path: dist/${{ steps.info.outputs.name }} v${{ steps.info.outputs.version }}.exe
       - uses: actions/upload-artifact@v3
         name: Upload x64 AppX
         with:

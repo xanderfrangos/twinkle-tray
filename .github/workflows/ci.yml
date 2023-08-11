@@ -22,7 +22,7 @@ jobs:
         name: Upload Windows Installer
         with:
           name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
-          path: dist/Twinkle Tray v${{ steps.info.outputs.version }}.exe
+          path: dist/*.exe
       - uses: actions/upload-artifact@v3
         name: Upload x64 AppX
         with:

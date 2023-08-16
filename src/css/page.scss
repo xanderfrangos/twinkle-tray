@@ -1067,6 +1067,14 @@ body[data-is-win11="true"] {
     }
     .icon-option img {
         border-radius: 4px;
+        background-color: var(--page-section-bg);
+        border-color: var(--button-border);
+    }
+    .icon-option[data-active=true] img {
+        background: var(--system-accent-medium);
+        border-color: var(--system-accent-medium-dark);
+        background-color: var(--system-accent-dark1);
+        border-color: var(--system-accent-light2);
     }
     .reorderList {
         border-color: var(--button-border);
@@ -1107,6 +1115,9 @@ body[data-is-win11="true"] {
         #mica img {
             opacity: 0;
         }
+    }
+    .changelog {
+        border-color: #8181818c;
     }
 }
 

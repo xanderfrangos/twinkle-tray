@@ -12,6 +12,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
+      - name: package.json info
+        id: info
+        uses: jaywcjlove/github-action-package@main
       - run: npm run build-all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

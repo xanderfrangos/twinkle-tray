@@ -865,7 +865,7 @@ function applyHotkeys(monitorList = monitors) {
       for (const hotkey of settings.hotkeys) {
         try {
           // Only apply if found/valid
-          if (hotkey.accelerator && hotkey.allMonitors || hotkey.type == "off" || hotkey.type == "refresh" || Object.keys(hotkey.monitors)?.length) {
+          if (hotkey.accelerator) {
             hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
               doHotkey(hotkey)
             })

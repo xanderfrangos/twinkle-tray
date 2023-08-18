@@ -957,7 +957,7 @@ async function doHotkey(hotkey) {
                 if(!hasCheckedFirstCycleAction) {
                   hasCheckedFirstCycleAction = true
                   // If current value is same as measured, move onto next value. Else reset.
-                  if (currentCycleValue == parseInt(action.values[hotkeyCycleIndexes[hotkey.id]])) {
+                  if (true || currentCycleValue == parseInt(action.values[hotkeyCycleIndexes[hotkey.id]])) {
 
                     if (hotkeyCycleIndexes[hotkey.id] >= action.values.length - 1) {
                       // End of list, reset

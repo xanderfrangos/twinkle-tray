@@ -1099,11 +1099,20 @@ async function hotkeyOverlayShow() {
     const panelHeight = 14 + 36 + (28 * monitorCount)
     const panelWidth = 216
     const primaryDisplay = screen.getPrimaryDisplay()
+
+    let gap = 0
+    if(detectedTaskbarHide) {
+      gap = detectedTaskbarHeight
+    }
+    if (typeof settings.overrideTaskbarGap === "number") {
+      gap = settings.overrideTaskbarGap
+    }
+
     const bounds = {
       width: panelWidth,
       height: panelHeight,
       x: parseInt((primaryDisplay.workArea.width - panelWidth) / 2),
-      y: parseInt(primaryDisplay.workArea.height - panelHeight)
+      y: parseInt(primaryDisplay.workArea.height - panelHeight - gap)
     }
     mainWindow.setBounds(bounds)
   } else {
@@ -1422,7 +1431,7 @@ async function getThemeRegistry() {
     const Settings = reg.getValue(key, null, 'Settings');
     taskbarPos = Settings[12] * 1
     detectedTaskbarHeight = Settings[20] * 1
-    detectedTaskbarHide = (Settings[8] * 1 === 3 ? true : false) // 3 = auto-hide
+    detectedTaskbarHide = (parseInt(Settings[8]) & 1  ? true : false) // 3 = auto-hide
 
     if (taskbarPos !== null || settings.useTaskbarRegistry) {
       switch (taskbarPos) {

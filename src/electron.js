@@ -1031,7 +1031,7 @@ async function doHotkey(hotkey) {
                 } else if (action.target === "powerState") {
                   vcpCode = "0xD2"
                 }
-                updateBrightness(monitor.id, parseInt(value), false, parseInt(vcpCode))
+                updateBrightnessThrottle(monitor.id, parseInt(value), false, parseInt(vcpCode))
                 sendToAllWindows('monitors-updated', monitors);
               }
             }
@@ -1762,7 +1762,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
               }
 
               const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
-              updateBrightness(index, capped, useCap, vcp, clearTransition)
+              updateBrightnessThrottle(index, capped, useCap, false, vcp)
             }
           }
         }

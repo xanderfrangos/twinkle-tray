@@ -56,6 +56,7 @@ let isDev = (process.argv.indexOf("--isdev=true") >= 0)
 let monitors = false
 let monitorNames = []
 let monitorsWin32 = {}
+let monitorReports = {}
 
 let settings = { order: [] }
 let localization = {}
@@ -210,7 +211,7 @@ getAllMonitors = async () => {
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
-            const { features, id, hwid } = monitor
+            const { features, id, hwid, vcpCodes } = monitor
             let brightnessType = (features["0x10"] ? 0x10 : (features["0x13"] ? 0x13 : 0x00))
 
             // Use DDC Brightness overrides, if relevant
@@ -223,6 +224,7 @@ getAllMonitors = async () => {
                 key: hwid2,
                 hwid,
                 features: features,
+                vcpCodes: vcpCodes,
                 type: (brightnessType ? "ddcci" : "none"),
                 min: 0,
                 max: 100,
@@ -421,13 +423,14 @@ getFeaturesDDC = () => {
                 let features = []
 
                 // Yes, we're doing this 2 times because DDC/CI is flaky sometimes
-                features = await checkMonitorFeatures(monitor);
-                features = await checkMonitorFeatures(monitor);
+                features = await checkMonitorFeatures(monitor)
+                features = await checkMonitorFeatures(monitor)
 
                 monitorFeatures[hwid[2]] = {
                     id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
                     hwid,
-                    features
+                    features,
+                    vcpCodes: (monitorReports[monitor] ? Object.keys(monitorReports[monitor]) : [] )
                 }
                 clearTimeout(featureTimeout)
             }
@@ -445,6 +448,15 @@ checkMonitorFeatures = async (monitor) => {
     return new Promise(async (resolve, reject) => {
         const features = {}
         try {
+
+            // Detect valid VCP codes for display
+            if(!monitorReports[monitor]) {
+                const report = ddcci.getReport(monitor)
+                if(Object.keys(report)?.length) {
+                    monitorReports[monitor] = report
+                }
+            }
+
             // This part is flaky, so we'll do it slowly
             features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance")
             features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness")
@@ -623,14 +635,24 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
         const hwid = monitor.split("#")
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
         const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
+        const isInReport = monitorReports[monitor]?.[vcpString] ? true : false
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
         if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return vcpCache[monitor]["vcp_" + vcpString];
 
+        if (!isInReport) return false;
+
         const vcpResult = await checkVCP(monitor, code)
         return vcpResult
     } catch (e) {
-        console.log(e)
+        console.log(`Error reading VCP code ${code} for ${monitor}`)
+
+        // Since it failed, let's check for an existing value first
+        if(vcpCache[monitor]?.["vcp_" + vcpString]) {
+            return vcpCache[monitor]["vcp_" + vcpString]
+        }
+        
+        // Cached value can't be used, so we return false
         return false
     }
 }
@@ -643,9 +665,17 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
         }
-        await wait(200)
+        await wait(100)
         return result
     } catch (e) {
+        console.log(`Error reading VCP code ${code} for ${monitor}`)
+
+        // Since it failed, let's check for an existing value first
+        if(vcpCache[monitor]?.["vcp_" + vcpString]) {
+            return vcpCache[monitor]["vcp_" + vcpString]
+        }
+        
+        // Cached value can't be used, so we return false
         return false
     }
 }

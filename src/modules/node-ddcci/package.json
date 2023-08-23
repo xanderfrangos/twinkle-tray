@@ -1,0 +1,17 @@
+{
+  "name": "@hensm/ddcci",
+  "version": "0.1.0",
+  "description": "NodeJS DDC/CI library",
+  "main": "index.js",
+  "author": "Matt Hensman <@matt.tf>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hensm/node-ddcci/issues"
+  },
+  "repository": "github:hensm/node-ddcci",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^2.0.0"
+  },
+  "types": "index.d.ts"
+}

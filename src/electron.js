@@ -2713,15 +2713,15 @@ app.on("ready", async () => {
   await getThemeRegistry()
   //readSettings()
   getLocalization()
+  showIntro()
 
-  refreshMonitors(true, true).then(() => {
+  await refreshMonitors(true, true).then(() => {
     if (settings.brightnessAtStartup) setKnownBrightness();
     if (settings.checkTimeAtStartup) {
       lastTimeEvent = false;
       setTimeout(() => handleBackgroundUpdate(true), 3500)
     }
     restartBackgroundUpdate()
-    showIntro()
     createPanel()
   })
 

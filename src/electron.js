@@ -1538,7 +1538,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
           settings.autoDisabledWMI = true
           settings.disableWMI = true
         }
-      }, 10000)
+      }, 60000)
 
       function listen(resolve) {
         monitorsThread.once("refreshMonitors", data => {

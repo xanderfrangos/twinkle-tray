@@ -387,6 +387,9 @@ const defaultSettings = {
   detectIdleTimeEnabled: false,
   detectIdleTimeSeconds: 0,
   detectIdleTimeMinutes: 5,
+  idleRestoreTime: 0,
+  wakeRestoreTime: 0,
+  hardwareRestoreTime: 0,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
   disableWMIC: false,
@@ -3403,7 +3406,7 @@ function handleMonitorChange(e, d) {
     })
 
     handleChangeTimeout2 = false
-  }, 5000)
+  }, parseInt(settings.hardwareRestoreTime) || 5000)
 
 }
 
@@ -3421,7 +3424,7 @@ powerMonitor.on("resume", () => {
         applyCurrentAdjustmentEvent(true, false)
       })
     },
-    3000 // Give Windows a few seconds to... you know... wake up.
+    parseInt(settings.wakeRestoreTime) || 3000 // Give Windows a few seconds to... you know... wake up.
   )
   if (!settings.disableAutoRefresh) setTimeout(() => {
     refreshMonitors(true)
@@ -3559,7 +3562,7 @@ function idleCheckShort() {
           const foundEvent = applyCurrentAdjustmentEvent(true, true)
           if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
         }
-      }, 3000)
+      }, parseInt(settings.idleRestoreTime) || 3000)
 
     }
     lastIdleTime = idleTime

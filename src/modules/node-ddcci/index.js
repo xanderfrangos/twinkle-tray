@@ -9,7 +9,8 @@ module.exports = {
   , _getVCP: ddcci.getVCP
   , _setVCP: ddcci.setVCP
   , _getReport: ddcci.getReport
-  , _refresh: ddcci.refresh
+  , _saveCurrentSettings: ddcci.saveCurrentSettings
+  , _refresh: (filterResults = true) => ddcci.refresh(filterResults)
   , getMonitorList: ddcci.getMonitorList
 
   , getVCP: ddcci.getVCP

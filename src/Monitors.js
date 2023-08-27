@@ -211,7 +211,7 @@ getAllMonitors = async () => {
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
-            const { features, id, hwid, vcpCodes } = monitor
+            const { features, id, hwid, vcpCodes, handle } = monitor
             let brightnessType = (features["0x10"] ? 0x10 : (features["0x13"] ? 0x13 : 0x00))
 
             // Use DDC Brightness overrides, if relevant
@@ -223,6 +223,7 @@ getAllMonitors = async () => {
                 id: id,
                 key: hwid2,
                 hwid,
+                handle: handle,
                 features: features,
                 vcpCodes: vcpCodes,
                 type: (brightnessType ? "ddcci" : "none"),
@@ -417,20 +418,22 @@ getFeaturesDDC = () => {
             ddcci._refresh()
             const ddcciMonitors = ddcci.getMonitorList()
 
-            for (let monitor of ddcciMonitors) {
+            for (let monitorHandle of ddcciMonitors) {
+                const monitor = monitorHandle.slice(monitorHandle.indexOf("#") + 1)
                 const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", monitor); reject({}) }, 15000)
                 const hwid = monitor.split("#")
                 let features = []
 
                 // Yes, we're doing this 2 times because DDC/CI is flaky sometimes
-                features = await checkMonitorFeatures(monitor)
-                features = await checkMonitorFeatures(monitor)
+                features = await checkMonitorFeatures(monitorHandle)
+                features = await checkMonitorFeatures(monitorHandle)
 
                 monitorFeatures[hwid[2]] = {
                     id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
                     hwid,
+                    handle: monitorHandle,
                     features,
-                    vcpCodes: (monitorReports[monitor] ? Object.keys(monitorReports[monitor]) : [] )
+                    vcpCodes: (monitorReports[monitorHandle] ? Object.keys(monitorReports[monitorHandle]) : [] )
                 }
                 clearTimeout(featureTimeout)
             }
@@ -444,10 +447,16 @@ getFeaturesDDC = () => {
     })
 }
 
-checkMonitorFeatures = async (monitor) => {
+checkMonitorFeatures = async (monitorHandle) => {
     return new Promise(async (resolve, reject) => {
         const features = {}
         try {
+
+            // Correct handle, if needed
+            let monitor = monitorHandle
+            if(monitorHandle.indexOf("\\.") !== 1) {
+                monitor = monitors[monitorHandle.split("#")[2]].handle
+            }
 
             // Detect valid VCP codes for display
             if(!monitorReports[monitor]) {
@@ -533,7 +542,7 @@ getBrightnessDDC = (monitorObj) => {
 
         try {
             const timeout = setTimeout(() => { console.log("getBrightnessDDC Timed out."); reject({}) }, 8000)
-            const ddcciPath = monitor.hwid.join("#")
+            const ddcciPath = monitor.handle ?? monitor.hwid.join("#")
 
             // If brightness is not supported, stop
             if (!monitor?.brightnessType) {
@@ -630,8 +639,15 @@ function setBrightness(brightness, id) {
 }
 
 let vcpCache = {}
-async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
+async function checkVCPIfEnabled(monitorHandle, code, setting, skipCache = false) {
     try {
+
+        // Correct handle, if needed
+        let monitor = monitorHandle
+        if(monitorHandle.indexOf("\\.") !== 1) {
+            monitor = monitors[monitorHandle.split("#")[2]].handle
+        }
+
         const hwid = monitor.split("#")
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
         const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
@@ -645,7 +661,7 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
         const vcpResult = await checkVCP(monitor, code)
         return vcpResult
     } catch (e) {
-        console.log(`Error reading VCP code ${code} for ${monitor}`)
+        console.log(`Error reading VCP code ${code} for ${monitor}`, e)
 
         // Since it failed, let's check for an existing value first
         if(vcpCache[monitor]?.["vcp_" + vcpString]) {
@@ -657,8 +673,15 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     }
 }
 
-async function checkVCP(monitor, code, skipCacheWrite = false) {
+async function checkVCP(monitorHandle, code, skipCacheWrite = false) {
     try {
+
+        // Correct handle, if needed
+        let monitor = monitorHandle
+        if(monitorHandle.indexOf("\\.") !== 1) {
+            monitor = monitors[monitorHandle.split("#")[2]].handle
+        }
+
         let result = ddcci._getVCP(monitor, code)
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
         if (!skipCacheWrite) {
@@ -668,7 +691,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
         await wait(100)
         return result
     } catch (e) {
-        console.log(`Error reading VCP code ${code} for ${monitor}`)
+        console.log(`Error reading VCP code ${code} for ${monitor}`, e)
 
         // Since it failed, let's check for an existing value first
         if(vcpCache[monitor]?.["vcp_" + vcpString]) {
@@ -680,8 +703,15 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
     }
 }
 
-function setVCP(monitor, code, value) {
+function setVCP(monitorHandle, code, value) {
     try {
+
+        // Correct handle, if needed
+        let monitor = monitorHandle
+        if(monitorHandle.indexOf("\\.") !== 1) {
+            monitor = monitors[monitorHandle.split("#")[2]].handle
+        }
+
         const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
         let result = ddcci._setVCP(monitor, code, (value * 1))
         if (vcpCache[monitor]?.["vcp_" + vcpString]) {

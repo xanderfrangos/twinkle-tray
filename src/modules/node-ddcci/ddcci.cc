@@ -67,7 +67,7 @@ populateHandlesMap(bool filterResults)
 
         for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
             monitor.physicalHandles.push_back(
-              physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)].hPhysicalMonitor);
+              physicalMonitors[i].hPhysicalMonitor);
         }
 
         delete[] physicalMonitors;

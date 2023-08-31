@@ -15,7 +15,7 @@
 std::map<std::string, HANDLE> handles;
 
 void
-populateHandlesMap(bool filterResults)
+populateHandlesMap()
 {
     // Cleanup
     if (!handles.empty()) {
@@ -91,7 +91,7 @@ populateHandlesMap(bool filterResults)
                                   EDD_GET_DEVICE_INTERFACE_NAME)) {
 
             // Check valid target
-            if (filterResults == true && !(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
                 || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
                 continue;
             }
@@ -116,7 +116,7 @@ populateHandlesMap(bool filterResults)
                     // Match and store against device ID
                     if (monitorName == deviceName) {
                         handles.insert(
-                          { static_cast<std::string>(deviceName + "#" + displayDev.DeviceID),
+                          { static_cast<std::string>(displayDev.DeviceID),
                             monitor.physicalHandles[i] });
 
                         break;
@@ -156,15 +156,8 @@ refresh(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
 
-    if (info.Length() < 1) {
-        throw Napi::TypeError::New(env, "Not enough arguments");
-    }
-    if (!info[0].IsBoolean()) {
-        throw Napi::TypeError::New(env, "Invalid arguments");
-    }
-
     try {
-        populateHandlesMap(info[0].As<Napi::Boolean>());
+        populateHandlesMap();
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }
@@ -310,35 +303,8 @@ getReport(const Napi::CallbackInfo& info)
             return ret;
         }
     }
-    return Napi::String::New(env, "");
 }
 
-
-Napi::Boolean
-saveCurrentSettings(const Napi::CallbackInfo& info)
-{
-    Napi::Env env = info.Env();
-
-    if (info.Length() < 1) {
-        throw Napi::TypeError::New(env, "Not enough arguments");
-    }
-    if (!info[0].IsString()) {
-        throw Napi::TypeError::New(env, "Invalid arguments");
-    }
-
-    std::string monitorName = info[0].As<Napi::String>().Utf8Value();
-
-    auto it = handles.find(monitorName);
-    if (it == handles.end()) {
-        throw Napi::Error::New(env, "Monitor not found");
-    }
-
-
-    BOOL bSuccess = 0;
-    bSuccess = SaveCurrentSettings(it->second);
-
-    return Napi::Boolean::New(env, bSuccess);
-}
 
 Napi::Object
 Init(Napi::Env env, Napi::Object exports)
@@ -349,10 +315,9 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set("setVCP", Napi::Function::New(env, setVCP, "setVCP"));
     exports.Set("getVCP", Napi::Function::New(env, getVCP, "getVCP"));
     exports.Set("getReport", Napi::Function::New(env, getReport, "getReport"));
-    exports.Set("saveCurrentSettings", Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));
 
     try {
-        populateHandlesMap(true);
+        populateHandlesMap();
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }

@@ -2715,15 +2715,15 @@ app.on("ready", async () => {
   getLocalization()
   showIntro()
 
-  await refreshMonitors(true, true).then(() => {
-    if (settings.brightnessAtStartup) setKnownBrightness();
-    if (settings.checkTimeAtStartup) {
-      lastTimeEvent = false;
-      setTimeout(() => handleBackgroundUpdate(true), 3500)
-    }
-    restartBackgroundUpdate()
-    createPanel()
-  })
+  await refreshMonitors(true, true)
+
+  if (settings.brightnessAtStartup) setKnownBrightness();
+  if (settings.checkTimeAtStartup) {
+    lastTimeEvent = false;
+    setTimeout(() => handleBackgroundUpdate(true), 3500)
+  }
+  restartBackgroundUpdate()
+  createPanel()
 
   setTimeout(addEventListeners, 2000)
 })

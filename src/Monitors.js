@@ -83,7 +83,6 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             try {
                 if (settings?.getDDCBrightnessUpdates) {
                     getDDCCI()
-                    ddcci._refresh()
                     for (const hwid2 in monitors) {
                         if (monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
                             const monitor = await getBrightnessDDC(monitors[hwid2])
@@ -413,8 +412,10 @@ getFeaturesDDC = () => {
     return new Promise(async (resolve, reject) => {
         try {
             const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 80000)
-            getDDCCI()
-            ddcci._refresh()
+            
+            const firstRun = getDDCCI()
+            if(!firstRun) ddcci._refresh();
+
             const ddcciMonitors = ddcci.getMonitorList()
 
             for (let monitor of ddcciMonitors) {
@@ -451,7 +452,7 @@ checkMonitorFeatures = async (monitor) => {
 
             // Detect valid VCP codes for display
             if(!monitorReports[monitor]) {
-                const report = ddcci.getReport(monitor)
+                const report = ddcci.getCapabilities(monitor)
                 if(Object.keys(report)?.length) {
                     monitorReports[monitor] = report
                 }
@@ -761,7 +762,7 @@ function parseWMIString(str) {
 
 let ddcci = false
 function getDDCCI() {
-    if (ddcci) return true;
+    if (ddcci) return false;
     try {
         ddcci = require("@hensm/ddcci");
         return true;
@@ -770,7 +771,6 @@ function getDDCCI() {
         return false;
     }
 }
-getDDCCI();
 
 let wmicUnavailable = false
 let wmi = false

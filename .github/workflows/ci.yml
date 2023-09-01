@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   win32:
+    name: "Build Win32 Installer"
     runs-on: windows-2022
 
     steps:
@@ -15,7 +16,13 @@ jobs:
       - name: package.json info
         id: info
         uses: jaywcjlove/github-action-package@main
-      - run: npm run build
+      - run: npm ci
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run parcel-build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run electron-build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
@@ -24,6 +31,7 @@ jobs:
           name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
           path: dist/*.exe
   appx:
+    name: "Build AppX Packages"
     runs-on: windows-2022
 
     steps:

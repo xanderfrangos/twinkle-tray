@@ -1,0 +1,25 @@
+name: Build Win32 Installer
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: package.json info
+        id: info
+        uses: jaywcjlove/github-action-package@main
+      - run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        name: Upload Windows Installer
+        with:
+          name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/*.exe

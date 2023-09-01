@@ -1,4 +1,4 @@
-name: CI Build
+name: Build AppX Packages
 
 on: [push, pull_request]
 
@@ -15,19 +15,17 @@ jobs:
       - name: package.json info
         id: info
         uses: jaywcjlove/github-action-package@main
-      - run: npm run build-all
+      - run: npm run appx
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v3
-        name: Upload Windows Installer
-        with:
-          name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
-          path: dist/*.exe
       - uses: actions/upload-artifact@v3
         name: Upload x64 AppX
         with:
           name: twinkle-tray-appx-x64-${{ github.ref_name }}-${{ github.sha }}
           path: dist/*-store.appx
+      - run: npm run appx-arm64
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
         name: Upload ARM64 AppX
         with:

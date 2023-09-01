@@ -151,8 +151,10 @@ function panelAnimationDone() {
 function shouldSendHeightUpdate() {
     setTimeout(() => {
         try {
-            const height = window.document.getElementById("panel").offsetHeight
-            window.sendHeight(height)
+            if(window.document.getElementById("panel")) {
+                const height = window.document.getElementById("panel").offsetHeight
+                window.sendHeight(height)
+            }
         } catch(e) {
             console.error(e)
         }
@@ -389,7 +391,6 @@ const fitImageToCanvas = (image,canvas) => {
 // Request startup data
 window.addEventListener('DOMContentLoaded', () => {
     requestSettings()
-    //requestMonitors()
     requestAccent()
 })
 

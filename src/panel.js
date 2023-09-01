@@ -6,7 +6,10 @@ if (window.settings == undefined) window.settings = {}
 
 window.ipc.send('request-localization')
 
-ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"));
+ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"), () => {
+    requestSettings()
+    requestMonitors()
+});
 
 window.updateMica = () => {
     const pos = [window.winPosition[0], window.winPosition[1]]
@@ -58,5 +61,4 @@ window.document.addEventListener('keydown', (e) => {
 })
 
 allMonitors = {}
-window.ipc.send('full-refresh', true)
 window.ipc.send('get-mica-wallpaper')

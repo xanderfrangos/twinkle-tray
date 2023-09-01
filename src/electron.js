@@ -2212,11 +2212,6 @@ function createPanel(toggleOnLoad = false) {
     try {
       sendToAllWindows('monitors-updated', monitors)
       // Do full refreshes shortly after startup in case Windows isn't ready.
-      setTimeout(() => {
-        refreshMonitors(true).then(() => {
-          sendToAllWindows('monitors-updated', monitors)
-        })
-      }, 8000)
 
       setTimeout(sendMicaWallpaper, 1000)
       sendToAllWindows('panel-position', mainWindow.getPosition())
@@ -2715,6 +2710,7 @@ app.on("ready", async () => {
   //readSettings()
   getLocalization()
   showIntro()
+  createPanel()
 
   await refreshMonitors(true, true)
 
@@ -2724,9 +2720,8 @@ app.on("ready", async () => {
     setTimeout(() => handleBackgroundUpdate(true), 3500)
   }
   restartBackgroundUpdate()
-  createPanel()
 
-  setTimeout(addEventListeners, 2000)
+  setTimeout(addEventListeners, 5000)
 })
 
 app.on("window-all-closed", () => {

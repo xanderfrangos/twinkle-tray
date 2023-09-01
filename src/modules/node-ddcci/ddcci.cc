@@ -154,12 +154,18 @@ populateHandlesMap(bool filterResults)
 
                     // Match and store against device ID
                     if (deviceName.rfind(monitorName) == 0) {
-                        std::cout << "-- MATCH: " + static_cast<std::string>(deviceName + " " + displayDev.DeviceID) << std::endl;
+                        
+                        std::string deviceID = 
+                            static_cast<std::string>(displayDev.DeviceID);
+                        std::string deviceKey = 
+                            deviceID.substr(0, deviceID.find("#{"));
+
+                        std::cout << "-- MATCH: " + deviceKey << std::endl;
                         handles.insert(
-                          { static_cast<std::string>(displayDev.DeviceID),
+                          { deviceKey,
                             monitor.physicalHandles[i] });
                         capabilities.insert(
-                          { static_cast<std::string>(displayDev.DeviceID),
+                          { deviceKey,
                             monitor.capabilitiesStrings[i] });
                     }
                 }

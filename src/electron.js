@@ -467,6 +467,7 @@ function readSettings(doProcessSettings = true) {
   }
   if (settingsVersion < Utils.getVersionValue("v1.16.0")) {
     // v1.16.0
+    lastKnownDisplays = {} // Reset lastKnownDisplays due to known bug in earlier versions
     try {
       // Upgrade hotkeys
       if (settings.hotkeys && Object.values(settings.hotkeys)?.length > 0) {

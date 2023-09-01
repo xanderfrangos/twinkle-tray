@@ -16,7 +16,7 @@ export default function MonitorInfo(props) {
                 <br />Features: <b>{(monitor.type == "ddcci" && monitor.features ? JSON.stringify(monitor.features) : "Unsupported")}</b>
                 <br />Order: <b>{(monitor.order ? monitor.order : "0")}</b>
                 <br />Key: <b>{monitor.key}</b>
-                <br />ID: <b>{"\\\\?\\" + monitor.id}</b>
+                <br />ID: <b>{monitor.id}</b>
                 <br />Connection Type: <b>{monitor.connector}</b>
                 <br /><br />
             </div>

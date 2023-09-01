@@ -381,7 +381,7 @@ getMonitorsWin32 = () => {
                 hwid[2] = hwid[2].split("_")[0]
 
                 const win32Info = {
-                    id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                    id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
                     key: hwid[2],
                     connector: monitor.outputTechnology,
                     hwid: hwid,

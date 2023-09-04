@@ -102,10 +102,13 @@ const windowMenu = Menu.buildFromTemplate([{
 // Handles WMI + DDC/CI activity
 
 let monitorsThread = {
-  send: function (data) {
+  send: async function (data) {
     try {
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
+      }
+      if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
+        await Utils.wait(100)
       }
       monitorsThreadReal.send(data)
     } catch (e) {
@@ -1520,6 +1523,10 @@ function tryVibrancy(window, value = null) {
 
 let isRefreshing = false
 let shouldShowPanel = false
+const setIsRefreshing = newValue => {
+  isRefreshing = (newValue ? true : false)
+  sendToAllWindows("isRefreshing", isRefreshing)
+}
 
 
 refreshMonitorsJob = async (fullRefresh = false) => {
@@ -1581,7 +1588,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
     console.log("\x1b[34m---------------------------------------------- \x1b[0m")
     return monitors;
   }
-  isRefreshing = true
+  setIsRefreshing(true)
 
   // Reset all known displays
   if (fullRefresh) {
@@ -1603,8 +1610,6 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   } catch (e) {
     console.log('Couldn\'t refresh monitors', e)
   }
-
-  isRefreshing = false
 
   if (!failed) {
     applyOrder(newMonitors)
@@ -1647,6 +1652,7 @@ refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
   }
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
+  setIsRefreshing(false)
   return monitors;
 }
 
@@ -2034,6 +2040,10 @@ ipcMain.on('full-refresh', function (event, forceUpdate = false) {
       sendToAllWindows('monitors-updated', monitors)
     }
   })
+})
+
+ipcMain.on('get-refreshing', () => {
+  sendToAllWindows('isRefreshing', isRefreshing)
 })
 
 ipcMain.on('open-settings', createSettings)

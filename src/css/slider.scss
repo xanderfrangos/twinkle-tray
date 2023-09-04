@@ -153,6 +153,16 @@
             margin-bottom: -3px;
         }
     }
+
+    .input--range {
+        opacity: 1;
+        transition: opacity 0.2s 0.05s;
+    }
+}
+
+[data-refreshing="true"] .monitor-item .input--range {
+    pointer-events: none;
+    opacity: 0.35;
 }
 
 // Sun Valley tweaks

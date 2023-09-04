@@ -423,8 +423,7 @@ getFeaturesDDC = () => {
                 const hwid = monitor.split("#")
                 let features = []
 
-                // Yes, we're doing this 2 times because DDC/CI is flaky sometimes
-                features = await checkMonitorFeatures(monitor)
+                await wait(50)
                 features = await checkMonitorFeatures(monitor)
 
                 monitorFeatures[hwid[2]] = {
@@ -901,11 +900,11 @@ const getBrightnessWMIC = async () => {
 
 }
 
-function wait(time = 2000) {
+function wait(ms = 2000) {
     return new Promise(resolve => {
         setTimeout(() => {
             resolve(true);
-        }, time);
+        }, ms);
     });
 }
 

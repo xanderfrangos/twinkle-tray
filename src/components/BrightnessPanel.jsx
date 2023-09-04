@@ -16,6 +16,9 @@ export default class BrightnessPanel extends PureComponent {
   // Render <Slider> components
   getMonitors = () => {
     if (!this.state.monitors || this.numMonitors == 0) {
+      if (this.state.isRefreshing) {
+        return (<div className="no-displays-message" style={{textAlign:"center", paddingBottom:"15px"}}>Detecting displays...</div>)
+      }
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {
 
@@ -363,7 +366,8 @@ export default class BrightnessPanel extends PureComponent {
       names: {},
       update: false,
       sleeping: false,
-      updateProgress: 0
+      updateProgress: 0,
+      isRefreshing: false
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -381,6 +385,9 @@ export default class BrightnessPanel extends PureComponent {
     window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
+    window.addEventListener("isRefreshing", (e) => {
+      this.setState({isRefreshing: e.detail})
+    })
 
     if (window.isAppX === false) {
       window.addEventListener("updateProgress", (e) => {
@@ -407,7 +414,7 @@ export default class BrightnessPanel extends PureComponent {
   render() {
     const monitorsElem = (this.state.sleeping ? (<div></div>) : this.getMonitors())
     return (
-      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
+      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel" data-refreshing={this.state.isRefreshing}>
         <div className="titlebar">
           <div className="title">{T.t("PANEL_TITLE")}</div>
           <div className="icons">

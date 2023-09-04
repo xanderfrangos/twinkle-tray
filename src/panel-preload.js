@@ -242,6 +242,14 @@ ipc.on('request-height', () => {
     ipc.send('panel-height', window.document.getElementById("panel").offsetHeight)
 })
 
+// Taskbar position recieved
+ipc.on('isRefreshing', (event, newValue) => {
+    window.isRefreshing = newValue
+    window.dispatchEvent(new CustomEvent('isRefreshing', {
+        detail: newValue
+    }))
+})
+
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
     if (settings.isDev == false) {

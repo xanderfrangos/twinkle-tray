@@ -62,3 +62,4 @@ window.document.addEventListener('keydown', (e) => {
 
 allMonitors = {}
 window.ipc.send('get-mica-wallpaper')
+window.ipc.send('get-refreshing')

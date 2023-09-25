@@ -1,5 +1,5 @@
 {
-    "LANGUAGE": "বাংলা",
+    "LANGUAGE": "ইংরেজি",
     "GENERIC_OK": "ঠিক আছে",
     "GENERIC_CANCEL": "বাতিল করুন",
     "GENERIC_SAVE": "সংরক্ষণ করুন",
@@ -7,7 +7,7 @@
     "GENERIC_OFF": "বন্ধ",
     "GENERIC_ON": "চালু",
     "GENERIC_QUIT": "প্রস্থান করুন",
-    "GENERIC_CLOSE": "বন্ধ",
+    "GENERIC_CLOSE": "বন্ধ করুণ",
     "GENERIC_SETTINGS": "সেটিংস",
     "GENERIC_INSTALL": "ইনস্টল করুন",
     "GENERIC_DISMISS": "খারিজ",

@@ -11,6 +11,16 @@
     <link rel="stylesheet" href="../css/page.scss" />
     <link rel="stylesheet" href="../css/slider.scss" />
     <link rel="stylesheet" href="../css/mica.scss" />
+    <script>
+      const consoleLog = console.log;
+      const consoleError = console.error;
+      const sendLog = (logArr, func) => {
+        window.ipc.send('log', `[SETTINGS_WIN] ${logArr.join(" | ")}`);
+        func.apply(console, logArr);
+      }
+      console.log = (...e) => sendLog(e, consoleLog);
+      console.error = (...e) => sendLog(e, consoleError);
+    </script>
   </head>
 
   <body>

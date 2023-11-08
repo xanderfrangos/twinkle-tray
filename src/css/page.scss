@@ -429,7 +429,7 @@ select {
         margin-left: 8px;
     }
 
-    &[data-textSide="left"] {
+    &[data-textside="left"] {
         input {
             order: 2;
         }
@@ -1139,4 +1139,8 @@ body[data-is-win11="true"] {
     .win10only {
         display: none;
     }
+}
+
+.try-catch-failure {
+    user-select: auto;
 }

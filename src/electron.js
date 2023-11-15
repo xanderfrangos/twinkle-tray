@@ -35,7 +35,8 @@ if (!singleInstanceLock) {
   app.on('second-instance', handleCommandLine)
 }
 
-const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
+const monitorRules = require('./monitor-rules.json')
+const knownDDCBrightnessVCPs = monitorRules?.ddcBrightnessCodes
 
 const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");

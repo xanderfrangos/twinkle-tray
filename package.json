@@ -62,7 +62,7 @@
       "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",
-      "src/known-ddc-brightness-codes.json",
+      "src/monitor-rules.json",
       "src/localization/*",
       "src/Utils.js",
       "src/Monitors.js",

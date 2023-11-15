@@ -119,7 +119,10 @@ function openSettings() {
 }
 
 function sendSettings(newSettings) {
-    ipc.send('send-settings', newSettings)
+    ipc.send('send-settings', {
+        newSettings,
+        sendUpdate: true
+    })
 }
 
 function requestSettings() {

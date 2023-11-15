@@ -825,7 +825,7 @@ function getKnownDisplays(useCurrentMonitors) {
 }
 
 // Look up all known displays and re-apply last brightness
-function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1) {
+function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1, skipBadDisplays = false) {
 
   console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`, useCurrentMonitors, useTransition, transitionSpeed)
 
@@ -833,7 +833,7 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
   applyProfile(known, useTransition, transitionSpeed)
 }
 
-function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) {
+function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, skipBadDisplays = false) {
 
   applyOrder(profile)
   applyRemaps(profile)
@@ -844,6 +844,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
     for (const hwid in profile) {
       try {
         const monitor = profile[hwid]
+        if(skipBadDisplays && monitorRules.skipReapply.includes(monitor.hwid[1])) continue; // Skip bad displays
         transitionMonitors[monitor.id] = monitor.brightness
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
@@ -856,6 +857,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
 
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          if(skipBadDisplays && monitorRules.skipReapply.includes(monitor.hwid[1])) continue; // Skip bad displays
           updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }

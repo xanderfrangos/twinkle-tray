@@ -3392,21 +3392,21 @@ function handleMonitorChange(e, d) {
   handleChangeTimeout0 = setTimeout(() => {
     if (!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout0 = false
-  }, 150)
+  }, 500)
   if (handleChangeTimeout1) {
     clearTimeout(handleChangeTimeout1)
   }
   handleChangeTimeout1 = setTimeout(() => {
     if (!settings.disableAutoApply) setKnownBrightness();
     handleChangeTimeout1 = false
-  }, 750)
+  }, 1250)
   if (handleChangeTimeout2) {
     clearTimeout(handleChangeTimeout2)
   }
   handleChangeTimeout2 = setTimeout(() => {
 
     // Reset all known displays
-    if (!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+    refreshMonitors(true, true).then(() => {
       if (!settings.disableAutoApply) setKnownBrightness();
       handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
@@ -3425,7 +3425,7 @@ powerMonitor.on("resume", () => {
   if (!settings.disableAutoApply) setKnownBrightness();
   setTimeout(
     () => {
-      if (!settings.disableAutoRefresh) refreshMonitors(true, true).then(() => {
+      if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
         //restartPanel()
 
@@ -3435,12 +3435,6 @@ powerMonitor.on("resume", () => {
     },
     parseInt(settings.wakeRestoreTime) || 3000 // Give Windows a few seconds to... you know... wake up.
   )
-  if (!settings.disableAutoRefresh) setTimeout(() => {
-    refreshMonitors(true)
-  },
-    10000 // Additional full refresh
-  )
-
 
 })
 

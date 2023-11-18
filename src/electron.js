@@ -391,9 +391,9 @@ const defaultSettings = {
   detectIdleTimeEnabled: false,
   detectIdleTimeSeconds: 0,
   detectIdleTimeMinutes: 5,
-  idleRestoreTime: 0,
-  wakeRestoreTime: 0,
-  hardwareRestoreTime: 0,
+  idleRestoreSeconds: 4,
+  wakeRestoreSeconds: 8,
+  hardwareRestoreSeconds: 5,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
   disableWMIC: false,
@@ -3415,7 +3415,7 @@ function handleMonitorChange(e, d) {
     })
 
     handleChangeTimeout2 = false
-  }, parseInt(settings.hardwareRestoreTime) || 5000)
+  }, (settings.hardwareRestoreSeconds ? parseInt(settings.hardwareRestoreSeconds) : 5000))
 
 }
 
@@ -3433,7 +3433,7 @@ powerMonitor.on("resume", () => {
         applyCurrentAdjustmentEvent(true, false)
       })
     },
-    parseInt(settings.wakeRestoreTime) || 3000 // Give Windows a few seconds to... you know... wake up.
+    (settings.wakeRestoreSeconds ? parseInt(settings.wakeRestoreSeconds) * 1000 : 3000) // Give Windows a few seconds to... you know... wake up.
   )
 
 })
@@ -3565,7 +3565,7 @@ function idleCheckShort() {
           const foundEvent = applyCurrentAdjustmentEvent(true, true)
           if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
         }
-      }, parseInt(settings.idleRestoreTime) || 3000)
+      }, (settings.idleRestoreSeconds ? parseInt(settings.idleRestoreSeconds) * 1000 : 3000))
 
     }
     lastIdleTime = idleTime

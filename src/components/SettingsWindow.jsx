@@ -1060,6 +1060,8 @@ export default class SettingsWindow extends PureComponent {
                                         </SettingsChild>
                                     </SettingsOption>
 
+                                    <SettingsOption title={"Don't auto-apply brightness"} description={"If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, this may help."} input={this.renderToggle("disableAutoApply")} />
+
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />
 
                                 </div>

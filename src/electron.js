@@ -3769,6 +3769,45 @@ function handleBackgroundUpdate(force = false) {
   }, 1000)
 }
 
+let lastCoordCheck = { value: { lat: 0, long: 0}, ts: 0 }
+async function getUserCoordinates() {
+  if(Date.now() - 10000 < lastCoordCheck.ts) return lastCoordCheck.value;
+  try {
+    const fetch = require('node-fetch')
+    if (isAppX === false) {
+      console.log("Getting geolocation...")
+      const response = await fetch("https://geo.twinkletray.com/")
+      if(response.status === 200) {
+        const coordinates = {
+          lat: response.headers.get("X-Geo-Lat"),
+          long: response.headers.get("X-Geo-Long")
+        }
+        if(typeof coordinates.lat === "string" && typeof coordinates.long === "string") {
+          console.log("Coordinates: ", coordinates)
+          lastCoordCheck.value = coordinates
+          lastCoordCheck.ts = Date.now()
+          return coordinates
+        }
+        throw("Couldn't get coordinates. Returned: " . JSON.stringify(coordinates))
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+  Utils.unloadModule("node-fetch")
+}
+
+async function getAndApplyUserCoordinates() {
+  try {
+    const coordinates = await getUserCoordinates()
+    writeSettings({adjustmentTimeLongitude: coordinates.long, adjustmentTimeLatitude: coordinates.lat}, true, true)
+  } catch(e) {
+    console.log(e)
+  }
+}
+
+ipcMain.on('get-coordinates', getAndApplyUserCoordinates)
+
 /*
 
 Handle input from second process command line. One monitor argument and one brightness argument is required. Multiple arguments will override each other.

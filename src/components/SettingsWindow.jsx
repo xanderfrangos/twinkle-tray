@@ -1077,7 +1077,7 @@ export default class SettingsWindow extends PureComponent {
                                     <p><a className="button" onClick={this.addAdjustmentTime}>+ {T.t("SETTINGS_TIME_ADD")}</a></p>
                                 </div>
                                 <div className="pageSection">
-                                    <SettingsOption title={"Coordinates for sun position"} description={"To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined. Twinkle Tray does not detect this for you."} expandable={true}>
+                                    <SettingsOption title={"Coordinates for sun position"} description={"To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined."} expandable={true}>
                                         <SettingsChild>
                                             <div style={{ "display": "flex" }}>
                                                 <div style={{ marginRight: "6px", flex: 1 }}>
@@ -1088,6 +1088,8 @@ export default class SettingsWindow extends PureComponent {
                                                     <label style={{ "textTransform": "capitalize" }}>Longitude</label>
                                                     <input type="number" min="-180" max="180" value={window.settings.adjustmentTimeLongitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLongitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
                                                 </div>
+                                                {/* I'll write better CSS later, I promise. */}
+                                                <div><label style={{opacity:0}}>Get coordinates</label><input type="button" className="button" onClick={() => window.ipc.send("get-coordinates")} value="Get coordinates" style={{lineHeight:"1.3",padding:(document.body.dataset.isWin11 === 'true' ? "9px" : "8px"),marginLeft:"6px"}} /></div>
                                             </div>
                                         </SettingsChild>
                                     </SettingsOption>

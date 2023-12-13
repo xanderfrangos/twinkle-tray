@@ -162,17 +162,18 @@ function startMonitorThread() {
 function getVCP(monitor, code) {
   return new Promise((resolve, reject) => {
     if (!monitor || !code) resolve(-1);
+    const vcpParsed = parseInt(`0x${parseInt(code).toString(16).toUpperCase()}`)
     const hwid = (typeof monitor === "object" ? monitor.hwid.join("#") : monitor)
     const timeout = setTimeout(() => {
       resolve(-1) // Timed out
     }, 3000)
-    monitorsThread.once(`getVCP::${hwid}::${code}`, data => {
+    monitorsThread.once(`getVCP::${hwid}::${vcpParsed}`, data => {
       clearTimeout(timeout)
       resolve(data?.value)
     })
     monitorsThread.send({
       type: "getVCP",
-      code,
+      code: vcpParsed,
       monitor: hwid
     })
   })

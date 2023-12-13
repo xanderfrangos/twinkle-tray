@@ -669,7 +669,7 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false, useR
 async function checkVCP(monitor, code, skipCacheWrite = false) {
     const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
     try {
-        let result = ddcci._getVCP(monitor, code)
+        let result = ddcci._getVCP(monitor, parseInt(vcpString))
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result

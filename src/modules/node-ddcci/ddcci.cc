@@ -15,9 +15,129 @@
 std::map<std::string, HANDLE> handles;
 std::map<std::string, std::string> capabilities;
 
+// Old method of detecting DDC/CI handles
 void
-populateHandlesMap(bool filterResults)
+populateHandlesMapFast()
 {
+    // Cleanup
+    if (!handles.empty()) {
+        for (auto const& handle : handles) {
+            DestroyPhysicalMonitor(handle.second);
+        }
+        handles.clear();
+    }
+
+    struct Monitor {
+        HMONITOR handle;
+        std::vector<HANDLE> physicalHandles;
+    };
+
+    auto monitorEnumProc = [](HMONITOR hMonitor,
+                              HDC hdcMonitor,
+                              LPRECT lprcMonitor,
+                              LPARAM dwData) -> BOOL {
+        auto monitors = reinterpret_cast<std::vector<struct Monitor>*>(dwData);
+        monitors->push_back({ hMonitor, {} });
+        return TRUE;
+    };
+
+    std::vector<struct Monitor> monitors;
+    EnumDisplayMonitors(
+      NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
+
+    // Get physical monitor handles
+    for (auto& monitor : monitors) {
+        DWORD numPhysicalMonitors;
+        LPPHYSICAL_MONITOR physicalMonitors = NULL;
+        if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
+                                                     &numPhysicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitor count.");
+            exit(EXIT_FAILURE);
+        }
+
+        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
+        if (physicalMonitors == NULL) {
+            throw std::runtime_error(
+              "Failed to allocate physical monitor array");
+        }
+
+        if (!GetPhysicalMonitorsFromHMONITOR(
+              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitors.");
+        }
+
+        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
+            monitor.physicalHandles.push_back(
+              physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)].hPhysicalMonitor);
+        }
+
+        delete[] physicalMonitors;
+    }
+
+
+    DISPLAY_DEVICE adapterDev;
+    adapterDev.cb = sizeof(DISPLAY_DEVICE);
+
+    // Loop through adapters
+    int adapterDevIndex = 0;
+    while (EnumDisplayDevices(NULL, adapterDevIndex++, &adapterDev, 0)) {
+        DISPLAY_DEVICE displayDev;
+        displayDev.cb = sizeof(DISPLAY_DEVICE);
+
+        // Loop through displays (with device ID) on each adapter
+        int displayDevIndex = 0;
+        while (EnumDisplayDevices(adapterDev.DeviceName,
+                                  displayDevIndex++,
+                                  &displayDev,
+                                  EDD_GET_DEVICE_INTERFACE_NAME)) {
+
+            // Check valid target
+            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+                || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
+                continue;
+            }
+
+            for (auto const& monitor : monitors) {
+                MONITORINFOEX monitorInfo;
+                monitorInfo.cbSize = sizeof(MONITORINFOEX);
+                GetMonitorInfo(monitor.handle, &monitorInfo);
+
+                for (size_t i = 0; i < monitor.physicalHandles.size(); i++) {
+                    /**
+                     * Re-create DISPLAY_DEVICE.DeviceName with
+                     * MONITORINFOEX.szDevice and monitor index.
+                     */
+                    std::string monitorName =
+                      static_cast<std::string>(monitorInfo.szDevice)
+                      + "\\Monitor" + std::to_string(i);
+
+                    std::string deviceName =
+                      static_cast<std::string>(displayDev.DeviceName);
+
+                    std::string deviceID = 
+                        static_cast<std::string>(displayDev.DeviceID);
+                    std::string deviceKey = 
+                        deviceID.substr(0, deviceID.find("#{"));
+
+                    // Match and store against device ID
+                    if (monitorName == deviceName) {
+                        handles.insert(
+                          { static_cast<std::string>(deviceKey),
+                            monitor.physicalHandles[i] });
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+populateHandlesMap(bool useFastMethod)
+{
+    if(useFastMethod) return populateHandlesMapFast();
+
     // Cleanup
     if (!handles.empty()) {
         for (auto const& handle : handles) {
@@ -130,7 +250,7 @@ populateHandlesMap(bool filterResults)
                                   EDD_GET_DEVICE_INTERFACE_NAME)) {
 
             // Check valid target
-            if (filterResults == true && !(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
                 || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
                 continue;
             }
@@ -160,7 +280,7 @@ populateHandlesMap(bool filterResults)
                         std::string deviceKey = 
                             deviceID.substr(0, deviceID.find("#{"));
 
-                        std::cout << "-- MATCH: " + deviceKey << std::endl;
+                        //std::cout << "-- MATCH: " + deviceKey << std::endl;
                         handles.insert(
                           { deviceKey,
                             monitor.physicalHandles[i] });
@@ -173,7 +293,6 @@ populateHandlesMap(bool filterResults)
         }
     }
 }
-
 
 std::string
 getLastErrorString()
@@ -361,12 +480,6 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set("getVCP", Napi::Function::New(env, getVCP, "getVCP"));
     exports.Set("getCapabilities", Napi::Function::New(env, getCapabilities, "getCapabilities"));
     exports.Set("saveCurrentSettings", Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));
-
-    try {
-        populateHandlesMap(true);
-    } catch (std::runtime_error& e) {
-        throw Napi::Error::New(env, e.what());
-    }
 
     return exports;
 }

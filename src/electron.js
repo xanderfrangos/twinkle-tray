@@ -58,6 +58,8 @@ const { EventEmitter } = require("events");
 const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
 const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
 
+let ddcciModeTestResult = "auto"
+
 const SunCalc = require('suncalc')
 
 app.allowRendererProcessReuse = true
@@ -108,6 +110,7 @@ let monitorsThread = {
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
       }
+      if(!monitorsThreadReady) throw("Thread not ready!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(100)
       }
@@ -129,12 +132,14 @@ let monitorsThread = {
 }
 let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
+let monitorsThreadReady = false
 function startMonitorThread() {
-  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+  const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest], { silent: false })
   monitorsThreadReal.on("message", (data) => {
     if (data?.type) {
-      monitorsEventEmitter.emit(data.type, data)
       if (data.type === "ready") {
+        monitorsThreadReady = true
         monitorsThreadReal.send({
           type: "settings",
           settings
@@ -144,10 +149,15 @@ function startMonitorThread() {
           ddcBrightnessVCPs: getDDCBrightnessVCPs()
         })
       }
+      if (data.type === "ddcciModeTestResult") {
+        ddcciModeTestResult = data.value
+        settings.lastDetectedDDCCIMethod = (data.value ? "fast" : "accurate")
+        console.log("ddcciModeTestResult: " + ddcciModeTestResult)
+      }
+      monitorsEventEmitter.emit(data.type, data)
     }
   })
 }
-startMonitorThread()
 
 function getVCP(monitor, code) {
   return new Promise((resolve, reject) => {
@@ -404,6 +414,8 @@ const defaultSettings = {
   disableMouseEvents: false,
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
+  preferredDDCCIMethod: "auto",
+  lastDetectedDDCCIMethod: "none",
   forceLowPowerGPU: false,
   ddcPowerOffValue: 5,
   disableAutoRefresh: false,
@@ -750,14 +762,16 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     console.log("Couldn't process settings!", e)
   }
 
-  monitorsThread.send({
-    type: "settings",
-    settings: settings
-  })
-  monitorsThreadReal.send({
-    type: "ddcBrightnessVCPs",
-    ddcBrightnessVCPs: getDDCBrightnessVCPs()
-  })
+  if(monitorsThreadReady) {
+    monitorsThread.send({
+      type: "settings",
+      settings: settings
+    })
+    monitorsThread.send({
+      type: "ddcBrightnessVCPs",
+      ddcBrightnessVCPs: getDDCBrightnessVCPs()
+    })
+  }
 
   if (sendUpdate) sendToAllWindows('settings-updated', settings);
   if (shouldRefreshMonitors) {
@@ -1305,12 +1319,14 @@ function getLocalization() {
   T = new Translate(localization.desired, localization.default)
   sendToAllWindows("localization-updated", localization)
 
-  monitorsThread.send({
-    type: "localization",
-    localization: {
-      GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
-    }
-  })
+  if(monitorsThreadReady) {
+    monitorsThread.send({
+      type: "localization",
+      localization: {
+        GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
+      }
+    })
+  }
 
 }
 
@@ -1568,7 +1584,7 @@ let lastRefreshMonitors = 0
 
 refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
-  if (pausedMonitorUpdates) {
+  if (!monitorsThreadReady || pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
     return monitors
   }
@@ -2725,16 +2741,29 @@ app.on("ready", async () => {
   showIntro()
   createPanel()
 
-  await refreshMonitors(true, true)
+  startMonitorThread()
+  monitorsThread.once("ready", async () => {
 
-  if (settings.brightnessAtStartup) setKnownBrightness();
-  if (settings.checkTimeAtStartup) {
-    lastTimeEvent = false;
-    setTimeout(() => handleBackgroundUpdate(true), 3500)
-  }
-  restartBackgroundUpdate()
+    monitorsThread.send({
+      type: "localization",
+      localization: {
+        GENERIC_DISPLAY_SINGLE: T.getString("GENERIC_DISPLAY_SINGLE")
+      }
+    })
 
-  setTimeout(addEventListeners, 5000)
+    isRefreshing = false
+    await refreshMonitors(true, true)
+
+    if (settings.brightnessAtStartup) setKnownBrightness();
+    if (settings.checkTimeAtStartup) {
+      lastTimeEvent = false;
+      setTimeout(() => handleBackgroundUpdate(true), 3500)
+    }
+    restartBackgroundUpdate()
+  
+    setTimeout(addEventListeners, 5000)
+  })
+
 })
 
 app.on("window-all-closed", () => {

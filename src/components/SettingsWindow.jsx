@@ -1335,6 +1335,15 @@ export default class SettingsWindow extends PureComponent {
                                         <SettingsChild title={`UDP key: ${window.settings.udpKey}`} />
                                     </SettingsOption>
                                     
+                                    <SettingsOption title="DDC/CI Scanning Mode" description={`Last test result: ${settings?.lastDetectedDDCCIMethod}`} input={
+                                        <select value={this.state.rawSettings.preferredDDCCIMethod} onChange={e => {
+                                            window.sendSettings({ preferredDDCCIMethod: e.target.value })
+                                        }}>
+                                            <option value="auto">Auto</option>
+                                            <option value="fast">Fast</option>
+                                            <option value="accurate">Accurate</option>
+                                        </select>
+                                    } />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Native Animation (depricated)" input={this.renderToggle("useNativeAnimation")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />

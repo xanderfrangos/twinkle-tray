@@ -10,8 +10,11 @@ module.exports = {
   , _setVCP: ddcci.setVCP
   , _getCapabilities: ddcci.getCapabilities
   , _saveCurrentSettings: ddcci.saveCurrentSettings
-  , _refresh: (filterResults = true) => ddcci.refresh(filterResults)
-  , getMonitorList: ddcci.getMonitorList
+  , _refresh: (useFastMethod = true) => ddcci.refresh(useFastMethod)
+  , getMonitorList: (useFastMethod = true) => { 
+        ddcci.refresh(useFastMethod);
+        return ddcci.getMonitorList()
+    }
 
   , getVCP: ddcci.getVCP
   , setVCP: ddcci.setVCP

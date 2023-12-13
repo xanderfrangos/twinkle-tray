@@ -1056,7 +1056,7 @@ async function doHotkey(hotkey) {
                 } else if (action.target === "powerState") {
                   vcpCode = "0xD2"
                 }
-                updateBrightnessThrottle(monitor.id, parseInt(value), false, parseInt(vcpCode))
+                updateBrightnessThrottle(monitor.id, parseInt(value), false, true, parseInt(vcpCode))
                 sendToAllWindows('monitors-updated', monitors);
               }
             }

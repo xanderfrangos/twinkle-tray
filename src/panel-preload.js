@@ -18,10 +18,13 @@ console.error = (...e) => { e.forEach((c) => { ipc.send('log', c); con.error(c) 
 
 window.winPosition = { x: 0, y: 0, width: 0, height: 0 }
 
+let jsVars
 function getArgumentVars() {
     try {
+        if(jsVars) return jsVars;
+
         const jsVarsString = process.argv.find(arg => arg.indexOf("jsVars") === 0)
-        const jsVars = JSON.parse(atob(jsVarsString.substring(6)))
+        jsVars = JSON.parse(atob(jsVarsString.substring(6)))
         return jsVars
     } catch(e) {
         return {}
@@ -441,4 +444,6 @@ window.showPanel = false
 window.isAcrylic = false
 window.theme = "dark"
 window.settings = {}
+window.jsVars = getArgumentVars()
+window.isRefreshing = getArgumentVars().isRefreshing
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)

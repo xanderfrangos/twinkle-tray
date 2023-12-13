@@ -1540,7 +1540,7 @@ function tryVibrancy(window, value = null) {
 //
 //
 
-let isRefreshing = false
+let isRefreshing = true
 let shouldShowPanel = false
 const setIsRefreshing = newValue => {
   isRefreshing = (newValue ? true : false)
@@ -2139,7 +2139,7 @@ ipcMain.on('get-window-history', () => sendToAllWindows('window-history', window
 let panelState = "hidden"
 let panelReady = false
 
-function createPanel(toggleOnLoad = false) {
+function createPanel(toggleOnLoad = false, isRefreshing = false) {
 
   console.log("Creating panel...")
 
@@ -2175,7 +2175,8 @@ function createPanel(toggleOnLoad = false) {
       zoomFactor: 1.0,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
-        appVersion: app.getVersion()
+        appVersion: app.getVersion(),
+        isRefreshing: isRefreshing
       })).toString('base64')],
       allowRunningInsecureContent: true,
       webSecurity: false
@@ -2739,7 +2740,7 @@ app.on("ready", async () => {
   //readSettings()
   getLocalization()
   showIntro()
-  createPanel()
+  createPanel(false, true)
 
   startMonitorThread()
   monitorsThread.once("ready", async () => {

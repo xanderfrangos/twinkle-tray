@@ -367,7 +367,7 @@ export default class BrightnessPanel extends PureComponent {
       update: false,
       sleeping: false,
       updateProgress: 0,
-      isRefreshing: false
+      isRefreshing: window.isRefreshing
     }
     this.lastLevels = []
     this.updateInterval = null

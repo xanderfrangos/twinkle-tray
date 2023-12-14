@@ -217,3 +217,10 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
         }
     }
 }
+
+// Disable high contrast mode from Windows
+@media (forced-colors: active) {
+    :root {
+        forced-color-adjust: none;
+    }
+}

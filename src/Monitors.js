@@ -1,9 +1,12 @@
-console.log("\x1b[45mMonitor.js starting. If you see this more than once, something bad happened.\x1b[0m")
+const tag = "\x1b[47m M \x1b[0m";
+console.log(tag + " \x1b[45mMonitors.js starting. If you see this again, something bad happened!\x1b[0m")
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
+const oLog = console.log
+console.log = (...args) => { args.unshift(tag); oLog(...args) }
 
 process.on('message', async (data) => {
     try {
@@ -49,8 +52,6 @@ process.on('message', async (data) => {
     }
 })
 
-let debug = console
-
 let isDev = (process.argv.indexOf("--isdev=true") >= 0)
 let skipTest = (process.argv.indexOf("--skiptest=true") >= 0)
 
@@ -94,10 +95,10 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                             monitors[hwid2] = monitor
                         }
                     }
-                    console.log(`Refresh DDC/CI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+                    console.log(`getBrightnessDDC() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
                 }
             } catch (e) {
-                console.log("Failed to refresh DDC/CI Brightness", e)
+                console.log("\x1b[41m" + "getBrightnessDDC() failed!" + "\x1b[0m", e)
             }
 
             // WMIC (Windows 10)
@@ -529,7 +530,6 @@ getBrightnessWMI = () => {
             }
         } catch (e) {
             console.log(e)
-            debug.log(e)
             resolve(false)
         }
     })
@@ -574,7 +574,6 @@ getBrightnessDDC = (monitorObj) => {
             monitor.brightnessMax = (brightnessValues[1] || 100)
             monitor.brightnessRaw = brightnessValues[0] // Raw value from DDC/CI. Not normalized or adjusted.
 
-
             // Get normalization info
             monitor = applyRemap(monitor)
             // Unnormalize brightness
@@ -583,8 +582,7 @@ getBrightnessDDC = (monitorObj) => {
             resolve(monitor)
 
         } catch (e) {
-            console.log("updateBrightnessDDC: Couldn't get DDC/CI brightness.")
-            console.log(e)
+            console.log("updateBrightnessDDC: Couldn't get DDC/CI brightness.", e)
             resolve(monitorObj)
         }
 
@@ -678,7 +676,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
         return result
     } catch (e) {
         let reason = e
-        if(e.message.indexOf("the I2C bus") > 0) reason = "Connection error";
+        if(e.message.indexOf("the I2C bus") > 0) reason = "I2C bus error";
         if(e.message.indexOf("does not support") > 0) reason = "VCP code unsupported";
         console.log(`Error reading VCP code ${vcpString} for ${monitor}. Reason: ${reason}`)
 
@@ -849,7 +847,6 @@ getMonitorsWMIC = () => {
                         wmiInfo.name = parseWMIString(monitor.UserFriendlyName)
                     }
 
-                    console.log(`WMIC: ${wmiInfo.id}`)
                     foundMonitors[hwid[2]] = wmiInfo
                 }
 
@@ -907,7 +904,7 @@ const getBrightnessWMIC = async () => {
             });
 
         } catch (e) {
-            debug.log(e)
+            console.log(e)
             resolve(false)
         }
     })

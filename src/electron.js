@@ -152,7 +152,6 @@ function startMonitorThread() {
       if (data.type === "ddcciModeTestResult") {
         ddcciModeTestResult = data.value
         settings.lastDetectedDDCCIMethod = (data.value ? "fast" : "accurate")
-        console.log("ddcciModeTestResult: " + ddcciModeTestResult)
       }
       monitorsEventEmitter.emit(data.type, data)
     }

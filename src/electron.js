@@ -414,7 +414,7 @@ const defaultSettings = {
   disableMouseEvents: false,
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
-  preferredDDCCIMethod: "auto",
+  preferredDDCCIMethod: "accurate",
   lastDetectedDDCCIMethod: "none",
   forceLowPowerGPU: false,
   ddcPowerOffValue: 5,

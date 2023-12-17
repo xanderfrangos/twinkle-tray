@@ -432,7 +432,7 @@ getMonitorsWin32 = () => {
     })
 }
 
-getFeaturesDDC = (ddcciMethod = "default") => {
+getFeaturesDDC = (ddcciMethod = "accurate") => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {

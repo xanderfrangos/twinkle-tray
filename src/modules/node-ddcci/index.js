@@ -9,8 +9,8 @@ module.exports = {
   , _getVCP: ddcci.getVCP
   , _setVCP: ddcci.setVCP
   , _saveCurrentSettings: ddcci.saveCurrentSettings
-  , _refresh: (method = "default") => ddcci.refresh(method)
-  , getMonitorList: (method = "default") => { 
+  , _refresh: (method = "accurate") => ddcci.refresh(method)
+  , getMonitorList: (method = "accurate") => { 
         ddcci.refresh(method);
         return ddcci.getMonitorList()
     }

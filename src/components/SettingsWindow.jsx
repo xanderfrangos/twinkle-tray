@@ -1305,7 +1305,7 @@ export default class SettingsWindow extends PureComponent {
     
 
                                 <div className="pageSection debug">
-                                    <SettingsOption title="All Displays" expandable={true} input={<a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a>}>
+                                    <SettingsOption title="All Displays" expandable={true} input={<><a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a> <a className="button" onClick={() => window.ipc.send('flush-vcp-cache')}>Clear Cache</a></>}>
                                         <SettingsChild>
                                             {this.getDebugMonitors()}
                                         </SettingsChild>

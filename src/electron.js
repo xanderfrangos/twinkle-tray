@@ -2061,6 +2061,12 @@ ipcMain.on('full-refresh', function (event, forceUpdate = false) {
   })
 })
 
+ipcMain.on('flush-vcp-cache', function (event) {
+  monitorsThread.send({
+    type: "flushvcp"
+  })
+})
+
 ipcMain.on('get-refreshing', () => {
   sendToAllWindows('isRefreshing', isRefreshing)
 })

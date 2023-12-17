@@ -11,6 +11,10 @@ console.log = (...args) => { args.unshift(tag); oLog(...args) }
 process.on('message', async (data) => {
     try {
         if (data.type === "refreshMonitors") {
+            if(data.clearCache) {
+                vcpCache = {}
+                monitorReports = {}
+            }
             refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
                 process.send({
                     type: 'refreshMonitors',
@@ -34,7 +38,8 @@ process.on('message', async (data) => {
         } else if (data.type === "vcp") {
             setVCP(data.monitor, data.code, data.value)
         } else if (data.type === "flushvcp") {
-            vcpCache = {};
+            vcpCache = {}
+            monitorReports = {}
         } else if (data.type === "wmi-bridge-ok") {
             canUseWmiBridge = true
         } else if (data.type === "getVCP") {

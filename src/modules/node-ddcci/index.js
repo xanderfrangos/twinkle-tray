@@ -9,10 +9,24 @@ module.exports = {
   , _getVCP: ddcci.getVCP
   , _setVCP: ddcci.setVCP
   , _saveCurrentSettings: ddcci.saveCurrentSettings
+  , _getAllMonitors: ddcci.getAllMonitors
+  , _clearDisplayCache: ddcci.clearDisplayCache
   , _refresh: (method = "accurate") => ddcci.refresh(method)
   , getMonitorList: (method = "accurate") => { 
         ddcci.refresh(method);
-        return ddcci.getMonitorList()
+        return ddcci.getMonitorList();
+    }
+  , getAllMonitors: (method = "accurate") => { 
+        ddcci.refresh(method);
+        const monitors = ddcci.getAllMonitors();
+        for(const monitor of monitors) {
+            if(monitor.result && monitor.result != "ok" && monitor.result != "invalid") {
+                monitor.capabilities = parseCapabilitiesString(monitor.result);
+                monitor.capabilitiesRaw = monitor.result;
+            }
+            delete monitor.result;
+        }
+        return monitors;
     }
 
   , getVCP: ddcci.getVCP

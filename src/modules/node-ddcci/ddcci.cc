@@ -14,15 +14,22 @@
 struct Monitor {
     HMONITOR handle;
     std::vector<HANDLE> physicalHandles;
-    std::vector<std::string> capabilitiesStrings;
-    std::string capabilitiesString;
 };
 
 struct PhysicalMonitor {
     HANDLE handle;
+    bool ddcciSupported;
     std::string name;
     std::string fullName;
     std::string result;
+    std::string deviceKey;
+    std::string deviceID;
+};
+
+struct DisplayDevice {
+    std::string deviceName;
+    std::string deviceID;
+    std::string deviceKey;
 };
 
 std::map<std::string, HANDLE> handles;
@@ -66,6 +73,57 @@ getPhysicalMonitorName(HMONITOR handle)
       static_cast<std::string>(monitorInfo.szDevice) + "\\";
 
     return monitorName;
+}
+
+std::map<std::string, DisplayDevice>
+getAllDisplays(std::string keyType)
+{
+
+    std::map<std::string, DISPLAY_DEVICE> displayDevs;
+    std::map<std::string, DisplayDevice> out;
+
+    DISPLAY_DEVICE adapterDev;
+    adapterDev.cb = sizeof(DISPLAY_DEVICE);
+
+    // Loop through adapters
+    int adapterDevIndex = 0;
+    while (EnumDisplayDevices(NULL, adapterDevIndex++, &adapterDev, 0)) {
+        DISPLAY_DEVICE displayDev;
+        displayDev.cb = sizeof(DISPLAY_DEVICE);
+
+        // Loop through displays (with device ID) on each adapter
+        int displayDevIndex = 0;
+        while (EnumDisplayDevices(adapterDev.DeviceName,
+                                  displayDevIndex++,
+                                  &displayDev,
+                                  EDD_GET_DEVICE_INTERFACE_NAME)) {
+
+            // Check valid target
+            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
+                || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
+                continue;
+            }
+
+            std::string deviceName =
+              static_cast<std::string>(displayDev.DeviceName);
+
+            displayDevs.insert({ deviceName, displayDev });
+        }
+    }
+
+    for (auto const& displayDevPair : displayDevs) {
+        DISPLAY_DEVICE displayDev = displayDevPair.second;
+        DisplayDevice newDevice;
+        newDevice.deviceName = static_cast<std::string>(displayDev.DeviceName);
+        newDevice.deviceID = static_cast<std::string>(displayDev.DeviceID);
+        newDevice.deviceKey =
+          newDevice.deviceID.substr(0, newDevice.deviceID.find("#{"));
+
+        out.insert(
+          { (keyType == "name" ? newDevice.deviceName : newDevice.deviceKey),
+            newDevice });
+    }
+    return out;
 }
 
 // Test if HANDLE has a working DDC/CI connection.
@@ -246,6 +304,26 @@ populateHandlesMapLegacy()
             }
         }
     }
+
+    // Also update physicalMonitorHandles fopr use with getAllDisplays
+    std::map<std::string, DisplayDevice> displays = getAllDisplays("key");
+
+    for (auto const& handle : handles) {
+        PhysicalMonitor newMonitor;
+        newMonitor.handle = handle.second;
+        newMonitor.ddcciSupported = true;
+
+        auto it = displays.find(handle.first);
+        if (it != displays.end()) {
+            newMonitor.name = it->second.deviceName.substr(
+              0, it->second.deviceName.find("Monitor"));
+            newMonitor.fullName = it->second.deviceName;
+            newMonitor.deviceKey = it->second.deviceKey;
+            newMonitor.deviceID = it->second.deviceID;
+        }
+
+        physicalMonitorHandles.insert({ handle.first, newMonitor });
+    }
 }
 
 void
@@ -254,6 +332,8 @@ populateHandlesMapNormal(std::string validationMethod)
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
     std::map<std::string, std::string> newCapabilities;
+
+    std::map<std::string, DisplayDevice> displays = getAllDisplays("name");
 
     auto monitorEnumProc = [](HMONITOR hMonitor,
                               HDC hdcMonitor,
@@ -301,80 +381,71 @@ populateHandlesMapNormal(std::string validationMethod)
             std::string fullMonitorName =
               monitorName + "Monitor" + std::to_string(i);
 
-            std::string result = getPhysicalHandleResults(
-              physicalMonitors[i].hPhysicalMonitor, validationMethod);
-
-            if (result == "invalid") {
-                continue;
-            }
-
             PhysicalMonitor newMonitor;
             newMonitor.handle = physicalMonitors[i].hPhysicalMonitor;
             newMonitor.name = monitorName;
             newMonitor.fullName = fullMonitorName;
-            newMonitor.result = result;
 
-            newPhysicalHandles.insert({ fullMonitorName, newMonitor });
-        }
+            // Reconnect previous matching handles for same monitor
+            bool existedLastTime = false;
+            DisplayDevice lastDevice;
+            auto it = physicalMonitorHandles.find(fullMonitorName);
+            if (it != physicalMonitorHandles.end()) {
+                // p("+" + it->second.deviceKey);
 
-        delete[] physicalMonitors;
-    }
-
-
-    std::map<std::string, DISPLAY_DEVICE> displayDevs;
-
-    DISPLAY_DEVICE adapterDev;
-    adapterDev.cb = sizeof(DISPLAY_DEVICE);
-
-    // Loop through adapters
-    int adapterDevIndex = 0;
-    while (EnumDisplayDevices(NULL, adapterDevIndex++, &adapterDev, 0)) {
-        DISPLAY_DEVICE displayDev;
-        displayDev.cb = sizeof(DISPLAY_DEVICE);
-
-        // Loop through displays (with device ID) on each adapter
-        int displayDevIndex = 0;
-        while (EnumDisplayDevices(adapterDev.DeviceName,
-                                  displayDevIndex++,
-                                  &displayDev,
-                                  EDD_GET_DEVICE_INTERFACE_NAME)) {
-
-            // Check valid target
-            if (!(displayDev.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)
-                || displayDev.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) {
-                continue;
+                auto it2 = displays.find(fullMonitorName);
+                if (it2 != displays.end()
+                    && it2->second.deviceKey == it->second.deviceKey) {
+                    // p("-" + it2->second.deviceKey);
+                    lastDevice = it2->second;
+                    existedLastTime = true;
+                }
             }
 
-            std::string deviceName =
-              static_cast<std::string>(displayDev.DeviceName);
+            bool doInsert = false;
 
-            displayDevs.insert({ deviceName, displayDev });
-        }
-    }
+            if (existedLastTime) {
+                newMonitor.deviceKey = lastDevice.deviceKey;
+                newMonitor.deviceID = lastDevice.deviceID;
+                newMonitor.result = it->second.result;
+                newMonitor.ddcciSupported = it->second.ddcciSupported;
+                doInsert = true;
+            } else {
+                auto it3 = displays.find(fullMonitorName);
+                if (it3 == displays.end()) {
+                    // p("Couldn't find matching ID for: " + fullMonitorName);
+                } else {
+                    newMonitor.deviceKey = it3->second.deviceKey;
+                    newMonitor.deviceID = it3->second.deviceID;
 
-    for (auto const& physicalHandleSet : newPhysicalHandles) {
-        for (auto const& displayDevPair : displayDevs) {
-            PhysicalMonitor pMonitor = physicalHandleSet.second;
-            DISPLAY_DEVICE displayDev = displayDevPair.second;
-            std::string deviceName =
-              static_cast<std::string>(displayDev.DeviceName);
+                    std::string result = getPhysicalHandleResults(
+                      physicalMonitors[i].hPhysicalMonitor, validationMethod);
 
-            // Match and store against device ID
-            if (deviceName.find(pMonitor.fullName) == 0) {
+                    newMonitor.result = result;
 
-                std::string deviceID =
-                  static_cast<std::string>(displayDev.DeviceID);
-                std::string deviceKey = deviceID.substr(0, deviceID.find("#{"));
+                    if (result == "invalid") {
+                        newMonitor.ddcciSupported = false;
+                    } else {
+                        newMonitor.ddcciSupported = true;
+                    }
 
-                //p("MATCH: " + pMonitor.fullName + " " + deviceKey);
-                newHandles.insert({ deviceKey, pMonitor.handle });
+                    doInsert = true;
+                }
+            }
 
-                if (validationMethod == "accurate" && pMonitor.result != "ok"
-                    && pMonitor.result != "invalid") {
-                    newCapabilities.insert({ deviceKey, pMonitor.result });
+            if (doInsert) {
+                newPhysicalHandles.insert({ fullMonitorName, newMonitor });
+                newHandles.insert({ newMonitor.deviceKey, newMonitor.handle });
+
+                if (validationMethod == "accurate" && newMonitor.result != "ok"
+                    && newMonitor.result != "invalid") {
+                    newCapabilities.insert(
+                      { newMonitor.deviceKey, newMonitor.result });
                 }
             }
         }
+
+        delete[] physicalMonitors;
     }
 
     clearMonitorData();
@@ -437,6 +508,17 @@ refresh(const Napi::CallbackInfo& info)
     }
 
     return env.Undefined();
+}
+
+void
+clearDisplayCache(const Napi::CallbackInfo& info)
+{
+    if (!physicalMonitorHandles.empty()) {
+        physicalMonitorHandles.clear();
+    }
+    if (!capabilities.empty()) {
+        capabilities.clear();
+    }
 }
 
 Napi::String
@@ -509,6 +591,30 @@ getMonitorList(const Napi::CallbackInfo& info)
     }
 
     return ret;
+}
+
+Napi::Array
+getAllMonitors(const Napi::CallbackInfo& info)
+{
+    napi_env env = info.Env();
+    Napi::Array monitors = Napi::Array::New(env);
+
+    int i = 0;
+    for (auto const& handle : physicalMonitorHandles) {
+        Napi::Object monitor = Napi::Object::New(env);
+        monitor.Set("ddcciSupported",
+                    Napi::Boolean::New(env, handle.second.ddcciSupported));
+        monitor.Set("name", Napi::String::New(env, handle.second.name));
+        monitor.Set("fullName", Napi::String::New(env, handle.second.fullName));
+        monitor.Set("result", Napi::String::New(env, handle.second.result));
+        monitor.Set("deviceKey",
+                    Napi::String::New(env, handle.second.deviceKey));
+        monitor.Set("deviceID", Napi::String::New(env, handle.second.deviceID));
+
+        monitors.Set(i++, monitor);
+    }
+
+    return monitors;
 }
 
 
@@ -610,6 +716,11 @@ Init(Napi::Env env, Napi::Object exports)
 {
     exports.Set("getMonitorList",
                 Napi::Function::New(env, getMonitorList, "getMonitorList"));
+    exports.Set("getAllMonitors",
+                Napi::Function::New(env, getAllMonitors, "getAllMonitors"));
+    exports.Set(
+      "clearDisplayCache",
+      Napi::Function::New(env, clearDisplayCache, "clearDisplayCache"));
     exports.Set("refresh", Napi::Function::New(env, refresh, "refresh"));
     exports.Set("setVCP", Napi::Function::New(env, setVCP, "setVCP"));
     exports.Set("getVCP", Napi::Function::New(env, getVCP, "getVCP"));

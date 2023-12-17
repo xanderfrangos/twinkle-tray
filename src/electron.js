@@ -148,6 +148,10 @@ function startMonitorThread() {
           type: "ddcBrightnessVCPs",
           ddcBrightnessVCPs: getDDCBrightnessVCPs()
         })
+        monitorsThread.send({
+          type: "wmi-bridge-ok",
+          value: wmiBridgeOK
+        })
       }
       if (data.type === "ddcciModeTestResult") {
         ddcciModeTestResult = data.value
@@ -182,30 +186,33 @@ function getVCP(monitor, code) {
 
 // Test if wmi-bridge works properly on user's system
 let monitorsThreadTest
-function startMonitorTestThread() {
-  monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
-  monitorsThreadTest.on("message", (data) => {
-    if (data?.type === "ready") {
-      console.log("WMI-BRIDGE TEST: READY")
-    }
-    if (data?.type === "ok") {
-      console.log("WMI-BRIDGE TEST: OK")
-      monitorsThread.send({
-        type: "wmi-bridge-ok"
-      })
-    }
-  })
-  // Close after timeout
-  setTimeout(() => {
-    try {
-      if (monitorsThreadTest.connected) {
-        console.log("WMI-BRIDGE TEST: Killing thread")
-        monitorsThreadTest.kill()
+let wmiBridgeOK = false
+async function doWMIBridgeTest() {
+  return new Promise((resolve, reject) => {
+    monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+    monitorsThreadTest.on("message", (data) => {
+      if (data?.type === "ready") {
+        console.log("WMI-BRIDGE TEST: READY")
       }
-    } catch (e) { console.log(e) }
-  }, 2000)
+      if (data?.type === "ok") {
+        console.log("WMI-BRIDGE TEST: OK")
+        wmiBridgeOK = true
+        monitorsThreadTest.kill()
+        resolve(true)
+      }
+    })
+    // Close after timeout
+    setTimeout(() => {
+      try {
+        if (monitorsThreadTest.connected) {
+          console.log("WMI-BRIDGE TEST: Killing thread")
+          monitorsThreadTest.kill()
+          resolve(false)
+        }
+      } catch (e) { console.log(e) }
+    }, 2000)
+  })
 }
-startMonitorTestThread()
 
 
 // Mouse wheel scrolling
@@ -2748,6 +2755,7 @@ app.on("ready", async () => {
   showIntro()
   createPanel(false, true)
 
+  await doWMIBridgeTest()
   startMonitorThread()
   monitorsThread.once("ready", async () => {
 

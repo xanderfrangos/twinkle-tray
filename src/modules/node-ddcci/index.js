@@ -8,11 +8,10 @@ module.exports = {
 
   , _getVCP: ddcci.getVCP
   , _setVCP: ddcci.setVCP
-  , _getCapabilities: ddcci.getCapabilities
   , _saveCurrentSettings: ddcci.saveCurrentSettings
-  , _refresh: (useFastMethod = true) => ddcci.refresh(useFastMethod)
-  , getMonitorList: (useFastMethod = true) => { 
-        ddcci.refresh(useFastMethod);
+  , _refresh: (method = "default") => ddcci.refresh(method)
+  , getMonitorList: (method = "default") => { 
+        ddcci.refresh(method);
         return ddcci.getMonitorList()
     }
 
@@ -54,7 +53,8 @@ module.exports = {
     // Returns an array where keys are valid VCP codes and the keys are an array of accepted values.
     // If the array of accepted values is empty, the VCP code either accepts a range of values or no values. Use getVCP to determine the range, if any.
   , getCapabilities (monitorId) {
-    const report = ddcci.getCapabilities(monitorId);
+    let report = ddcci.getCapabilitiesString(monitorId);
+
     const start = report.indexOf('vcp('); // Find where VCP list starts
 
     // Only run if VCP list found
@@ -108,5 +108,8 @@ module.exports = {
     }
     return [];
   }
+  , getMonitorName (monitorId) {
+        return ddcci.getMonitorName(monitorId);
+    }
 };
 

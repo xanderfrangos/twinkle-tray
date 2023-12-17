@@ -81,11 +81,15 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         busyLevel = (fullRefresh ? 2 : 1)
 
         if (!monitors || fullRefresh) {
-            let useFastMethod = isFastFine
-            if(settings?.preferredDDCCIMethod === "accurate") useFastMethod = false;
-            if(settings?.preferredDDCCIMethod === "fast") useFastMethod = true;
+            let ddcciMethod = (isFastFine ? "fast" : "accurate")
 
-            const foundMonitors = await getAllMonitors(useFastMethod)
+            const savedMethod = settings?.preferredDDCCIMethod
+            const ddcciMethodValues = ["fast", "accurate", "no-validation", "legacy"]
+            if(savedMethod && ddcciMethodValues.indexOf(savedMethod) >= 0) {
+                ddcciMethod = savedMethod
+            } 
+
+            const foundMonitors = await getAllMonitors(ddcciMethod)
             monitors = foundMonitors
         } else {
             let startTime = process.hrtime()
@@ -160,7 +164,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 }
 
 
-getAllMonitors = async (useFastDDCCIMethod = false) => {
+getAllMonitors = async (ddcciMethod = "default") => {
     const foundMonitors = {}
     let startTime = process.hrtime.bigint()
     let fullStartTime = process.hrtime.bigint()
@@ -216,7 +220,7 @@ getAllMonitors = async (useFastDDCCIMethod = false) => {
     // DDC/CI Brightness + Features
     try {
         startTime = process.hrtime.bigint()
-        const featuresList = await getFeaturesDDC(useFastDDCCIMethod)
+        const featuresList = await getFeaturesDDC(ddcciMethod, false)
         console.log(`getFeaturesDDC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
         for (const hwid2 in featuresList) {
@@ -239,8 +243,18 @@ getAllMonitors = async (useFastDDCCIMethod = false) => {
                 min: 0,
                 max: 100,
                 brightnessType: brightnessType,
-                brightnessValues: (features["0x10"] ? features["0x10"] : (features["0x13"] ? features["0x13"] : [50, 100]))
+                brightnessValues: (features[brightnessType] ? features[brightnessType] : features["0x10"] ? features["0x10"] : (features["0x13"] ? features["0x13"] : [50, 100]))
             }
+
+            try {
+                ddcciInfo.path = ddcci.getMonitorName(id)
+            } catch(e) { }
+
+            const brightness = await checkVCP(id, parseInt(brightnessType))
+            if(brightness) {
+                ddcciInfo.brightnessValues = brightness
+            }
+
             ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
             ddcciInfo.brightnessMax = ddcciInfo.brightnessValues[1]
 
@@ -418,22 +432,23 @@ getMonitorsWin32 = () => {
     })
 }
 
-getFeaturesDDC = (useFastDDCCIMethod = false) => {
+getFeaturesDDC = (ddcciMethod = "default") => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
             const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 80000)
             
             getDDCCI()
-            const ddcciMonitors = ddcci.getMonitorList(useFastDDCCIMethod)
+            await wait(10)
+            const ddcciMonitors = ddcci.getMonitorList(ddcciMethod)
 
             for (let monitor of ddcciMonitors) {
                 const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", monitor); reject({}) }, 15000)
                 const hwid = monitor.split("#")
                 let features = []
 
-                await wait(50)
-                features = await checkMonitorFeatures(monitor)
+                await wait(10)
+                features = await checkMonitorFeatures(monitor, false)
 
                 monitorFeatures[hwid[2]] = {
                     id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
@@ -453,13 +468,12 @@ getFeaturesDDC = (useFastDDCCIMethod = false) => {
     })
 }
 
-checkMonitorFeatures = async (monitor) => {
+checkMonitorFeatures = async (monitor, skipCache = false) => {
     return new Promise(async (resolve, reject) => {
         const features = {}
         try {
 
             // Detect valid VCP codes for display
-            let useReport = true
             try {
                 if(!monitorReports[monitor]) {
                     const report = ddcci.getCapabilities(monitor)
@@ -469,15 +483,14 @@ checkMonitorFeatures = async (monitor) => {
                 }
             } catch(e) {
                 console.log("Couldn't get capabilities report for monitor " + monitor)
-                useReport = false
             }
             
             // This part is flaky, so we'll do it slowly
-            features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", false, useReport)
-            features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", false, useReport)
-            features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", false, useReport)
-            features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", false, useReport)
-            features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", false, useReport)
+            features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", skipCache)
+            features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
+            features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
+            features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
+            features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
 
             // Get custom DDC/CI features
             const hwid = monitor.split("#")
@@ -488,7 +501,7 @@ checkMonitorFeatures = async (monitor) => {
                         continue; // Skip if built-in feature
                     }
                     if(settingsFeatures[vcp]) {
-                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp)
+                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, skipCache)
                     }
                 }
             }
@@ -642,17 +655,18 @@ function setBrightness(brightness, id) {
 }
 
 let vcpCache = {}
-async function checkVCPIfEnabled(monitor, code, setting, skipCache = false, useReportOnly = true) {
+async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
     const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
     try {
         const hwid = monitor.split("#")
         const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
         const isInReport = monitorReports[monitor]?.[vcpString] ? true : false
+        const hasReport = monitorReports[monitor] ? true : false
+        
+        if (!skipCache && hasReport && !isInReport) return false;
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
         if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return vcpCache[monitor]["vcp_" + vcpString];
-
-        if (useReportOnly && !isInReport) return false;
 
         const vcpResult = await checkVCP(monitor, code)
         return vcpResult
@@ -924,7 +938,6 @@ function wait(ms = 2000) {
     });
 }
 
-
 testDDCCIMethods = async () => {
     try {
         if(skipTest) {
@@ -935,50 +948,48 @@ testDDCCIMethods = async () => {
         console.log("Testing DDC/CI methods...")
         getDDCCI()
     
-        // We may need to check if DDC/CI is working for each of these. Or at least for "fast". Maybe use the results of "accurate" to test each display?
-        const doTest = async (doFast) => {
-            return ddcci.getMonitorList(doFast)
-        }
-    
-        let startTime = process.hrtime()
-        const accurateResults = await doTest(false)
+        let startTime = process.hrtime.bigint()
+        const accurateResults = ddcci.getMonitorList("accurate")
         const accurateFeatures = []
         for(const monitor of accurateResults) {
             accurateFeatures[monitor] = await checkMonitorFeatures(monitor)
         }
-        const endTimeAcc = process.hrtime(startTime)[1] / 1000000
+        const endTimeAcc = (startTime - process.hrtime.bigint()) / BigInt(-1000000)
         
-        wait(200)
+        wait(100)
         vcpCache = {}
     
-        startTime = process.hrtime()
-        const fastResults = await doTest(true)
+        startTime = process.hrtime.bigint()
+        const fastResults = ddcci.getMonitorList("fast")
         const fastFeatures = []
         for(const monitor of fastResults) {
             fastFeatures[monitor] = await checkMonitorFeatures(monitor)
         }
-        const endTimeFast = process.hrtime(startTime)[1] / 1000000
-    
-        console.log(`Accurate results took: ${endTimeAcc}ms`)
-        console.log(`Fast results took: ${endTimeFast}ms`)
+        const endTimeFast = (startTime - process.hrtime.bigint()) / BigInt(-1000000)
     
         let fastIsFine = true
+        let failReason
         if(fastResults.length !== accurateResults.length) {
             fastIsFine = false
-            console.log("Display counts don't match!")
+            failReason = "Display counts don't match!"
         } else {
             for(const id of accurateResults) {
                 if(fastResults.indexOf(id) === -1) {
                     fastIsFine = false
-                    console.log("Didn't find ID: " + id)
+                    failReason = "Didn't find ID: " + id
                 }
                 if(JSON.stringify(fastFeatures[id]) != JSON.stringify(accurateFeatures[id])) {
-                    console.log("Features don't match: " + id)
+                    failReason = "Features don't match: " + id
                 }
             }
         }
-    
+        console.log("-------------- DDC/CI Tests --------------")
+        console.log(`Accurate results took: ${endTimeAcc}ms`)
+        console.log(`Fast results took: ${endTimeFast}ms`)
         console.log("Is fast fine?: " + fastIsFine)
+        if(failReason) console.log("Reason: " + fastIsFine);
+        console.log("------------------------------------------")
+        wait(100)
         return fastIsFine
     } catch(e) {
         console.log("Error testing DDC/CI methods: ", e)

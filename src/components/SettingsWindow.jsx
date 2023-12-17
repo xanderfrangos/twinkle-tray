@@ -1342,6 +1342,8 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="auto">Auto</option>
                                             <option value="fast">Fast</option>
                                             <option value="accurate">Accurate</option>
+                                            <option value="no-validation">No validation</option>
+                                            <option value="legacy">Legacy (v1.15.4 behavior)</option>
                                         </select>
                                     } />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />

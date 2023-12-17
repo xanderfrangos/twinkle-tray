@@ -1328,7 +1328,7 @@ export default class SettingsWindow extends PureComponent {
                                     <div className="sectionTitle">Other</div>
     
                                     <SettingsOption title="Dev Mode" input={this.renderToggle("isDev")} />
-                                    <SettingsOption title="UDP Server">
+                                    <SettingsOption title="UDP Server" expandable={true}>
                                         <SettingsChild title="Enable UDP commands outside of localhost" input={this.renderToggle("udpRemote")} />
                                         <SettingsChild title="Default port for UDP commands" input={<input type="number" min="1" max="65535" value={window.settings.udpPortStart * 1} onChange={(e) => this.setSetting("udpPortStart", e.target.value)} />} />
                                         <SettingsChild title={`Active port: ${window.settings.udpPortActive}`} />

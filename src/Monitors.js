@@ -81,15 +81,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         busyLevel = (fullRefresh ? 2 : 1)
 
         if (!monitors || fullRefresh) {
-            let ddcciMethod = (isFastFine ? "fast" : "accurate")
-
-            const savedMethod = settings?.preferredDDCCIMethod
-            const ddcciMethodValues = ["fast", "accurate", "no-validation", "legacy"]
-            if(savedMethod && ddcciMethodValues.indexOf(savedMethod) >= 0) {
-                ddcciMethod = savedMethod
-            } 
-
-            const foundMonitors = await getAllMonitors(ddcciMethod)
+            const foundMonitors = await getAllMonitors(determineDDCCIMethod())
             monitors = foundMonitors
         } else {
             let startTime = process.hrtime()
@@ -133,6 +125,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             // WMI
             if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
                 try {
+                    startTime = process.hrtime.bigint()
                     const wmiBrightness = await getBrightnessWMI()
                     if (wmiBrightness) {
                         updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
@@ -142,9 +135,9 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                             updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
                         }
                     }
-                    console.log(`Refresh WMI Brightness Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+                    console.log(`getBrightnessWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
                 } catch (e) {
-                    console.log("Failed to refresh WMI Brightness", e)
+                    console.log("\x1b[41m" + "getBrightnessWMI() failed!" + "\x1b[0m", e)
                 }
             }
 
@@ -221,7 +214,6 @@ getAllMonitors = async (ddcciMethod = "default") => {
     try {
         startTime = process.hrtime.bigint()
         const featuresList = await getFeaturesDDC(ddcciMethod, false)
-        console.log(`getFeaturesDDC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
@@ -265,6 +257,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
             ddcciInfo.brightness = normalizeBrightness(ddcciInfo.brightnessRaw, true, ddcciInfo.min, ddcciInfo.max)
             updateDisplay(foundMonitors, hwid2, ddcciInfo)
         }
+        console.log(`getFeaturesDDC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
     } catch (e) {
         console.log("\x1b[41m" + "getFeaturesDDC() failed!" + "\x1b[0m", e)
     }
@@ -335,6 +328,17 @@ getAllMonitors = async (ddcciMethod = "default") => {
         console.log(`Monitors found: ${Object.keys(foundMonitors)}`)
     } catch (e) { }
     return foundMonitors
+}
+
+function determineDDCCIMethod() {
+    let ddcciMethod = (isFastFine ? "fast" : "accurate")
+
+    const savedMethod = settings?.preferredDDCCIMethod
+    const ddcciMethodValues = ["fast", "accurate", "no-validation", "legacy"]
+    if(savedMethod && ddcciMethodValues.indexOf(savedMethod) >= 0) {
+        ddcciMethod = savedMethod
+    } 
+    return ddcciMethod
 }
 
 let wmiFailed = false
@@ -656,7 +660,8 @@ function setBrightness(brightness, id) {
 
 let vcpCache = {}
 async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
-    const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+    const vcpString = vcpStr(code)
+    if(!code || code == "0x0") return false;
     try {
         const hwid = monitor.split("#")
         const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
@@ -684,7 +689,8 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
 }
 
 async function checkVCP(monitor, code, skipCacheWrite = false) {
-    const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+    const vcpString = vcpStr(code)
+    if(!code || code == "0x0") return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
         if (!skipCacheWrite) {
@@ -712,7 +718,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
 async function setVCP(monitor, code, value) {
     if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy
     try {
-        const vcpString = `0x${parseInt(code).toString(16).toUpperCase()}`
+        const vcpString = vcpStr(code)
         let result = ddcci._setVCP(monitor, code, (value * 1))
         if (vcpCache[monitor]?.["vcp_" + vcpString]) {
             vcpCache[monitor]["vcp_" + vcpString][0] = (value * 1)
@@ -936,6 +942,10 @@ function wait(ms = 2000) {
             resolve(true);
         }, ms);
     });
+}
+
+function vcpStr(code) {
+    return `0x${parseInt(code).toString(16).toUpperCase()}`
 }
 
 testDDCCIMethods = async () => {

@@ -54,7 +54,14 @@ module.exports = {
     // If the array of accepted values is empty, the VCP code either accepts a range of values or no values. Use getVCP to determine the range, if any.
   , getCapabilities (monitorId) {
     let report = ddcci.getCapabilitiesString(monitorId);
+    return parseCapabilitiesString(report);
+  }
+  , getMonitorName (monitorId) {
+        return ddcci.getMonitorName(monitorId);
+    }
+};
 
+function parseCapabilitiesString(report = "") {
     const start = report.indexOf('vcp('); // Find where VCP list starts
 
     // Only run if VCP list found
@@ -107,9 +114,4 @@ module.exports = {
         return codeList;
     }
     return [];
-  }
-  , getMonitorName (monitorId) {
-        return ddcci.getMonitorName(monitorId);
-    }
-};
-
+}

@@ -119,12 +119,12 @@ let monitorsThread = {
       console.log("Couldn't communicate with Monitor thread.", e)
     }
   },
-  once: function (message, data) {
+  once: function (message, callback) {
     try {
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
       }
-      monitorsEventEmitter.once(message, data)
+      monitorsEventEmitter.once(message, callback)
     } catch (e) {
       console.log("Couldn't listen to Monitor thread.", e)
     }

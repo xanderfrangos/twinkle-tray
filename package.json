@@ -14,7 +14,7 @@
     "appx-unsigned": "npm run parcel-build && electron-builder --x64 -w appx -c.appx.publisher=\"CN=AppModelSamples, OID.2.25.311729368913984317654407730594956997722=1\" -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-unsigned.${ext}\"",
     "portable": "npm run parcel-build && electron-builder --x64 -w zip -c.extraMetadata.name=twinkle-tray-portable -c.win.artifactName=\"${productName} v${version}-portable.${ext}\" -c.win.compression=normal",
     "arm64": "npm run parcel-build && electron-builder --arm64 -c.extraMetadata.name=twinkle-tray-arm64 -c.win.artifactName=\"${productName} v${version}-arm64.${ext}\" -c.win.compression=normal",
-    "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci",
+    "rebuild-ddcci-dev": "electron-rebuild -f -m src/modules/node-ddcci",
     "appx-arm64": "npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
     "build": "npm ci & npm run parcel-build && npm run electron-build",
     "build-all": "npm run build && npm run appx && npm run appx-arm64",

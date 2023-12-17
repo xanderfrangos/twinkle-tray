@@ -245,6 +245,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
             const brightness = await checkVCP(id, parseInt(brightnessType))
             if(brightness) {
                 ddcciInfo.brightnessValues = brightness
+                features[brightnessType] = brightness
             }
 
             ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
@@ -501,6 +502,19 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
             } catch(e) {
                 console.log("Couldn't get capabilities report for monitor " + monitor)
             }
+
+            // Get custom DDC/CI features
+            const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
+            if(settingsFeatures) {
+                for(const vcp in settingsFeatures) {
+                    if(ddcBrightnessVCPs[hwid[1]] && vcp == ddcBrightnessVCPs[hwid[1]]) {
+                        continue; // Skip if custom brightness
+                    }
+                    if(settingsFeatures[vcp]) {
+                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, true)
+                    }
+                }
+            }
             
             // This part is flaky, so we'll do it slowly
             // Capabilities report allows us to skip this, thankfully
@@ -509,24 +523,6 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
             features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
             features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
             features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
-
-            // Get alternative brightness VCP per monitor
-            if(ddcBrightnessVCPs[hwid[1]]) {
-                features[ddcBrightnessVCPs[hwid[1]]] = await checkVCPIfEnabled(monitor, parseInt(ddcBrightnessVCPs[hwid[1]]), "altBrightness", skipCache)
-            }
-
-            // Get custom DDC/CI features
-            const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
-            if(settingsFeatures) {
-                for(const vcp in settingsFeatures) {
-                    if(vcp == "0x10" || vcp == "0x12" || vcp == "0x13" || vcp == "0x62" || vcp == "0xD6") {
-                        continue; // Skip if built-in feature
-                    }
-                    if(settingsFeatures[vcp]) {
-                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, skipCache)
-                    }
-                }
-            }
             
         } catch (e) {
             console.log(e)
@@ -618,6 +614,20 @@ getBrightnessDDC = (monitorObj) => {
             monitor = applyRemap(monitor)
             // Unnormalize brightness
             monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+
+            // Get custom DDC/CI features
+            const settingsFeatures = settings?.monitorFeatures?.[monitor.hwid[1]]
+            if(settingsFeatures) {
+                for(const vcp in settingsFeatures) {
+                    if(vcp == monitor.brightnessType) {
+                        continue; // Skip brightness
+                    }
+                    if(settingsFeatures[vcp]) {
+                        monitor.features[vcp] = await checkVCP(monitor.id, parseInt(vcp))
+                    }
+                }
+            }
+
             clearTimeout(timeout)
             resolve(monitor)
 
@@ -684,9 +694,9 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
         const hwid = monitor.split("#")
         const userEnabledFeature = settings?.monitorFeatures?.[hwid[1]]?.[vcpString]
         const isInReport = monitorReports[monitor]?.[vcpString] ? true : false
-        const hasReport = monitorReports[monitor] ? true : false
+        const hasReport = monitorReports[monitor] && Object.keys(monitorReports[monitor])?.length > 0 ? true : false
         
-        if (!skipCache && hasReport && !isInReport) return false;
+        if (hasReport && !isInReport) return false;
 
         // If we previously saw that a feature was supported, we shouldn't have to check again.
         if ((!skipCache || !userEnabledFeature) && vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return vcpCache[monitor]["vcp_" + vcpString];

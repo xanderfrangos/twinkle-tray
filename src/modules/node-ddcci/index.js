@@ -56,9 +56,6 @@ module.exports = {
     let report = ddcci.getCapabilitiesString(monitorId);
     return parseCapabilitiesString(report);
   }
-  , getMonitorName (monitorId) {
-        return ddcci.getMonitorName(monitorId);
-    }
 };
 
 function parseCapabilitiesString(report = "") {

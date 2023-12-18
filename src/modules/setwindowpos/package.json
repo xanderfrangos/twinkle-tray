@@ -21,8 +21,5 @@
     "index.js",
     "binding.gyp",
     "setwindowpos.cc"
-  ],
-  "devDependencies": {
-    "node-gyp": "^7.1.0"
-  }
+  ]
 }

@@ -36,7 +36,7 @@ require('@electron/remote/main').initialize()
 const knownDDCBrightnessVCPs = require('./known-ddc-brightness-codes.json')
 
 const { fork, exec } = require('child_process');
-const uuid = require('uuid/v4');
+const uuid = require('crypto').randomUUID
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 

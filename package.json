@@ -6,20 +6,18 @@
   "scripts": {
     "parcel": "parcel src/html/*.html --port 3000 --out-dir cache",
     "parcel-build": "del /q build && parcel build src/html/*.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
+    "clean": "npm ci",
     "dev": "wait-on http://localhost:3000/index.html && electron . --dev",
     "electron-build": "electron-builder --x64",
-    "clean-sharp-vendor": "rd /S /Q \"node_modules\\sharp\\vendor\\\"",
-    "clean-sharp-build": "rd /S /Q \"node_modules\\sharp\\build\\Release\\\"",
-    "clean-and-rebuild": "npm run clean-sharp-vendor && npm run clean-sharp-build && npm rebuild",
     "postinstall": "electron-builder install-app-deps",
-    "appx": "npm run clean-and-rebuild && npm run parcel-build && electron-builder --x64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
-    "appx-unsigned": "npm run clean-and-rebuild && npm run parcel-build && electron-builder --x64 -w appx -c.appx.publisher=\"CN=AppModelSamples, OID.2.25.311729368913984317654407730594956997722=1\" -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-unsigned.${ext}\"",
-    "portable": "npm run clean-and-rebuild && npm run parcel-build && electron-builder --x64 -w zip -c.extraMetadata.name=twinkle-tray-portable -c.win.artifactName=\"${productName} v${version}-portable.${ext}\" -c.win.compression=normal",
-    "arm64": "npm run clean-and-rebuild && npm run parcel-build && electron-builder --arm64 -c.extraMetadata.name=twinkle-tray-arm64 -c.win.artifactName=\"${productName} v${version}-arm64.${ext}\" -c.win.compression=normal",
+    "appx": "npm run parcel-build && electron-builder --x64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
+    "appx-unsigned": "npm run parcel-build && electron-builder --x64 -w appx -c.appx.publisher=\"CN=AppModelSamples, OID.2.25.311729368913984317654407730594956997722=1\" -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-unsigned.${ext}\"",
+    "portable": "npm run parcel-build && electron-builder --x64 -w zip -c.extraMetadata.name=twinkle-tray-portable -c.win.artifactName=\"${productName} v${version}-portable.${ext}\" -c.win.compression=normal",
+    "arm64": "npm run parcel-build && electron-builder --arm64 -c.extraMetadata.name=twinkle-tray-arm64 -c.win.artifactName=\"${productName} v${version}-arm64.${ext}\" -c.win.compression=normal",
     "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci",
-    "appx-arm64": "npm run clean-and-rebuild && npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
-    "build": "npm run parcel-build && npm run clean-and-rebuild && npm run electron-build",
-    "build-all": "npm run build && npm run appx && npm run appx-arm64 && npm run clean-and-rebuild",
+    "appx-arm64": "npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
+    "build": "npm ci & npm run parcel-build && npm run electron-build",
+    "build-all": "npm run build && npm run appx && npm run appx-arm64",
     "start": "concurrently \"npm run parcel\" \"npm run dev\"",
     "test-wmibridge": "node src/modules/wmi-bridge/example.js"
   },
@@ -129,11 +127,38 @@
     "cross-env": "^7.0.3",
     "electron": "^20.3.6",
     "electron-builder": "^23.6.0",
+    "node-gyp": "^9.4.0",
     "parcel-bundler": "^1.12.5",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.0",
     "sass": "^1.54.0",
     "wait-on": "^5.3.0"
+  },
+  "overrides": {
+    "node-gyp": "$node-gyp",
+    "bindings@<1.5.0": "1.5.0",
+    "node-addon-api@<3.1.0": "3.1.0",
+    "global-mouse-events": {
+      "node-gyp": "$node-gyp"
+    },
+    "acrylic": {
+      "node-gyp": "$node-gyp"
+    },
+    "wmi-bridge": {
+      "node-gyp": "$node-gyp"
+    },
+    "setwindowpos-binding": {
+      "node-gyp": "$node-gyp"
+    },
+    "windows-accent-colors": {
+      "node-gyp": "$node-gyp"
+    },
+    "win32-displayconfig": {
+      "node-gyp": "$node-gyp"
+    },
+    "@hensm/ddcci": {
+      "node-gyp": "$node-gyp"
+    }
   }
 }

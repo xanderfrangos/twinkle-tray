@@ -21,7 +21,9 @@ const optionsProd = {
 
 function clearDirectory(relativePath) {
     const dir = Path.join(__dirname, relativePath)
-    fs.rmSync(dir, { recursive: true })
+    if (fs.existsSync(dir)){
+        fs.rmSync(dir, { recursive: true })
+    }
     if (!fs.existsSync(dir)){
         fs.mkdirSync(dir)
     }

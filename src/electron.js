@@ -2746,6 +2746,11 @@ function doAnimationStep() {
 
 
 
+// Local Parcel server
+if(isDev) {
+  console.log("Starting Parcel bundler server...")
+  require("./parcelAPI")("dev", 1)
+}
 
 app.on("ready", async () => {
   await getAllLanguages()

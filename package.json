@@ -4,10 +4,11 @@
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
-    "parcel": "parcel src/html/*.html --port 3000 --out-dir cache",
-    "parcel-build": "del /q build && parcel build src/html/*.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
+    "start": "electron . --dev",
+    "parcel": "node src/parcel.js --mode dev",
+    "parcel-build": "node src/parcel.js --mode build",
     "clean": "npm ci",
-    "dev": "wait-on http://localhost:3000/index.html && electron . --dev",
+    "dev": "electron . --dev",
     "electron-build": "electron-builder --x64",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder --x64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
@@ -18,7 +19,6 @@
     "appx-arm64": "npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
     "build": "npm ci & npm run parcel-build && npm run electron-build",
     "build-all": "npm run build && npm run appx && npm run appx-arm64",
-    "start": "concurrently \"npm run parcel\" \"npm run dev\"",
     "test-wmibridge": "node src/modules/wmi-bridge/example.js"
   },
   "keywords": [

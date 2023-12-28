@@ -402,6 +402,7 @@ export default class BrightnessPanel extends PureComponent {
 
     window.requestSettings()
     window.requestMonitors()
+    window.ipc.send('request-localization')
     window.reactReady = true
   }
 

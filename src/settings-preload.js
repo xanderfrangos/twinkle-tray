@@ -73,6 +73,7 @@ function resetSettings() {
 }
 
 function detectSunValley() {
+    if(!window.reactReady) return false;
     try {
         // Detect new Fluent Icons (Windows build 21327+)
         if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
@@ -254,6 +255,7 @@ window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
+window.reactReady = false
 window.settings = getArgumentVars().settings
 window.accent = "cyan"
 window.getSunCalcTimes = getSunCalcTimes

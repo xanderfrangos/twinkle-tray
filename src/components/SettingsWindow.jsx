@@ -195,6 +195,9 @@ export default class SettingsWindow extends PureComponent {
             window.checkForUpdates()
         }
         window.ipc.send('get-window-history')
+        window.ipc.send("sendSettingsWindowPos")
+        window.ipc.send('request-localization')
+        window.reactReady = true
     }
 
 

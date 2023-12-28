@@ -1,8 +1,6 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import SettingsWindow from "./Components/SettingsWindow";
-
-window.ipc.send('request-localization')
 
 const micaDisplays = document.querySelector("#mica .displays")
 
@@ -21,6 +19,4 @@ window.addEventListener("focus", () => {
     document.body.dataset.focused = "true"
 })
 
-ReactDOM.render(<SettingsWindow theme={window.settings.theme} />, document.getElementById("settings"));
-
-window.ipc.send("sendSettingsWindowPos")
+createRoot(document.getElementById("settings")).render(<SettingsWindow theme={window.settings.theme} />)

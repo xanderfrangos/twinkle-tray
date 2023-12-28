@@ -1,15 +1,12 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import BrightnessPanel from "./components/BrightnessPanel";
 
 if (window.settings == undefined) window.settings = {}
 
 window.ipc.send('request-localization')
 
-ReactDOM.render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />, document.getElementById("root"), () => {
-    requestSettings()
-    requestMonitors()
-});
+createRoot(document.getElementById("root")).render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />)
 
 window.updateMica = () => {
     const pos = [window.winPosition[0], window.winPosition[1]]

@@ -400,6 +400,9 @@ export default class BrightnessPanel extends PureComponent {
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()
 
+    window.requestSettings()
+    window.requestMonitors()
+    window.reactReady = true
   }
 
   componentDidUpdate() {

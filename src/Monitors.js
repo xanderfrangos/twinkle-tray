@@ -828,6 +828,7 @@ function getDDCCI() {
     if (ddcci) return false;
     try {
         ddcci = require("@hensm/ddcci");
+        ddcci._setLogLevel(2);
         return true;
     } catch (e) {
         console.log('Couldn\'t start DDC/CI', e);

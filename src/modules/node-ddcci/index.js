@@ -11,6 +11,7 @@ module.exports = {
   , _saveCurrentSettings: ddcci.saveCurrentSettings
   , _getAllMonitors: ddcci.getAllMonitors
   , _clearDisplayCache: ddcci.clearDisplayCache
+  , _setLogLevel: ddcci.setLogLevel
   , _refresh: (method = "accurate") => ddcci.refresh(method)
   , getMonitorList: (method = "accurate") => { 
         ddcci.refresh(method);

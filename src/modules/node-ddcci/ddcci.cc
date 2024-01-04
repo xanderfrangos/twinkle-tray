@@ -36,11 +36,24 @@ std::map<std::string, HANDLE> handles;
 std::map<std::string, PhysicalMonitor> physicalMonitorHandles;
 std::map<std::string, std::string> capabilities;
 
+int logLevel = 0;
 
+// Info
 void
 p(std::string s)
 {
-    std::cout << "[node-ddcci] " + s << std::endl;
+    if(logLevel = 1) {
+        std::cout << "[node-ddcci] " + s << std::endl;
+    }
+}
+
+// Debug
+void
+d(std::string s)
+{
+    if(logLevel = 2) {
+        std::cout << "[node-ddcci] " + s << std::endl;
+    }
 }
 
 void
@@ -711,6 +724,20 @@ saveCurrentSettings(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, bSuccess);
 }
 
+void
+setLogLevel(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1) {
+        throw Napi::TypeError::New(env, "Not enough arguments");
+    }
+    if (!info[0].IsNumber()) {
+        throw Napi::TypeError::New(env, "Invalid arguments");
+    }
+
+    logLevel = (int)info[0].ToNumber();
+}
+
 Napi::Object
 Init(Napi::Env env, Napi::Object exports)
 {
@@ -730,6 +757,7 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set(
       "saveCurrentSettings",
       Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));
+    exports.Set("setLogLevel", Napi::Function::New(env, setLogLevel, "setLogLevel"));
 
     return exports;
 }

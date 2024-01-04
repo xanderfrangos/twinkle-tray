@@ -1,12 +1,13 @@
 const tag = "\x1b[47m M \x1b[0m";
-console.log(tag + " \x1b[45mMonitors.js starting. If you see this again, something bad happened!\x1b[0m")
+const oLog = console.log
+console.log = (...args) => { args.unshift(tag); oLog(...args) }
+console.log("Monitors.js starting. If you see this again, something bad happened!")
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
-const oLog = console.log
-console.log = (...args) => { args.unshift(tag); oLog(...args) }
+
 
 process.on('message', async (data) => {
     try {

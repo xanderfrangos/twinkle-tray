@@ -34,7 +34,7 @@
     "@hensm/ddcci": "file:src/modules/node-ddcci",
     "@paymoapp/active-window": "file:src/modules/node-active-window",
     "acrylic": "file:src/modules/acrylic",
-    "color": "^3.1.3",
+    "color": "^4.2.3",
     "electron-winstore-auto-launch": "^2.0.6",
     "ga4-mp": "^1.0.3",
     "global-mouse-events": "^1.1.0",
@@ -162,17 +162,15 @@
     "@babel/runtime": "^7.23.6",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/preset-react": "^7.23.3",
-    "concurrently": "^5.3.0",
     "cross-env": "^7.0.3",
     "electron": "^27.2.1",
     "electron-builder": "^24.9.1",
-    "node-gyp": "^9.4.0",
+    "node-gyp": "^10.0.1",
     "parcel-bundler": "^1.12.5",
     "react": "18.2.0",
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "18.2.0",
-    "sass": "^1.54.0",
-    "wait-on": "^5.3.0"
+    "sass": "^1.54.0"
   },
   "overrides": {
     "node-gyp": "$node-gyp",

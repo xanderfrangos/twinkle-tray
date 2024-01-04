@@ -40,7 +40,6 @@
     "global-mouse-events": "^1.1.0",
     "markdown-to-jsx": "^7.1.7",
     "native-reg": "^1.1.0",
-    "node-fetch": "^2.6.1",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "stackblur-canvas": "^2.6.0",
     "suncalc": "^1.9.0",

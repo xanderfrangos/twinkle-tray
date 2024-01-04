@@ -3204,7 +3204,6 @@ checkForUpdates = async (force = false) => {
   if (isPortable || isAppX) return false;
   lastCheck = new Date().getDate()
   try {
-    const fetch = require('node-fetch');
     if (isAppX === false) {
       console.log("Checking for updates...")
       fetch("https://api.github.com/repos/xanderfrangos/twinkle-tray/releases").then((response) => {
@@ -3239,7 +3238,6 @@ checkForUpdates = async (force = false) => {
   } catch (e) {
     console.log(e)
   }
-  Utils.unloadModule("node-fetch")
 }
 
 
@@ -3247,7 +3245,6 @@ getLatestUpdate = async (version) => {
   try {
     console.log("Downloading update from: " + version.downloadURL)
     const fs = require('fs');
-    const fetch = require('node-fetch');
 
     latestVersion.downloading = true
     sendToAllWindows('latest-version', latestVersion)
@@ -3304,7 +3301,6 @@ getLatestUpdate = async (version) => {
     latestVersion.downloading = false
     sendToAllWindows('latest-version', latestVersion)
   }
-  Utils.unloadModule("node-fetch")
 }
 
 function runUpdate(expectedSize = false) {
@@ -3822,7 +3818,6 @@ let lastCoordCheck = { value: { lat: 0, long: 0}, ts: 0 }
 async function getUserCoordinates() {
   if(Date.now() - 10000 < lastCoordCheck.ts) return lastCoordCheck.value;
   try {
-    const fetch = require('node-fetch')
     if (isAppX === false) {
       console.log("Getting geolocation...")
       const response = await fetch("https://geo.twinkletray.com/")
@@ -3843,7 +3838,6 @@ async function getUserCoordinates() {
   } catch (e) {
     console.log(e)
   }
-  Utils.unloadModule("node-fetch")
 }
 
 async function getAndApplyUserCoordinates() {

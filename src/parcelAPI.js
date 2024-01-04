@@ -43,7 +43,6 @@ async function runParcel(mode = "dev", logLevel = null) {
     }
     if(parcelMode == "build") {
         clearDirectory('../build')
-        const dir = Path.join(__dirname, '../html_build')
         const bundler = new Bundler(entryFiles, Object.assign(optionsProd, { watch: false, logLevel: (logLevel ?? 3) }))
         return await bundler.bundle()
     }

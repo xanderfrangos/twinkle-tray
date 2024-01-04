@@ -13,6 +13,7 @@
 
 struct Monitor {
     HMONITOR handle;
+    std::string monitorName;
     std::vector<HANDLE> physicalHandles;
 };
 
@@ -32,6 +33,11 @@ struct DisplayDevice {
     std::string deviceName;
     std::string deviceID;
     std::string deviceKey;
+};
+
+struct DisplayMonitor {
+    std::string adapterName;
+    std::list<HMONITOR> handles;
 };
 
 std::map<std::string, HANDLE> handles;
@@ -138,6 +144,54 @@ getAllDisplays(std::string keyType)
         }
     }
     return out;
+}
+
+std::vector<struct Monitor>
+getAllHandles() {
+    std::vector<struct Monitor> monitors;
+
+    auto monitorEnumProc = [](HMONITOR hMonitor,
+                              HDC hdcMonitor,
+                              LPRECT lprcMonitor,
+                              LPARAM dwData) -> BOOL {
+        auto monitors = reinterpret_cast<std::vector<struct Monitor>*>(dwData);
+        monitors->push_back({ hMonitor, {} });
+        return TRUE;
+    };
+    EnumDisplayMonitors(
+      NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
+
+    // Get physical monitor handles
+    for (auto& monitor : monitors) {
+        DWORD numPhysicalMonitors;
+        LPPHYSICAL_MONITOR physicalMonitors = NULL;
+        if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
+                                                     &numPhysicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitor count.");
+            exit(EXIT_FAILURE);
+        }
+
+        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
+        if (physicalMonitors == NULL) {
+            throw std::runtime_error(
+              "Failed to allocate physical monitor array");
+        }
+
+        if (!GetPhysicalMonitorsFromHMONITOR(
+              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
+            throw std::runtime_error("Failed to get physical monitors.");
+        }
+
+        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
+            monitor.physicalHandles.push_back(
+              physicalMonitors[i].hPhysicalMonitor);
+        }
+
+        monitor.monitorName = getPhysicalMonitorName(monitor.handle);
+        delete[] physicalMonitors;
+    }
+
+    return monitors;
 }
 
 // Test if HANDLE has a working DDC/CI connection.
@@ -359,43 +413,10 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
     
     d("Testing all physicalMonitors...");
 
-    auto monitorEnumProc = [](HMONITOR hMonitor,
-                              HDC hdcMonitor,
-                              LPRECT lprcMonitor,
-                              LPARAM dwData) -> BOOL {
-        auto monitors = reinterpret_cast<std::vector<struct Monitor>*>(dwData);
-        monitors->push_back({ hMonitor, {} });
-        return TRUE;
-    };
-
-    std::vector<struct Monitor> monitors;
-    EnumDisplayMonitors(
-      NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
-
     // Get physical monitor handles
+    std::vector<struct Monitor> monitors = getAllHandles();
     for (auto& monitor : monitors) {
-        DWORD numPhysicalMonitors;
-        LPPHYSICAL_MONITOR physicalMonitors = NULL;
-        if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
-                                                     &numPhysicalMonitors)) {
-            throw std::runtime_error("Failed to get physical monitor count.");
-            exit(EXIT_FAILURE);
-        }
-
-        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
-        if (physicalMonitors == NULL) {
-            throw std::runtime_error(
-              "Failed to allocate physical monitor array");
-        }
-
-        if (!GetPhysicalMonitorsFromHMONITOR(
-              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
-            throw std::runtime_error("Failed to get physical monitors.");
-        }
-
-        std::string monitorName = getPhysicalMonitorName(monitor.handle);
-
-        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
+        for (DWORD i = 0; i <= monitor.physicalHandles.size(); i++) {
 
             /**
              * Loop through physical monitors, check capabilities,
@@ -403,13 +424,13 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
              */
 
             std::string fullMonitorName =
-              monitorName + "\\" + "Monitor" + std::to_string(i);
+              monitor.monitorName + "\\" + "Monitor" + std::to_string(i);
 
             d("-- " + fullMonitorName);
 
             PhysicalMonitor newMonitor;
-            newMonitor.handle = physicalMonitors[i].hPhysicalMonitor;
-            newMonitor.name = monitorName;
+            newMonitor.handle = monitor.physicalHandles[i];
+            newMonitor.name = monitor.monitorName;
             newMonitor.physicalName = fullMonitorName;
             newMonitor.ddcciSupported = false;
 
@@ -418,7 +439,7 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
             int foundCount = 0;
             for (auto const& display : displays) {
                 // Match with display number (e.g. "\\.\DISPLAY2")
-                if(display.second.adapterName == monitorName) {
+                if(display.second.adapterName == monitor.monitorName) {
                     /**
                      * Match the physical monitor index with the index of found matching display numbers.
                      * For example, if all DISPLAY_DEVICE includes:
@@ -461,7 +482,7 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
             // Test DDC/CI
             if (newMonitor.ddcciSupported == false) {
                 std::string result = getPhysicalHandleResults(
-                  physicalMonitors[i].hPhysicalMonitor, validationMethod);
+                  newMonitor.handle, validationMethod);
 
                 newMonitor.result = result;
                 d("-- -- DDC/CI: " + result);                
@@ -486,8 +507,6 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
                     { newMonitor.deviceKey, newMonitor.result });
             }
         }
-
-        delete[] physicalMonitors;
     }
 
     clearMonitorData();

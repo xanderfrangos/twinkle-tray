@@ -395,7 +395,7 @@ populateHandlesMapLegacy()
 }
 
 void
-populateHandlesMapNormal(std::string validationMethod, bool useExisting)
+populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
 {
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
@@ -469,7 +469,7 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
             }
 
             // Check if monitor was previously tested and supported
-            if(useExisting) {
+            if(usePreviousResults) {
                 for (auto const& previousDisplay : physicalMonitorHandles) {
                     if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported) {
                         newMonitor.result = previousDisplay.second.result;
@@ -516,15 +516,15 @@ populateHandlesMapNormal(std::string validationMethod, bool useExisting)
 }
 
 void
-populateHandlesMap(std::string validationMethod)
+populateHandlesMap(std::string validationMethod, bool usePreviousResults)
 {
     if (validationMethod == "legacy")
         return populateHandlesMapLegacy();
 
     if (validationMethod == "accurate" || validationMethod == "no-validation")
-        return populateHandlesMapNormal(validationMethod, true);
+        return populateHandlesMapNormal(validationMethod, usePreviousResults);
 
-    return populateHandlesMapNormal("fast", true);
+    return populateHandlesMapNormal("fast", usePreviousResults);
 }
 
 std::string
@@ -558,12 +558,12 @@ refresh(const Napi::CallbackInfo& info)
     if (info.Length() < 1) {
         throw Napi::TypeError::New(env, "Not enough arguments");
     }
-    if (!info[0].IsString()) {
+    if (!info[0].IsString() || !info[1].IsBoolean()) {
         throw Napi::TypeError::New(env, "Invalid arguments");
     }
 
     try {
-        populateHandlesMap(info[0].As<Napi::String>().Utf8Value());
+        populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean());
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }

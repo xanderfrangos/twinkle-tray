@@ -990,7 +990,7 @@ testDDCCIMethods = async () => {
         getDDCCI()
     
         let startTime = process.hrtime.bigint()
-        const accurateResults = ddcci.getAllMonitors("accurate")
+        const accurateResults = ddcci.getAllMonitors("accurate", false)
         const accurateIDs = []
         const accurateFeatures = []
         for(const monitor of accurateResults) {
@@ -1007,7 +1007,7 @@ testDDCCIMethods = async () => {
         ddcci._clearDisplayCache()
     
         startTime = process.hrtime.bigint()
-        const fastResults = ddcci.getAllMonitors("fast")
+        const fastResults = ddcci.getAllMonitors("fast", false)
         const fastIDs = []
         const fastFeatures = []
         for(const monitor of fastResults) {

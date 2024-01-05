@@ -726,7 +726,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
         }
-        await wait(20)
+        await wait(5)
         return result
     } catch (e) {
         let reason = e

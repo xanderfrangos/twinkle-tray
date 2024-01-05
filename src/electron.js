@@ -5,10 +5,12 @@ const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, app, scree
 const Utils = require("./Utils")
 const uuid = require('crypto').randomUUID
 
+let isDev = app.commandLine.hasSwitch("dev")
+
 const appVersionFull = app.getVersion()
 const appVersion = appVersionFull.split('+')[0]
 const appVersionTag = appVersion?.split('-')[1]
-const appBuild = appVersionFull.split('+')[1]
+const appBuild = (isDev ? "dev" : appVersionFull.split('+')[1])
 const appBuildShort = (appBuild && appBuild.length > 7 ? appBuild.slice(0, 7) : appBuild)
 
 // Expose GC
@@ -18,8 +20,6 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 
 // Remove window animations
 app.commandLine.appendSwitch('wm-window-animations-disabled');
-
-let isDev = app.commandLine.hasSwitch("dev")
 
 const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)

@@ -3442,20 +3442,6 @@ function handleMonitorChange(e, d) {
   console.log("Hardware change detected.")
 
   // Defer actions for a moment just in case of repeat events
-  if (handleChangeTimeout0) {
-    clearTimeout(handleChangeTimeout0)
-  }
-  handleChangeTimeout0 = setTimeout(() => {
-    if (!settings.disableAutoApply) setKnownBrightness();
-    handleChangeTimeout0 = false
-  }, 500)
-  if (handleChangeTimeout1) {
-    clearTimeout(handleChangeTimeout1)
-  }
-  handleChangeTimeout1 = setTimeout(() => {
-    if (!settings.disableAutoApply) setKnownBrightness();
-    handleChangeTimeout1 = false
-  }, 1250)
   if (handleChangeTimeout2) {
     clearTimeout(handleChangeTimeout2)
   }
@@ -3478,7 +3464,6 @@ function handleMonitorChange(e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
-  if (!settings.disableAutoApply) setKnownBrightness();
   setTimeout(
     () => {
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
@@ -3489,7 +3474,7 @@ powerMonitor.on("resume", () => {
         applyCurrentAdjustmentEvent(true, false)
       })
     },
-    (settings.wakeRestoreSeconds ? parseInt(settings.wakeRestoreSeconds) * 1000 : 3000) // Give Windows a few seconds to... you know... wake up.
+    (settings.wakeRestoreSeconds ? parseInt(settings.wakeRestoreSeconds) * 1000 : 5000) // Give Windows a few seconds to... you know... wake up.
   )
 
 })

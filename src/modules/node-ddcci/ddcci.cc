@@ -411,7 +411,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
         d("-- -- deviceKey: " + display.second.deviceKey);
     }
     
-    d("Testing all physicalMonitors...");
+    p("Testing all physicalMonitors...");
 
     // Get physical monitor handles
     std::vector<struct Monitor> monitors = getAllHandles();
@@ -426,7 +426,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
             std::string fullMonitorName =
               monitor.monitorName + "\\" + "Monitor" + std::to_string(i);
 
-            d("-- " + fullMonitorName);
+            p("-- " + fullMonitorName);
 
             PhysicalMonitor newMonitor;
             newMonitor.handle = monitor.physicalHandles[i];
@@ -456,7 +456,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                         newMonitor.deviceID = display.second.deviceID;
                         newMonitor.fullName = display.second.deviceName;
                         foundMatchingDisplay = true;
-                        d("-- -- Matched with: " + display.second.deviceKey);
+                        p("-- -- Matched with: " + display.second.deviceKey);
                         break;
                     }
                     foundCount++;
@@ -464,7 +464,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
             }
 
             if(!foundMatchingDisplay) {
-                d("-- -- Couldn't find match. Skipping.");
+                p("-- -- Couldn't find match. Skipping.");
                 break;
             }
 
@@ -485,7 +485,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                   newMonitor.handle, validationMethod);
 
                 newMonitor.result = result;
-                d("-- -- DDC/CI: " + result);                
+                p("-- -- DDC/CI: " + result);                
 
                 if (result == "invalid") {
                     newMonitor.ddcciSupported = false;
@@ -493,7 +493,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                     newMonitor.ddcciSupported = true;
                 }
             } else {
-                d("-- -- DDC/CI: previously OK");
+                p("-- -- DDC/CI: previously OK");
             }
 
             // Add to monitor list

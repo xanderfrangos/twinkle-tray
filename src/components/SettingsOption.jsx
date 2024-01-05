@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import SafeRender from "./SafeRender"
 
 export function SettingsOption(props) {
     const [expanded, setExpanded] = useState((props.startExpanded ?? false))
@@ -11,23 +12,25 @@ export function SettingsOption(props) {
     const className = `settings-option-elem ${props.className ?? ""}`
 
     return (
-        <div className={className} data-expandable={props.expandable} data-expanded={expanded}>
-            <div className="parent-panel">
-                { icon }
-                <div className="content-area">
-                    { title }
-                    { description }
-                    { elem }
+        <SafeRender>
+            <div className={className} data-expandable={props.expandable} data-expanded={expanded}>
+                <div className="parent-panel">
+                    { icon }
+                    <div className="content-area">
+                        { title }
+                        { description }
+                        { elem }
+                    </div>
+                    { input }
+                    <div className="expand" onClick={() => setExpanded(!expanded)}><div className="icon">&#xE70D;</div></div>
                 </div>
-                { input }
-                <div className="expand" onClick={() => setExpanded(!expanded)}><div className="icon">&#xE70D;</div></div>
-            </div>
-            <div className="settings-option-children">
-                <div className="children-inner">
-                    { props.children }
+                <div className="settings-option-children">
+                    <div className="children-inner">
+                        { props.children }
+                    </div>
                 </div>
             </div>
-        </div>
+        </SafeRender>
     )
 }
 

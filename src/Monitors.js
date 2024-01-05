@@ -512,7 +512,7 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
                         continue; // Skip if custom brightness
                     }
                     if(settingsFeatures[vcp]) {
-                        features[vcp] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, true)
+                        features[vcpStr(vcp)] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, true)
                     }
                 }
             }
@@ -624,7 +624,7 @@ getBrightnessDDC = (monitorObj) => {
                         continue; // Skip brightness
                     }
                     if(settingsFeatures[vcp]) {
-                        monitor.features[vcp] = await checkVCP(monitor.id, parseInt(vcp))
+                        monitor.features[vcpStr(vcp)] = await checkVCP(monitor.id, parseInt(vcp))
                     }
                 }
             }

@@ -23,6 +23,10 @@ import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
 import FluentIcon from "../assets/tray-icons/dark/fluent@4x.png"
 
+function vcpStr(code) {
+    return `0x${parseInt(code).toString(16).toUpperCase()}`
+}
+
 const uuid = () => crypto.randomUUID()
 
 const reorder = (list, startIndex, endIndex) => {
@@ -1389,7 +1393,7 @@ export default class SettingsWindow extends PureComponent {
                                 <input type="button" ref={this.addFeatureCancelRef} value={"Cancel"} className="button" onClick={() => this.setState({ showAddFeatureOverlay: false })} />
                                 <input type="button" ref={this.addFeatureOKRef} value={"OK"} className="button" onClick={() => {
                                     let isActive = false
-                                    const vcp = this.state.addFeatureValue.toUpperCase()
+                                    const vcp = vcpStr(this.state.addFeatureValue)
                                     try {
                                         isActive = this.state.rawSettings.monitorFeatures[this.state.addFeatureMonitor][vcp];
                                     } catch (e) { }

@@ -9,7 +9,7 @@ export default function MonitorFeatures(props) {
 
     let extraHTML = []
 
-    if(monitor.type === "ddcci" && monitor?.features && Object.keys(monitor.features).length > 0) {
+    if(monitor.ddcciSupported && Object.keys(monitor.features).length > 0) {
 
         // Contrast
         if (monitor.features["0x12"]) {

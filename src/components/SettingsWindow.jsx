@@ -960,10 +960,12 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings(newState)
     }
 
-    renderToggle = (setting, showText = true, textSide = "right") => {
+    renderToggle = (setting, showText = true, textSide = "right", inverse = false) => {
+        const isActive = (this.state.rawSettings?.[setting] ? true : false)
+        const isVisiblyActive = (inverse ? !isActive : isActive)
         return (<div className="inputToggle-generic" data-textside={textSide}>
-            <input onChange={(e) => { this.setSetting(setting, e.target.checked) }} checked={(this.state.rawSettings?.[setting] ? true : false)} data-checked={(this.state.rawSettings?.[setting] ? true : false)} type="checkbox" />
-            <div className="text">{(this.state.rawSettings?.[setting] ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
+            <input onChange={(e) => { this.setSetting(setting, e.target.checked) }} checked={isActive} data-checked={isVisiblyActive} type="checkbox" />
+            <div className="text">{(isVisiblyActive ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
         </div>)
     }
 
@@ -1042,9 +1044,9 @@ export default class SettingsWindow extends PureComponent {
                                     <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TROUBLESHOOTING")}</div>
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE")} description={T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} expandable={true}>
-                                        <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC")} />
-                                        <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI")} />
-                                        <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32")} />
+                                        <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC", true, "right", true)} />
+                                        <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI", true, "right", true)} />
+                                        <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />
                                     </SettingsOption>
 
                                     <SettingsOption title={"Default overlay behavior"} description={"How forcefully the brightness hotkey overlay will attempt to display over other apps. You should not need to adjust this."} input={
@@ -1063,7 +1065,7 @@ export default class SettingsWindow extends PureComponent {
                                         </SettingsChild>
                                     </SettingsOption>
 
-                                    <SettingsOption title={"Don't auto-apply brightness"} description={"If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, this may help."} input={this.renderToggle("disableAutoApply")} />
+                                    <SettingsOption title={"Auto-apply brightness"} description={"If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, disabling this may help."} input={this.renderToggle("disableAutoApply", undefined, undefined, true)} />
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />
 

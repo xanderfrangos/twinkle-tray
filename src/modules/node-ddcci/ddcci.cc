@@ -50,7 +50,7 @@ int logLevel = 0;
 void
 p(std::string s)
 {
-    if(logLevel = 1) {
+    if(logLevel >= 1) {
         std::cout << "[node-ddcci] " + s << std::endl;
     }
 }
@@ -59,7 +59,7 @@ p(std::string s)
 void
 d(std::string s)
 {
-    if(logLevel = 2) {
+    if(logLevel >= 2) {
         std::cout << "[node-ddcci] " + s << std::endl;
     }
 }

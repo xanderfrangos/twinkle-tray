@@ -1053,6 +1053,13 @@ export default class SettingsWindow extends PureComponent {
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />
                                     </SettingsOption>
 
+                                   <SettingsOption title="Legacy DDC/CI detection method" description={"Use the old v1.15.4 method of detecting DDC/CI displays."} input={
+                                        <div className="inputToggle-generic" data-textside={"right"}>
+                                            <input onChange={(e) => { this.setSetting("preferredDDCCIMethod", (e.target.checked ? "legacy" : "accurate")) }} checked={(this.state.rawSettings.preferredDDCCIMethod == "legacy")} data-checked={(this.state.rawSettings.preferredDDCCIMethod == "legacy")} type="checkbox" />
+                                            <div className="text">{((this.state.rawSettings.preferredDDCCIMethod == "legacy") ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
+                                        </div>
+                                    } />
+
                                     <SettingsOption title={"Default overlay behavior"} description={"How forcefully the brightness hotkey overlay will attempt to display over other apps. You should not need to adjust this."} input={
                                     <select value={window.settings.defaultOverlayType} onChange={(e) => this.setSetting("defaultOverlayType", e.target.value)}>
                                         <option value="disabled">Disabled</option>

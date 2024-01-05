@@ -1290,7 +1290,7 @@ export default class SettingsWindow extends PureComponent {
                             <SettingsPage current={this.state.activePage} id="updates">
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_UPDATES_TITLE")}</div>
-                                    <p>{T.h("SETTINGS_UPDATES_VERSION", '<b>' + (window.version || "not available") + '</b>')}</p>
+                                    <p>{T.h("SETTINGS_UPDATES_VERSION", '<b>' + (window.version ? `${window.version}${window.versionTag && window.versionBuild ? ` (${window.versionBuild})` : ""}` : "not available") + '</b>')}</p>
                                     {this.getUpdate()}
                                 </div>
                                 <div className="pageSection" style={{ display: (window.isAppX ? "none" : (this.isSection("updates") ? "block" : "none")) }}>

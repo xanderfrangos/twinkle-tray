@@ -261,5 +261,7 @@ window.accent = "cyan"
 window.getSunCalcTimes = getSunCalcTimes
 
 window.version = 'v' + getArgumentVars().appVersion
+window.versionTag = getArgumentVars().appVersionTag
+window.versionBuild = getArgumentVars().appBuild
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
 window.settingsPath = getArgumentVars().settingsPath

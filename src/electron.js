@@ -5,6 +5,12 @@ const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, app, scree
 const Utils = require("./Utils")
 const uuid = require('crypto').randomUUID
 
+const appVersionFull = app.getVersion()
+const appVersion = appVersionFull.split('+')[0]
+const appVersionTag = appVersion?.split('-')[1]
+const appBuild = appVersionFull.split('+')[1]
+const appBuildShort = (appBuild && appBuild.length > 7 ? appBuild.slice(0, 7) : appBuild)
+
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
 app.commandLine.appendSwitch('disable-http-cache')
@@ -325,12 +331,12 @@ function pingAnalytics() {
   events.push({
     name: "page_view",
     params: {
-      page_location: app.name + "/" + "v" + app.getVersion(),
-      page_title: app.name + "/" + "v" + app.getVersion(),
+      page_location: app.name + "/" + "v" + appVersion + "/" + (appBuild ? appBuild : ""),
+      page_title: app.name + "/" + "v" + appVersion,
       page_referrer: app.name,
       os_version: require("os").release(),
       app_type: app.name,
-      app_version: app.getVersion(),
+      app_version: appVersion,
       engagement_time_msec: 1
     }
   })
@@ -367,6 +373,8 @@ if (!fs.existsSync(configFilesDir)) {
 
 const defaultSettings = {
   isDev,
+  settingsVer: "v" + appVersion,
+  settingsBuild: appBuild,
   userClosedIntro: false,
   theme: "default",
   icon: "icon",
@@ -391,7 +399,6 @@ const defaultSettings = {
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
-  settingsVer: "v" + app.getVersion(),
   names: {},
   analytics: !isDev,
   scrollShortcut: true,
@@ -625,7 +632,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
   try {
 
-    settings.settingsVer = "v" + app.getVersion()
+    settings.settingsVer = "v" + appVersion
 
     if (settings.theme) {
       nativeTheme.themeSource = determineTheme(settings.theme)
@@ -2188,7 +2195,9 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       zoomFactor: 1.0,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
-        appVersion: app.getVersion(),
+        appVersion: appVersion,
+        appVersionTag: appVersionTag,
+        appBuild: appBuildShort,
         isRefreshing: isRefreshing
       })).toString('base64')],
       allowRunningInsecureContent: true,
@@ -3112,7 +3121,9 @@ function createSettings() {
       zoomFactor: 1.0,
       additionalArguments: ["jsVars" + Buffer.from(JSON.stringify({
         appName: app.name,
-        appVersion: app.getVersion(),
+        appVersion: appVersion,
+        appVersionTag: appVersionTag,
+        appBuild: appBuildShort,
         settings,
         lastTheme,
         settingsPath
@@ -3226,7 +3237,7 @@ checkForUpdates = async (force = false) => {
             }
           }
 
-          if (foundVersion && "v" + app.getVersion() != latestVersion.version && (settings.dismissedUpdate != latestVersion.version || force)) {
+          if (foundVersion && "v" + appVersion != latestVersion.version && (settings.dismissedUpdate != latestVersion.version || force)) {
             if (!force) latestVersion.show = true
             console.log("Sending new version to windows.")
             sendToAllWindows('latest-version', latestVersion)

@@ -521,7 +521,7 @@ function readSettings(doProcessSettings = true) {
     lastKnownDisplays = {} // Reset lastKnownDisplays due to known bug in earlier versions
     try {
       // Upgrade hotkeys
-      if (settings.hotkeys && Object.values(settings.hotkeys)?.length > 0) {
+      if (settings.hotkeys && Object.values(settings.hotkeys)?.length >= 0) {
         const newHotkeys = []
         for (const hotkey of Object.values(settings.hotkeys)) {
           const newHotkey = {

@@ -1,7 +1,22 @@
+
+const { app } = require('electron')
+
+function reopenAppWithConsole() {
+  const args = [__filename, "--console"]
+  require('child_process').spawn('conhost.exe', ['cmd.exe', '/c', app.getPath("exe"), ...args], { detached: true, stdio: 'ignore' }).unref()
+  app.exit()
+  return false
+}
+
+// Handle --show-console switch
+if(app.commandLine.hasSwitch("show-console")) {
+  reopenAppWithConsole()
+}
+
 const path = require('path');
 const fs = require('fs')
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
-const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, app, screen, globalShortcut, powerMonitor } = require('electron')
+const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
 const uuid = require('crypto').randomUUID
 
@@ -438,6 +453,7 @@ const defaultSettings = {
   udpPortStart: 14715,
   udpPortActive: 14715,
   udpKey: uuid(),
+  showConsole: false,
   profiles: [],
   uuid: uuid(),
   branch: "master"
@@ -465,6 +481,10 @@ function readSettings(doProcessSettings = true) {
   // Overrides
   settings.isDev = isDev
   settings.killWhenIdle = false
+
+  if(!isDev && settings.showConsole && !app.commandLine.hasSwitch("console")) {
+    reopenAppWithConsole()
+  }
 
   if (settings.updateInterval === 999) settings.updateInterval = 100;
 

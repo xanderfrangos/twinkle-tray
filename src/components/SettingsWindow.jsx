@@ -655,7 +655,7 @@ export default class SettingsWindow extends PureComponent {
             }
         }
 
-        return this.state.hotkeys?.map((hotkey, idx) => {
+        return this.state.hotkeys?.map?.((hotkey, idx) => {
             return (
                 <SettingsOption className="win10-has-background" key={hotkey.id} content={
                     <div className="row hotkey-combo-input">

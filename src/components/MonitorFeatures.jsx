@@ -60,12 +60,12 @@ export default function MonitorFeatures(props) {
 
         const deleteFeature = vcp => {
             if(monitorFeatures[vcp]) {
-                delete monitorFeatures[vcp]
+                delete window.settings?.monitorFeatures[monitor.hwid[1]][vcp]
             }
             if(window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp] !== undefined) {
                 delete window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
             }
-            window.sendSettings({ monitorFeatures: monitorFeatures, monitorFeaturesSettings: window.settings?.monitorFeaturesSettings })
+            window.sendSettings({ monitorFeatures: window.settings?.monitorFeatures, monitorFeaturesSettings: window.settings?.monitorFeaturesSettings })
         }
 
         // Custom Features

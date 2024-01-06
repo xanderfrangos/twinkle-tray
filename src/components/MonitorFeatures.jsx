@@ -4,6 +4,8 @@ import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
 const ignoreCodes = ["0x10", "0x12", "0x13", "0x62", "0xD6"]
 
+const deleteIcon = (<span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span>)
+
 export default function MonitorFeatures(props) {
     const { monitor, name, monitorFeatures, T, onChange } = props
 
@@ -56,16 +58,26 @@ export default function MonitorFeatures(props) {
             )
         }
 
+        const deleteFeature = vcp => {
+            if(monitorFeatures[vcp]) {
+                delete monitorFeatures[vcp]
+            }
+            if(window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp] !== undefined) {
+                delete window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
+            }
+            window.sendSettings({ monitorFeatures: monitorFeatures, monitorFeaturesSettings: window.settings?.monitorFeaturesSettings })
+        }
+
         // Custom Features
         for(const vcp in monitorFeatures) {
-            if(ignoreCodes.indexOf(vcp) === -1 && monitorFeatures[vcp]) {
+            if(ignoreCodes.indexOf(vcp) === -1 && monitorFeatures[vcp] !== undefined) {
                 const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
                 const enabled = monitorFeatures?.[vcp];
                 const name = (settings?.iconType === "text" && settings?.iconText?.length ? settings.iconText : "Custom Feature")
                 const icon = (settings?.iconType === "windows" && settings?.icon ? settings.icon : "E9E9")
                 extraHTML.push(
                     <SettingsOption className="monitor-feature-item" key={vcp} icon={icon} title={`${name} (${vcp})`} expandable={true}  input={
-                        <div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
+                        <div className="input-row"><div style={{cursor: "pointer"}} onClick={() => deleteFeature(vcp)}>{deleteIcon}</div><div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div></div>
                     }>
                         <SettingsChild>
                             <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 

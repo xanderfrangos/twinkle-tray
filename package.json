@@ -108,7 +108,6 @@
       "!node_modules/@paymoapp/active-window/*.json",
       "node_modules/@paymoapp/active-window/package.json",
       "!node_modules/iconv-lite",
-      "!node_modules/axios",
       "!node_modules/cacache",
       "!node_modules/path-scurry",
       "!node_modules/tar",

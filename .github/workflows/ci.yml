@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Build Win32 installer
-        run: npm exec electron-builder -- --x64 --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle Tray v${{ steps.info.outputs.version }}.exe"
+        run: npm exec electron-builder -- --x64 --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}.exe"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
@@ -65,7 +65,7 @@ jobs:
           
       - name: Build x64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --x64 --win appx --config.npmRebuild=false --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle Tray v${{ steps.info.outputs.version }}-store.appx"
+        run: npm exec electron-builder -- --x64 --win appx --config.npmRebuild=false --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store.appx"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
@@ -78,7 +78,7 @@ jobs:
           
       - name: Build ARM64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle Tray v${{ steps.info.outputs.version }}-store-arm64.appx"
+        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.version="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx"
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             

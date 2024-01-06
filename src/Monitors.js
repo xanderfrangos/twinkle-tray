@@ -517,8 +517,7 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
                 }
             }
             
-            // This part is flaky, so we'll do it slowly
-            // Capabilities report allows us to skip this, thankfully
+            // Capabilities report allows us to skip this, generally
             features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", skipCache)
             features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
             features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)

@@ -15,6 +15,7 @@ if(app.commandLine.hasSwitch("show-console")) {
 
 const path = require('path');
 const fs = require('fs')
+const { Readable } = require("node:stream")
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')
 const Utils = require("./Utils")
@@ -3292,9 +3293,10 @@ getLatestUpdate = async (version) => {
     const update = await fetch(version.downloadURL)
     await new Promise((resolve, reject) => {
       console.log("Downloading...!")
-      const dest = fs.createWriteStream(updatePath);
+      const readableNodeStream = Readable.fromWeb(update.body)
+      const dest = fs.createWriteStream(updatePath)
       //update.body.pipe(dest);
-      update.body.on('error', (err) => {
+      readableNodeStream.on('error', (err) => {
         reject(err)
       })
 
@@ -3304,13 +3306,13 @@ getLatestUpdate = async (version) => {
         }, 1250)
         resolve(true)
       })
-      update.body.on('finish', function () {
+      readableNodeStream.on('finish', function () {
         console.log("Saved! Running...")
       });
 
       let size = 0
       let lastSizeUpdate = 0
-      update.body.on('data', (chunk) => {
+      readableNodeStream.on('data', (chunk) => {
         size += chunk.length
         dest.write(chunk, (err) => {
           if (size >= version.filesize) {

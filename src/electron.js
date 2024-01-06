@@ -80,6 +80,7 @@ const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
 const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
 
 let ddcciModeTestResult = "auto"
+let lastKnownDisplays
 
 const SunCalc = require('suncalc')
 
@@ -848,7 +849,6 @@ async function updateKnownDisplays(force = false, immediate = false) {
 }
 
 // Get known displays from file, along with current displays
-let lastKnownDisplays
 function getKnownDisplays(useCurrentMonitors) {
   let known
   if (!lastKnownDisplays) {

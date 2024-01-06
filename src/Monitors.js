@@ -665,8 +665,10 @@ function setBrightness(brightness, id) {
     try {
         if (id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
-            monitor.brightness = brightness
-            setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
+            if(monitor) {
+                monitor.brightness = brightness
+                setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
+            }
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness

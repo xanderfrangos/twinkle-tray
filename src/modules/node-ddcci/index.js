@@ -100,7 +100,7 @@ function parseCapabilitiesString(report = "") {
         let codesSplit = output.replaceAll('(','|').replaceAll(')', '|').split('|');
 
         // Loop through the above array, alternating between parsing VCP codes and accepted values as needed
-        const codeList = [];
+        const codeList = {};
         let lastCode;
         let isCodes = true;
         for(const set of codesSplit) {
@@ -125,5 +125,5 @@ function parseCapabilitiesString(report = "") {
         }
         return codeList;
     }
-    return [];
+    return false;
 }

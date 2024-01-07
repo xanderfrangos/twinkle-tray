@@ -481,7 +481,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
 
                 if(monitor.ddcciSupported) {
                     await wait(10)
-                    features = await checkMonitorFeatures(id, false)
+                    features = await checkMonitorFeatures(id, false, ddcciMethod)
                 }
 
                 monitorFeatures[hwid[2]] = {
@@ -504,7 +504,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
     })
 }
 
-checkMonitorFeatures = async (monitor, skipCache = false) => {
+checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurate") => {
     return new Promise(async (resolve, reject) => {
         const features = {}
         try {
@@ -512,7 +512,7 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
 
             // Detect valid VCP codes for display if not already available
             try {
-                if(!monitorReports[monitor]) {
+                if(ddcciMethod !== "legacy" && !monitorReports[monitor]) {
                     const report = ddcci.getCapabilities(monitor)
                     if(report && Object.keys(report)?.length > 0) {
                         monitorReports[monitor] = report

@@ -727,7 +727,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       })
       setTimeout(() => {
         refreshMonitors(true)
-      }, 100)
+      }, 500)
     }
 
     if (settings.udpEnabled === true) {

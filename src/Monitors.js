@@ -472,7 +472,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                     features,
                     ddcciSupported: monitor.ddcciSupported,
                     path: monitor.fullName,
-                    vcpCodes: (monitorReports[id] ? Object.keys(monitorReports[id]) : [] )
+                    vcpCodes: (monitorReports[id] ? monitorReports[id] : {} )
                 }
                 clearTimeout(featureTimeout)
             }
@@ -496,7 +496,7 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
             try {
                 if(!monitorReports[monitor]) {
                     const report = ddcci.getCapabilities(monitor)
-                    if(Object.keys(report)?.length) {
+                    if(report && Object.keys(report)?.length > 0) {
                         monitorReports[monitor] = report
                     }
                 }

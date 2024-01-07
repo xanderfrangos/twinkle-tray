@@ -266,7 +266,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
             const brightness = await checkVCP(id, parseInt(brightnessType))
             if(brightness) {
                 ddcciInfo.brightnessValues = brightness
-                features[brightnessType] = brightness
+                features[vcpStr(brightnessType)] = brightness
             }
 
             ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]

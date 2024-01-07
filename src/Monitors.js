@@ -473,7 +473,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                 const id = monitor.deviceKey
                 const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", id); reject({}) }, 15000)
                 const hwid = id.split("#")
-                let features = []
+                let features = {}
 
                 // Apply capabilities report, if available.
                 if(monitor.capabilities && !monitorReports[id]) {

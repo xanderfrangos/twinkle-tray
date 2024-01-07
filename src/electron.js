@@ -2183,6 +2183,32 @@ ipcMain.on('set-vcp', (e, values) => {
 
 ipcMain.on('get-window-history', () => sendToAllWindows('window-history', windowHistory))
 
+ipcMain.on('save-report', async () => {
+  try {
+    monitorsThread.send({
+      type: "getReport"
+    })
+
+    monitorsThread.once("getReport", data => {
+      require('electron').dialog.showSaveDialog({
+        title: "Save report",
+        buttonLabel: 'Save file',
+        defaultPath: app.getPath("desktop") + `\\tt-report-${Date.now()}.txt`,
+        filters: [{
+          name: ".txt",
+          extensions: ["txt"]
+        }]
+    }).then(result => {
+      if(result?.filePath) {
+        fs.writeFileSync(result.filePath, JSON.stringify(data, null, '\t'))
+      }
+    })
+    })
+  } catch (e) {
+    reject("getReport failed to send.")
+  }
+})
+
 
 //
 //

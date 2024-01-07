@@ -1325,7 +1325,9 @@ export default class SettingsWindow extends PureComponent {
                                         <SettingsChild>
                                             {this.getDebugMonitors()}
                                         </SettingsChild>
-                                    </SettingsOption>   
+                                    </SettingsOption>
+                                    
+                                    <SettingsOption title="Save Report" description={"Save a text file with information about your monitors and settings for debugging."} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>Generate Report</a></>} />
 
                                     <SettingsOption title="Settings" description={window.settingsPath} input={<a className="button" onClick={() => window.ipc.send('open-settings-file')}>Open Settings</a>} expandable={true}>
                                         <SettingsChild>

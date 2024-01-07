@@ -7,7 +7,18 @@ const wmibridge = require("wmi-bridge");
 const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
+let lastDDCCIList = []
+let lastRefresh = {}
+let lastWin32 = {}
+let lastWMI = {}
 
+function deepCopy(obj) {
+    try {
+        return JSON.parse(JSON.stringify(obj))
+    } catch(e) {
+        return false
+    }
+}
 
 process.on('message', async (data) => {
     try {
@@ -17,6 +28,7 @@ process.on('message', async (data) => {
                 monitorReports = {}
             }
             refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
+                lastRefresh = deepCopy(results)
                 process.send({
                     type: 'refreshMonitors',
                     monitors: results
@@ -51,6 +63,17 @@ process.on('message', async (data) => {
                 monitor: data.monitor,
                 code: data.code,
                 value: vcp
+            })
+        } else if (data.type === "getReport") {
+            process.send({
+                type: `getReport`,
+                report: {
+                    lastDDCCIList,
+                    lastWMI,
+                    lastWin32,
+                    lastRefresh,
+                    settings
+                }
             })
         }
     } catch (e) {
@@ -380,6 +403,7 @@ getMonitorsWMI = () => {
             console.log(`getMonitorsWMI: Failed to get all monitors.`)
             console.log(e)
         }
+        lastWMI = deepCopy(foundMonitors)
         resolve(foundMonitors)
     })
 }
@@ -424,16 +448,14 @@ getMonitorsWin32 = () => {
 
             // Return prepared results
             clearTimeout(timeout)
-            resolve(foundDisplays)
         } catch (e) {
-            console.log(`getMonitorsWin32: Failed to get all monitors. (L2)`)
-            console.log(e)
-            resolve(foundDisplays)
+            console.log(`getMonitorsWin32: Failed to get all monitors. (L2)`, e)
         }
+        lastWin32 = deepCopy(foundDisplays)
+        resolve(foundDisplays)
     })
 }
 
-let lastDDCCIList = []
 getFeaturesDDC = (ddcciMethod = "accurate") => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {

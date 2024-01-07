@@ -221,12 +221,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
             const { features, id, hwid, vcpCodes, path, ddcciSupported } = monitor
-            let brightnessType = (features["0x10"] ? 0x10 : (features["0x13"] ? 0x13 : 0x00))
-
-            // Use DDC Brightness overrides, if relevant
-            if (typeof ddcBrightnessVCPs === "object" && Object.keys(ddcBrightnessVCPs).indexOf(hwid[1]) > -1) {
-                brightnessType = ddcBrightnessVCPs[hwid[1]]
-            }
+            const brightnessType = await determineBrightnessVCPCode(id)
 
             let ddcciInfo = {
                 id: id,
@@ -240,7 +235,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
                 min: 0,
                 max: 100,
                 brightnessType: brightnessType,
-                brightnessValues: (features[brightnessType] ? features[brightnessType] : features["0x10"] ? features["0x10"] : (features["0x13"] ? features["0x13"] : [50, 100]))
+                brightnessValues: (features[brightnessType] ? features[brightnessType] : [50, 100])
             }
 
             const brightness = await checkVCP(id, parseInt(brightnessType))
@@ -540,6 +535,26 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
     })
 }
 
+determineBrightnessVCPCode = async (monitor) => {
+    const hwid = monitor.split("#")
+    if(ddcBrightnessVCPs?.[hwid[1]]) {
+        return vcpStr(ddcBrightnessVCPs[hwid[1]])
+    }
+    if(await checkIfVCPSupported(monitor, 0x10)) {
+        return "0x10" // luminance
+    }
+    if(await checkIfVCPSupported(monitor, 0x13)) {
+        return "0x13" // brightness
+    }
+    if(await checkIfVCPSupported(monitor, 0x6B)) {
+        return "0x6b" // backlight level white
+    }
+    if(await checkIfVCPSupported(monitor, 0x12)) {
+        return "0x12" // contrast
+    }
+    return false
+}
+
 getBrightnessWMI = () => {
     // Request WMI monitors.
     return new Promise(async (resolve, reject) => {
@@ -723,6 +738,26 @@ async function checkVCPIfEnabled(monitor, code, setting, skipCache = false) {
         }
         
         // Cached value can't be used, so we return false
+        return false
+    }
+}
+
+async function checkIfVCPSupported(monitor, code) {
+    const vcpString = vcpStr(code)
+    if(!code || code == "0x0") return false;
+    try {
+        const isInReport = monitorReports[monitor]?.[vcpString] ? true : false
+        const hasReport = monitorReports[monitor] && Object.keys(monitorReports[monitor])?.length > 0 ? true : false
+        
+        if (hasReport && !isInReport) return false;
+
+        // If we previously saw that a feature was supported, we shouldn't have to check again.
+        if (vcpCache[monitor] && vcpCache[monitor]["vcp_" + vcpString]) return true;
+
+        const vcpResult = await checkVCPIfEnabled(monitor, code)
+        return (vcpResult ? true : false)
+    } catch (e) {
+        console.log(`Error checking VCP code support ${vcpString} for ${monitor}`, e)
         return false
     }
 }

@@ -53,6 +53,7 @@ process.on('message', async (data) => {
         } else if (data.type === "flushvcp") {
             vcpCache = {}
             monitorReports = {}
+            ddcci._clearDisplayCache()
         } else if (data.type === "wmi-bridge-ok") {
             canUseWmiBridge = true
         } else if (data.type === "getVCP") {

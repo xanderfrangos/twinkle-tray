@@ -504,25 +504,34 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
                 console.log("Couldn't get capabilities report for monitor " + monitor)
             }
 
-            // Get custom DDC/CI features
-            const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
-            if(settingsFeatures) {
-                for(const vcp in settingsFeatures) {
-                    if(ddcBrightnessVCPs[hwid[1]] && vcp == ddcBrightnessVCPs[hwid[1]]) {
-                        continue; // Skip if custom brightness
-                    }
-                    if(settingsFeatures[vcp]) {
-                        features[vcpStr(vcp)] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, true)
+            let getAllValues = false
+            if(getAllValues && monitorReports[monitor]) {
+                for(const code in monitorReports[monitor]) {
+                    features[vcpStr(code)] = await checkVCP(monitor, code)
+                }
+            } else {
+                // Get custom DDC/CI features
+                const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
+                if(settingsFeatures) {
+                    for(const vcp in settingsFeatures) {
+                        if(ddcBrightnessVCPs[hwid[1]] && vcp == ddcBrightnessVCPs[hwid[1]]) {
+                            continue; // Skip if custom brightness
+                        }
+                        if(settingsFeatures[vcp]) {
+                            features[vcpStr(vcp)] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, skipCache)
+                        }
                     }
                 }
+                
+                // Capabilities report allows us to skip this for unsupported codes, generally
+                features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", skipCache)
+                features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
+                features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
+                features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
+                features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
             }
-            
-            // Capabilities report allows us to skip this, generally
-            features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", skipCache)
-            features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
-            features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
-            features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
-            features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
+
+
             
         } catch (e) {
             console.log(e)

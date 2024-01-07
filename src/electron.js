@@ -617,6 +617,8 @@ function readSettings(doProcessSettings = true) {
     }
   }
 
+  // Fix rawSettings bug
+  if(settings.rawSettings) delete settings.rawSettings;
 
   if (doProcessSettings) processSettings({ isReadSettings: true });
 }

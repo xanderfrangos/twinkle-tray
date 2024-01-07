@@ -960,7 +960,7 @@ export default class SettingsWindow extends PureComponent {
 
         const newState = {}
         newState[setting] = value
-        this.setState(newState)
+        this.setState({...newState, ...{rawSettings: {...this.state.rawSettings, ...{[setting]: value} } } })
         window.sendSettings(newState)
     }
 

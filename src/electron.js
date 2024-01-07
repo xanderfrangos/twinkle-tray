@@ -721,6 +721,15 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       }
     }
 
+    if (app.isReady() && newSettings.preferredDDCCIMethod) {
+      monitorsThread.send({
+        type: "flushvcp"
+      })
+      setTimeout(() => {
+        refreshMonitors(true)
+      }, 100)
+    }
+
     if (settings.udpEnabled === true) {
       if (!udp.server) udp.start(settings.udpPort);
     } else if (settings.udpEnabled === false) {

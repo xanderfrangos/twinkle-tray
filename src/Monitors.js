@@ -560,19 +560,19 @@ checkMonitorFeatures = async (monitor, skipCache = false) => {
 determineBrightnessVCPCode = async (monitor) => {
     const hwid = monitor.split("#")
     if(ddcBrightnessVCPs?.[hwid[1]]) {
-        return vcpStr(ddcBrightnessVCPs[hwid[1]])
+        return parseInt(ddcBrightnessVCPs[hwid[1]])
     }
     if(await checkIfVCPSupported(monitor, 0x10)) {
-        return "0x10" // luminance
+        return 0x10 // luminance
     }
     if(await checkIfVCPSupported(monitor, 0x13)) {
-        return "0x13" // brightness
+        return 0x13 // brightness
     }
     if(await checkIfVCPSupported(monitor, 0x6B)) {
-        return "0x6b" // backlight level white
+        return 0x6b // backlight level white
     }
     if(await checkIfVCPSupported(monitor, 0x12)) {
-        return "0x12" // contrast
+        return 0x12 // contrast
     }
     return false
 }

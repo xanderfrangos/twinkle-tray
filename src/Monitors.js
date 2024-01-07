@@ -71,6 +71,7 @@ process.on('message', async (data) => {
                     lastDDCCIList,
                     lastWMI,
                     lastWin32,
+                    monitorReports,
                     lastRefresh,
                     settings
                 }

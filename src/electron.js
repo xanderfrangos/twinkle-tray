@@ -121,6 +121,9 @@ const windowMenu = Menu.buildFromTemplate([{
   accelerator: "Ctrl+I"
 }])
 
+function vcpStr(code) {
+  return `0x${parseInt(code).toString(16).toUpperCase()}`
+}
 
 
 
@@ -195,7 +198,11 @@ function getVCP(monitor, code) {
     }, 3000)
     monitorsThread.once(`getVCP::${hwid}::${vcpParsed}`, data => {
       clearTimeout(timeout)
-      resolve(data?.value)
+      // Write VCP values to monitor object
+      if(data?.value?.[0] != undefined) {
+        monitor.features[vcpStr(vcpParsed)] = data.value?.[0]
+      }
+      resolve(data?.value?.[0])
     })
     monitorsThread.send({
       type: "getVCP",
@@ -1840,7 +1847,10 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
             level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
           }
 
-          monitor.features[vcpString][0] = parseInt(level)
+          if(monitor.features?.[vcpString]) {
+            monitor.features[vcpString][0] = parseInt(level)
+          }
+          
 
           monitorsThread.send({
             type: "vcp",
@@ -1850,7 +1860,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           })
 
         } catch(e) {
-          console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`)
+          console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`, e)
         }
       }
 

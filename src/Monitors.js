@@ -50,7 +50,7 @@ process.on('message', async (data) => {
                 type: `getVCP::${data.monitor}::${data.code}`,
                 monitor: data.monitor,
                 code: data.code,
-                value: vcp?.[0]
+                value: vcp
             })
         }
     } catch (e) {

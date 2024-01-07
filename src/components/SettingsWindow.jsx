@@ -1362,6 +1362,15 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="legacy">Legacy (v1.15.4 behavior)</option>
                                         </select>
                                     } />
+
+                                    <SettingsOption title="Idle restore time" description="How long (in seconds) after going idle to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.idleRestoreSeconds * 1} onChange={(e) => this.setSetting("idleRestoreSeconds", e.target.value)} /> } />
+
+                                    <SettingsOption title="Wake restore time" description="How long (in seconds) after going waking from sleep to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.wakeRestoreSeconds * 1} onChange={(e) => this.setSetting("wakeRestoreSeconds", e.target.value)} /> } />
+
+                                    <SettingsOption title="Hardware change time" description="How long (in seconds) after going detecting a hardware change to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.hardwareRestoreSeconds * 1} onChange={(e) => this.setSetting("hardwareRestoreSeconds", e.target.value)} /> } />
+
+                                    <SettingsOption title="VCP read delay" description="How long (in miliseconds) to delay returning a VCP code value. This can help some displays not return random errors." input={<input type="number" min="0" max="200" value={this.state.rawSettings.checkVCPWaitMS * 1} onChange={(e) => this.setSetting("checkVCPWaitMS", e.target.value)} /> } />
+                                    
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />

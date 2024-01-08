@@ -202,6 +202,11 @@ getCapabilitiesString(HANDLE handle)
 
     std::string returnString = "";
 
+    if(handle == NULL) {
+        d("No handle for capabilities string!");
+        return "";
+    }
+
     if(handle != NULL) {
         // Get the capabilities string length.
         // Checking the capabilities string is, apparently, very flaky.
@@ -209,9 +214,13 @@ getCapabilitiesString(HANDLE handle)
         int attempt = 0;
         bSuccess = 0;
         while (bSuccess != 1 && attempt < 3) {
+            if(attempt > 1) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
             attempt++;
-            bSuccess = GetCapabilitiesStringLength(handle, // Handle to the monitor.
+            bSuccess = GetCapabilitiesStringLength(handle,
               &cchStringLength);
+            d("== cLength attempt #" + std::to_string(attempt) + ": " + std::to_string(bSuccess));
         }
 
         if (bSuccess != 1) {
@@ -219,6 +228,8 @@ getCapabilitiesString(HANDLE handle)
             return ""; // Does not respond to DDC/CI
         }
     }
+
+    d("== cLength: " + std::to_string(cchStringLength));
 
     // Allocate the string buffer.
     LPSTR szCapabilitiesString = (LPSTR)malloc(cchStringLength);
@@ -229,9 +240,13 @@ getCapabilitiesString(HANDLE handle)
         int attempt = 0;
         bSuccess = 0;
         while (bSuccess != 1 && attempt < 5) {
+            if(attempt > 1) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
             attempt++;
             bSuccess = CapabilitiesRequestAndCapabilitiesReply(
               handle, szCapabilitiesString, cchStringLength);
+            d("== cString attempt #" + std::to_string(attempt) + ": " + std::to_string(bSuccess));
         }
 
         if (bSuccess != 1) {

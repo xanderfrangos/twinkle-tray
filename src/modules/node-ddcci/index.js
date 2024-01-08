@@ -110,18 +110,42 @@ function parseCapabilitiesString(report = "") {
         while(pos < output.length){
             const cur = output[pos]
             pos++
+
+            // Check for VCP codes
             if(cur !== "(") {
                 let vcpCode = `${cur}${output[pos]}`
                 const vcpValues = []
                 pos++
+                
+                // Check for defined values
                 if(output[pos] == "(") {
                     pos++
-                    while(output[pos] != ")" && pos < output.length) {
-                        vcpValues.push(parseInt(`0x${output[pos]}${output[pos+1]}`))
-                        pos += 2
+                    let depth = 0
+                    while((output[pos] != ")" && depth == 0) && pos < output.length) {
+
+                        // Check for subdata
+                        // I don't know what to do with this, so we'll just read through and ignore it.
+                        if(output[pos] == "(") {
+                            pos++
+                            depth++
+                            while(depth > 0 && pos < output.length) {
+                                if(output[pos] == "(") {
+                                    depth++
+                                } else if(output[pos] == ")") {
+                                    depth--
+                                }
+                                pos++
+                            }
+                        } else {
+                            // Push defined value to list
+                            vcpValues.push(parseInt(`0x${output[pos]}${output[pos+1]}`))
+                            pos += 2
+                        }
+                        
                     }
                     pos++
                 }
+                // Add VCP code with defined values (if found)
                 codeList[`0x${vcpCode.toUpperCase()}`] = vcpValues
             }
         }

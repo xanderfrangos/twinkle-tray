@@ -100,34 +100,33 @@ function parseCapabilitiesString(report = "") {
             position++;
         }
 
-        // Split up remaining string so we can extract accepted values from code list
-        let codesSplit = output.replaceAll('(','|').replaceAll(')', '|').split('|');
+        // Strip out unnecessary characters
+        output = output.replaceAll('\0', '').replaceAll(' ', '').trim();
 
-        // Loop through the above array, alternating between parsing VCP codes and accepted values as needed
+        // Iterate through the above string, alternating between parsing VCP codes and accepted values as needed
         const codeList = {};
-        let lastCode;
-        let isCodes = true;
-        for(const set of codesSplit) {
-            if(isCodes) {
-                // Extracting VCP codes
-                const split = set.trim().split(' ');
-                for(const code of split) {
-                    codeList[`0x${code.toUpperCase()}`] = [];
-                    lastCode = `0x${code.toUpperCase()}`;
-                }
-                isCodes = false;
-            } else {
-                // Extracting accepted values for last VCP code
-                for(const value of set.trim().split(' ')) {
-                    if(value.length > 0) {
-                        codeList[lastCode].push(parseInt(`0x${value}`));
+
+        let pos = 0
+        while(pos < output.length){
+            const cur = output[pos]
+            pos++
+            if(cur !== "(") {
+                let vcpCode = `${cur}${output[pos]}`
+                const vcpValues = []
+                pos++
+                if(output[pos] == "(") {
+                    pos++
+                    while(output[pos] != ")" && pos < output.length) {
+                        vcpValues.push(parseInt(`0x${output[pos]}${output[pos+1]}`))
+                        pos += 2
                     }
-                    
+                    pos++
                 }
-                isCodes = true;
+                codeList[`0x${vcpCode.toUpperCase()}`] = vcpValues
             }
         }
-        return codeList;
+
+        return codeList
     }
     return false;
 }

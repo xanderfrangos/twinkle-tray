@@ -515,7 +515,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
             // Check if monitor was previously tested and supported
             if(usePreviousResults) {
                 for (auto const& previousDisplay : physicalMonitorHandles) {
-                    if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported) {
+                    if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported && previousDisplay.second.result != "invalid") {
                         newMonitor.result = previousDisplay.second.result;
                         newMonitor.ddcciSupported = previousDisplay.second.ddcciSupported;
                         break;

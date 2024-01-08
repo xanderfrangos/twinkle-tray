@@ -831,6 +831,8 @@ Init(Napi::Env env, Napi::Object exports)
       Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));
     exports.Set("setLogLevel", Napi::Function::New(env, setLogLevel, "setLogLevel"));
 
+    getAllHandles(); // Returns bad handles the first time??
+
     return exports;
 }
 

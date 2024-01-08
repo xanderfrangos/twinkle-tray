@@ -194,6 +194,60 @@ getAllHandles() {
     return monitors;
 }
 
+std::string
+getCapabilitiesString(HANDLE handle)
+{
+    DWORD cchStringLength = 0;
+    BOOL bSuccess = 0;
+
+    std::string returnString = "";
+
+    if(handle != NULL) {
+        // Get the capabilities string length.
+        // Checking the capabilities string is, apparently, very flaky.
+        // So if it fails, we should try again.
+        int attempt = 0;
+        bSuccess = 0;
+        while (bSuccess != 1 && attempt < 3) {
+            attempt++;
+            bSuccess = GetCapabilitiesStringLength(handle, // Handle to the monitor.
+              &cchStringLength);
+        }
+
+        if (bSuccess != 1) {
+            d("Couldn't get capabilities length!");
+            return ""; // Does not respond to DDC/CI
+        }
+    }
+
+    // Allocate the string buffer.
+    LPSTR szCapabilitiesString = (LPSTR)malloc(cchStringLength);
+    if (szCapabilitiesString != NULL) {
+
+        // Get the capabilities string.
+        // We know it exists, so we'll try a few times if needed.
+        int attempt = 0;
+        bSuccess = 0;
+        while (bSuccess != 1 && attempt < 5) {
+            attempt++;
+            bSuccess = CapabilitiesRequestAndCapabilitiesReply(
+              handle, szCapabilitiesString, cchStringLength);
+        }
+
+        if (bSuccess != 1) {
+            d("Couldn't get capabilities string!");
+            return ""; // Does not respond to DDC/CI
+        }
+
+        returnString = std::string(szCapabilitiesString);
+
+        // Free the string buffer.
+        free(szCapabilitiesString);
+    }
+
+    return returnString;
+}
+
 // Test if HANDLE has a working DDC/CI connection.
 // Returns "invalid", "ok", or a capabilities string.
 std::string
@@ -206,36 +260,11 @@ getPhysicalHandleResults(HANDLE handle, std::string validationMethod)
 
     // Accurate method: Check capabilities string
     if (validationMethod == "accurate") {
-        DWORD cchStringLength = 0;
-        BOOL bSuccess = 0;
-        LPSTR szCapabilitiesString = NULL;
-
-        // Get the length of the string.
-        bSuccess = GetCapabilitiesStringLength(handle, // Handle to the monitor.
-                                               &cchStringLength);
-
-        if (bSuccess != 1) {
-            return "invalid"; // Does not respond to DDC/CI
+        std::string result = getCapabilitiesString(handle);
+        if(result == "") {
+            return "invalid";
         }
-
-        // Allocate the string buffer.
-        szCapabilitiesString = (LPSTR)malloc(cchStringLength);
-        if (szCapabilitiesString != NULL) {
-            // Get the capabilities string.
-            bSuccess = CapabilitiesRequestAndCapabilitiesReply(
-              handle, szCapabilitiesString, cchStringLength);
-
-            if (bSuccess != 1) {
-                return "invalid"; // This shouldn't happen
-            }
-
-            std::string capabilities = std::string(szCapabilitiesString);
-
-            // Free the string buffer before returning result.
-            free(szCapabilitiesString);
-            return capabilities;
-        }
-        return "invalid";
+        return result;
     }
 
     // Fast method: Check common VCP codes
@@ -583,9 +612,8 @@ clearDisplayCache(const Napi::CallbackInfo& info)
 }
 
 Napi::String
-getCapabilitiesString(const Napi::CallbackInfo& info)
+getNAPICapabilitiesString(const Napi::CallbackInfo& info)
 {
-
     Napi::Env env = info.Env();
 
     if (info.Length() < 1) {
@@ -603,37 +631,17 @@ getCapabilitiesString(const Napi::CallbackInfo& info)
         return Napi::String::New(env, found->second);
     }
 
+    // Find requested monitor.
     auto it = handles.find(monitorName);
     if (it == handles.end()) {
         throw Napi::Error::New(env, "Monitor not found");
     }
 
-    DWORD cchStringLength = 0;
-    BOOL bSuccess = 0;
-    LPSTR szCapabilitiesString = NULL;
+    std::string returnString = getCapabilitiesString(it->second);
 
-    std::string returnString = "";
-
-    // Get the length of the string.
-    bSuccess = GetCapabilitiesStringLength(it->second, // Handle to the monitor.
-                                           &cchStringLength);
-
-    if (bSuccess != 1) {
+    if(returnString == "") {
         throw Napi::Error::New(
           env, "Monitor not responding."); // Does not respond to DDC/CI
-    } else {
-        // Allocate the string buffer.
-        LPSTR szCapabilitiesString = (LPSTR)malloc(cchStringLength);
-        if (szCapabilitiesString != NULL) {
-            // Get the capabilities string.
-            bSuccess = CapabilitiesRequestAndCapabilitiesReply(
-              it->second, szCapabilitiesString, cchStringLength);
-
-            returnString = std::string(szCapabilitiesString);
-
-            // Free the string buffer.
-            free(szCapabilitiesString);
-        }
     }
 
     return Napi::String::New(env, returnString);
@@ -802,7 +810,7 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set("getVCP", Napi::Function::New(env, getVCP, "getVCP"));
     exports.Set(
       "getCapabilitiesString",
-      Napi::Function::New(env, getCapabilitiesString, "getCapabilitiesString"));
+      Napi::Function::New(env, getNAPICapabilitiesString, "getCapabilitiesString"));
     exports.Set(
       "saveCurrentSettings",
       Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));

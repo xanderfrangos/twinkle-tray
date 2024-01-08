@@ -19,6 +19,7 @@ struct Monitor {
 
 struct PhysicalMonitor {
     HANDLE handle;
+    bool handleIsValid;
     bool ddcciSupported;
     std::string name;
     std::string fullName;
@@ -474,6 +475,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
 
             PhysicalMonitor newMonitor;
             newMonitor.handle = monitor.physicalHandles[i];
+            newMonitor.handleIsValid = (newMonitor.handle != NULL);
             newMonitor.name = monitor.monitorName;
             newMonitor.physicalName = fullMonitorName;
             newMonitor.ddcciSupported = false;
@@ -688,6 +690,8 @@ getAllMonitors(const Napi::CallbackInfo& info)
         Napi::Object monitor = Napi::Object::New(env);
         monitor.Set("ddcciSupported",
                     Napi::Boolean::New(env, handle.second.ddcciSupported));
+        monitor.Set("handleIsValid",
+                    Napi::Boolean::New(env, handle.second.handleIsValid));
         monitor.Set("name", Napi::String::New(env, handle.second.name));
         monitor.Set("fullName", Napi::String::New(env, handle.second.fullName));
         monitor.Set("physicalName", Napi::String::New(env, handle.second.physicalName));

@@ -470,7 +470,25 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             
             getDDCCI()
             await wait(10)
-            const ddcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+
+            // Sometimes the handles returned are NULL, so we should try again.
+            let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+            if(tmpDdcciMonitors) {
+                let doRetry = false
+                for(const monitor of tmpDdcciMonitors) {
+                    if(monitor.handleIsValid === false) {
+                        doRetry = true
+                        break
+                    }
+                }
+                if(doRetry) {
+                    console.log("DDC/CI results contain a null handle. Trying again.")
+                    await wait(200)
+                    tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+                }
+            }
+
+            const ddcciMonitors = tmpDdcciMonitors
             lastDDCCIList = ddcciMonitors
 
             for (let monitor of ddcciMonitors) {

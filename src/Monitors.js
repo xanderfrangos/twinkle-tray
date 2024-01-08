@@ -26,6 +26,7 @@ process.on('message', async (data) => {
             if(data.clearCache) {
                 vcpCache = {}
                 monitorReports = {}
+                monitorReportsRaw = {}
             }
             refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
                 lastRefresh = deepCopy(results)
@@ -53,6 +54,7 @@ process.on('message', async (data) => {
         } else if (data.type === "flushvcp") {
             vcpCache = {}
             monitorReports = {}
+            monitorReportsRaw = {}
             ddcci._clearDisplayCache()
         } else if (data.type === "wmi-bridge-ok") {
             canUseWmiBridge = true
@@ -73,6 +75,7 @@ process.on('message', async (data) => {
                     lastWMI,
                     lastWin32,
                     monitorReports,
+                    monitorReportsRaw,
                     lastRefresh,
                     settings
                 }
@@ -90,6 +93,7 @@ let monitors = false
 let monitorNames = []
 let monitorsWin32 = {}
 let monitorReports = {}
+let monitorReportsRaw = {}
 
 let settings = { order: [] }
 let localization = {}
@@ -514,9 +518,13 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
             // Detect valid VCP codes for display if not already available
             try {
                 if(ddcciMethod !== "legacy" && !monitorReports[monitor]) {
-                    const report = ddcci.getCapabilities(monitor)
-                    if(report && Object.keys(report)?.length > 0) {
-                        monitorReports[monitor] = report
+                    const reportRaw = ddcci.getCapabilitiesRaw(monitor)
+                    if(reportRaw) {
+                        monitorReportsRaw[monitor] = reportRaw
+                        const report = ddcci._parseCapabilitiesString(reportRaw)
+                        if(report && Object.keys(report)?.length > 0) {
+                            monitorReports[monitor] = report
+                        }
                     }
                 }
             } catch(e) {
@@ -1073,6 +1081,7 @@ testDDCCIMethods = async () => {
         wait(50)
         vcpCache = {}
         monitorReports = {}
+        monitorReportsRaw = {}
         ddcci._clearDisplayCache()
     
         startTime = process.hrtime.bigint()
@@ -1117,6 +1126,7 @@ testDDCCIMethods = async () => {
 
     vcpCache = {}
     monitorReports = {}
+    monitorReportsRaw = {}
     ddcci._clearDisplayCache()
     
     return fastIsFine

@@ -69,8 +69,11 @@ module.exports = {
     // Returns an array where keys are valid VCP codes and the keys are an array of accepted values.
     // If the array of accepted values is empty, the VCP code either accepts a range of values or no values. Use getVCP to determine the range, if any.
   , getCapabilities (monitorId) {
-    let report = ddcci.getCapabilitiesString(monitorId);
-    return parseCapabilitiesString(report);
+        let report = ddcci.getCapabilitiesString(monitorId);
+        return parseCapabilitiesString(report);
+    }
+  , getCapabilitiesRaw (monitorId) {
+        return ddcci.getCapabilitiesString(monitorId);
   }
 };
 

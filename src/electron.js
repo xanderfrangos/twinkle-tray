@@ -3766,7 +3766,14 @@ function getCurrentAdjustmentEventLERP() {
     }
 
     // Calculate 0-1 percentage of progress
-    const percent = (next.value - nowValue) / (next.value - current.value)
+    const lerpValues = {
+      next: next.value - current.value,
+      current: current.value - current.value,
+      now: nowValue - current.value
+    }
+    lerpValues.progress = lerpValues.next - lerpValues.now
+    lerpValues.end = lerpValues.next
+    lerpValues.percent = 1 - (lerpValues.progress / lerpValues.end)
 
     // Generate result depending on if displays are linked
     if (settings.adjustmentTimeIndividualDisplays) {
@@ -3774,12 +3781,12 @@ function getCurrentAdjustmentEventLERP() {
       const monitors = Object.assign(current.monitors)
       keys.forEach(key => {
         if (monitors[key] > -1) {
-          monitors[key] = Math.round(Utils.lerp(current.monitors[key], next.monitors[key], percent))
+          monitors[key] = Math.round(Utils.lerp(current.monitors[key], next.monitors[key], lerpValues.percent))
         }
       })
       return monitors
     } else {
-      return Math.round(Utils.lerp(current.brightness, next.brightness, percent))
+      return Math.round(Utils.lerp(current.brightness, next.brightness, lerpValues.percent))
     }
   } catch (e) {
     console.log("Error generating Adjustment Time LERP", e)

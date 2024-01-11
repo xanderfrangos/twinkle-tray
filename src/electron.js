@@ -1636,7 +1636,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 let lastRefreshMonitors = 0
 
-refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
+const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
   if (!monitorsThreadReady || pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
@@ -3515,16 +3515,16 @@ function handleMonitorChange(e, d) {
   if (handleChangeTimeout2) {
     clearTimeout(handleChangeTimeout2)
   }
-  handleChangeTimeout2 = setTimeout(() => {
+  handleChangeTimeout2 = setTimeout(async () => {
 
     // Reset all known displays
-    refreshMonitors(true, true).then(() => {
-      if (!settings.disableAutoApply) setKnownBrightness();
-      handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
+    await refreshMonitors(true)
+    await refreshMonitors(true)
+    if (!settings.disableAutoApply) setKnownBrightness();
+    handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
-      // If displays not shown, refresh mainWindow
-      //restartPanel(panelSize.visible)
-    })
+    // If displays not shown, refresh mainWindow
+    //restartPanel(panelSize.visible)
 
     handleChangeTimeout2 = false
   }, parseInt(settings.hardwareRestoreSeconds || 5) * 1000)

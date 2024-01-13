@@ -3469,7 +3469,10 @@ function addEventListeners() {
   systemPreferences.on('color-changed', handleAccentChange)
   nativeTheme.on('updated', handleAccentChange)
 
-  addDisplayChangeListener(handleMonitorChange)
+  addDisplayChangeListener(() => handleMonitorChange("win32"))
+  screen.addListener("display-added", () => handleMonitorChange("display-added"))
+  screen.addListener("display-removed", () => handleMonitorChange("display-removed"))
+  screen.addListener("display-metrics-changed", () => handleMonitorChange("display-metrics-changed"))
 
   enableMouseEvents()
 
@@ -3500,8 +3503,8 @@ let skipFirstMonChange = false
 let handleChangeTimeout0
 let handleChangeTimeout1
 let handleChangeTimeout2
-function handleMonitorChange(e, d) {
-  console.log("Event: handleMonitorChange");
+function handleMonitorChange(t, e, d) {
+  console.log(`Event: handleMonitorChange (${t})`);
 
   // Skip event that happens at startup
   if (!skipFirstMonChange) {

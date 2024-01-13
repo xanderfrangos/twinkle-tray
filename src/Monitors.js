@@ -485,6 +485,12 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                     console.log("DDC/CI results contain a null handle. Trying again.")
                     await wait(200)
                     tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+                    for(const monitor of tmpDdcciMonitors) {
+                        if(monitor.handleIsValid === false) {
+                            console.log("DDC/CI results still contain a null handle. Continuing anyway.")
+                            break
+                        }
+                    }
                 }
             }
 

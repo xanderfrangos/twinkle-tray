@@ -37,14 +37,14 @@
     "color": "^4.2.3",
     "electron-winstore-auto-launch": "^2.0.6",
     "ga4-mp": "^1.0.3",
-    "global-mouse-events": "^1.1.0",
+    "global-mouse-events": "^1.2.0",
     "markdown-to-jsx": "^7.1.7",
-    "native-reg": "^1.1.0",
+    "native-reg": "^1.1.1",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "stackblur-canvas": "^2.6.0",
     "suncalc": "^1.9.0",
     "win32-displayconfig": "^0.1.0",
-    "windows-accent-colors": "^1.0.0",
+    "windows-accent-colors": "^1.0.1",
     "wmi-bridge": "file:src/modules/wmi-bridge",
     "wmi-client": "^0.5.0"
   },
@@ -175,12 +175,6 @@
     "node-gyp": "$node-gyp",
     "bindings@<1.5.0": "1.5.0",
     "node-addon-api@<3.1.0": "3.1.0",
-    "global-mouse-events": {
-      "node-gyp": "$node-gyp"
-    },
-    "windows-accent-colors": {
-      "node-gyp": "$node-gyp"
-    },
     "win32-displayconfig": {
       "node-gyp": "$node-gyp"
     }

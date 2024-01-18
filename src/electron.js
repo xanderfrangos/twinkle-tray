@@ -449,6 +449,8 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   autoDisabledWMI: false,
+  useWin32Event: true,
+  useElectronEvents: true,
   defaultOverlayType: "safe",
   disableMouseEvents: false,
   disableThrottling: false,
@@ -3469,10 +3471,10 @@ function addEventListeners() {
   systemPreferences.on('color-changed', handleAccentChange)
   nativeTheme.on('updated', handleAccentChange)
 
-  addDisplayChangeListener(() => handleMonitorChange("win32"))
-  screen.addListener("display-added", () => handleMonitorChange("display-added"))
-  screen.addListener("display-removed", () => handleMonitorChange("display-removed"))
-  screen.addListener("display-metrics-changed", () => handleMonitorChange("display-metrics-changed"))
+  addDisplayChangeListener(() => { if(settings.useWin32Event) handleMonitorChange("win32") })
+  screen.addListener("display-added", () => { if(settings.useElectronEvents) handleMonitorChange("display-added") })
+  screen.addListener("display-removed", () => { if(settings.useElectronEvents) handleMonitorChange("display-removed") })
+  screen.addListener("display-metrics-changed", () => { if(settings.useElectronEvents) handleMonitorChange("display-metrics-changed") })
 
   enableMouseEvents()
 

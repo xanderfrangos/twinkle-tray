@@ -1374,6 +1374,8 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="VCP read delay" description="How long (in miliseconds) to delay returning a VCP code value. This can help some displays not return random errors." input={<input type="number" min="0" max="200" value={this.state.rawSettings.checkVCPWaitMS * 1} onChange={(e) => this.setSetting("checkVCPWaitMS", e.target.value)} /> } />
                                     
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
+                                    <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
+                                    <SettingsOption title="Use Electron hardware events" input={this.renderToggle("useElectronEvents")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />

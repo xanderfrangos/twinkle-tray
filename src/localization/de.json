@@ -46,7 +46,7 @@
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Mehr erfahren",
     "SETTINGS_MONITORS_RATE_TITLE": "Intervall für Helligkeitsaktualisierung",
     "SETTINGS_MONITORS_RATE_DESC": "Legt fest, wie oft die Helligkeit Ihrer Monitore aktualisiert wird, während Sie diese Einstellungen vornhemen. Erhöhen Sie die Zeit, wenn Ihre Monitore flackern.",
-    "SETTINGS_MONITORS_RATE_0": "Sehr schnell",
+    "SETTINGS_MONITORS_RATE_0": "Super schnell",
     "SETTINGS_MONITORS_RATE_1": "Schnell (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
     "SETTINGS_MONITORS_RATE_3": "Langsam (1 second)",

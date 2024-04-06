@@ -477,17 +477,17 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                 let doRetry = false
                 for(const monitor of tmpDdcciMonitors) {
                     if(monitor.handleIsValid === false) {
-                        doRetry = true
+                        doRetry = monitor
                         break
                     }
                 }
                 if(doRetry) {
-                    console.log("DDC/CI results contain a null handle. Trying again.")
+                    console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
                     await wait(200)
                     tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
                     for(const monitor of tmpDdcciMonitors) {
                         if(monitor.handleIsValid === false) {
-                            console.log("DDC/CI results still contain a null handle. Continuing anyway.")
+                            console.log(`DDC/CI results still contain a null handle (${doRetry?.deviceKey}). Continuing anyway.`)
                             break
                         }
                     }

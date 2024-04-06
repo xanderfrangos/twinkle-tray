@@ -10,7 +10,7 @@ function udpSendCommand(type, data, port = 14715, key) {
         }, 1000)
 
         client.on('message', (message, connection) => {
-            resolve(message.toString())
+            resolve(message?.toString())
         })
 
         client.send(JSON.stringify({ type, data, key }), port, "localhost", err => {
@@ -18,6 +18,27 @@ function udpSendCommand(type, data, port = 14715, key) {
                 reject('Failed to send command')
             }
         })
+    })
+}
+
+function pipeSendCommand(type, data, port = 14715, key) {
+    return new Promise((resolve, reject) => {
+        const cmdTimeout = setTimeout(() => {
+            clearTimeout(cmdTimeout)
+            reject("No response")
+        }, 1000)
+
+        const client = require('net').connect('\\\\.\\pipe\\twinkle-tray\\cmds')
+
+        client.on('data', function(message) {
+            resolve(message?.toString())
+        })
+
+        try {
+            client.write(JSON.stringify({ type, data, key }))
+        } catch(e) {
+            reject('Failed to send command:', e)
+        }
     })
 }
 
@@ -46,6 +67,11 @@ module.exports = {
         commandLine.forEach(argRaw => {
 
             const arg = argRaw.toLowerCase();
+
+            // Use UDP
+            if (arg.indexOf("--udp") === 0) {
+                validArgs.UseUDP = true
+            }
 
             // Get display by index
             if (arg.indexOf("--list") === 0) {
@@ -114,8 +140,14 @@ module.exports = {
         } else if (args.List) {
             //const displays = getKnownDisplays(knownDisplaysPath)
 
-            const displays = JSON.parse(await udpSendCommand("list", false, settings.udpPortActive, settings.udpKey))
-            //console.log(displays)
+            const useUDP = (args.UseUDP ? true : false)
+            const response = await (useUDP ? udpSendCommand : pipeSendCommand)("list", false, settings.udpPortActive, settings.udpKey)
+            let displays = {}
+            try {
+                displays = JSON.parse(response || "")
+            } catch(e) {
+                console.log("Error parsing response")
+            }
 
             Object.values(displays).forEach(display => {
                 console.log(`

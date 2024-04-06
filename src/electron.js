@@ -1,5 +1,33 @@
-
 const { app } = require('electron')
+
+const path = require('path');
+
+let isDev = app.commandLine.hasSwitch("dev")
+
+const appVersionFull = app.getVersion()
+const appVersion = appVersionFull.split('+')[0]
+const appVersionTag = appVersion?.split('-')[1]
+const appBuild = (isDev ? "dev" : appVersionFull.split('+')[1])
+const appBuildShort = (appBuild && appBuild.length > 7 ? appBuild.slice(0, 7) : appBuild)
+
+const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
+const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
+
+const Utils = require("./Utils")
+
+const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
+const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
+const knownDisplaysPath = path.join(configFilesDir, `\\known-displays${(isDev ? "-dev" : "")}.json`)
+
+// Handle multiple instances before continuing
+const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
+if (!singleInstanceLock) {
+  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath, settingsPath).then(() => app.exit()) } catch (e) { app.exit() }
+  return false
+} else {
+  console.log("Starting Twinkle Tray...")
+  app.on('second-instance', handleCommandLine)
+}
 
 function reopenAppWithConsole() {
   const args = [__filename, "--console"]
@@ -13,21 +41,11 @@ if(app.commandLine.hasSwitch("show-console")) {
   reopenAppWithConsole()
 }
 
-const path = require('path');
 const fs = require('fs')
 const { Readable } = require("node:stream")
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')
-const Utils = require("./Utils")
 const uuid = require('crypto').randomUUID
-
-let isDev = app.commandLine.hasSwitch("dev")
-
-const appVersionFull = app.getVersion()
-const appVersion = appVersionFull.split('+')[0]
-const appVersionTag = appVersion?.split('-')[1]
-const appBuild = (isDev ? "dev" : appVersionFull.split('+')[1])
-const appBuildShort = (appBuild && appBuild.length > 7 ? appBuild.slice(0, 7) : appBuild)
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
@@ -37,25 +55,7 @@ require("v8").setFlagsFromString('--expose_gc'); global.gc = require("vm").runIn
 // Remove window animations
 app.commandLine.appendSwitch('wm-window-animations-disabled');
 
-const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
-const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
-
-const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
-
-const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
-
-const knownDisplaysPath = path.join(configFilesDir, `\\known-displays${(isDev ? "-dev" : "")}.json`)
 let updateKnownDisplaysTimeout
-
-// Handle multiple instances before continuing
-const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
-if (!singleInstanceLock) {
-  try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath, settingsPath).then(() => app.exit()) } catch (e) { app.exit() }
-  return false
-} else {
-  console.log("Starting Twinkle Tray...")
-  app.on('second-instance', handleCommandLine)
-}
 
 const monitorRules = require('./monitor-rules.json')
 const knownDDCBrightnessVCPs = monitorRules?.ddcBrightnessCodes
@@ -732,7 +732,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       }, 500)
     }
 
-    if (settings.udpEnabled === true) {
+    if (true || settings.udpEnabled === true) {
       if (!udp.server) udp.start(settings.udpPort);
     } else if (settings.udpEnabled === false) {
       if (!udp.server) udp.stop();
@@ -4173,6 +4173,150 @@ ipcMain.on('get-mica-wallpaper', sendMicaWallpaper)
 
 
 
+//
+//
+//  Server common
+//
+//
+
+
+const handleClientMessage = async (message, remote) => {
+  const type = (remote ? `UDP` : `PIPE`)
+
+  try {
+    if(remote) {
+      console.log(`[${type}] Got: ${message} from ${remote.address}:${remote.port}`)
+    } else {
+      console.log(`[${type}] Got: ${message}`)
+    }
+    
+    const data = JSON.parse(message)
+    if (typeof data !== "object" || !data?.type) {
+      throw(`[${type}] Invalid command`)
+    }
+
+    console.log(data.key, settings.udpKey)
+    if (remote && data.key !== settings.udpKey) {
+      throw("[UDP] Missing or invalid key")
+    }
+
+    const findMonitor = monitor => {
+      try {
+        const searchID = monitor.toLowerCase()
+        const monID = Object.keys(monitors).find(id => {
+          return id.toLowerCase().indexOf(searchID) >= 0
+        })
+        return monitors[monID]
+      } catch (e) { return false }
+    }
+
+    const determineVCP = vcp => {
+      switch (vcp) {
+        case "brightness": return 0x10;
+        case "contrast": return 0x12;
+        case "power": return 0xD6;
+        case "volume": return 0x62;
+        default: return parseInt(vcp);
+      }
+    }
+
+
+    // Run recieved command
+
+    if (data.type === "list") {
+      // data.type === "list"
+      // List all current monitors
+      return JSON.stringify(monitors)
+    } else if (data.type === "get") {
+      // data.type === "get"
+      // Get property of specific monitor
+
+      if (!(data.monitor && data.property)) throw("Missing parameter!");
+
+      const monitor = findMonitor(data.monitor)
+      if (!monitor) throw("Couldn't find monitor!")
+
+      const getMonitorProperty = (monitor, property) => {
+        try {
+          const { features } = monitor
+          switch (property) {
+            case "brightness": return monitor.brightness;
+            case "maxbrightness": return monitor.brightnessMax;
+            case "rawbrightness": return monitor.brightnessRaw;
+            case "brightnesstype": return monitor.brightnessType;
+            case "id": return monitor.id;
+            case "key": return monitor.key;
+            case "name": return monitor.name;
+            case "hwid": return monitor.hwid.join("#");
+            case "name": return monitor.name;
+            case "type": return monitor.type;
+            case "connector": return monitor.connector;
+            case "serial": return monitor.serial;
+            case "order": return monitor.order;
+            case "contrast": return (features.contrast ? features.contrast[0] : -1);
+            case "maxcontrast": return (features.contrast ? features.contrast[1] : -1);
+            case "powerstate": return (features.powerState ? features.powerState[0] : -1);
+            case "maxpowerstate": return (features.powerState ? features.powerState[1] : -1);
+            case "volume": return (features.volume ? features.volume[0] : -1);
+            case "maxvolume": return (features.volume ? features.volume[1] : -1);
+            default: throw("Invalid property!");
+          }
+        } catch (e) {
+          throw(`[${type}]  Error getting monitor property`, e)
+        }
+      }
+
+      if (data.property === "vcp") {
+        return await getVCP(monitor, data.code)
+      } else {
+        return getMonitorProperty(monitor, data.property)
+      }
+
+    } else if (data.type === "set" || data.type === "setvcp") {
+      // data.type === "set"
+      // Set property of specific monitor
+
+      if (!(data.monitor && data.vcp)) throw("Missing parameters!");
+
+      const value = parseInt(data.value)
+
+      if (data.monitor === "all") {
+        updateAllBrightness(value, (data.mode ?? "set"))
+        return true
+      }
+
+      const monitor = findMonitor(data.monitor)
+      if (!monitor) throw("Couldn't find monitor!");
+
+      if (data.vcp === "brightness") {
+        const newBrightness = minMax(data.mode !== "offset" ? value : monitor.brightness + value)
+        updateBrightnessThrottle(monitor.id, newBrightness, true)
+      } else {
+        monitorsThread.send({
+          type: "vcp",
+          code: determineVCP(data.vcp),
+          value: value,
+          monitor: monitor.hwid.join("#")
+        })
+      }
+
+    } else if (data.type === "checktime") {
+      // data.type === "checktime"
+      // Use time adjustments
+      applyCurrentAdjustmentEvent(true, false)
+    } else if (data.type === "refresh") {
+      // data.type === "refresh"
+      // Force refresh monitors
+      refreshMonitors(true, true)
+    }
+
+  } catch (e) {
+    console.log(`[${type}] Error:`, e)
+  }
+}
+
+
+
 
 //
 //
@@ -4196,137 +4340,13 @@ const udp = {
     });
 
     server.on('message', async (message, remote) => {
-
       const sendResponse = response => server.send(`${response}`, remote.port, remote.address)
-
       try {
-        console.log(`[UDP] Got UDP: ${message} from ${remote.address}:${remote.port}`)
-        const data = JSON.parse(message)
-        if (typeof data !== "object" || !data?.type) {
-          console.log("[UDP] Invalid UDP command")
-          return false
-        }
-
-        if (data.key !== settings.udpKey) {
-          console.log("[UDP] Missing or invalid key")
-          return false
-        }
-
-        const findMonitor = monitor => {
-          try {
-            const searchID = monitor.toLowerCase()
-            const monID = Object.keys(monitors).find(id => {
-              return id.toLowerCase().indexOf(searchID) >= 0
-            })
-            return monitors[monID]
-          } catch (e) { return false }
-        }
-
-        const determineVCP = vcp => {
-          switch (vcp) {
-            case "brightness": return 0x10;
-            case "contrast": return 0x12;
-            case "power": return 0xD6;
-            case "volume": return 0x62;
-            default: return parseInt(vcp);
-          }
-        }
-
-
-        // Run recieved command
-
-        if (data.type === "list") {
-          // data.type === "list"
-          // List all current monitors
-          sendResponse(JSON.stringify(monitors))
-        } else if (data.type === "get") {
-          // data.type === "get"
-          // Get property of specific monitor
-
-          if (!(data.monitor && data.property)) return false;
-
-          const monitor = findMonitor(data.monitor)
-          if (!monitor) return false;
-
-          const getMonitorProperty = (monitor, property) => {
-            try {
-              const { features } = monitor
-              switch (property) {
-                case "brightness": return monitor.brightness;
-                case "maxbrightness": return monitor.brightnessMax;
-                case "rawbrightness": return monitor.brightnessRaw;
-                case "brightnesstype": return monitor.brightnessType;
-                case "id": return monitor.id;
-                case "key": return monitor.key;
-                case "name": return monitor.name;
-                case "hwid": return monitor.hwid.join("#");
-                case "name": return monitor.name;
-                case "type": return monitor.type;
-                case "connector": return monitor.connector;
-                case "serial": return monitor.serial;
-                case "order": return monitor.order;
-                case "contrast": return (features.contrast ? features.contrast[0] : -1);
-                case "maxcontrast": return (features.contrast ? features.contrast[1] : -1);
-                case "powerstate": return (features.powerState ? features.powerState[0] : -1);
-                case "maxpowerstate": return (features.powerState ? features.powerState[1] : -1);
-                case "volume": return (features.volume ? features.volume[0] : -1);
-                case "maxvolume": return (features.volume ? features.volume[1] : -1);
-                default: return "-1";
-              }
-            } catch (e) {
-              console.log("[UDP] Error getting monitor property", e)
-              return -1
-            }
-          }
-
-          if (data.property === "vcp") {
-            sendResponse(await getVCP(monitor, data.code))
-          } else {
-            sendResponse(getMonitorProperty(monitor, data.property))
-          }
-
-        } else if (data.type === "set" || data.type === "setvcp") {
-          // data.type === "set"
-          // Set property of specific monitor
-
-          if (!(data.monitor && data.vcp)) return false;
-
-          const value = parseInt(data.value)
-
-          if (data.monitor === "all") {
-            updateAllBrightness(value, (data.mode ?? "set"))
-            return true
-          }
-
-          const monitor = findMonitor(data.monitor)
-          if (!monitor) return false;
-
-          if (data.vcp === "brightness") {
-            const newBrightness = minMax(data.mode !== "offset" ? value : monitor.brightness + value)
-            updateBrightnessThrottle(monitor.id, newBrightness, true)
-          } else {
-            monitorsThread.send({
-              type: "vcp",
-              code: determineVCP(data.vcp),
-              value: value,
-              monitor: monitor.hwid.join("#")
-            })
-          }
-
-        } else if (data.type === "checktime") {
-          // data.type === "checktime"
-          // Use time adjustments
-          applyCurrentAdjustmentEvent(true, false)
-        } else if (data.type === "refresh") {
-          // data.type === "refresh"
-          // Force refresh monitors
-          refreshMonitors(true, true)
-        }
-
-      } catch (e) {
-        console.log('[UDP] Error:', e)
+        const response = await handleClientMessage(message, remote)
+        sendResponse(response)
+      } catch(e) {
+        console.log(e)
       }
-
     });
 
     server.on('listening', () => {
@@ -4362,3 +4382,62 @@ const udp = {
     }
   }
 }
+
+//
+//
+//  Named Pipe Server
+//
+//
+
+const pipe = {
+  server: false,
+  start: function () {
+    if (pipe.server) return false;
+
+    console.log("[PIPE] Starting named pipe...")
+
+    const server = require('net').createServer(function(stream) {
+      stream.on('data', async function(message) {
+
+        console.log('server data:', message.toString());
+        const sendResponse = response => stream.write(`${response}`)
+        try {
+          const response = await handleClientMessage(message)
+          sendResponse(response)
+        } catch(e) {
+          console.log(e)
+        }
+
+      });
+    });
+
+    pipe.server = server
+
+    server.on('error', error => {
+      console.log(`[PIPE] Server error:\n${error.stack}`)
+      server.close()
+    });
+
+    server.on('listening', () => {
+      const connection = server.address();
+      console.log(`[PIPE] Server listening at ${connection.toString()}`);
+    });
+
+    // Bind to default port, or another if it fails
+    try {
+      server.listen('\\\\.\\pipe\\twinkle-tray\\cmds');
+    } catch (e) {
+      console.log(e)
+    }
+
+  },
+  stop: function () {
+    try {
+      if (pipe.server) pipe.server.close();
+    } catch (e) {
+      console.log("[PIPE] Couldn't close server.")
+    }
+  }
+}
+
+pipe.start()

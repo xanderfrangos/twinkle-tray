@@ -1,7 +1,7 @@
 console.log("\x1b[45mMonitor.js starting. If you see this more than once, something bad happened.\x1b[0m")
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
-const { exec } = require('child_process');
+const { exec } = require("child_process");
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_LOW)
 
 
@@ -123,6 +123,8 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                     console.log("Failed to refresh WMI Brightness", e)
                 }
             }
+            
+            await getStudioDisplay(monitors);
 
             // Hide internal
             if(settings?.hideClosedLid) {
@@ -192,6 +194,8 @@ getAllMonitors = async () => {
     } else {
         console.log("getMonitorsWin32() skipped due to previous failure.")
     }
+
+    await getStudioDisplay(foundMonitors);
 
     // DDC/CI Brightness + Features
     try {
@@ -300,6 +304,39 @@ getAllMonitors = async () => {
         console.log(`Monitors found: ${Object.keys(foundMonitors)}`)
     } catch(e) { }
     return foundMonitors
+}
+
+getStudioDisplay = async (monitors) => {
+    try {
+        const sdctl = require("studio-display-control")
+        for (const display of sdctl.getDisplays()) {
+            const serial = await display.getSerialNumber();
+            updateDisplay(monitors, serial, {
+                name: "Apple Studio Display",
+                type: "studio-display",
+                key: serial,
+                id: serial,
+                serial,
+                brightness: await display.getBrightness()
+            });
+        }
+    } catch (e) {
+        console.log("\x1b[41m" + "getStudioDisplay(): failed to access Studio Display" + "\x1b[0m", e)
+    }
+}
+
+setStudioDisplayBrightness = async (serial, brightness) => {
+    try {
+        const sdctl = require("studio-display-control")
+        for (const monitor of sdctl.getDisplays()) {
+            const s = await monitor.getSerialNumber();
+            if (s === serial) {
+                await monitor.setBrightness(brightness);
+            }
+        }
+    } catch (e) {
+        console.log("\x1b[41m" + "setStudioDisplayBrightness(): failed to set brightness" + "\x1b[0m", e)
+    }
 }
 
 let wmiFailed = false
@@ -579,7 +616,11 @@ function setBrightness(brightness, id) {
         if (id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             monitor.brightness = brightness
-            setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
+            if (monitor.type == "studio-display") {
+                setStudioDisplayBrightness(id, brightness)
+            } else {
+                setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
+            }
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness

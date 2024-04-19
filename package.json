@@ -43,6 +43,7 @@
     "node-fetch": "^2.6.1",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
     "sharp": "^0.30.7",
+    "studio-display-control": "^0.2.0",
     "win32-displayconfig": "^0.1.0",
     "windows-accent-colors": "^1.0.0",
     "wmi-bridge": "file:src/modules/wmi-bridge",

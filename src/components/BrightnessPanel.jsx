@@ -24,7 +24,7 @@ export default class BrightnessPanel extends PureComponent {
         let lastValidMonitor
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
            lastValidMonitor = monitor 
           }
         }
@@ -52,7 +52,7 @@ export default class BrightnessPanel extends PureComponent {
           if (monitor.type == "none" || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
 
               let hasFeatures = true
               let featureCount = 0

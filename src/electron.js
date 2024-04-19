@@ -681,7 +681,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1) 
         const monitor = profile[hwid]
   
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
           updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }
@@ -819,7 +819,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -1444,7 +1444,7 @@ function updateBrightness(index, level, useCap = true, vcp = "brightness", clear
 
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
 
-    if (monitor.type == "ddcci" && vcp === "brightness") {
+    if ((monitor.type == "ddcci" && vcp === "brightness") || monitor.type === "studio-display") {
       monitor.brightness = level
       monitor.brightnessRaw = normalized
       monitorsThread.send({

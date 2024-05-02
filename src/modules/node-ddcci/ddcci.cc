@@ -465,7 +465,6 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
 {
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
-    std::map<std::string, std::string> newCapabilities;
 
     d("Getting all display devices...");
 
@@ -554,9 +553,19 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
             }
 
             // Test DDC/CI
+            bool saveCapabilities = false;
             if (newMonitor.ddcciSupported == false) {
-                std::string result = getPhysicalHandleResults(
-                  newMonitor.handle, validationMethod);
+                std::string result = "invalid";
+
+                if (capabilities.find(newMonitor.deviceKey) == capabilities.end()) {
+                    // Capabilities string not found, read it
+                    result = getPhysicalHandleResults(newMonitor.handle, validationMethod);
+                    saveCapabilities = true;
+                } else {
+                    // Reuse capabilities string
+                    result = capabilities.find(newMonitor.deviceKey)->second;
+                    p("-- -- Using previous capabilities string.");  
+                }
 
                 newMonitor.result = result;
                 p("-- -- DDC/CI: " + result);                
@@ -575,9 +584,9 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
             newHandles.insert({ newMonitor.deviceKey, newMonitor.handle });
 
             // Add to capabilities list
-            if (validationMethod == "accurate" && newMonitor.result != "ok"
+            if (saveCapabilities && validationMethod == "accurate" && newMonitor.result != "ok"
                 && newMonitor.result != "invalid") {
-                newCapabilities.insert(
+                capabilities.insert(
                     { newMonitor.deviceKey, newMonitor.result });
             }
         }
@@ -586,7 +595,6 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
     cleanMonitorHandles(newHandles);
     handles = newHandles;
     physicalMonitorHandles = newPhysicalHandles;
-    capabilities = newCapabilities;
 }
 
 void

@@ -85,6 +85,27 @@ clearMonitorData()
     }
 }
 
+void
+cleanMonitorHandles(std::map<std::string, HANDLE> newHandles)
+{
+    if (!handles.empty()) {
+        for (auto const& handle : handles) {
+            bool found = false;
+            for (auto const& newHandle : newHandles) {
+                if (handle.second == newHandle.second) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                DestroyPhysicalMonitor(handle.second);
+                handles.erase(handle.first);
+            }
+        }
+        handles.clear();
+    }
+}
+
 std::string
 getPhysicalMonitorName(HMONITOR handle)
 {
@@ -555,7 +576,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
         }
     }
 
-    clearMonitorData();
+    cleanMonitorHandles(newHandles);
     handles = newHandles;
     physicalMonitorHandles = newPhysicalHandles;
     capabilities = newCapabilities;

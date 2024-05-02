@@ -578,7 +578,7 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
 
             // Detect valid VCP codes for display if not already available
             try {
-                if(ddcciMethod !== "legacy" && !monitorReports[monitor]) {
+                if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
                     const reportRaw = ddcci.getCapabilitiesRaw(monitor)
                     if(reportRaw) {
                         monitorReportsRaw[monitor] = reportRaw

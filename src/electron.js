@@ -926,7 +926,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
         const monitor = profile[hwid]
 
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
           if(skipBadDisplays && monitorRules.skipReapply.includes(monitor.hwid[1])) continue; // Skip bad displays
           updateBrightness(monitor.id, monitor.brightness)
         }
@@ -1162,7 +1162,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -1851,6 +1851,14 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
             }
           }
         }
+      } else if (monitor.type === "studio-display") {
+        monitor.brightness = level
+        monitor.brightnessRaw = normalized
+        monitorsThread.send({
+          type: "brightness",
+          brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+          id: monitor.id
+        })
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {

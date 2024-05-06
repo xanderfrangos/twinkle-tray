@@ -1,8 +1,8 @@
 {
-    "LANGUAGE": "",
-    "GENERIC_OK": "",
-    "GENERIC_CANCEL": "",
-    "GENERIC_SAVE": "",
+    "LANGUAGE": "Lietuvių",
+    "GENERIC_OK": "Gerai",
+    "GENERIC_CANCEL": "Atšaukti",
+    "GENERIC_SAVE": "Išsaugoti",
     "GENERIC_CLEAR": "",
     "GENERIC_OFF": "",
     "GENERIC_ON": "",

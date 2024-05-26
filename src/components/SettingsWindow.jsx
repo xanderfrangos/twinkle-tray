@@ -1050,6 +1050,7 @@ export default class SettingsWindow extends PureComponent {
                                     <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TROUBLESHOOTING")}</div>
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE")} description={T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} expandable={true}>
+                                        <SettingsChild title={"Apple Studio Displays"} input={this.renderToggle("disableAppleStudio", true, "right", true)} />
                                         <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC", true, "right", true)} />
                                         <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI", true, "right", true)} />
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />

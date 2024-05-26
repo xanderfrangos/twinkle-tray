@@ -445,6 +445,7 @@ const defaultSettings = {
   checkVCPWaitMS: 20,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
+  disableAppleStudio: false,
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,

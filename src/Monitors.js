@@ -41,6 +41,7 @@ process.on('message', async (data) => {
             settings = data.settings
 
             // Overrides
+            if (settings?.disableAppleStudio) appleStudioUnavailable = true;
             if (settings?.disableWMIC) wmicUnavailable = true;
             if (settings?.disableWMI) wmiFailed = true;
             if (settings?.disableWin32) win32Failed = true;
@@ -74,6 +75,7 @@ process.on('message', async (data) => {
                     lastDDCCIList,
                     lastWMI,
                     lastWin32,
+                    monitorsAppleStudio,
                     monitorReports,
                     monitorReportsRaw,
                     lastRefresh,
@@ -91,6 +93,7 @@ let skipTest = (process.argv.indexOf("--skiptest=true") >= 0)
 
 let monitors = false
 let monitorNames = []
+let monitorsAppleStudio = {}
 let monitorsWin32 = {}
 let monitorReports = {}
 let monitorReportsRaw = {}
@@ -172,8 +175,17 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                     console.log("\x1b[41m" + "getBrightnessWMI() failed!" + "\x1b[0m", e)
                 }
             }
-            
-            await getStudioDisplay(monitors);
+
+            // Apple Studio displays
+            if (!appleStudioUnavailable) {
+                try {
+                    startTime = process.hrtime.bigint()
+                    monitorsAppleStudio = await getStudioDisplay(monitors);
+                    console.log(`getStudioDisplay() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+                } catch (e) {
+                    console.log("\x1b[41m" + "getStudioDisplay() failed!" + "\x1b[0m", e)
+                }
+            }
 
             // Hide internal
             if (settings?.hideClosedLid) {
@@ -244,7 +256,19 @@ getAllMonitors = async (ddcciMethod = "default") => {
         console.log("getMonitorsWin32() skipped due to previous failure.")
     }
 
-    await getStudioDisplay(foundMonitors);
+    // List Apple Studio displays
+    if (!appleStudioUnavailable) {
+        try {
+            startTime = process.hrtime.bigint()
+            monitorsAppleStudio = await getStudioDisplay(foundMonitors);
+            console.log(`getStudioDisplay() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+        } catch (e) {
+            console.log("\x1b[41m" + "getStudioDisplay() failed!" + "\x1b[0m", e)
+        }
+    } else {
+        console.log("getStudioDisplay() skipped due to previous failure.")
+    }
+    
 
     // DDC/CI Brightness + Features
     try {
@@ -371,23 +395,36 @@ function determineDDCCIMethod() {
     return ddcciMethod
 }
 
+let appleStudioUnavailable = false
 getStudioDisplay = async (monitors) => {
     try {
         const sdctl = require("studio-display-control")
+        const displays = {}
+        let count = 0
         for (const display of sdctl.getDisplays()) {
             const serial = await display.getSerialNumber();
+            const hwid = [
+                "\\\\?\\DISPLAY",
+                "APPAE3A",
+                `APLSTD-${serial}-NUM${count}`
+            ]
             updateDisplay(monitors, serial, {
                 name: "Apple Studio Display",
                 type: "studio-display",
-                key: serial,
-                id: serial,
+                key: hwid[2],
+                id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                hwid,
                 serial,
                 brightness: await display.getBrightness()
             });
+            displays[hwid[2]] = display
+            count++
         }
+        return displays
     } catch (e) {
         console.log("\x1b[41m" + "getStudioDisplay(): failed to access Studio Display" + "\x1b[0m", e)
     }
+    return {}
 }
 
 setStudioDisplayBrightness = async (serial, brightness) => {
@@ -785,7 +822,7 @@ function setBrightness(brightness, id) {
             if(monitor) {
                 monitor.brightness = brightness
                 if (monitor.type == "studio-display") {
-                    setStudioDisplayBrightness(id, brightness)
+                    setStudioDisplayBrightness(monitor.serial, brightness)
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
                 }

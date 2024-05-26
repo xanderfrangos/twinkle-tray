@@ -3532,7 +3532,7 @@ function handleMonitorChange(t, e, d) {
 
     // Reset all known displays
     await refreshMonitors(true)
-    await refreshMonitors(true)
+
     if (!settings.disableAutoApply) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 

@@ -2583,10 +2583,14 @@ function startFocusTracking() {
 function windowMatchesProfile(window) {
   if (!window) return false;
   let foundProfile
-  if (settings.profiles?.length > 0) {
+  if (settings.profiles?.length && window.path?.length) {
     for (const profile of settings.profiles) {
-      if (profile.path?.length > 0 && window.path?.length > 0 && window.path.toLowerCase().indexOf(profile.path?.toLowerCase()) > -1) {
-        foundProfile = profile
+      if(profile.path?.length) {
+        for (const path of profile.path.split(',')) {
+          if (window.path.toLowerCase().indexOf(path.trim().toLowerCase()) > -1) {
+            foundProfile = profile
+          }
+        }
       }
     }
   }

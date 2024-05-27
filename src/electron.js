@@ -837,6 +837,40 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   }
 }
 
+// Check if given display should be skipped during brightness update
+const displaysMayBeIdleBlocks = []
+
+function blockBadDisplays(tag = "") {
+  const blockUUID = uuid()
+  displaysMayBeIdleBlocks.push(blockUUID)
+  const release = () => {
+    const found = displaysMayBeIdleBlocks.indexOf(blockUUID)
+    if(found >= 0) {
+      displaysMayBeIdleBlocks.splice(found, 1)
+      console.log(`\x1b[36mReleased block: ${blockUUID} ${tag} [${displaysMayBeIdleBlocks.length} left]\x1b[0m`)
+      return true
+    }
+    console.log(`\x1b[36mFailed to release block: ${blockUUID} ${tag}\x1b[0m`)
+    return false
+  }
+  console.log(`\x1b[36mStarted block: ${blockUUID} ${tag}\x1b[0m`)
+  return {
+    uuid: blockUUID,
+    release: async () => {
+      await Utils.wait(800)
+      return release()
+    }
+  }
+}
+
+function shouldSkipDisplay(monitorOrHwid1, skipEventCheck = false) {
+  if(!displaysMayBeIdleBlocks.length && !skipEventCheck) return false;
+
+  const hwid1 = (typeof monitorOrHwid1 === "string" ? monitorOrHwid1 : monitorOrHwid1?.hwid?.[1])
+  const inRules = monitorRules.skipReapply.includes(hwid1)
+  return inRules
+}
+
 // Save all known displays to disk for future use
 async function updateKnownDisplays(force = false, immediate = false) {
 
@@ -896,7 +930,7 @@ function getKnownDisplays(useCurrentMonitors) {
 }
 
 // Look up all known displays and re-apply last brightness
-function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1, skipBadDisplays = false) {
+function setKnownBrightness(useCurrentMonitors = false, useTransition = false, transitionSpeed = 1) {
 
   console.log(`\x1b[36mSetting brightness for known displays\x1b[0m`, useCurrentMonitors, useTransition, transitionSpeed)
 
@@ -915,7 +949,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
     for (const hwid in profile) {
       try {
         const monitor = profile[hwid]
-        if(skipBadDisplays && monitorRules.skipReapply.includes(monitor.hwid[1])) continue; // Skip bad displays
+        if(shouldSkipDisplay(monitor)) continue;
         transitionMonitors[monitor.id] = monitor.brightness
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
@@ -925,10 +959,10 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
     for (const hwid in profile) {
       try {
         const monitor = profile[hwid]
+        if(shouldSkipDisplay(monitor)) continue;
 
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-          if(skipBadDisplays && monitorRules.skipReapply.includes(monitor.hwid[1])) continue; // Skip bad displays
           updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }
@@ -1820,6 +1854,11 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     if (clearTransition && currentTransition) {
       clearInterval(currentTransition)
       currentTransition = null
+    }
+
+    if(shouldSkipDisplay(monitor)) {
+      console.log(`\x1b[31mSkipping monitor ${monitor.id} due to rules list\x1b[0m`)
+      return false
     }
 
     const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
@@ -3529,6 +3568,8 @@ function handleMonitorChange(t, e, d) {
 
   console.log("Hardware change detected.")
 
+  const block = blockBadDisplays("handleMonitorChange")
+
   // Defer actions for a moment just in case of repeat events
   if (handleChangeTimeout2) {
     clearTimeout(handleChangeTimeout2)
@@ -3547,13 +3588,19 @@ function handleMonitorChange(t, e, d) {
     handleChangeTimeout2 = false
   }, parseInt(settings.hardwareRestoreSeconds || 5) * 1000)
 
+  setTimeout(() => {
+    block.release()
+  }, parseInt(settings.hardwareRestoreSeconds || 5) * 1000)
+
 }
 
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
+  const block = blockBadDisplays("powerMonitor:resume")
   setTimeout(
     () => {
+      block.release()
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
         //restartPanel()
@@ -3615,6 +3662,7 @@ let isUserIdle = false
 let userIdleInterval = false // Check if idle
 let userCheckingForActiveInterval = false // Check if came back
 let userIdleDimmed = false
+let idleMonitorBlock
 
 let idleMonitor = setInterval(idleCheckLong, 5000)
 let notIdleMonitor
@@ -3653,9 +3701,13 @@ function idleCheckShort() {
     if (!userIdleDimmed && settings.detectIdleTimeEnabled && !settings.disableAutoApply && idleTime >= getIdleSettingValue()) {
       console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
       userIdleDimmed = true
+      idleMonitorBlock?.release?.()
+      idleMonitorBlock = blockBadDisplays("idle:start")
       try {
         Object.values(monitors)?.forEach((monitor) => {
-          updateBrightness(monitor.id, 0, true, "brightness")
+          if(!shouldSkipDisplay(monitor, true)) {
+            updateBrightness(monitor.id, 0, true, "brightness")
+          }
         })
       } catch (e) {
         console.log(`Error dimming displays`, e)
@@ -3671,18 +3723,24 @@ function idleCheckShort() {
       // Different behavior depending on if idle dimming is on
       if (settings.detectIdleTimeEnabled) {
         // Always restore when dimmed
+        const block = blockBadDisplays("idle:restore")
         setKnownBrightness(false)
+        block.release()
       } else {
         // Not dimmed, try checking ToD first. sKB as backup.
         const foundEvent = applyCurrentAdjustmentEvent(true, true)
         if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false);
       }
 
+      idleMonitorBlock?.release?.()
+
       // Wait a little longer, re-apply known brightness in case monitors take a moment, and finish up
       setTimeout(() => {
         isUserIdle = false
         userIdleDimmed = false
         lastIdleTime = 1
+
+        const block = blockBadDisplays("idle:end")
 
         // Similar logic to above
         if (settings.detectIdleTimeEnabled) {
@@ -3694,6 +3752,9 @@ function idleCheckShort() {
           const foundEvent = applyCurrentAdjustmentEvent(true, true)
           if (!foundEvent && !settings.disableAutoApply) setKnownBrightness(false)
         }
+
+        block.release()
+
       }, parseInt(settings.idleRestoreSeconds || 4) * 1000)
 
     }

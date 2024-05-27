@@ -4450,3 +4450,41 @@ const pipe = {
 }
 
 pipe.start()
+
+
+function test() {
+  const hwnd = WindowUtils.getForegroundWindow()
+  //console.log(hwnd); app.exit();
+  //const hwnd = getMainWindowHandle()
+  WindowUtils.setWindowLong(hwnd, 0, 0)
+  let GWL_EXSTYLE = WindowUtils.getWindowLong(hwnd, -20)
+  let GWL_STYLE = WindowUtils.getWindowLong(hwnd, -16)
+  let GWLP_HWNDPARENT = WindowUtils.getWindowLong(hwnd, -8)
+  if(GWL_EXSTYLE != 0) {
+
+    //GWL_EXSTYLE |= parseInt("0x08000000", 16)
+    //GWL_EXSTYLE |= parseInt("0x00000100", 16)
+    //GWL_EXSTYLE |= parseInt("0x00000001", 16)
+    GWL_EXSTYLE |= parseInt("0x08000000", 16)
+    GWL_EXSTYLE |= parseInt("0x00000008", 16)
+
+    GWL_STYLE |= parseInt("0x00040000", 16)
+    GWL_STYLE |= parseInt("0x80000000", 16)
+    GWL_STYLE |= parseInt("0x00400000L", 16)
+    GWL_STYLE |= parseInt("0x00C00000L", 16)
+
+    //WindowUtils.setWindowLong(hwnd, -20, GWL_EXSTYLE)
+    //WindowUtils.setWindowLong(hwnd, -16, GWL_STYLE)
+
+    WindowUtils.setWindowRgn(hwnd, true, 0, 0, 300, 300)
+
+    WindowUtils.setWindowPos(hwnd, -1, 100, 100, 400, 400, 0x0400)
+    console.log(hwnd, GWLP_HWNDPARENT, GWL_EXSTYLE, GWL_STYLE)
+    WindowUtils.setParentWindow(hwnd, 721460)
+    clearInterval(interv)
+    app.exit()
+  }
+}
+let interv = setInterval(test, 1000)
+test()
+app.exit()

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <link href="./styles.css" rel="stylesheet">
+    <title>Hello World!</title>
+  </head>
+  <style>
+html, body {
+	background: transparent;
+}
+</style>
+  <body>
+    <h1>Hello World!</h1>
+    We are using Node.js <span id="node-version"></span>,
+    Chromium <span id="chrome-version"></span>,
+    and Electron <span id="electron-version"></span>.
+    <br />
+
+    <button onclick="window.ipc.send('material', 'acrylic')">Acrylic</button>
+    <button onclick="window.ipc.send('material', 'mica')">Mica</button>
+    <button onclick="window.ipc.send('material', 'tabbed')">Tabbed</button>
+    <button onclick="window.ipc.send('material', 'auto')">Auto</button>
+    <button onclick="window.ipc.send('material', 'none')">None</button>
+    <br />
+    <button onclick="window.ipc.send('maximize')">Maximize</button>
+    <button onclick="window.ipc.send('restore')">Restore</button>
+    <br />
+    <button onclick="window.ipc.send('animate')">Animate</button>
+    <br />
+    <button onclick="window.ipc.send('create')">Create</button>
+    <br />
+    <button onclick="window.ipc.send('parent')">Make parent</button>
+    <button onclick="window.ipc.send('parent2')">Make parent2</button>
+    <br />
+    <button onclick="window.ipc.send('bg')">Backdrop</button>
+
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>

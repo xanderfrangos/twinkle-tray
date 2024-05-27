@@ -456,6 +456,7 @@ const defaultSettings = {
   disableMouseEvents: false,
   disableThrottling: false,
   userDDCBrightnessVCPs: {},
+  userSkipReapply: [],
   preferredDDCCIMethod: "accurate",
   lastDetectedDDCCIMethod: "none",
   forceLowPowerGPU: false,
@@ -867,7 +868,14 @@ function shouldSkipDisplay(monitorOrHwid1, skipEventCheck = false) {
   if(!displaysMayBeIdleBlocks.length && !skipEventCheck) return false;
 
   const hwid1 = (typeof monitorOrHwid1 === "string" ? monitorOrHwid1 : monitorOrHwid1?.hwid?.[1])
-  const inRules = monitorRules.skipReapply.includes(hwid1)
+  let rules = []
+  rules = rules.concat(monitorRules.skipReapply)
+  try {
+    rules = rules.concat(settings.userSkipReapply)
+  } catch(e) {
+    console.log("Error merging userSkipReapply:", e)
+  }
+  const inRules = rules.includes(hwid1)
   return inRules
 }
 

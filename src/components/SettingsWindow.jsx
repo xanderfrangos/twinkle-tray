@@ -861,6 +861,39 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getSkipRestoreMonitors = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setSkipRestoreMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.userSkipReapply?.indexOf(monitor.hwid[1]) >= 0 ? true : false)} data-checked={(this.state.rawSettings?.userSkipReapply?.indexOf(monitor.hwid[1]) >= 0 ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    setSkipRestoreMonitor = (value, monitor) => {
+        const userSkipReapply = this.state.rawSettings?.userSkipReapply
+        const index = this.state.rawSettings?.userSkipReapply?.indexOf(monitor.hwid[1])
+        if(index >= 0 && !value) {
+            userSkipReapply.splice(index, 1)
+        } else if(index === -1 && value) {
+            userSkipReapply.push(monitor.hwid[1])
+        }
+        this.setSetting("userSkipReapply", userSkipReapply)
+    }
+
 
 
 
@@ -1080,6 +1113,10 @@ export default class SettingsWindow extends PureComponent {
                                     </SettingsOption>
 
                                     <SettingsOption title={"Auto-apply brightness"} description={"If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, disabling this may help."} input={this.renderToggle("disableAutoApply", undefined, undefined, true)} />
+
+                                    <SettingsOption title={"Skip auto-apply to specific monitors"} description={"Disable auto-applying known brightness after all hardware/power events for specific monitors. This include the idle detection feature."} expandable={true}>
+                                        {this.getSkipRestoreMonitors()}
+                                    </SettingsOption>
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />
 

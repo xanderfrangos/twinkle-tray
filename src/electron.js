@@ -439,6 +439,7 @@ const defaultSettings = {
   detectIdleTimeEnabled: false,
   detectIdleTimeSeconds: 0,
   detectIdleTimeMinutes: 5,
+  detectIdleCheckFullscreen: true,
   idleRestoreSeconds: 0,
   wakeRestoreSeconds: 0,
   hardwareRestoreSeconds: 0,
@@ -3702,11 +3703,23 @@ async function startIdleCheckShort() {
   notIdleMonitor = setInterval(idleCheckShort, 1000)
 }
 
+function isFocusedWindowFullscreen() {
+  try {
+    if(!settings.detectIdleCheckFullscreen) return false;
+    const focusedHwnd = WindowUtils.getForegroundWindow()
+    const isFullscreen = WindowUtils.getWindowFullscreen(focusedHwnd)
+    return isFullscreen
+  } catch(e) {
+    console.log(e)
+    return false
+  }
+}
+
 function idleCheckShort() {
   try {
     const idleTime = powerMonitor.getSystemIdleTime()
 
-    if (!userIdleDimmed && settings.detectIdleTimeEnabled && !settings.disableAutoApply && idleTime >= getIdleSettingValue()) {
+    if (!userIdleDimmed && settings.detectIdleTimeEnabled && !settings.disableAutoApply && idleTime >= getIdleSettingValue() && !isFocusedWindowFullscreen()) {
       console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
       userIdleDimmed = true
       idleMonitorBlock?.release?.()

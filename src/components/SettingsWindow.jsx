@@ -1142,6 +1142,7 @@ export default class SettingsWindow extends PureComponent {
                                                 </div>
                                             } />
                                     </SettingsOption>
+                                    <SettingsOption title={"Fullscreen apps are never idle"} description={"Fullscreen apps block idle detection. This only applies to the focused window."} input={this.renderToggle("detectIdleCheckFullscreen")} />
                                 </div>
                             </SettingsPage>
 

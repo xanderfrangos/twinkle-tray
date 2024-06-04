@@ -1580,7 +1580,7 @@ function ActionItem(props) {
                 return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
             } else {
                 return Object.values(monitors).map((monitor, index) => {
-                    if(monitor.type !== "ddcci") return null;
+                    if(monitor.type === "none") return null;
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {

@@ -75,14 +75,14 @@ export default class Slider extends Component {
         const max = (this.props.max || 100) * 1
         const level = this.cap(this.props.level)
         return (
-            <div className="monitor-item">
+            <div className="monitor-item" onWheel={this.handleWheel}>
                 {this.getName()}
                 <div className="input--range">
                     <div className="rangeGroup">
-                        <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} onWheel={this.handleWheel} className="range" />
+                        <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} className="range" />
                         <div className="progress" style={this.progressStyle()}></div>
                     </div>
-                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} onWheel={this.handleWheel} className="val" />
+                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} className="val" />
                 </div>
             </div>
         );

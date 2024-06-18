@@ -12,7 +12,7 @@ export default class Slider extends Component {
 
     handleWheel = (event) => {
         if (this.props.scrolling === false) return false;
-        this.setState({ level: this.cap((this.state.level * 1) + Math.round(event.deltaY * -1 * 0.01)) }, this.fireChange)
+        this.setState({ level: this.cap((this.state.level * 1) + Math.round(event.deltaY * -1 * 0.02)) }, this.fireChange)
     }
 
     fireChange = () => {

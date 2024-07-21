@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { useObject } from "../hooks/useObject"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
+import VCP from "../modules/node-ddcci/vcp"
 const ignoreCodes = ["0x10", "0x12", "0x13", "0x62", "0xD6"]
 
 const deleteIcon = (<span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span>)
@@ -87,9 +88,36 @@ export default function MonitorFeatures(props) {
             }
         }
 
+        if(monitor.vcpCodes && typeof monitor.vcpCodes === 'object') {
+            const list = []
+            for(const code in monitor.vcpCodes) {
+                list.push(
+                    <div className="vcp-code" key={code}><b>{code}</b>: {findVCPCodeName(code) || "???"}
+                        {
+                            monitor.vcpCodes[code].length
+                            ? <div className="supported-values">{T.t("SETTINGS_FEATURES_VCP_EXPECTED")}: {monitor.vcpCodes[code].toString()}</div> 
+                            : ""
+                        }
+                    </div>
+                )
+            }
+            if(list) {
+                extraHTML.push(
+                    <SettingsOption className="monitor-feature-item" key={"vcp-codes"} description={T.t("SETTINGS_FEATURES_VCP_LIST_TITLE")} expandable={true} forceExpandable={true}>
+                        <SettingsChild>
+                            <div className="detected-vcp-codes">
+                                <div className="vcp-code">⚠️ {T.t("SETTINGS_FEATURES_VCP_LIST_DESC")}<br /><br /></div>
+                                {list}
+                            </div>
+                        </SettingsChild>
+                    </SettingsOption>
+                )
+            }
+        }
+
         extraHTML.push(
             <div className="input-row" key="add">
-                <p><a onClick={() => {props.onAddFeature()}} className="button">+ Add Feature</a></p>
+                <p><a onClick={() => {props.onAddFeature()}} className="button">+ {T.t("SETTINGS_FEATURES_ADD")}</a></p>
             </div>
         )
 
@@ -251,4 +279,13 @@ function WindowsIconsOptions(props) {
     return windowsIcons.map(icon => {
         return (<option style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`, fontSize: "18px"}} key={icon} value={icon} dangerouslySetInnerHTML={{__html: `&#x${icon};` }}></option>)
     })
+}
+
+function findVCPCodeName(code) {
+    for(const name in VCP) {
+        if(VCP[name] == code) {
+            return name
+        }
+    }
+    return false
 }

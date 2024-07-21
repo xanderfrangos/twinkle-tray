@@ -13,7 +13,7 @@ export function SettingsOption(props) {
 
     return (
         <SafeRender>
-            <div className={className} data-expandable={props.expandable} data-expanded={expanded}>
+            <div className={className} data-expandable={props.expandable} data-force-expandable={props.forceExpandable ?? false} data-expanded={expanded}>
                 <div className="parent-panel">
                     { icon }
                     <div className="content-area">

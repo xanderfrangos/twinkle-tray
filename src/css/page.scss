@@ -351,6 +351,21 @@ label {
     border-top: 1px solid var(--page-text-mid);
 }
 
+.detected-vcp-codes {
+
+    .vcp-code {
+
+        & + .vcp-code {
+            margin-top: 10px;
+        }
+    }
+
+    .supported-values {
+        font-size: 16px;
+        opacity: 0.7;
+    }
+}
+
 p {
     font-size: 14px;
     color: var(--page-text-mid);

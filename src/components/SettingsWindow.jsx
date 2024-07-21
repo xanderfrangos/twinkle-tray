@@ -1362,7 +1362,7 @@ export default class SettingsWindow extends PureComponent {
     
 
                                 <div className="pageSection debug">
-                                    <SettingsOption title="All Displays" expandable={true} input={<><a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a> <a className="button" onClick={() => window.ipc.send('flush-vcp-cache')}>Clear Cache</a></>}>
+                                    <SettingsOption title="All Displays" expandable={true} forceExpandable={true} input={<><a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a> <a className="button" onClick={() => window.ipc.send('flush-vcp-cache')}>Clear Cache</a></>}>
                                         <SettingsChild>
                                             {this.getDebugMonitors()}
                                         </SettingsChild>
@@ -1370,13 +1370,13 @@ export default class SettingsWindow extends PureComponent {
                                     
                                     <SettingsOption title="Save Report" description={"Save a text file with information about your monitors and settings for debugging."} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>Generate Report</a></>} />
 
-                                    <SettingsOption title="Settings" description={window.settingsPath} input={<a className="button" onClick={() => window.ipc.send('open-settings-file')}>Open Settings</a>} expandable={true}>
+                                    <SettingsOption title="Settings" description={window.settingsPath} input={<a className="button" onClick={() => window.ipc.send('open-settings-file')}>Open Settings</a>} expandable={true} forceExpandable={true}>
                                         <SettingsChild>
                                             <p style={{ whiteSpace: "pre-wrap", fontFamily: '"Cascadia Code", "Consolas", sans-serif' }}>{JSON.stringify(this.state.rawSettings, undefined, 2)}</p>
                                         </SettingsChild>
                                     </SettingsOption>     
                                     
-                                    <SettingsOption title="Raw Monitor Data" expandable={true}>
+                                    <SettingsOption title="Raw Monitor Data" expandable={true} forceExpandable={true}>
                                         <SettingsChild>
                                             <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(window.allMonitors, undefined, 2)}</pre>
                                         </SettingsChild>

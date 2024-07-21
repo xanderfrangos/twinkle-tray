@@ -205,7 +205,7 @@ body[data-is-win11="false"] {
         border-radius: 0;
         
         .parent-panel {
-            display: block;
+            //display: block;
             padding: 0;
 
             .input-area {
@@ -226,10 +226,6 @@ body[data-is-win11="false"] {
 
         }
 
-        .expand {
-            display: none !important;
-        }
-
         .option-title {
             font-size: 16px;
             font-weight: 500;
@@ -242,12 +238,15 @@ body[data-is-win11="false"] {
             font-family: "Segoe UI";
         }
         
-        &[data-expandable="true"] {
+        &[data-expandable="true"][data-force-expandable="false"] {
             .parent-panel {
                 display: flex;
             }
             .settings-option-children {
                 display: block;
+            }
+            .expand {
+                display: none !important;
             }
         }
         
@@ -275,7 +274,7 @@ body[data-is-win11="false"] {
     }
 
     // Show background in Win10
-    .settings-option-elem.win10-has-background {
+    .settings-option-elem.win10-has-background, .settings-option-elem[data-expandable="true"][data-force-expandable="true"] {
         background-color: var(--tray-background-base);
         margin-left: 0px;
         margin-top: 15px;

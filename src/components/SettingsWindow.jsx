@@ -684,7 +684,7 @@ export default class SettingsWindow extends PureComponent {
                     { hotkey.actions?.map((action, actionIdx) => {
                         return (
                             <SettingsChild key={`${idx}-${actionIdx}`}>
-                                <ActionItem key={`${idx}-${actionIdx}`} title={`Action ${actionIdx + 1}`} action={action} onChange={updatedAction => this.updateHotkeyAction(updatedAction, idx, actionIdx)} onDelete={() => { deleteHotkeyAction(idx, actionIdx) }} monitors={this.state.monitors} monitorNames={this.state.names} />
+                                <ActionItem key={`${idx}-${actionIdx}`} title={`${T.t("SETTINGS_HOTKEY_ACTION")} #${actionIdx + 1}`} action={action} onChange={updatedAction => this.updateHotkeyAction(updatedAction, idx, actionIdx)} onDelete={() => { deleteHotkeyAction(idx, actionIdx) }} monitors={this.state.monitors} monitorNames={this.state.names} />
                             </SettingsChild>
                         )
                     }) }
@@ -1089,32 +1089,32 @@ export default class SettingsWindow extends PureComponent {
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />
                                     </SettingsOption>
 
-                                   <SettingsOption title="Legacy DDC/CI detection method" description={"Use the old v1.15.4 method of detecting DDC/CI displays."} input={
+                                   <SettingsOption title={T.t("SETTINGS_GENERAL_LEGACY_DDC_TITLE")} description={T.t("SETTINGS_GENERAL_LEGACY_DDC_DESC")} input={
                                         <div className="inputToggle-generic" data-textside={"right"}>
                                             <input onChange={(e) => { this.setSetting("preferredDDCCIMethod", (e.target.checked ? "legacy" : "accurate")) }} checked={(this.state.rawSettings.preferredDDCCIMethod == "legacy")} data-checked={(this.state.rawSettings.preferredDDCCIMethod == "legacy")} type="checkbox" />
                                             <div className="text">{((this.state.rawSettings.preferredDDCCIMethod == "legacy") ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
                                         </div>
                                     } />
 
-                                    <SettingsOption title={"Default overlay behavior"} description={"How forcefully the brightness hotkey overlay will attempt to display over other apps. You should not need to adjust this."} input={
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_OVERLAY_TITLE")} description={T.t("SETTINGS_GENERAL_OVERLAY_DESC")} input={
                                     <select value={window.settings.defaultOverlayType} onChange={(e) => this.setSetting("defaultOverlayType", e.target.value)}>
-                                        <option value="disabled">Disabled</option>
-                                        <option value="safe">Safe</option>
-                                        <option value="aggressive">Aggressive</option>
+                                        <option value="disabled">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
+                                        <option value="safe">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
+                                        <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
                                     </select>
                                     } expandable={true}>
                                         <SettingsChild>
                                             <p><i>
-                                                <b>Disabled:</b> Do not show overlay. <br />
-                                                <b>Safe:</b> The overlay will display over most windows, but will not force itself above apps that are marked as "always on top". <br />
-                                                <b>Aggressive:</b> Always try to show the overlay on top of other windows. This can cause issues with exclusive fullscreen games and other fullscreen apps. It can also trigger anti-cheat in some games.
+                                                <b>{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}:</b> {T.t("SETTINGS_GENERAL_DIS_OVERLAY_DESC")}<br />
+                                                <b>{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}:</b> {T.t("SETTINGS_GENERAL_ON_OVERLAY_DESC")}<br />
+                                                <b>{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}:</b> {T.t("SETTINGS_GENERAL_FORCE_OVERLAY_DESC")}
                                             </i></p>
                                         </SettingsChild>
                                     </SettingsOption>
 
-                                    <SettingsOption title={"Auto-apply brightness"} description={"If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, disabling this may help."} input={this.renderToggle("disableAutoApply", undefined, undefined, true)} />
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_AUTOBRIGHT_TITLE")} description={T.t("SETTINGS_GENERAL_AUTOBRIGHT_DESC")} input={this.renderToggle("disableAutoApply", undefined, undefined, true)} />
 
-                                    <SettingsOption title={"Skip auto-apply to specific monitors"} description={"Disable auto-applying known brightness after all hardware/power events for specific monitors. This include the idle detection feature."} expandable={true}>
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_APPLY_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_APPLY_DESC")} expandable={true}>
                                         {this.getSkipRestoreMonitors()}
                                     </SettingsOption>
 
@@ -1133,19 +1133,19 @@ export default class SettingsWindow extends PureComponent {
                                     <p><a className="button" onClick={this.addAdjustmentTime}>+ {T.t("SETTINGS_TIME_ADD")}</a></p>
                                 </div>
                                 <div className="pageSection">
-                                    <SettingsOption title={"Coordinates for sun position"} description={"To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined."} expandable={true}>
+                                    <SettingsOption title={T.t("SETTINGS_TIME_SUN_TITLE")} description={T.t("SETTINGS_TIME_SUN_DESC")} expandable={true}>
                                         <SettingsChild>
                                             <div style={{ "display": "flex" }}>
                                                 <div style={{ marginRight: "6px", flex: 1 }}>
-                                                    <label style={{ "textTransform": "capitalize" }}>Latitude</label>
+                                                    <label style={{ "textTransform": "capitalize" }}>{T.t("SETTINGS_TIME_LAT")}</label>
                                                     <input type="number" min="-90" max="90" value={window.settings.adjustmentTimeLatitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLatitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
                                                 </div>
                                                 <div style={{flex: 1}}>
-                                                    <label style={{ "textTransform": "capitalize" }}>Longitude</label>
+                                                    <label style={{ "textTransform": "capitalize" }}>{T.t("SETTINGS_TIME_LONG")}</label>
                                                     <input type="number" min="-180" max="180" value={window.settings.adjustmentTimeLongitude * 1} onChange={(e) => this.setSetting("adjustmentTimeLongitude", e.target.value)} style={{width: "100%", boxSizing: "border-box"}} />
                                                 </div>
                                                 {/* I'll write better CSS later, I promise. */}
-                                                <div><label style={{opacity:0}}>Get coordinates</label><input type="button" className="button" onClick={() => window.ipc.send("get-coordinates")} value="Get coordinates" style={{lineHeight:"1.3",padding:(document.body.dataset.isWin11 === 'true' ? "9px" : "8px"),marginLeft:"6px"}} /></div>
+                                                <div><label style={{opacity:0}}>Get {T.t("SETTINGS_TIME_SUN_GET")}</label><input type="button" className="button" onClick={() => window.ipc.send("get-coordinates")} value={T.t("SETTINGS_TIME_SUN_GET")} style={{lineHeight:"1.3",padding:(document.body.dataset.isWin11 === 'true' ? "9px" : "8px"),marginLeft:"6px"}} /></div>
                                             </div>
                                         </SettingsChild>
                                     </SettingsOption>
@@ -1179,7 +1179,7 @@ export default class SettingsWindow extends PureComponent {
                                                 </div>
                                             } />
                                     </SettingsOption>
-                                    <SettingsOption title={"Fullscreen apps are never idle"} description={"Fullscreen apps block idle detection. This only applies to the focused window."} input={this.renderToggle("detectIdleCheckFullscreen")} />
+                                    <SettingsOption title={T.t("SETTINGS_TIME_IDLE_FS_TITLE")} description={T.t("SETTINGS_TIME_IDLE_FS_DESC")} input={this.renderToggle("detectIdleCheckFullscreen")} />
                                 </div>
                             </SettingsPage>
 
@@ -1237,17 +1237,17 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                                 <div className="pageSection">
                                     <SettingsOption title={T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE")} description={T.t("SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC")} input={this.renderToggle("getDDCBrightnessUpdates")} />
-                                    <SettingsOption title={"Power State Signal"} description={"When sending the DDC/CI command to turn off your display, the following value(s) will be sent."} input={
+                                    <SettingsOption title={T.t("SETTINGS_FEATURES_POWER_TITLE")} description={T.t("SETTINGS_FEATURES_POWER_DESC")} input={
                                         <select value={this.state.rawSettings.ddcPowerOffValue} onChange={e => {
                                             this.setState({ ddcPowerOffValue: parseInt(e.target.value) })
                                             window.sendSettings({ ddcPowerOffValue: parseInt(e.target.value) })
                                         }}>
-                                            <option value={4}>Standby (4) ⚠️</option>
-                                            <option value={5}>Power off (5)</option>
-                                            <option value={6}>Most compatible (4 &amp; 5)</option>
+                                            <option value={4}>{T.t("SETTINGS_FEATURES_POWER_STANDBY")} (4) ⚠️</option>
+                                            <option value={5}>{T.t("SETTINGS_FEATURES_POWER_OFF")} (5)</option>
+                                            <option value={6}>{T.t("SETTINGS_FEATURES_POWER_COMPAT")} (4 &amp; 5)</option>
                                         </select>
                                     }>
-                                        <SettingsChild description={<>⚠️ <em>The "Standby" option is more likely to allow toggling the monitor on/off from Twinkle Tray. However, many monitors do not respond correctly to changing power state. Use at your own risk.</em></>} />
+                                        <SettingsChild description={<>⚠️ <em>{T.t("SETTINGS_FEATURES_POWER_WARNING")}</em></>} />
                                     </SettingsOption>                                
                                 </div>
                             </SettingsPage>
@@ -1272,7 +1272,7 @@ export default class SettingsWindow extends PureComponent {
                                             })
                                             window.sendSettings({ hotkeys: this.state.hotkeys.slice() })
                                             this.forceUpdate()
-                                        }}>+ Add Hotkey</a></p>
+                                        }}>+ {T.t("SETTINGS_HOTKEYS_ADD")}</a></p>
                                     </div>
 
                                 </div>
@@ -1284,7 +1284,7 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_GENERAL_SCROLL_TITLE")}</div>
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_SCROLL_TITLE")} description={T.t("SETTINGS_GENERAL_SCROLL_DESC")} input={this.renderToggle("scrollShortcut")}>
-                                        <SettingsChild title={"Amount to scroll"} className="win10-stack-input" input={
+                                        <SettingsChild title={T.t("SETTINGS_HOTKEYS_SCROLL_AMOUNT")} className="win10-stack-input" input={
                                             <input type="number" min={1} max={100} step={1}
                                             value={this.state.rawSettings.scrollShortcutAmount} onChange={e => {
                                                 this.state.rawSettings.scrollShortcutAmount = parseInt(e.target.value)
@@ -1318,8 +1318,8 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
 
                                 <div className="pageSection">
-                                    <div className="sectionTitle">Profiles</div>
-                                    <p>Automatically adjust the brightness or shortcut overlay behavior depending on the focused app. You can also add profiles to the right-click menu in the system tray to quickly change the brightness to pre-defined profiles.</p>
+                                    <div className="sectionTitle">{T.t("SETTINGS_PROFILES_TITLE")}</div>
+                                    <p>{T.t("SETTINGS_PROFILES_DESC")}</p>
                                     <div className="hotkey-profiles">
                                         {this.state.rawSettings?.profiles?.map((profile, idx) => <AppProfile key={`${idx}__${profile.uuid}`} profile={profile} monitors={this.state.monitors} updateValue={(key, value) => {
                                             profile[key] = value
@@ -1333,7 +1333,7 @@ export default class SettingsWindow extends PureComponent {
                                                     this.forceUpdate()
                                                 }
                                             } />)}
-                                        <p><a className="add-new button" onClick={() => addNewProfile(this.state)}>+ New Profile</a></p>
+                                        <p><a className="add-new button" onClick={() => addNewProfile(this.state)}>+ {T.t("SETTINGS_PROFILES_ADD")}</a></p>
                                     </div>
 
                                 </div>
@@ -1434,9 +1434,9 @@ export default class SettingsWindow extends PureComponent {
                         <div className="inner">
                             <div className="input-row">
                                 <div className="field">
-                                    <p>Enter the VCP code for the feature you would like to add to your display. Please note that Twinkle Tray does not validate if your display actually supports this VCP code. Use at your own risk.</p>
-                                    <label>VCP Code</label>
-                                    <input type="text" placeholder="ex. 0x62" ref={this.addFeatureInputRef} value={this.state.addFeatureValue} onChange={e => this.setState({ addFeatureValue: e.target.value })} onKeyUp={e => {
+                                    <p>{T.t("SETTINGS_FEATURES_ADD_DESC")}</p>
+                                    <label>{T.t("SETTINGS_FEATURES_ADD_VCP")}</label>
+                                    <input type="text" placeholder={T.t("SETTINGS_FEATURES_ADD_PLACEHOLDER")} ref={this.addFeatureInputRef} value={this.state.addFeatureValue} onChange={e => this.setState({ addFeatureValue: e.target.value })} onKeyUp={e => {
                                         if (e.which === 13 && this.state.addFeatureValue) {
                                             // Enter
                                             this.addFeatureOKRef.current.click()
@@ -1448,7 +1448,7 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </div>
                             <div className="input-row" style={{ display: (this.state.addFeatureError ? "block" : "none") }}>
-                                <p><b>This feature is already active.</b></p>
+                                <p><b>{T.t("SETTINGS_FEATURES_ADD_EXISTS")}</b></p>
                             </div>
                             <div className="input-row flex-end">
                                 <input type="button" ref={this.addFeatureCancelRef} value={"Cancel"} className="button" onClick={() => this.setState({ showAddFeatureOverlay: false })} />
@@ -1519,14 +1519,11 @@ function AppProfile(props) {
     if (!profile.monitors) profile.monitors = {};
 
     return (
-        <SettingsOption title={profile.name ?? "New Profile"} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>Delete</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
+        <SettingsOption title={<input type="text" placeholder={T.t("SETTINGS_PROFILES_NAME")} value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
             <SettingsChild>
-                <div className="option-title">General Settings</div><br />
-                <label>Profile name</label>
-                <input type="text" placeholder="Profile Name" value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>
                 <div className="feature-toggle-row">
                     <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
-                    <div className="feature-toggle-label"><span>Set brightness when active</span></div>
+                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
                 </div>
 
                 <div className="profile-monitors">
@@ -1536,24 +1533,24 @@ function AppProfile(props) {
                 {(profile.setBrightness ? (
                     <div className="feature-toggle-row">
                         <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-                        <div className="feature-toggle-label"><span>Show in right-click tray menu</span></div>
+                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
                     </div>
                 ) : null)}
             </SettingsChild>
             <SettingsChild>
-                <div className="option-title">App trigger settings (optional)</div>
+                <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
                 <br />
 
-                <label>App path</label>
-                <p>If you want this profile to activate automatically when a specific app is focused, enter the full or partial path of the EXE below.</p>
-                <input type="text" placeholder="App Path" value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
-                <label>Override overlay type</label>
-                <p>Changes the behavior of the hotkey overlay when the specified app is focused. This feature does not work when the profile is manually activated.</p>
+                <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
+                <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
+                <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
+                <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
+                <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
                 <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-                    <option value="normal">Default</option>
-                    <option value="safe">Safe</option>
-                    <option value="disabled">Disabled</option>
-                    <option value="aggressive">Aggressive</option>
+                    <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
+                    <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
+                    <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
+                    <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
                 </select>
             </SettingsChild>
         </SettingsOption>
@@ -1601,7 +1598,7 @@ function ActionItem(props) {
 
     const getHotkeyInput = () => {
         if (action.type === "off") {
-            return (<div className="input-row"><p style={{lineHeight: 1.2}}>This action will use the option selected under <b>Turn Off Displays action</b>. If you wish to turn off specific displays instead, use the "Set" or "Cycle" Hotkey Action instead.</p></div>)
+            return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_OFF_WARN")}</p></div>)
         } else if (action.type === "refresh") {
             return null
         } else {
@@ -1611,7 +1608,7 @@ function ActionItem(props) {
             }
             const selectBox = (
                 <div className="field">
-                    <label>Action Target</label>
+                    <label>{T.t("SETTINGS_HOTKEY_TARGET")}</label>
                     <select value={selectBoxValue} onChange={e => {
                         const value = e.target.value
                         if (value === "vcp") {
@@ -1621,10 +1618,10 @@ function ActionItem(props) {
                         }
                         props.onChange?.(action)
                     }}>
-                        <option value="brightness">Brightness</option>
-                        <option value="contrast">Contrast (if supported)</option>
-                        <option value="volume">Volume (if supported)</option>
-                        <option value="vcp">Specific VCP code</option>
+                        <option value="brightness">{T.t("PANEL_LABEL_BRIGHTNESS")}</option>
+                        <option value="contrast">{T.t("PANEL_LABEL_CONTRAST")}</option>
+                        <option value="volume">{T.t("PANEL_LABEL_VOLUME")}</option>
+                        <option value="vcp">{T.t("SETTINGS_FEATURES_ADD_VCP")}</option>
                     </select>
                 </div>
             )
@@ -1632,8 +1629,8 @@ function ActionItem(props) {
             const singleValue = () => (
                 <div className="input-row hotkey-action-value">
                     <div className="hotkey-value field">
-                        <label>Value</label>
-                        <input type="number" min="-65535" max="65535" value={action.value ?? 0} placeholder={`Enter a number`} onChange={e => {
+                        <label>{T.t("SETTINGS_HOTKEY_VALUE")}</label>
+                        <input type="number" min="-65535" max="65535" value={action.value ?? 0} placeholder={T.t("SETTINGS_HOTKEY_VALUE_PLACEHOLDER")} onChange={e => {
                             const value = e.target.value
                             action.value = value ?? 0
                             props.onChange?.(action)
@@ -1645,11 +1642,11 @@ function ActionItem(props) {
             const listOfValues = () => (
                 <div className="input-row hotkey-action-values">
                     <div className="hotkey-values-list">
-                        <label>Values</label>
+                        <label>{T.t("SETTINGS_HOTKEY_VALUES")}</label>
                         {action.values?.map((value, idx2) => {
                             return (
                                 <div className="hotkey-value" key={idx2}>
-                                    <input type="number" min="-65535" max="65535" value={value ?? 0} placeholder={`Enter a number`}
+                                    <input type="number" min="-65535" max="65535" value={value ?? 0} placeholder={T.t("SETTINGS_HOTKEY_VALUE_PLACEHOLDER")}
                                         onChange={e => {
                                             const value = e.target.value
                                             action.values[idx2] = value ?? 0
@@ -1659,7 +1656,7 @@ function ActionItem(props) {
                                         <input type="button" className="button" onClick={() => {
                                             action.values.splice(idx2, 1)
                                             props.onChange?.(action)
-                                        }} value={"Remove"} />
+                                        }} value={T.t("GENERIC_DELETE")} />
                                     ) : null}
                                 </div>
                             )
@@ -1667,7 +1664,7 @@ function ActionItem(props) {
                         <p><a className="button button-primary" onClick={() => {
                             action.values.push([0])
                             props.onChange?.(action)
-                        }}>+ Add Value</a></p>
+                        }}>+ {T.t("SETTINGS_HOTKEY_ADD_VALUE")}</a></p>
                     </div>
                 </div>
             )
@@ -1679,8 +1676,8 @@ function ActionItem(props) {
                     </div>
                     <div className="input-row hotkey-action-code" style={{ display: (selectBoxValue === "vcp" ? "block" : "none") }}>
                         <div className="field">
-                            <label>VCP Code</label>
-                            <input value={action.target} type="text" placeholder={`VCP code (Ex. 16 or 0x10)`} onChange={e => {
+                            <label>{T.t("SETTINGS_FEATURES_ADD_VCP")}</label>
+                            <input value={action.target} type="text" placeholder={T.t("SETTINGS_FEATURES_ADD_PLACEHOLDER")} onChange={e => {
                                 action.target = e.target.value
                                 props.onChange?.(action)
                             }} />
@@ -1695,21 +1692,19 @@ function ActionItem(props) {
     return (
         <div className="action-item-base">
             { props.onDelete ?
-                <div className=""><a className="button button-primary" onClick={() => props.onDelete?.(action)}>{deleteIcon} <span>Delete {props.title ?? "Action"}</span></a><br /><br /></div>
-            : <div className="option-title">{props.title ?? "Action"}</div> }
-            
+                <div className=""><a className="button button-primary" onClick={() => props.onDelete?.(action)}>{deleteIcon} <span>{props.title ?? T.t("SETTINGS_HOTKEY_ACTION")}</span></a><br /><br /></div>
+            : <div className="option-title">{props.title ?? T.t("SETTINGS_HOTKEY_ACTION")}</div> }
             
             <div className="input-row">
                 <div className="hotkey-monitors-list" style={{ display: (showDisplaysList ? "block" : "none") }}>
                     <div className="input-row">
                         <div className="field">
-                            <label style={{ marginBottom: "8px" }}>Displays</label>
                             <div className="feature-toggle-row">
                                 <input onChange={e => {
                                     action.allMonitors = e.target.checked
                                     props.onChange?.(action)
                                 }} checked={action.allMonitors} data-checked={action.allMonitors} type="checkbox" />
-                                <div className="feature-toggle-label">All Displays</div>
+                                <div className="feature-toggle-label">{T.t("GENERIC_ALL_DISPLAYS")}</div>
                             </div>
                             {getHotkeyMonitors()}
                         </div>
@@ -1718,16 +1713,16 @@ function ActionItem(props) {
                 <div className="hotkey-action-fields">
                     <div className="input-row">
                         <div className="field">
-                            <label>Action</label>
+                            <label>{T.t("SETTINGS_HOTKEY_ACTION")}</label>
                             <select value={action.type} onChange={e => {
                                 action.type = e.target.value
                                 props.onChange?.(action)
                             }}>
-                                <option value="set">Set value</option>
-                                <option value="offset">Adjust value</option>
-                                <option value="cycle">Cycle list of values</option>
-                                <option value="off">Turn off displays</option>
-                                <option value="refresh">Refresh displays</option>
+                                <option value="set">{T.t("SETTINGS_HOTKEY_ACTION_SET")}</option>
+                                <option value="offset">{T.t("SETTINGS_HOTKEY_ACTION_OFFSET")}</option>
+                                <option value="cycle">{T.t("SETTINGS_HOTKEY_ACTION_CYCLE")}</option>
+                                <option value="off">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</option>
+                                <option value="refresh">{T.t("GENERIC_REFRESH_DISPLAYS")}</option>
                             </select>
                         </div>
                     </div>

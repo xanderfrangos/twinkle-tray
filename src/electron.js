@@ -406,6 +406,7 @@ function readSettings(doProcessSettings = true) {
   if(settings.updateInterval === 999) settings.updateInterval = 100;
 
   // Upgrade settings
+  const appVersionValue = Utils.getVersionValue(`v${app.getVersion()}`)
   if(Utils.getVersionValue(settings.settingsVer) < Utils.getVersionValue("v1.15.0")) {
     // v1.15.0
     try {
@@ -428,6 +429,11 @@ function readSettings(doProcessSettings = true) {
     } catch(e) {
       console.log("Couldn't upgrade Idle settings", e)
     }
+  } else if(appVersionValue < Utils.getVersionValue("v1.16.0") && Utils.getVersionValue(settings.settingsVer) >= Utils.getVersionValue("v1.16.0")) {
+    // Downgrade from v1.16.0+
+    lastKnownDisplays = {}
+    settings.hotkeys = {}
+    console.log("Downgraded settings from v1.16.0+ format!")
   }
 
 

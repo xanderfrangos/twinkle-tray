@@ -2999,6 +2999,12 @@ function createTray() {
 
 }
 
+function recreateTray() {
+  tray.destroy()
+  tray = null
+  createTray()
+}
+
 function setTrayMenu() {
   if (tray === null) return false;
 
@@ -3600,6 +3606,7 @@ function handleMonitorChange(t, e, d) {
     clearTimeout(handleChangeTimeout2)
   }
   handleChangeTimeout2 = setTimeout(async () => {
+    recreateTray()
 
     // Reset all known displays
     await refreshMonitors(true)
@@ -3626,6 +3633,7 @@ powerMonitor.on("resume", () => {
   setTimeout(
     () => {
       block.release()
+      recreateTray()
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
         //restartPanel()

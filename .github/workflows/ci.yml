@@ -60,7 +60,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         name: Upload Win32 installer
         with:
-          name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-exe-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*.exe
           
       - name: Build x64 AppX
@@ -73,7 +73,7 @@ jobs:
         name: Upload x64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
         with:
-          name: twinkle-tray-appx-x64-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-appx-x64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store.appx
           
       - name: Build ARM64 AppX
@@ -86,5 +86,5 @@ jobs:
         name: Upload ARM64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
         with:
-          name: twinkle-tray-appx-arm64-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-appx-arm64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store-arm64.appx

@@ -20,3 +20,7 @@ window.addEventListener("focus", () => {
 })
 
 createRoot(document.getElementById("settings")).render(<SettingsWindow theme={window.settings.theme} />)
+
+setTimeout(() => {
+    window.requestSettings()
+}, 33)

@@ -155,6 +155,13 @@ function startMonitorTestThread() {
         type: "wmi-bridge-ok"
       })
     }
+    if(data?.type === "failed") {
+      console.log("WMI-BRIDGE TEST: FAILED")
+      monitorsThreadTest.kill()
+      monitorsThread.send({
+        type: "wmi-bridge-ok"
+      })
+    }
   })
   // Close after timeout
   setTimeout(() => {

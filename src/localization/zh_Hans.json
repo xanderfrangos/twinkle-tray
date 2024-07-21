@@ -1,5 +1,5 @@
 {
-    "LANGUAGE": "简体中文",
+    "LANGUAGE": "简体中文 - 匿名 <me-qr.com/entry/vcard/Wr2h6tBO> 等译",
     "GENERIC_OK": "确定",
     "GENERIC_CANCEL": "取消",
     "GENERIC_SAVE": "保存",
@@ -36,7 +36,7 @@
     "PANEL_LABEL_CONTRAST": "对比度",
     "PANEL_LABEL_OFF_ON": "电源状态",
     "PANEL_LABEL_COLOR_TEMPERATURE": "色温",
-    "PANEL_LABEL_VOLUME": "数值",
+    "PANEL_LABEL_VOLUME": "音量",
     "PANEL_LABEL_TURN_OFF": "关机",
     "INTRO_TITLE": "欢迎使用 Twinkle Tray！",
     "INTRO_INSTRUCTIONS": "Twinkle Tray 的托盘图标可能被收起，所以您或许应将其移动到方便点击的位置。请参阅下面的说明。",

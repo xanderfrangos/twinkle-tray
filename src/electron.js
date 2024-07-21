@@ -159,7 +159,7 @@ function startMonitorTestThread() {
       console.log("WMI-BRIDGE TEST: FAILED")
       monitorsThreadTest.kill()
       monitorsThread.send({
-        type: "wmi-bridge-ok"
+        type: "wmi-bridge-failed"
       })
     }
   })

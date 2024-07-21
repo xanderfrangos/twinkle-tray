@@ -28,7 +28,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         name: Upload Windows Installer
         with:
-          name: twinkle-tray-exe-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-exe-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*.exe
   appx:
     name: "Build AppX Packages"
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         name: Upload x64 AppX
         with:
-          name: twinkle-tray-appx-x64-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-appx-x64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store.appx
       - run: npm run appx-arm64
         env:
@@ -60,5 +60,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         name: Upload ARM64 AppX
         with:
-          name: twinkle-tray-appx-arm64-${{ github.ref_name }}-${{ github.sha }}
+          name: twinkle-tray-appx-arm64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store-arm64.appx

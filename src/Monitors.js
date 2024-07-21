@@ -58,7 +58,7 @@ process.on('message', async (data) => {
             monitorReportsRaw = {}
             ddcci._clearDisplayCache()
         } else if (data.type === "wmi-bridge-ok") {
-            canUseWmiBridge = true
+            canUseWmiBridge = data.value
         } else if (data.type === "getVCP") {
             getDDCCI()
             const vcp = await checkVCP(data.monitor, data.code)

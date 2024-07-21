@@ -471,7 +471,7 @@ const defaultSettings = {
   showConsole: false,
   profiles: [],
   uuid: uuid(),
-  branch: "master"
+  branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master")
 }
 
 const tempSettings = {

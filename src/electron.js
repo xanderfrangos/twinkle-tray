@@ -230,6 +230,11 @@ async function doWMIBridgeTest() {
         monitorsThreadTest.kill()
         resolve(true)
       }
+      if(data?.type === "failed") {
+        console.log("WMI-BRIDGE TEST: FAILED")
+        monitorsThreadTest.kill()
+        resolve(false)
+      }
     })
     // Close after timeout
     setTimeout(() => {
@@ -505,7 +510,8 @@ function readSettings(doProcessSettings = true) {
 
   // Upgrade settings
   const settingsVersion = Utils.getVersionValue(settings.settingsVer)
-  if (settingsVersion < Utils.getVersionValue("v1.15.0")) {
+  const appVersionValue = Utils.getVersionValue(`v${app.getVersion()}`)
+  if(settingsVersion < Utils.getVersionValue("v1.15.0")) {
     // v1.15.0
     try {
       // Upgrade adjustment times
@@ -529,6 +535,14 @@ function readSettings(doProcessSettings = true) {
     } catch (e) {
       console.log("Couldn't upgrade Idle settings", e)
     }
+  } else if(appVersionValue < Utils.getVersionValue("v1.16.0") && settingsVersion >= Utils.getVersionValue("v1.16.0")) {
+    // Downgrade from v1.16.0+
+    if(settings.hotkeysPre1160) {
+      settings.hotkeys = settings.hotkeysPre1160
+    } else {
+      settings.hotkeys = {}
+    }
+    console.log("Downgraded settings from v1.16.0+ format!")
   }
   if (settingsVersion < Utils.getVersionValue("v1.16.0")) {
     // v1.16.0

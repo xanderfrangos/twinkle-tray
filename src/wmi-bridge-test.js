@@ -24,7 +24,7 @@ getMonitorsWMI = () => {
             if (wmiMonitors.failed) {
                 // Something went wrong
                 console.log("\x1b[41m" + "wmi-bridge-test: Recieved FAILED response from getMonitors()" + "\x1b[0m")
-                resolve(foundMonitor)
+                reject(foundMonitors)
             } else {
                 // Sort through results
                 for (let monitorHWID in wmiMonitors) {
@@ -66,4 +66,6 @@ process.send({
 //wait4s().then(() => { })
 getMonitorsWMI().then(() => {
     process.send({ type: 'ok' })
+}).catch(() => {
+    process.send({ type: 'failed' })
 })

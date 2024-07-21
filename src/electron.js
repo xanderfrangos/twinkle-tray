@@ -536,6 +536,8 @@ function readSettings(doProcessSettings = true) {
     try {
       // Upgrade hotkeys
       if (settings.hotkeys && Object.values(settings.hotkeys)?.length >= 0) {
+        settings.hotkeysPre1160 = settings.hotkeys // Save old hotkeys in case of downgrade
+        
         const newHotkeys = []
         for (const hotkey of Object.values(settings.hotkeys)) {
           const newHotkey = {

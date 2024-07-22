@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useObject } from "../hooks/useObject"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
-import VCP from "../modules/node-ddcci/vcp"
+import VCP from "../vcp-codes"
 const ignoreCodes = ["0x10", "0x12", "0x13", "0x62", "0xD6"]
 
 const deleteIcon = (<span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span>)

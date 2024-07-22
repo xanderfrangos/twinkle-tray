@@ -88,7 +88,8 @@ export default function MonitorFeatures(props) {
             }
         }
 
-        if(monitor.vcpCodes && typeof monitor.vcpCodes === 'object') {
+        // VCP code list
+        if(monitor.vcpCodes && typeof monitor.vcpCodes === 'object' && Object.values(monitor.vcpCodes).length) {
             const list = []
             for(const code in monitor.vcpCodes) {
                 list.push(

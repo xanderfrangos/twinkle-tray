@@ -95,6 +95,12 @@
       "node_modules\\wmi-client\\**\\*",
       "!node_modules\\wmi-client\\bin"
     ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules\\wmi-client\\**\\*",
+      "node_modules\\sharp\\**\\*",
+      "**\\*.node"
+    ],
     "win": {
       "target": [
         "nsis"

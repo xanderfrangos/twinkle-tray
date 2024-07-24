@@ -9,6 +9,10 @@ module.exports = {
   , _getVCP: ddcci.getVCP
   , _setVCP: ddcci.setVCP
   , _saveCurrentSettings: ddcci.saveCurrentSettings
+  , _getHighLevelBrightness: ddcci.getHighLevelBrightness
+  , _setHighLevelBrightness: ddcci.setHighLevelBrightness
+  , _getHighLevelContrast: ddcci.getHighLevelContrast
+  , _setHighLevelContrast: ddcci.setHighLevelContrast
   , _getAllMonitors: ddcci.getAllMonitors
   , _clearDisplayCache: ddcci.clearDisplayCache
   , _setLogLevel: ddcci.setLogLevel

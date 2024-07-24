@@ -56,7 +56,7 @@ export default function MonitorInfo(props) {
             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
             <p>Name: <b>{name}</b>
                 <br />Internal name: <b>{monitor.hwid[1]}</b>
-                <br />Communication Method: {getDebugMonitorType(monitor.type)}
+                <br />Communication Method: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
                 <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
                 <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
                 <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
@@ -81,6 +81,8 @@ function getDebugMonitorType(type) {
         return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
     } else if (type == "ddcci") {
         return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else if (type == "ddcci-hl") {
+        return (<><b>DDC/CI (HL)</b> <span className="icon green vfix">&#xE73D;</span></>)
     } else if (type == "wmi") {
         return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
     } else if (type == "studio-display") {

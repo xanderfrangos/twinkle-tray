@@ -749,7 +749,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>Name: <b>{getMonitorName(monitor, this.state.names)}</b>
                             <br />Internal name: <b>{monitor.hwid[1]}</b>
-                            <br />Communication Method: {this.getDebugMonitorType(monitor.type)}
+                            <br />Communication Method: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
                             <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
                             <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : brightnessMax)}</b>
                             <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
@@ -852,6 +852,8 @@ export default class SettingsWindow extends PureComponent {
             return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
         } else if (type == "ddcci") {
             return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
+        } else if (type == "ddcci-hl") {
+            return (<><b>DDC/CI (HL)</b> <span className="icon green vfix">&#xE73D;</span></>)
         } else if (type == "wmi") {
             return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
         } else if (type == "studio-display") {
@@ -1084,6 +1086,7 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE")} description={T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} expandable={true}>
                                         <SettingsChild title={"Apple Studio Displays"} input={this.renderToggle("disableAppleStudio", true, "right", true)} />
+                                        <SettingsChild title={"DDC/CI HL"} input={this.renderToggle("disableHighLevel", true, "right", true)} />
                                         <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC", true, "right", true)} />
                                         <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI", true, "right", true)} />
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />

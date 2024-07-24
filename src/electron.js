@@ -452,6 +452,7 @@ const defaultSettings = {
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
   disableAppleStudio: false,
+  disableHighLevel: false,
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,

@@ -137,7 +137,7 @@ export default function MonitorFeatures(props) {
 }
 
 function MonitorFeaturesSettings(props) {
-    const { enabled, settings, hwid, vcp, onChange } = props 
+    const { enabled, settings, hwid, vcp, fixedValues, onChange } = props 
     //if(!enabled) return (<></>);
 
     const [settingsObj, updateSettings] = useObject(Object.assign({

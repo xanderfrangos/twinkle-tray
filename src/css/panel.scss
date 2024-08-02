@@ -445,7 +445,13 @@ body[data-is-win11="false"] #root {
         font-family: "Segoe MDL2 Assets", "Segoe Fluent Icons"; // Old icon works better at small sizes
     }
 }
-
+.icon-option[data-active=true] {
+	background: var(--system-accent-medium);
+	border-color: var(--system-accent-medium-dark);
+	background-color: var(--system-accent-dark1);
+	border-color: var(--system-accent-light2);
+	color: var(--system-accent-light2);
+}
 
 .monitor-sliders.extended {
     & + .monitor-sliders.extended {

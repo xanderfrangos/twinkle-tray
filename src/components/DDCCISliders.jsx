@@ -62,7 +62,7 @@ export default function DDCCISliders(props) {
 								<div className="feature-icon">{ icon }</div>
 								<div className="icons-row">
 									{settings.fixedValues.map((value) => {
-										return (<button className="icon-option" data-active={false} onClick={() => {}} key={monitor.key + "_" + vcp + "_" + value}>{value}</button>)
+										return (<button className="icon-option" data-active={feature[0] == value} onClick={() => { setValues({ [vcp]: value }); setVCP(monitor.id, parseInt(vcp), value) }} key={monitor.key + "_" + vcp + "_" + value}>{value}</button>)
 									})}
 								</div>
 							</div>

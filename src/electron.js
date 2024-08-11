@@ -1916,14 +1916,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
             }
           }
         }
-      } else if (monitor.type === "studio-display") {
-        monitor.brightness = level
-        monitor.brightnessRaw = normalized
-        monitorsThread.send({
-          type: "brightness",
-          brightness: normalized * ((monitor.brightnessMax || 100) / 100),
-          id: monitor.id
-        })
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {
@@ -1950,7 +1942,14 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`, e)
         }
       }
-
+    } else if (monitor.type === "studio-display") {
+      monitor.brightness = level
+      monitor.brightnessRaw = normalized
+      monitorsThread.send({
+        type: "brightness",
+        brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+        id: monitor.id
+      })
     } else if (monitor.type == "wmi") {
       monitor.brightness = level
       monitor.brightnessRaw = normalized

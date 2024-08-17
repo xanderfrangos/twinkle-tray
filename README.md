@@ -35,7 +35,7 @@ Twinkle Tray will automatically adjust the look and feel to match your Windows v
 ### Windows Package Manager
 
 ```powershell
-winget install twinkletray
+winget install xanderfrangos.twinkletray
 ```
 
 ### Chocolatey (unofficial)

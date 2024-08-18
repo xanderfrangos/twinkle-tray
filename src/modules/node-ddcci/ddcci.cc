@@ -17,6 +17,20 @@ struct Monitor {
     std::vector<HANDLE> physicalHandles;
 };
 
+struct MonitorHighLevel {
+    DWORD capabilities = 0;
+    DWORD capabilitiesOK = 0;
+    DWORD supportedTemperatures = 0;
+    DWORD brightness = 0;
+    DWORD brightnessMin = 0;
+    DWORD brightnessMax = 0;
+    DWORD brightnessOK = 0;
+    DWORD contrast = 0;
+    DWORD contrastMin = 0;
+    DWORD contrastMax = 0;
+    DWORD contrastOK = 0;
+};
+
 struct PhysicalMonitor {
     HANDLE handle;
     bool handleIsValid;
@@ -27,6 +41,7 @@ struct PhysicalMonitor {
     std::string result;
     std::string deviceKey;
     std::string deviceID;
+    MonitorHighLevel hlCapabilities;
 };
 
 struct DisplayDevice {
@@ -104,6 +119,29 @@ cleanMonitorHandles(std::map<std::string, HANDLE> newHandles)
         }
         handles.clear();
     }
+}
+
+std::string
+getLastErrorString()
+{
+    DWORD errorCode = GetLastError();
+    if (!errorCode) {
+        return std::string();
+    }
+
+    LPSTR buf = NULL;
+    DWORD size =
+      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
+                      | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,
+                    errorCode,
+                    LANG_SYSTEM_DEFAULT,
+                    (LPSTR)&buf,
+                    0,
+                    NULL);
+
+    std::string message(buf, size);
+    return message;
 }
 
 std::string
@@ -214,6 +252,45 @@ getAllHandles() {
     }
 
     return monitors;
+}
+
+MonitorHighLevel
+getHighLevelCapabilities(HANDLE handle) {
+    MonitorHighLevel monitor;
+
+    if(handle == NULL) {
+        d("No handle for capabilities data!");
+        return monitor;
+    }
+
+    // General capabilities
+    // Note: Displays that don't support color temperature seem to respond poorly to this function
+    /*
+    monitor.capabilitiesOK = GetMonitorCapabilities(handle, &monitor.capabilities, &monitor.supportedTemperatures);
+    d("== GetMonitorCapabilities: " + std::to_string(monitor.capabilitiesOK) + ": " + std::to_string(monitor.capabilities));
+
+    if(monitor.capabilitiesOK == 0) {
+        d("== Error: " + getLastErrorString());
+    }
+    */
+
+    // Brightness
+    monitor.brightnessOK = GetMonitorBrightness(handle, &monitor.brightnessMin, &monitor.brightness, &monitor.brightnessMax);
+    d("-- -- GetMonitorBrightness: " + std::to_string(monitor.brightnessOK) + ": " + std::to_string(monitor.brightness) + " (" + std::to_string(monitor.brightnessMin) + "-" + std::to_string(monitor.brightnessMax) + ")");
+
+    if(monitor.brightnessOK == 0) {
+        d("-- -- Error: " + getLastErrorString());
+    }
+
+    // Contrast
+    monitor.contrastOK = GetMonitorContrast(handle, &monitor.contrastMin, &monitor.contrast, &monitor.contrastMax);
+    d("-- -- GetMonitorContrast: " + std::to_string(monitor.contrastOK) + ": " + std::to_string(monitor.contrast) + " (" + std::to_string(monitor.contrastMin) + "-" + std::to_string(monitor.contrastMax) + ")");
+
+    if(monitor.contrastOK == 0) {
+        d("-- -- Error: " + getLastErrorString());
+    }
+
+    return monitor;
 }
 
 std::string
@@ -540,6 +617,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                     if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported && previousDisplay.second.result != "invalid") {
                         newMonitor.result = previousDisplay.second.result;
                         newMonitor.ddcciSupported = previousDisplay.second.ddcciSupported;
+                        newMonitor.hlCapabilities = previousDisplay.second.hlCapabilities;
                         
                         // Use old handle if new one is NULL
                         if(newMonitor.handle == NULL) {
@@ -552,11 +630,18 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                 }
             }
 
+            // Test high level capabilities
+            if((newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
+                newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
+            }
+            if(newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) {
+                p("-- -- High Level: Supported");
+            }
+
             // Test DDC/CI
             bool saveCapabilities = false;
             if (newMonitor.ddcciSupported == false) {
                 std::string result = "invalid";
-
                 if (capabilities.find(newMonitor.deviceKey) == capabilities.end()) {
                     // Capabilities string not found, read it
                     result = getPhysicalHandleResults(newMonitor.handle, validationMethod);
@@ -607,29 +692,6 @@ populateHandlesMap(std::string validationMethod, bool usePreviousResults)
         return populateHandlesMapNormal(validationMethod, usePreviousResults);
 
     return populateHandlesMapNormal("fast", usePreviousResults);
-}
-
-std::string
-getLastErrorString()
-{
-    DWORD errorCode = GetLastError();
-    if (!errorCode) {
-        return std::string();
-    }
-
-    LPSTR buf = NULL;
-    DWORD size =
-      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM
-                      | FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    errorCode,
-                    LANG_SYSTEM_DEFAULT,
-                    (LPSTR)&buf,
-                    0,
-                    NULL);
-
-    std::string message(buf, size);
-    return message;
 }
 
 Napi::Value
@@ -726,6 +788,10 @@ getAllMonitors(const Napi::CallbackInfo& info)
         Napi::Object monitor = Napi::Object::New(env);
         monitor.Set("ddcciSupported",
                     Napi::Boolean::New(env, handle.second.ddcciSupported));
+        monitor.Set("hlBrightnessSupported",
+                    Napi::Boolean::New(env, handle.second.hlCapabilities.brightnessOK));
+        monitor.Set("hlContrastSupported",
+                    Napi::Boolean::New(env, handle.second.hlCapabilities.contrastOK));
         monitor.Set("handleIsValid",
                     Napi::Boolean::New(env, handle.second.handleIsValid));
         monitor.Set("name", Napi::String::New(env, handle.second.name));
@@ -836,6 +902,140 @@ saveCurrentSettings(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, bSuccess);
 }
 
+Napi::Value
+getHighLevelBrightness(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1) {
+        throw Napi::TypeError::New(env, "Not enough arguments");
+    }
+    if (!info[0].IsString()) {
+        throw Napi::TypeError::New(env, "Invalid arguments");
+    }
+
+    std::string monitorName = info[0].As<Napi::String>().Utf8Value();
+
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
+        throw Napi::Error::New(env, "Monitor not found");
+    }
+
+    DWORD minValue;
+    DWORD currentValue;
+    DWORD maxValue;
+    if (!GetMonitorBrightness(
+          it->second, &minValue, &currentValue, &maxValue)) {
+        throw Napi::Error::New(env,
+                               std::string("Failed to get high level brightness\n")
+                                 + getLastErrorString());
+    }
+
+    Napi::Array ret = Napi::Array::New(env, 3);
+    ret.Set((uint32_t)0, static_cast<double>(currentValue));
+    ret.Set((uint32_t)1, static_cast<double>(maxValue));
+    ret.Set((uint32_t)2, static_cast<double>(minValue));
+
+    return ret;
+}
+
+Napi::Value
+setHighLevelBrightness(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 2) {
+        throw Napi::TypeError::New(env, "Not enough arguments");
+    }
+    if (!info[0].IsString() || !info[1].IsNumber()) {
+        throw Napi::TypeError::New(env, "Invalid arguments");
+    }
+
+    std::string monitorName = info[0].As<Napi::String>().Utf8Value();
+    DWORD newValue =
+      static_cast<DWORD>(info[1].As<Napi::Number>().Int32Value());
+
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
+        throw Napi::Error::New(env, "Monitor not found");
+    }
+
+    if (!SetMonitorBrightness(it->second, newValue)) {
+        throw Napi::Error::New(env,
+                               std::string("Failed to set high level brightness\n")
+                                 + getLastErrorString());
+    }
+
+    return env.Undefined();
+}
+
+Napi::Value
+getHighLevelContrast(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1) {
+        throw Napi::TypeError::New(env, "Not enough arguments");
+    }
+    if (!info[0].IsString()) {
+        throw Napi::TypeError::New(env, "Invalid arguments");
+    }
+
+    std::string monitorName = info[0].As<Napi::String>().Utf8Value();
+
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
+        throw Napi::Error::New(env, "Monitor not found");
+    }
+
+    DWORD minValue;
+    DWORD currentValue;
+    DWORD maxValue;
+    if (!GetMonitorContrast(
+          it->second, &minValue, &currentValue, &maxValue)) {
+        throw Napi::Error::New(env,
+                               std::string("Failed to get high level contrast\n")
+                                 + getLastErrorString());
+    }
+
+    Napi::Array ret = Napi::Array::New(env, 3);
+    ret.Set((uint32_t)0, static_cast<double>(currentValue));
+    ret.Set((uint32_t)1, static_cast<double>(maxValue));
+    ret.Set((uint32_t)2, static_cast<double>(minValue));
+
+    return ret;
+}
+
+Napi::Value
+setHighLevelContrast(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 2) {
+        throw Napi::TypeError::New(env, "Not enough arguments");
+    }
+    if (!info[0].IsString() || !info[1].IsNumber()) {
+        throw Napi::TypeError::New(env, "Invalid arguments");
+    }
+
+    std::string monitorName = info[0].As<Napi::String>().Utf8Value();
+    DWORD newValue =
+      static_cast<DWORD>(info[1].As<Napi::Number>().Int32Value());
+
+    auto it = handles.find(monitorName);
+    if (it == handles.end()) {
+        throw Napi::Error::New(env, "Monitor not found");
+    }
+
+    if (!SetMonitorContrast(it->second, newValue)) {
+        throw Napi::Error::New(env,
+                               std::string("Failed to set high level contrast\n")
+                                 + getLastErrorString());
+    }
+
+    return env.Undefined();
+}
+
 void
 setLogLevel(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
@@ -869,6 +1069,10 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set(
       "saveCurrentSettings",
       Napi::Function::New(env, saveCurrentSettings, "saveCurrentSettings"));
+    exports.Set("getHighLevelBrightness", Napi::Function::New(env, getHighLevelBrightness, "getHighLevelBrightness"));
+    exports.Set("setHighLevelBrightness", Napi::Function::New(env, setHighLevelBrightness, "setHighLevelBrightness"));
+    exports.Set("getHighLevelContrast", Napi::Function::New(env, getHighLevelContrast, "getHighLevelContrast"));
+    exports.Set("setHighLevelContrast", Napi::Function::New(env, setHighLevelContrast, "setHighLevelContrast"));
     exports.Set("setLogLevel", Napi::Function::New(env, setLogLevel, "setLogLevel"));
 
     getAllHandles(); // Returns bad handles the first time??

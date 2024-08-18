@@ -277,7 +277,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
-            const { features, id, hwid, vcpCodes, path, ddcciSupported } = monitor
+            const { features, id, hwid, vcpCodes, path, ddcciSupported, highLevelSupported } = monitor
             const brightnessType = await determineBrightnessVCPCode(id)
 
             let ddcciInfo = {
@@ -286,20 +286,26 @@ getAllMonitors = async (ddcciMethod = "default") => {
                 hwid,
                 path,
                 ddcciSupported,
+                highLevelSupported,
                 features: features,
                 vcpCodes: vcpCodes,
-                type: (ddcciSupported && brightnessType ? "ddcci" : "none"),
+                type: ((ddcciSupported || highLevelSupported?.brightness) && brightnessType ? "ddcci" : "none"),
                 min: 0,
                 max: 100,
                 brightnessType: brightnessType,
                 brightnessValues: (features[brightnessType] ? features[brightnessType] : [50, 100])
             }
 
-            const brightness = await checkVCP(id, parseInt(brightnessType))
+            let brightness;
+            if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !(brightnessType > 0x10)) {
+                brightness = await getHighLevelBrightness(id)
+            } else {
+                brightness = await checkVCP(id, parseInt(brightnessType))
+            }
             if(brightness) {
                 ddcciInfo.brightnessValues = brightness
                 features[vcpStr(brightnessType)] = brightness
-            }
+            }       
 
             ddcciInfo.brightnessRaw = ddcciInfo.brightnessValues[0]
             ddcciInfo.brightnessMax = ddcciInfo.brightnessValues[1]
@@ -592,6 +598,10 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                     hwid,
                     features,
                     ddcciSupported: monitor.ddcciSupported,
+                    highLevelSupported: {
+                        brightness: monitor.hlBrightnessSupported,
+                        contrast: monitor.hlContrastSupported
+                    },
                     path: monitor.fullName,
                     vcpCodes: (monitorReports[id] ? monitorReports[id] : {} )
                 }
@@ -823,6 +833,8 @@ function setBrightness(brightness, id) {
                 monitor.brightness = brightness
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
+                } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness) {
+                    setHighLevelBrightness(monitor.hwid.join("#"), brightness)
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
                 }
@@ -938,6 +950,32 @@ async function setVCP(monitor, code, value) {
         }
         return result
     } catch (e) {
+        return false
+    }
+}
+
+async function getHighLevelBrightness(monitor) {   
+    try {
+        let result = ddcci._getHighLevelBrightness(monitor)
+        return result
+    } catch (e) {
+        console.log(e)
+        return false
+    }
+}
+
+async function setHighLevelBrightness(monitor, value) {
+    if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy   
+    try {
+        let result = ddcci._setHighLevelBrightness(monitor, value)
+        const hwid = monitor.split("#")
+        if(monitors[hwid[2]]) {
+            monitors[hwid[2]].brightness = parseInt(value)
+            monitors[hwid[2]].brightnessRaw = parseInt(value)
+        }
+        return result
+    } catch (e) {
+        console.log(e)
         return false
     }
 }

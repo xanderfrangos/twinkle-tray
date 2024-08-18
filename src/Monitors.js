@@ -408,7 +408,7 @@ getStudioDisplay = async (monitors) => {
                 "APPAE3A",
                 `APLSTD-${serial}-NUM${count}`
             ]
-            updateDisplay(monitors, serial, {
+            updateDisplay(monitors, hwid[2], {
                 name: "Apple Studio Display",
                 type: "studio-display",
                 key: hwid[2],

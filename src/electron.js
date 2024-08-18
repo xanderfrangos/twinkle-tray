@@ -2998,10 +2998,15 @@ function createTray() {
 
 }
 
-function recreateTray() {
-  tray.destroy()
+let recreatingTray = false
+async function recreateTray() {
+  if(recreatingTray) return;
+  recreatingTray = true
+  tray?.destroy()
   tray = null
+  await Utils.wait(500)
   createTray()
+  recreatingTray = false
 }
 
 function setTrayMenu() {

@@ -389,18 +389,21 @@ getPhysicalHandleResults(HANDLE handle, std::string validationMethod)
     if (GetVCPFeatureAndVCPFeatureReply(
           handle, 0x02, NULL, &currentValue, &maxValue)) {
         bSuccess = 1;
+        return "ok";
     }
     // 0xDF, VCP Version
     if (!bSuccess
         && GetVCPFeatureAndVCPFeatureReply(
           handle, 0xDF, NULL, &currentValue, &maxValue)) {
         bSuccess = 1;
+        return "ok";
     }
     // 0x10, Brightness (usually)
     if (!bSuccess
         && GetVCPFeatureAndVCPFeatureReply(
           handle, 0x10, NULL, &currentValue, &maxValue)) {
         bSuccess = 1;
+        return "ok";
     }
 
     if (bSuccess == 0) {

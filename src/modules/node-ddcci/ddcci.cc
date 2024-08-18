@@ -647,7 +647,19 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                 std::string result = "invalid";
                 if (capabilities.find(newMonitor.deviceKey) == capabilities.end()) {
                     // Capabilities string not found, read it
-                    result = getPhysicalHandleResults(newMonitor.handle, validationMethod);
+
+                    // If "accurate", check "fast" first
+                    if(validationMethod == "accurate") {
+                        result = getPhysicalHandleResults(newMonitor.handle, "fast");
+                    }
+
+                    // Check results using requested method
+                    std::string validationMethodResult = getPhysicalHandleResults(newMonitor.handle, validationMethod);
+
+                    if(validationMethodResult != "invalid") {
+                        result = validationMethodResult;
+                    }
+
                     saveCapabilities = true;
                 } else {
                     // Reuse capabilities string

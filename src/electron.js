@@ -200,7 +200,11 @@ function getVCP(monitor, code) {
       clearTimeout(timeout)
       // Write VCP values to monitor object
       if(data?.value?.[0] != undefined) {
-        monitor.features[vcpStr(vcpParsed)] = data.value?.[0]
+        try {
+          monitors[hwid?.split("#")[2]].features[vcpStr(vcpParsed)] = data.value?.[0]
+        } catch(e) {
+          console.log(e)
+        }
       }
       resolve(data?.value?.[0])
     })

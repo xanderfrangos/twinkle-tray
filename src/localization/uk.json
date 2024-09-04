@@ -148,5 +148,6 @@
     "SETTINGS_TIME_TRANSITON_TITLE": "Швидкість переходу яскравості",
     "SETTINGS_UPDATES_CHANNEL": "Оновлення каналу",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Стабільний (за замовчуванням)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Бета"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Бета",
+    "SETTINGS_FEATURES_POWER_OFF": "Вимкнути"
 }

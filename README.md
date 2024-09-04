@@ -5,7 +5,7 @@
 
 <p align="center"><a href="https://github.com/xanderfrangos/twinkle-tray/releases" target="_blank"><img src="https://img.shields.io/github/v/release/xanderfrangos/twinkle-tray" alt="Latest release" /></a> <a href="https://github.com/xanderfrangos/twinkle-tray/releases" target="_blank"><img src="https://img.shields.io/github/downloads/xanderfrangos/twinkle-tray/total" alt="Total downloads" /></a> <a href="https://hosted.weblate.org/projects/twinkle-tray/twinkle-tray/" target="_blank"><img src="https://hosted.weblate.org/widgets/twinkle-tray/-/twinkle-tray/svg-badge.svg" alt="Translations" /></a></p>
 
-Twinkle Tray lets you easily manage the brightness levels of multiple monitors. Even though Windows is capable of adjusting the backlight on most monitors, it typically doesn't support external monitors. Windows 10 & 11 also lack any ability to manage the brightness of multiple displays. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible displays. 
+Twinkle Tray enables brightness control on external displays in Windows 10 & 11. Even though Windows is capable of adjusting the backlight on most monitors, it doesn't support external monitors natively. Windows also lacks any options to manage the brightness of multiple displays. This app inserts a new icon into your system tray, where you can click to have instant access to the brightness levels of all compatible displays. 
 
 <img src="https://raw.githubusercontent.com/xanderfrangos/twinkle-tray/gh-pages/assets/img/tt-screenshot-w11.jpg" alt="Win 10 brightness slider" />
 
@@ -13,7 +13,7 @@ Twinkle Tray lets you easily manage the brightness levels of multiple monitors. 
 - Adds brightness sliders to the system tray, similar to the built-in Windows volume flyout.
 - Seamlessly blends in with Windows 10 and Windows 11. Uses your Personalization settings to match your taskbar.
 - Can automatically change monitor brightness depending on the time of day or when idle.
-- Bind hotkeys to adjust the brightness of specifical or all displays.
+- Bind hotkeys to adjust the brightness of specific or all displays.
 - Normalize backlight across different monitors.
 - Control DDC/CI features such as contrast.
 - Starts up with Windows.
@@ -84,7 +84,7 @@ Twinkle Tray uses DDC/CI and WMI to communicate with your monitors. Most monitor
 
 **Known issues:**
 - The AMD Radeon Control Panel can interfere with Twinkle Tray. Ensure "Custom Colors" is not enabled.
-- VGA may not be compatible.
+- VGA/DVI may not be compatible.
 - USB/Thunderbolt/Surface docks with HDMI or DisplayPort may not be compatible. 
 - DDC/CI features such as brightness control and power state may cause certain models of monitors to behave poorly. This applies to any DDC/CI software, not just Twinkle Tray.
 

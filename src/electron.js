@@ -119,6 +119,10 @@ const windowMenu = Menu.buildFromTemplate([{
   label: "Dev Tools",
   role: "toggleDevTools",
   accelerator: "Ctrl+I"
+}, {
+  label: "Dev Tools 2",
+  role: "toggleDevTools",
+  accelerator: "Ctrl+Shift+I"
 }])
 
 function vcpStr(code) {

@@ -93,6 +93,8 @@
     "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, disabling this may help.",
     "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "Skip auto-apply to specific monitors",
     "SETTINGS_GENERAL_SKIP_APPLY_DESC": "Disable auto-applying known brightness after all hardware/power events for specific monitors. This include the idle detection feature.",
+    "SETTINGS_GENERAL_REPORT_TITLE": "Generate Report",
+    "SETTINGS_GENERAL_REPORT_DESC": "Save a text file with information about your monitors and settings for debugging.",
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",
     "SETTINGS_MONITORS_RATE_DESC": "How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.",
     "SETTINGS_MONITORS_RATE_0": "Ludicrous",

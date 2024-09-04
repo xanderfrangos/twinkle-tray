@@ -7,6 +7,8 @@ export default function MonitorInfo(props) {
     const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? monitor?.features?.["0x12"][0] : 50)
     const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
     const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
+    const [manualVCP, setManualVCP] = useState("")
+    const [manualValue, setManualValue] = useState("")
 
     let extraHTML = []
 
@@ -63,6 +65,15 @@ export default function MonitorInfo(props) {
             </div>
         )
     }
+
+    // Manual VCP
+    extraHTML.push(
+        <div className="manual-vcp-row" key="manual">
+            <input placeholder="VCP code" value={manualVCP} onChange={e => { setManualVCP(e.target.value) }} />
+            <input placeholder="Value" value={manualValue} onChange={e => { setManualValue(e.target.value) }} />
+            <a className="button" onClick={() => setVCP(monitor.id, parseInt(manualVCP), parseInt(manualValue))}>Send VCP</a>
+        </div>
+    )
 
     return (
         <div key={monitor.key}>

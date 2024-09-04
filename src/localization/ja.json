@@ -150,5 +150,6 @@
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "ディスプレイを非表示",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "特定のディスプレイをメニューから非表示にしたい場合は、ここで無効にできます。",
     "SETTINGS_TIME_TRANSITON_TITLE": "明るさの遷移速度",
-    "SETTINGS_TIME_TRANSITON_DESC": "時刻による調整が行われるときに、明るさを変化させる速さ。"
+    "SETTINGS_TIME_TRANSITON_DESC": "時刻による調整が行われるときに、明るさを変化させる速さ。",
+    "SETTINGS_FEATURES_POWER_OFF": "電源を切る"
 }

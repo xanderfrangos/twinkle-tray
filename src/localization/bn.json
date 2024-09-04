@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_BRANCH_STABLE": "স্থিতিশীল (ডিফল্ট)",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "মনিটর সনাক্তকরণ পদ্ধতি অক্ষম করুন",
     "SETTINGS_UPDATES_CHANNEL": "চ্যানেল আপডেট করুন",
-    "SETTINGS_UPDATES_BRANCH_BETA": "বেটা"
+    "SETTINGS_UPDATES_BRANCH_BETA": "বেটা",
+    "SETTINGS_FEATURES_POWER_OFF": "বন্ধ করুন"
 }

@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Lataa ja asenna {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Päivityskanava",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Vakaa (oletus)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Sammuta"
 }

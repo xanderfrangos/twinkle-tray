@@ -21,7 +21,7 @@
     "GENERIC_NO_DISPLAYS_SHORT": "未检测到兼容的显示器。",
     "GENERIC_SECONDS": "秒",
     "GENERIC_MINUTES": "分",
-    "GENERIC_DDC_WARNING": "控制电源状态等 DDC/CI 功能可能会导致您的显示器无响应，风险自负！",
+    "GENERIC_DDC_WARNING": "DDC/CI 功能（如控制电源状态）可能会导致显示器无响应。请自行承担使用风险。",
     "GENERIC_SPEED_INSTANT": "立刻",
     "GENERIC_SPEED_SLOW": "慢",
     "GENERIC_SPEED_VERY_SLOW": "非常慢",

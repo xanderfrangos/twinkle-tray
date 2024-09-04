@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "تحميل و تثبيت {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "تحديث القناة",
     "SETTINGS_UPDATES_BRANCH_STABLE": "ثابت (افتراضي)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "بيتا"
+    "SETTINGS_UPDATES_BRANCH_BETA": "بيتا",
+    "SETTINGS_FEATURES_POWER_OFF": "ايقاف الطاقة"
 }

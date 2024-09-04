@@ -741,7 +741,8 @@ function processSettings(newSettings = {}, sendUpdate = true) {
                 min: 0,
                 max: 100,
                 maxVisual: 100,
-                linked: false
+                linked: false,
+				fixedValues: []
               }
             }
           }

@@ -76,12 +76,13 @@ export default function MonitorFeatures(props) {
                 const enabled = monitorFeatures?.[vcp];
                 const name = (settings?.iconType === "text" && settings?.iconText?.length ? settings.iconText : "Custom Feature")
                 const icon = (settings?.iconType === "windows" && settings?.icon ? settings.icon : "E9E9")
+				const fixedValues = monitor?.vcpCodes ? monitor.vcpCodes[vcp] : [];
                 extraHTML.push(
                     <SettingsOption className="monitor-feature-item" key={vcp} icon={icon} title={`${name} (${vcp})`} expandable={true}  input={
                         <div className="input-row"><div style={{cursor: "pointer"}} onClick={() => deleteFeature(vcp)}>{deleteIcon}</div><div className="inputToggle-generic"><input onChange={() => {props?.toggleFeature(monitor.hwid[1], vcp)}} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div></div>
                     }>
                         <SettingsChild>
-                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} /> 
+                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} fixedValues={fixedValues} /> 
                         </SettingsChild>
                     </SettingsOption>
                 )
@@ -136,7 +137,7 @@ export default function MonitorFeatures(props) {
 }
 
 function MonitorFeaturesSettings(props) {
-    const { enabled, settings, hwid, vcp, onChange } = props 
+    const { enabled, settings, hwid, vcp, fixedValues, onChange } = props 
     //if(!enabled) return (<></>);
 
     const [settingsObj, updateSettings] = useObject(Object.assign({
@@ -147,7 +148,8 @@ function MonitorFeaturesSettings(props) {
         min: 0,
         max: 100,
         maxVisual: 100,
-        linked: false
+        linked: false,
+		fixedValues: fixedValues
       }, settings))
 
       const onChangeHandler = (settingName, value) => {
@@ -166,9 +168,11 @@ function MonitorFeaturesSettings(props) {
         }
       }
 
+	  const labelPrefix = (fixedValues && fixedValues.length > 0) ? "" : "Slider";
+
       const iconType = (
         <div className="field">
-            <label>Slider Indicator Type</label>
+            <label>{labelPrefix} Indicator Type</label>
             <select value={settingsObj.iconType} onChange={e => onChangeHandler("iconType", e.target.value)} style={{flex: "0.65"}}>
                 <option value="windows">Icon</option>
                 <option value="text">Text</option>
@@ -178,7 +182,7 @@ function MonitorFeaturesSettings(props) {
 
       const icon = (
         <div className="field">
-            <label>Slider Icon</label>
+            <label>{labelPrefix} Icon</label>
             <select style={{fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"`}} value={settingsObj.icon} onChange={e => onChangeHandler("icon", e.target.value)}>
                 <WindowsIconsOptions />
             </select>
@@ -187,7 +191,7 @@ function MonitorFeaturesSettings(props) {
 
       const iconText = (
         <div className="field">
-            <label>Slider Text</label>
+            <label>{labelPrefix} Text</label>
             <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={"Enter name for slider"} />
         </div>
       )
@@ -200,25 +204,36 @@ function MonitorFeaturesSettings(props) {
         </div>
       )
 
-    return(
-        <div className="feature-toggle-settings">
-            { ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null }
-            <div className="input-row">
-                <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
-                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
-            </div>
-            <div className="input-row">
-                <div className="feature-toggle-row">
-                    <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span>Linked to brightness</span></div>
-                </div>
-            </div>
-            <div style={{display: (settingsObj.linked ? "block" : "none")}}>
-                <br />
-                <Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
-            </div>
-        </div>
-    )
+	if (fixedValues && fixedValues.length > 0)
+	{
+		return(
+			<div className="feature-toggle-settings">
+				{ ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null }
+			</div>
+		)
+	}
+	else
+	{
+		return(
+			<div className="feature-toggle-settings">
+				{ ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null }
+				<div className="input-row">
+					<Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
+					<Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
+				</div>
+				<div className="input-row">
+					<div className="feature-toggle-row">
+						<input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
+						<div className="feature-toggle-label"><span>Linked to brightness</span></div>
+					</div>
+				</div>
+				<div style={{display: (settingsObj.linked ? "block" : "none")}}>
+					<br />
+					<Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
+				</div>
+			</div>
+		)
+	}
 }
 
 const windowsIcons = [

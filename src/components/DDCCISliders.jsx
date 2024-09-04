@@ -55,12 +55,26 @@ export default function DDCCISliders(props) {
                         // Default
                         icon = (<span className="icon vfix">&#xe897;</span>)
                     }
-                    extraHTML.push(
-                        <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
-                            <div className="feature-icon">{ icon }</div>
-                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
-                        </div>
-                    )
+					if(Array.isArray(settings?.fixedValues) && settings?.fixedValues.length > 0)
+					{
+						extraHTML.push(
+							<div className="feature-row" key={monitor.key + "_" + vcp}>
+								<div className="feature-icon">{ icon }</div>
+								<div className="icons-row">
+									{settings.fixedValues.map((value) => {
+										return (<button className="icon-option" data-active={feature[0] == value} onClick={() => { setValues({ [vcp]: value }); setVCP(monitor.id, parseInt(vcp), value) }} key={monitor.key + "_" + vcp + "_" + value}>{value}</button>)
+									})}
+								</div>
+							</div>
+						)
+					} else {
+						extraHTML.push(
+							<div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
+								<div className="feature-icon">{ icon }</div>
+								<Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+							</div>
+						)
+					}
                 }
             }
 

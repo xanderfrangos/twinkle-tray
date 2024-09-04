@@ -13,6 +13,7 @@ export default class IntroWindow extends PureComponent {
 
     componentDidMount() {
         window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default); this.forceUpdate() })
+        window.ipc.send('request-localization')
     }
 
     render() {

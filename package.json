@@ -1,24 +1,24 @@
 {
   "name": "twinkle-tray",
-  "version": "1.15.5",
+  "version": "1.16.0-beta8",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
-    "parcel": "parcel src/html/*.html --port 3000 --out-dir cache",
-    "parcel-build": "del /q build && parcel build src/html/*.html --out-dir build --public-url ./ --experimental-scope-hoisting --no-source-maps",
+    "start": "electron . --dev",
+    "parcel": "node src/parcel.js --mode dev",
+    "parcel-build": "node src/parcel.js --mode build",
     "clean": "npm ci",
-    "dev": "wait-on http://localhost:3000/index.html && electron . --dev",
+    "dev": "electron . --dev",
     "electron-build": "electron-builder --x64",
     "postinstall": "electron-builder install-app-deps",
     "appx": "npm run parcel-build && electron-builder --x64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store.${ext}\"",
     "appx-unsigned": "npm run parcel-build && electron-builder --x64 -w appx -c.appx.publisher=\"CN=AppModelSamples, OID.2.25.311729368913984317654407730594956997722=1\" -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-unsigned.${ext}\"",
     "portable": "npm run parcel-build && electron-builder --x64 -w zip -c.extraMetadata.name=twinkle-tray-portable -c.win.artifactName=\"${productName} v${version}-portable.${ext}\" -c.win.compression=normal",
     "arm64": "npm run parcel-build && electron-builder --arm64 -c.extraMetadata.name=twinkle-tray-arm64 -c.win.artifactName=\"${productName} v${version}-arm64.${ext}\" -c.win.compression=normal",
-    "rebuild-ddcci-dev": "electron-rebuild -f -w @hensm/ddcci",
+    "rebuild-ddcci-dev": "npm rebuild @hensm/ddcci",
     "appx-arm64": "npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
     "build": "npm ci & npm run parcel-build && npm run electron-build",
     "build-all": "npm run build && npm run appx && npm run appx-arm64",
-    "start": "concurrently \"npm run parcel\" \"npm run dev\"",
     "test-wmibridge": "node src/modules/wmi-bridge/example.js"
   },
   "keywords": [
@@ -31,20 +31,21 @@
   "author": "Xander Frangos",
   "license": "MIT",
   "dependencies": {
-    "@electron/remote": "^2.0.8",
-    "@hensm/ddcci": "^0.1.0",
+    "@hensm/ddcci": "file:src/modules/node-ddcci",
+    "@paymoapp/active-window": "file:src/modules/node-active-window",
     "acrylic": "file:src/modules/acrylic",
-    "color": "^3.1.3",
+    "color": "^4.2.3",
     "electron-winstore-auto-launch": "^2.0.6",
     "ga4-mp": "^1.0.3",
-    "global-mouse-events": "^1.1.0",
-    "markdown-to-jsx": "^7.1.7",
-    "native-reg": "^1.1.0",
-    "node-fetch": "^2.6.1",
+    "global-mouse-events": "^1.2.0",
+    "markdown-to-jsx": "^7.5.0",
+    "native-reg": "^1.1.1",
     "setwindowpos-binding": "file:src/modules/setwindowpos",
-    "sharp": "^0.33.4",
+    "stackblur-canvas": "^2.7.0",
+    "studio-display-control": "^0.2.0",
+    "suncalc": "^1.9.0",
     "win32-displayconfig": "^0.1.0",
-    "windows-accent-colors": "^1.0.0",
+    "windows-accent-colors": "^1.0.1",
     "wmi-bridge": "file:src/modules/wmi-bridge",
     "wmi-client": "^0.5.0"
   },
@@ -61,16 +62,19 @@
       "src/Translate.js",
       "src/settings-preload.js",
       "src/intro-preload.js",
-      "src/known-ddc-brightness-codes.json",
+      "src/monitor-rules.json",
       "src/localization/*",
       "src/Utils.js",
       "src/Monitors.js",
       "src/wmi-bridge-test.js",
+      "src/vcp-codes.js",
       "src/assets/tray-icons/dark/*",
       "src/assets/tray-icons/light/*",
-      "build/**/*",
+      "build/*",
       "!node_modules/@hensm/ddcci/build",
       "node_modules/@hensm/ddcci/build/Release/ddcci.node",
+      "!src/modules/node-ddcci/build",
+      "src/modules/node-ddcci/build/Release/ddcci.node",
       "!node_modules/node-addon-api/doc",
       "!node_modules/win32-displayconfig/node_modules*",
       "!node_modules/global-mouse-events/node_modules",
@@ -82,6 +86,7 @@
       "!node_modules/**/*.pdb",
       "!node_modules/**/*.iobj",
       "!node_modules/**/*.obj",
+      "!node_modules/**/*.lib",
       "!node_modules/**/*.h",
       "!node_modules/**/*.md",
       "!node_modules/**/*.c",
@@ -89,11 +94,44 @@
       "!node_modules/**/*.log",
       "!node_modules/**/*.tlog",
       "!node_modules/**/*.vcxproj",
-      "!node_modules/**/*.filters"
+      "!node_modules/**/*.filters",
+      "!node_modules/**/wmic_centos_x64",
+      "!node_modules/**/wmic_ubuntu_x64",
+      "!node_modules/sharp/vendor/*",
+      "!node_modules/wmi-bridge/bin/*",
+      "!node_modules/native-reg/prebuilds/*",
+      "node_modules/native-reg/prebuilds/${platform}-${arch}/*",
+      "!node_modules/native-reg/src/*",
+      "!node_modules/acrylic/bin/**/*.node",
+      "!node_modules/setwindowpos-binding/bin/**/*.node",
+      "!node_modules/win32-displayconfig/bin/**/*.node",
+      "!node_modules/@paymoapp/active-window/module/*",
+      "!node_modules/@paymoapp/active-window/src/*",
+      "!node_modules/@paymoapp/active-window/build/Release/obj/*",
+      "!node_modules/@paymoapp/active-window/*.json",
+      "node_modules/@paymoapp/active-window/package.json",
+      "!node_modules/iconv-lite",
+      "!node_modules/cacache/*",
+      "!node_modules/path-scurry/*",
+      "!node_modules/tar/*",
+      "!node_modules/@isaacs/*",
+      "!node_modules/are-we-there-yet",
+      "!node_modules/make-fetch-happen/*",
+      "!node_modules/@npmcli/*",
+      "!node_modules/node-gyp/*",
+      "!node_modules/glob",
+      "!node_modules/@pkgjs",
+      "!node_modules/minizlib/*",
+      "!node_modules/usb/libusb",
+      "!node_modules/usb/prebuilds/*",
+      "node_modules/usb/prebuilds/${platform}-${arch}/*"
     ],
     "extraResources": [
-      "node_modules\\wmi-client\\**\\*",
-      "!node_modules\\wmi-client\\bin"
+      "node_modules\\wmi-client\\lib\\*",
+      "node_modules\\wmi-client\\scripts\\*",
+      "node_modules\\wmi-client\\index.js",
+      "node_modules\\wmi-client\\package.json",
+      "node_modules\\wmi-client\\.jscsrc"
     ],
     "asar": true,
     "asarUnpack": [
@@ -125,45 +163,26 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/plugin-proposal-class-properties": "^7.12.13",
-    "@babel/preset-env": "^7.13.8",
-    "@babel/preset-react": "^7.12.13",
-    "concurrently": "^5.3.0",
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "@babel/runtime": "^7.23.6",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/preset-react": "^7.23.3",
     "cross-env": "^7.0.3",
-    "electron": "^20.3.6",
-    "electron-builder": "^23.6.0",
-    "node-gyp": "^9.4.0",
+    "electron": "^31.4.0",
+    "electron-builder": "^24.13.3",
+    "node-gyp": "^10.2.0",
     "parcel-bundler": "^1.12.5",
-    "react": "^17.0.0",
-    "react-beautiful-dnd": "^13.1.0",
-    "react-dom": "^17.0.0",
-    "sass": "^1.54.0",
-    "wait-on": "^5.3.0"
+    "react": "18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "18.3.1",
+    "sass": "^1.54.0"
   },
   "overrides": {
     "node-gyp": "$node-gyp",
     "bindings@<1.5.0": "1.5.0",
     "node-addon-api@<3.1.0": "3.1.0",
-    "global-mouse-events": {
-      "node-gyp": "$node-gyp"
-    },
-    "acrylic": {
-      "node-gyp": "$node-gyp"
-    },
-    "wmi-bridge": {
-      "node-gyp": "$node-gyp"
-    },
-    "setwindowpos-binding": {
-      "node-gyp": "$node-gyp"
-    },
-    "windows-accent-colors": {
-      "node-gyp": "$node-gyp"
-    },
     "win32-displayconfig": {
-      "node-gyp": "$node-gyp"
-    },
-    "@hensm/ddcci": {
       "node-gyp": "$node-gyp"
     }
   }

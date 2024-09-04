@@ -1,0 +1,336 @@
+body[data-is-win11="true"], body[data-is-win11="false"] {
+    .settings-option-elem {
+        width: 100%;
+        margin-bottom: 6px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+        background-color: var(--page-section-bg);
+        border-radius: 4px;
+    
+        .parent-panel {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px;
+    
+            & > .option-icon {
+                width: 40px;
+                text-align: center;
+                box-sizing: border-box;
+                font-size: 20px;
+                padding-left: 4px;
+            }
+    
+            & > .content-area {
+                padding: 10px;
+                margin: 0 auto 0 0;
+                flex: 1;
+            }
+    
+            & > .input-area {
+                padding: 10px;
+    
+                select {
+                    margin: 0;
+                }
+    
+                input[type="text"], input[type="number"] {
+                    margin: 0;
+                }
+    
+                .inputToggle-generic {
+                    input {
+                        order: 2;
+                        margin-top: 0;
+                        margin-bottom: 0;
+                    }
+                    .text {
+                        margin-left: 0;
+                        margin-right: 8px;
+                        margin-top: 0;
+                    }
+                }
+    
+                .icons-row {
+                    margin: -7px -5px -11px;
+                }
+    
+            }
+    
+            & > .expand {
+                display: none;
+                width: 60px;
+                margin: 0 -10px;
+                padding-right: 4px;
+                text-align: center;
+                box-sizing: border-box;
+                user-select: none;
+                cursor: pointer;
+                align-self: stretch;
+                justify-content: center;
+                align-items: center;
+
+                .icon {
+                    transition: transform 0.2s;
+                    transform: rotate(0deg);
+                    transform-origin: 50% 50%;
+                }
+            }
+        }
+    
+        .option-title {
+            font-size: 16px;
+            font-weight: 400;
+        }
+    
+        .option-description {
+            font-size: 12.5px;
+            margin-top: 2px;
+            opacity: 0.75;
+            font-family: "Segoe UI Variable Small", "Segoe UI";
+        }
+    
+        &[data-expandable="true"] {
+            .expand {
+                display: flex;
+            }
+            .settings-option-children {
+                display: none;
+            }
+            &[data-expanded="true"] {
+                .expand .icon {
+                    transform: rotate(-180deg);
+                }
+    
+                .parent-panel {
+                    border-radius: 4px 4px 0 0;
+                }
+    
+                .settings-option-children {
+                    display: block;
+                    overflow: hidden;
+                    & > .children-inner {
+                        animation: settingsOptionChildrenIn 0.3s;
+                        @keyframes settingsOptionChildrenIn {
+                            0% {
+                                transform: translateY(-30px);
+                                opacity: 0;
+                            }
+                            10% {
+                                transform: translateY(-30px);
+                                opacity: 0;
+                            }
+                            100% {
+                                transform: translateY(0px);
+                                opacity: 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    .settings-child-elem {
+        margin-top: 1px;
+    
+        &:last-of-type {
+            & > .child-panel {
+                border-radius: 0 0 4px 4px;
+            }
+        }
+    
+        & > .child-panel {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-top: 1px solid var(--button-border);
+            padding: 5px 50px;
+            padding: 5px 20px;
+            margin-top: -1px;
+
+            & > .option-icon {
+                padding-right: 10px;
+            }
+    
+            & > .content-area {
+                padding: 10px 0px;
+                margin: 0 auto 0 0;
+                flex: 1;
+    
+                .child-option-title {
+                    font-size: 14px;
+                }
+
+                .child-option-description {
+                    font-size: 12.5px;
+                    margin-top: 2px;
+                    opacity: 0.75;
+                    font-family: "Segoe UI Variable Small", "Segoe UI";
+                }
+            }
+    
+            & > .input-area {
+                padding: 10px 0;
+    
+                input[type="text"], input[type="number"] {
+                    margin: 0;
+                }
+    
+                .inputToggle-generic {
+                    input {
+                        order: 2;
+                        margin-top: 0;
+                        margin-bottom: 0;
+                    }
+                    .text {
+                        margin-left: 0;
+                        margin-right: 8px;
+                        margin-top: 0;
+                    }
+                }
+            }
+        }
+    
+    }
+}
+
+body[data-is-win11="false"] {
+    .pageSection {
+        max-width: 540px;
+    }
+    .settings-option-elem {
+        //margin-bottom: 20px;
+        margin: 0 -10px 20px;
+        box-shadow: none;
+        border-radius: 0;
+        
+        .parent-panel {
+            //display: block;
+            padding: 0;
+
+            .input-area {
+
+                .inputToggle-generic {
+                    input {
+                        order: 0;
+                        margin-left: 0;
+                        margin-right: 0;
+                    }
+                    .text {
+                        order: 3;
+                        margin-left: 8px;
+                    }
+                }
+
+            }
+
+        }
+
+        .option-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+    
+        .option-description {
+            font-size: 13px;
+            margin-top: 2px;
+            opacity: 0.7;
+            font-family: "Segoe UI";
+        }
+        
+        &[data-expandable="true"][data-force-expandable="false"] {
+            .parent-panel {
+                display: flex;
+            }
+            .settings-option-children {
+                display: block;
+            }
+            .expand {
+                display: none !important;
+            }
+        }
+        
+    }
+
+    .settings-child-elem {
+
+        & > .child-panel {
+            padding: 0 10px;
+            & > .content-area, & > .input-area {
+                padding: 7px 0;
+            }
+        }
+
+        .child-option-title {
+            font-size: 14px;
+        }
+
+        .child-option-description {
+            font-size: 12.5px;
+            margin-top: 2px;
+            opacity: 0.75;
+            font-family: "Segoe UI";
+        }
+    }
+
+    // Show background in Win10
+    .settings-option-elem.win10-has-background, .settings-option-elem[data-expandable="true"][data-force-expandable="true"] {
+        background-color: var(--tray-background-base);
+        margin-left: 0px;
+        margin-top: 15px;
+
+        & > .parent-panel {
+            display: flex;
+            padding: 5px 10px;
+        }
+
+        .settings-child-elem {
+            border-top: 1px solid var(--page-background);
+            padding: 10px 10px 10px 10px;
+        }
+    }
+
+    // DDC/CI Features
+    .settings-option-elem.monitor-feature-item {
+        background-color: var(--tray-background-base);
+        margin-left: 0px;
+        margin-top: 15px;
+
+        // Enable/Disable toggle
+        .input-area {
+            order: -1;
+        }
+
+        // "+ Add Feature" button
+        & + .input-row {
+            display: block;
+            margin-bottom: 20px;
+            p {
+                margin: 0;
+                .button {
+                    display: block;
+                    width: 100%;
+                    padding: 20px;
+                    text-align: center;
+                    box-sizing: border-box;
+                }
+            }
+        }
+
+        .option-icon.icon {
+            margin: 0 -8px 0 -5px;
+        }
+
+        .settings-child-elem {
+            border-top: 1px solid var(--page-background);
+            padding: 10px 10px 10px 10px;
+        }
+    }
+
+    .win10-stack-input {
+        & > .child-panel {
+            display: block;
+        }
+    }
+
+}

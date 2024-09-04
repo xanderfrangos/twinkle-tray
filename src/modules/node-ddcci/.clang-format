@@ -1,0 +1,11 @@
+BasedOnStyle: Mozilla
+
+AlignOperands: true
+AlignTrailingComments: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Linux
+ColumnLimit: 80
+ContinuationIndentWidth: 2
+IndentWidth: 4
+MaxEmptyLinesToKeep: 2
+BreakStringLiterals: false

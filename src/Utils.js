@@ -1,14 +1,64 @@
 const path = require('path');
 const fs = require('fs')
 
+function udpSendCommand(type, data, port = 14715, key) {
+    return new Promise((resolve, reject) => {
+        const client = require('dgram').createSocket('udp4')
+        const udpTimeout = setTimeout(() => {
+            clearTimeout(udpTimeout)
+            reject("No response")
+        }, 1000)
+
+        client.on('message', (message, connection) => {
+            resolve(message?.toString())
+        })
+
+        client.send(JSON.stringify({ type, data, key }), port, "localhost", err => {
+            if (err) {
+                reject('Failed to send command')
+            }
+        })
+    })
+}
+
+function pipeSendCommand(type, data, port = 14715, key) {
+    return new Promise((resolve, reject) => {
+        const cmdTimeout = setTimeout(() => {
+            clearTimeout(cmdTimeout)
+            reject("No response")
+        }, 1000)
+
+        const client = require('net').connect('\\\\.\\pipe\\twinkle-tray\\cmds')
+
+        client.on('data', function(message) {
+            resolve(message?.toString())
+        })
+
+        try {
+            client.write(JSON.stringify({ type, data, key }))
+        } catch(e) {
+            reject('Failed to send command:', e)
+        }
+    })
+}
+
 module.exports = {
     unloadModule: (name) => {
         try {
-            delete require.cache[require.resolve(name)];
-            console.log(`Unloaded module: ${name}`)
-        } catch(e) {
+            if (require.cache[require.resolve(name)]) {
+                delete require.cache[require.resolve(name)]
+                console.log(`Unloaded module: ${name}`)
+            }
+        } catch (e) {
             console.log(`Couldn't unload module: ${name}`)
         }
+    },
+    wait(ms = 2000) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(true);
+            }, ms);
+        });
     },
     processArgs: (commandLine) => {
 
@@ -17,6 +67,11 @@ module.exports = {
         commandLine.forEach(argRaw => {
 
             const arg = argRaw.toLowerCase();
+
+            // Use UDP
+            if (arg.indexOf("--udp") === 0) {
+                validArgs.UseUDP = true
+            }
 
             // Get display by index
             if (arg.indexOf("--list") === 0) {
@@ -75,14 +130,25 @@ module.exports = {
         return validArgs
     },
 
-    handleProcessedArgs(args = {}, knownDisplaysPath) {
+    async handleProcessedArgs(args = {}, knownDisplaysPath, settingsPath) {
 
         let failed
+        const settings = JSON.parse(fs.readFileSync(settingsPath))
 
-        if(args.ShowPanel) {
+        if (args.ShowPanel) {
             console.log(`Showing panel`)
-        } else if(args.List) {
-            const displays = getKnownDisplays(knownDisplaysPath)
+        } else if (args.List) {
+            //const displays = getKnownDisplays(knownDisplaysPath)
+
+            const useUDP = (args.UseUDP ? true : false)
+            const response = await (useUDP ? udpSendCommand : pipeSendCommand)("list", false, settings.udpPortActive, settings.udpKey)
+            let displays = {}
+            try {
+                displays = JSON.parse(response || "")
+            } catch(e) {
+                console.log("Error parsing response")
+            }
+
             Object.values(displays).forEach(display => {
                 console.log(`
 \x1b[36mMonitorNum:\x1b[0m ${display.num}
@@ -91,6 +157,7 @@ module.exports = {
 \x1b[36mBrightness:\x1b[0m ${display.brightness}
 \x1b[36mType:\x1b[0m ${display.type}`)
             })
+
             failed = false;
             return true;
         } else {
@@ -169,7 +236,7 @@ function upgradeAdjustmentTimes(times = []) {
     const newTimes = []
 
     times.forEach(time => {
-        if(time.time) {
+        if (time.time) {
             newTimes.push(time)
             return
         }
@@ -193,7 +260,7 @@ function upgradeAdjustmentTimes(times = []) {
 
 // Convert version to a numeric value (v1.2.3 = 10020003)
 function getVersionValue(version = 'v1.0.0') {
-    let out = version.split('-')[0].replace("v","").split(".")
+    let out = version.split('-')[0].replace("v", "").split(".")
     out = (out[0] * 10000 * 10000) + (out[1] * 10000) + (out[2] * 1)
     return parseInt(out)
 }
@@ -210,12 +277,12 @@ function parseTime(time) {
 function getKnownDisplays(knownDisplaysPath) {
     let known
     try {
-      // Load known displays DB
-      known = fs.readFileSync(knownDisplaysPath)
-      known = JSON.parse(known)
+        // Load known displays DB
+        known = fs.readFileSync(knownDisplaysPath)
+        known = JSON.parse(known)
     } catch (e) {
-      known = {}
+        known = {}
     }
-  
+
     return known
-  }
+}

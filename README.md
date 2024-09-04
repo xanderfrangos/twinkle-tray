@@ -35,7 +35,7 @@ Twinkle Tray will automatically adjust the look and feel to match your Windows v
 ### Windows Package Manager
 
 ```powershell
-winget install twinkletray
+winget install xanderfrangos.twinkletray
 ```
 
 ### Chocolatey (unofficial)
@@ -53,6 +53,23 @@ choco upgrade twinkle-tray
 ```
 
 **This package is not maintained at this repository**. Please do not create issues relating to the package here. Instead, go to the [package page](https://community.chocolatey.org/packages/twinkle-tray) and follow the [Package Triage Process](https://docs.chocolatey.org/en-us/community-repository/users/package-triage-process).
+
+### Scoop (unofficial)
+
+[Scoop](https://scoop.sh/) users can download and install Twinkle Tray from Scoop's Extras bucket by installing the `twinkle-tray` package:
+
+```sh
+scoop bucket add extras
+scoop install extras/twinkle-tray
+```
+
+To upgrade to the latest approved package version, run the following command:
+
+```sh
+scoop update twinkle-tray
+```
+
+**This package is not maintained at this repository**. Please do not create issues relating to the package here. Instead, go to [ScoopInstallers/Extras](https://github.com/ScoopInstaller/Extras) and search for an existing [issue](https://github.com/ScoopInstaller/Extras/issues?q=is%3Aissue+twinkle-tray) or [discussion](https://github.com/ScoopInstaller/Extras/discussions?discussions_q=twinkle-tray) and create a new [issue](https://github.com/ScoopInstaller/Extras/issues/new/choose) or [discussion](https://github.com/ScoopInstaller/Extras/discussions/new/choose) if one does not already exist.
 
 ## Usage
 
@@ -108,8 +125,6 @@ If you wish to run a development build of Twinkly Tray:
 - Install the build tools for [`node-gyp`](https://github.com/nodejs/node-gyp#installation), if not already installed. You may already have these from installing NodeJS.
 - Run `npm install`.
 - Run `npm run build` to build an executable or `npm start` to run a development build.
-
-Note: For actual development, it's recommended to run `npm run parcel` and `npm run dev` seperately.
 
 ## Special Thanks
 

@@ -105,6 +105,19 @@
         }
 
     }
+
+    &[data-height="short"] {
+        padding-top: 4px;
+        .val {
+            text-align: left;
+            padding: 0 0 0 4px;
+            font-size: 16px;
+            width: 32px;
+            margin-left: 12px;
+            line-height: 1;
+            margin-bottom: -1px;
+        }
+    }
 }
 
 
@@ -140,6 +153,16 @@
             margin-bottom: -3px;
         }
     }
+
+    .input--range {
+        opacity: 1;
+        transition: opacity 0.2s 0.05s;
+    }
+}
+
+[data-refreshing="true"] .monitor-item .input--range {
+    pointer-events: none;
+    opacity: 0.35;
 }
 
 // Sun Valley tweaks
@@ -157,13 +180,13 @@ body[data-is-win11="true"]:not(.ignoreWin11) {
     .input--range {
     
         .progress {
+            height: 4px;
+            border-radius: 50px;
+            margin-top: 0px;
             background-color: var(--system-accent-dark1);
             @media screen and (prefers-color-scheme: dark) {
                 background-color: var(--system-accent-light2);
             }
-            height: 4px;
-            border-radius: 50px;
-            margin-top: 0px;
         }
     
         .rangeGroup {
@@ -190,23 +213,23 @@ body[data-is-win11="true"]:not(.ignoreWin11) {
                 width: 10px;
                 border-radius: 50px;
                 background-color: var(--system-accent-dark1);
-                @media screen and (prefers-color-scheme: dark) {
-                    background-color: var(--system-accent-light2);
-                }
                 margin-top: -3px;
 
                 transform: scale(1);
                 box-shadow: 0 0 0 4px var(--slider-thumb-border), 0 0.5px 3px 0 rgba(0, 0, 0, 0.603);
-                &:hover {
-                    box-shadow: 0 0 0 2px var(--slider-thumb-border), 0 0.5px 3px 0 rgba(0, 0, 0, 0.603);
-                    transform: scale(1.3);
-                }
 
                 height: 10px;
                 width: 10px;
 
                 transition: box-shadow 0.15s, transform 0.15s;
                 will-change: box-shadow, transform;
+                @media screen and (prefers-color-scheme: dark) {
+                    background-color: var(--system-accent-light2);
+                }
+                &:hover {
+                    box-shadow: 0 0 0 2px var(--slider-thumb-border), 0 0.5px 3px 0 rgba(0, 0, 0, 0.603);
+                    transform: scale(1.3);
+                }
             }
     
             &::-webkit-slider-runnable-track {

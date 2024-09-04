@@ -33,7 +33,9 @@
     --input-border: #555;
     --input-border-hover: #000;
     --input-active-background: #ddd;
-
+    
+    --button-background: #c0c0c0;
+    --button-primary-background: var(--button-background);
 
     --slider-track-color: rgba(0, 0, 0, 0.42);
     --slider-track-color-focus: rgba(0, 0, 0, 0.65);
@@ -61,6 +63,9 @@
         --input-border: #6f6f6f;
         --input-border-hover: #fff;
         --input-active-background: #444;
+    
+        --button-background: #454545;
+        --button-primary-background: var(--button-background);
 
         --slider-track-color: rgba(255, 255, 255, 0.42);
         --slider-track-color-focus: rgba(255, 255, 255, 0.65);
@@ -180,6 +185,8 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
     --button-highlight: #fffffffa;
     --button-border: #5c5c5c2b;
     --button-color-background: var(--system-accent-light2);
+    --button-primary-background: var(--system-accent-dark1);
+    --button-primary-background-hover: var(--system-accent-dark2);
     --button-color-border: var(--system-accent-light3);
     --input-border: rgba(0, 0, 0, 0.77);
 
@@ -198,6 +205,8 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
         --button-highlight: #b1b1b123;
         --button-border: #9797972b;
         --button-color-background: var(--system-accent-light2);
+        --button-primary-background: var(--system-accent-light3);
+        --button-primary-background-hover: var(--system-accent-light2);
         --button-color-border: var(--system-accent-light3);
         --input-border: rgba(255, 255, 255, 0.77);
 
@@ -206,5 +215,12 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
         &[data-use-mica="false"] {
             --tray-titlebar-bg: rgba(0,0,0,0.24);
         }
+    }
+}
+
+// Disable high contrast mode from Windows
+@media (forced-colors: active) {
+    :root {
+        forced-color-adjust: none;
     }
 }

@@ -16,6 +16,9 @@ export default class BrightnessPanel extends PureComponent {
   // Render <Slider> components
   getMonitors = () => {
     if (!this.state.monitors || this.numMonitors == 0) {
+      if (this.state.isRefreshing) {
+        return (<div className="no-displays-message" style={{textAlign:"center", paddingBottom:"15px"}}>Detecting displays...</div>)
+      }
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {
 
@@ -24,7 +27,7 @@ export default class BrightnessPanel extends PureComponent {
         let lastValidMonitor
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
            lastValidMonitor = monitor 
           }
         }
@@ -43,8 +46,23 @@ export default class BrightnessPanel extends PureComponent {
         // Check if we should use the extended DDC/CI layout or simple layout
         for(const {hwid} of sorted) {
           const monitorFeatures = window.settings?.monitorFeatures?.[hwid[1]]
-          if(monitorFeatures?.contrast || monitorFeatures?.volume) {
-            useFeatures = true
+          for(const vcp in monitorFeatures) {
+
+            if(vcp == "0x10" || vcp == "0x13" || vcp == "0xD6") {
+              continue; // Skip if brightness or power state
+            }
+
+            const feature = monitorFeatures[vcp]
+            if(feature) {
+              // Feature is active
+              // Now we check if there are any settings active for the feature
+              const featureSettings = window.settings.monitorFeaturesSettings?.[hwid[1]]
+              if( !(featureSettings?.[vcp]?.linked) ) {
+                // Isn't linked
+                useFeatures = true
+              }
+            }
+
           }
         }
 
@@ -52,12 +70,12 @@ export default class BrightnessPanel extends PureComponent {
           if (monitor.type == "none" || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
 
               let hasFeatures = true
               let featureCount = 0
               const monitorFeatures = window.settings?.monitorFeatures?.[monitor.hwid[1]]
-              const features = ["contrast", "volume", "powerState"]
+              const features = ["0x12", "0xD6", "0x62"]
               if (monitor.features) {
                 features.forEach(f => {
                   // Check monitor features
@@ -73,10 +91,12 @@ export default class BrightnessPanel extends PureComponent {
               }
               const powerOff = () => {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
+                monitor.features["0xD6"][0] = (monitor.features["0xD6"][0] >= 4 ? 1 : settings.ddcPowerOffValue)
+                this.forceUpdate()
               }
               const showPowerButton = () => {
-                if(monitorFeatures?.powerState && monitor.features?.powerState) {
-                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
+                if(monitorFeatures?.["0xD6"] && monitor.features?.["0xD6"]) {
+                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{(monitor.features?.["0xD6"][0] >= 4 ? T.t("PANEL_LABEL_TURN_ON") : T.t("PANEL_LABEL_TURN_OFF"))}</span></div>)
                 }
               }
 
@@ -186,6 +206,7 @@ export default class BrightnessPanel extends PureComponent {
     } else if (this.numMonitors > 0) {
       // Update single monitor
       if (sliderMonitor) sliderMonitor.brightness = level;
+      
       this.setState({
         monitors
       }, () => {
@@ -347,7 +368,8 @@ export default class BrightnessPanel extends PureComponent {
       names: {},
       update: false,
       sleeping: false,
-      updateProgress: 0
+      updateProgress: 0,
+      isRefreshing: window.isRefreshing
     }
     this.lastLevels = []
     this.updateInterval = null
@@ -365,6 +387,9 @@ export default class BrightnessPanel extends PureComponent {
     window.addEventListener("localizationUpdated", (e) => { T.setLocalizationData(e.detail.desired, e.detail.default) })
     window.addEventListener("updateUpdated", this.recievedUpdate)
     window.addEventListener("sleepUpdated", this.recievedSleep)
+    window.addEventListener("isRefreshing", (e) => {
+      this.setState({isRefreshing: e.detail})
+    })
 
     if (window.isAppX === false) {
       window.addEventListener("updateProgress", (e) => {
@@ -377,6 +402,10 @@ export default class BrightnessPanel extends PureComponent {
     // Update brightness every interval, if changed
     this.resetBrightnessInterval()
 
+    window.requestSettings()
+    window.requestMonitors()
+    window.ipc.send('request-localization')
+    window.reactReady = true
   }
 
   componentDidUpdate() {
@@ -389,26 +418,22 @@ export default class BrightnessPanel extends PureComponent {
   }
 
   render() {
-    if (this.state.sleeping) {
-      return (<div className="window-base" data-theme={window.settings.theme || "default"} id="panel"></div>)
-    } else {
-      return (
-        <div className="window-base" data-theme={window.settings.theme || "default"} id="panel">
-          <div className="titlebar">
-            <div className="title">{T.t("PANEL_TITLE")}</div>
-            <div className="icons">
-              {this.getLinkIcon()}
-              {this.getSleepIcon()}
-              <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
-            </div>
+    const monitorsElem = (this.state.sleeping ? (<div></div>) : this.getMonitors())
+    return (
+      <div className="window-base" data-theme={window.settings.theme || "default"} id="panel" data-refreshing={this.state.isRefreshing}>
+        <div className="titlebar">
+          <div className="title">{T.t("PANEL_TITLE")}</div>
+          <div className="icons">
+            {this.getLinkIcon()}
+            {this.getSleepIcon()}
+            <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
           </div>
-          {this.getMonitors()}
-          {this.getUpdateBar()}
-          {this.renderMica()}
         </div>
-      );
-    }
-
+        { monitorsElem }
+        {this.getUpdateBar()}
+        {this.renderMica()}
+      </div>
+    )
   }
 
   renderMica() {
@@ -423,6 +448,5 @@ export default class BrightnessPanel extends PureComponent {
       </div>
     )
   }
-
 
 }

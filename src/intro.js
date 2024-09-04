@@ -1,7 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import IntroWindow from "./components/IntroWindow";
 
-window.ipc.send('request-localization')
-
-ReactDOM.render(<IntroWindow />, document.getElementById("root"));
+createRoot(document.getElementById("root")).render(<IntroWindow />)

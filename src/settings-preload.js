@@ -1,6 +1,4 @@
 const { ipcRenderer: ipc } = require('electron');
-const remote = require('@electron/remote')
-let browser = remote.getCurrentWindow()
 
 function getArgumentVars() {
     try {
@@ -47,12 +45,22 @@ function sendSettings(newSettings = {}) {
         sendSettingsThrottle = setTimeout(() => {
             actuallySendSettings()
             sendSettingsThrottle = false
-        }, 333)
+        }, 500)
     }
 }
 
+function sendSettingsImmediate(newSettings = {}) {
+    ipc.send('send-settings', {
+        newSettings,
+        sendUpdate: false
+    })
+}
+
 function actuallySendSettings() {
-    ipc.send('send-settings', sendSettingsObj)
+    ipc.send('send-settings', {
+        newSettings: sendSettingsObj,
+        sendUpdate: true
+    })
     sendSettingsObj = {}
 }
 
@@ -65,6 +73,7 @@ function resetSettings() {
 }
 
 function detectSunValley() {
+    if(!window.reactReady) return false;
     try {
         // Detect new Fluent Icons (Windows build 21327+)
         if(window.settings.enableSunValley && document.fonts.check("12px Segoe Fluent Icons")) {
@@ -158,6 +167,13 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+ipc.on('window-history', (event, history) => {
+    window.windowHistory = history
+    window.dispatchEvent(new CustomEvent('windowHistory', {
+        detail: history
+    }))
+})
+
 // Localization recieved
 ipc.on('localization-updated', (event, localization) => {
     window.dispatchEvent(new CustomEvent('localizationUpdated', {
@@ -216,10 +232,21 @@ window.addEventListener("setVCP", e => {
     ipc.send("set-vcp", { monitor, code, value })
 })
 
+const SunCalc = require('suncalc')
+function getSunCalcTimes(lat, long) {
+    const localTimes = SunCalc.getTimes(new Date(), lat, long)
+    for (const timeName in localTimes) {
+        const time = localTimes[timeName].toLocaleTimeString()
+        localTimes[timeName] = `${time.slice(0,4)}${time.slice(7)}`
+    }
+    return localTimes
+}
+
 window.ipc = ipc
 window.updateBrightness = updateBrightness
 window.requestMonitors = requestMonitors
 window.sendSettings = sendSettings
+window.sendSettingsImmediate = sendSettingsImmediate
 window.requestSettings = requestSettings
 window.resetSettings = resetSettings
 window.getUpdate = getUpdate
@@ -228,9 +255,13 @@ window.openURL = openURL
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false
+window.reactReady = false
 window.settings = getArgumentVars().settings
-window.thisWindow = browser
 window.accent = "cyan"
+window.getSunCalcTimes = getSunCalcTimes
 
 window.version = 'v' + getArgumentVars().appVersion
+window.versionTag = getArgumentVars().appVersionTag
+window.versionBuild = getArgumentVars().appBuild
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
+window.settingsPath = getArgumentVars().settingsPath

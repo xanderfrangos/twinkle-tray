@@ -208,5 +208,6 @@
     "SETTINGS_PROFILES_APP_PATH": "#App Pfad",
     "SETTINGS_PROFILES_APP_DESC": "Ob du wollen dieses Profil zu aktivieren automatisch als ist fokussiert ein spezifisches #App, betritt das volles oder partiellen Pfad von den EXE unten.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Überbrückung #Overlay Typ",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Wechselt das Benehmen von das hotkey #Overlay als das präzisiert #App ist fokussiert. Dieser Charakterzug arbeitet nicht als ist das Profil manuell aktiviert."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Wechselt das Benehmen von das hotkey #Overlay als das präzisiert #App ist fokussiert. Dieser Charakterzug arbeitet nicht als ist das Profil manuell aktiviert.",
+    "SETTINGS_FEATURES_POWER_OFF": "Ausschalten"
 }

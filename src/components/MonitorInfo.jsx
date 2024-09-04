@@ -3,9 +3,10 @@ import Slider from "./Slider"
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
-    const [contrast, setContrast] = useState(monitor?.features?.contrast ? monitor?.features?.contrast[0] : 50)
-    const [volume, setVolume] = useState(monitor?.features?.volume ? monitor?.features?.volume[0] : 50)
-    const [powerState, setPowerState] = useState(monitor?.features?.powerState ? monitor?.features?.powerState[0] : 50)
+    const [brightness, setBrightness] = useState(monitor?.features?.["0x10"] ? monitor?.features?.["0x10"][0] : 50)
+    const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? monitor?.features?.["0x12"][0] : 50)
+    const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
+    const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
 
     let extraHTML = []
 
@@ -23,29 +24,42 @@ export default function MonitorInfo(props) {
         )
     }
 
-    if (monitor?.features?.contrast) {
+    // Brightness
+    if (monitor?.features?.["0x10"]) {
+        extraHTML.push(
+            <div className="feature-row" key="brightness">
+                <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
+                <Slider type="brightness" monitorID={monitor.id} level={brightness} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setBrightness(val); setVCP(monitor.id, 0x10, val * (monitor.features["0x10"][1] / 100)) }} scrolling={false} />
+            </div>
+        )
+    }
+
+    // Contrast
+    if (monitor?.features?.["0x12"]) {
         extraHTML.push(
             <div className="feature-row" key="contrast">
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features.contrast[1] / 100)) }} scrolling={false} />
+                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features["0x12"][1] / 100)) }} scrolling={false} />
             </div>
         )
     }
 
-    if (monitor?.features?.volume) {
+    // Volume
+    if (monitor?.features?.["0x62"]) {
         extraHTML.push(
             <div className="feature-row" key="volume">
                 <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features.volume[1] / 100)) }} scrolling={false} />
+                <Slider type="volume" monitorID={monitor.id} level={volume} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setVolume(val); setVCP(monitor.id, 0x62, val * (monitor.features["0x62"][1] / 100)) }} scrolling={false} />
             </div>
         )
     }
 
-    if (monitor?.features?.powerState) {
+    // Power State
+    if (monitor?.features?.["0xD6"]) {
         extraHTML.push(
             <div className="feature-row" key="powerState">
                 <div className="feature-icon"><span className="icon vfix">&#xE7E8;</span></div>
-                <Slider type="powerState" monitorID={monitor.id} level={powerState} monitorName={monitor.name} max={monitor.features.powerState[1]} monitortype={monitor.type} onChange={val => { setPowerState(val); setVCP(monitor.id, 0xD6, val) }} scrolling={false} />
+                <Slider type="powerState" monitorID={monitor.id} level={powerState} monitorName={monitor.name} max={monitor.features["0xD6"][1]} monitortype={monitor.type} onChange={val => { setPowerState(val); setVCP(monitor.id, 0xD6, val) }} scrolling={false} />
             </div>
         )
     }

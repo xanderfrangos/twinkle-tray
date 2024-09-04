@@ -148,5 +148,6 @@
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "Ha bizonyos kijelzőket szeretne elrejteni a szórólapról, itt kikapcsolhatja őket.",
     "SETTINGS_TIME_ANIMATE_TITLE": "Animáció az idők között",
     "SETTINGS_UPDATES_CHANNEL": "Frissítési csatorna",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Béta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Béta",
+    "SETTINGS_FEATURES_POWER_OFF": "Kikapcsolás"
 }

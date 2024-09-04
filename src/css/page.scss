@@ -974,11 +974,11 @@ body[data-is-win11="true"] {
 
             &:before {
                 background-color: var(--system-accent-dark2);
+                border-radius: 10px;
+                left: -10px;
                 @media screen and (prefers-color-scheme: dark) {
                     background-color: var(--system-accent-light2);
                 }
-                border-radius: 10px;
-                left: -10px;
             }
 
             &[data-active='true'] {

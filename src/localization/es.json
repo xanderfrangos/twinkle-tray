@@ -210,5 +210,6 @@
     "SETTINGS_PROFILES_APP_PATH": "Ruta de aplicación",
     "SETTINGS_PROFILES_APP_DESC": "Si  quieres este perfil para activar automáticamente cuándo una aplicación concreta está enfocada, introducir la ruta llena o parcial del EXE abajo.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Override overlay Tipo",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Cambios el comportamiento del hotkey overlay cuándo la aplicación especificada está enfocada. Esta característica no obra cuándo el perfil es manualmente activó."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Cambios el comportamiento del hotkey overlay cuándo la aplicación especificada está enfocada. Esta característica no obra cuándo el perfil es manualmente activó.",
+    "SETTINGS_FEATURES_POWER_OFF": "Apagar"
 }

@@ -246,8 +246,8 @@ async function doWMIBridgeTest() {
         if (monitorsThreadTest.connected) {
           console.log("WMI-BRIDGE TEST: Killing thread")
           monitorsThreadTest.kill()
-          resolve(false)
         }
+        resolve(false)
       } catch (e) { console.log(e) }
     }, 2000)
   })

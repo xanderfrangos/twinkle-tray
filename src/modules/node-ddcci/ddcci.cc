@@ -620,7 +620,6 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                     if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported && previousDisplay.second.result != "invalid") {
                         newMonitor.result = previousDisplay.second.result;
                         newMonitor.ddcciSupported = previousDisplay.second.ddcciSupported;
-                        newMonitor.hlCapabilities = previousDisplay.second.hlCapabilities;
                         
                         // Test old handle if it's valid
                         if(previousDisplay.second.handle != NULL && previousDisplay.second.handleIsValid) {
@@ -629,6 +628,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
                                 p("-- -- Using old handle.");
                                 newMonitor.handle = previousDisplay.second.handle;
                                 newMonitor.handleIsValid = previousDisplay.second.handleIsValid;
+                                newMonitor.hlCapabilities = previousDisplay.second.hlCapabilities;
                             }
                         }
                         break;

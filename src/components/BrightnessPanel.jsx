@@ -91,10 +91,12 @@ export default class BrightnessPanel extends PureComponent {
               }
               const powerOff = () => {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
+                monitor.features["0xD6"][0] = (monitor.features["0xD6"][0] >= 4 ? 1 : settings.ddcPowerOffValue)
+                this.forceUpdate()
               }
               const showPowerButton = () => {
                 if(monitorFeatures?.["0xD6"] && monitor.features?.["0xD6"]) {
-                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{T.t("PANEL_LABEL_TURN_OFF")}</span></div>)
+                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{(monitor.features?.["0xD6"][0] >= 4 ? T.t("PANEL_LABEL_TURN_ON") : T.t("PANEL_LABEL_TURN_OFF"))}</span></div>)
                 }
               }
 

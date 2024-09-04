@@ -43,6 +43,7 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Color Temperature",
     "PANEL_LABEL_VOLUME": "Volume",
     "PANEL_LABEL_TURN_OFF": "Power off",
+    "PANEL_LABEL_TURN_ON": "Power on",
     "INTRO_TITLE": "Hello, Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "The tray icon for Twinkle Tray is probably hidden, so you should move it to some place you can easily access it. See below for instructions.",
     "SETTINGS_TITLE": "Twinkle Tray Settings",

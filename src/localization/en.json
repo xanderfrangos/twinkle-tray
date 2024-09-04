@@ -87,7 +87,7 @@
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Forced on",
     "SETTINGS_GENERAL_FORCE_OVERLAY_DESC": "Always try to show the overlay on top of other windows. This can cause issues with exclusive fullscreen games and other fullscreen apps. It can also trigger anti-cheat in some games.",
     "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "Legacy DDC/CI detection method",
-    "SETTINGS_GENERAL_LEGACY_DDC_DESC": "Use the old v1.15.4 method of detecting DDC/CI displays.",
+    "SETTINGS_GENERAL_LEGACY_DDC_DESC": "Use the old v1.15.5 method of detecting DDC/CI displays.",
     "SETTINGS_GENERAL_AUTOBRIGHT_TITLE": "Auto-apply brightness",
     "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "If your monitor responds strangely after turning it off/or or disconnecting/connecting hardware, disabling this may help.",
     "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "Skip auto-apply to specific monitors",

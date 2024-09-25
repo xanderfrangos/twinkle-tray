@@ -149,5 +149,7 @@
     "SETTINGS_UPDATES_CHANNEL": "",
     "SETTINGS_UPDATES_BRANCH_STABLE": "",
     "SETTINGS_UPDATES_BRANCH_BETA": "آزمایشی",
-    "SETTINGS_FEATURES_POWER_OFF": "خاموش کردن"
+    "SETTINGS_FEATURES_POWER_OFF": "خاموش کردن",
+    "GENERIC_DEFAULT": "پیش فرض",
+    "GENERIC_OPTIONAL": "اختیاری"
 }

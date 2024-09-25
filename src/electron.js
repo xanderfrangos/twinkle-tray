@@ -3632,7 +3632,7 @@ function handleMonitorChange(t, e, d) {
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     // If displays not shown, refresh mainWindow
-    //restartPanel(panelSize.visible)
+    if(!panelSize.visible) restartPanel();
 
     handleChangeTimeout2 = false
   }, parseInt(settings.hardwareRestoreSeconds || 5) * 1000)
@@ -3653,7 +3653,7 @@ powerMonitor.on("resume", () => {
       recreateTray()
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
-        //restartPanel()
+        if(!panelSize.visible) restartPanel();
 
         // Check if time adjustments should apply
         applyCurrentAdjustmentEvent(true, false)

@@ -478,6 +478,7 @@ const defaultSettings = {
   ddcPowerOffValue: 5,
   disableAutoRefresh: false,
   disableAutoApply: false,
+  udpEnabled: false,
   udpRemote: false,
   udpPortStart: 14715,
   udpPortActive: 14715,

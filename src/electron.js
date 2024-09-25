@@ -2081,6 +2081,7 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
       } else {
         updateBrightness(monitor.id, (monitor.brightness < normalized ? monitor.brightness + step : monitor.brightness - step), undefined, undefined, false)
       }
+      sendToAllWindows('monitors-updated', monitors)
       if (numDone === Object.keys(monitors).length) {
         clearInterval(currentTransition);
         currentTransition = null
@@ -2098,6 +2099,7 @@ function transitionlessBrightness(level, eventMonitors = []) {
       normalized = (eventMonitors[monitor.id] >= 0 ? eventMonitors[monitor.id] : level)
     }
     updateBrightness(monitor.id, normalized)
+    sendToAllWindows('monitors-updated', monitors)
   }
 }
 
@@ -2675,6 +2677,7 @@ function applyProfileBrightness(profile) {
     Object.values(monitors)?.forEach(monitor => {
       updateBrightness(monitor.id, profile.monitors[monitor.id], true, "brightness")
     })
+    sendToAllWindows('monitors-updated', monitors)
   } catch (e) {
     console.log("Error applying profile brightness", e)
   }

@@ -148,5 +148,6 @@
     "GENERIC_DDC_WARNING": "Funkcje DDC/CI, takie jak kontrolowanie stanu zasilania, mogą spowodować, że monitor przestanie odpowiadać. Używaj ich na własne ryzyko.",
     "GENERIC_SPEED_SLOW": "Powoli",
     "GENERIC_SPEED_INSTANT": "Natychmiast",
-    "GENERIC_SPEED_VERY_SLOW": "Bardzo wolno"
+    "GENERIC_SPEED_VERY_SLOW": "Bardzo wolno",
+    "SETTINGS_FEATURES_POWER_OFF": "Wyłącz zasilanie"
 }

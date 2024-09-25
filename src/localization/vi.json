@@ -150,5 +150,6 @@
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Vô hiệu hóa các phương pháp phát hiện màn hình",
     "SETTINGS_TIME_TRANSITON_TITLE": "Tốc độ chuyển đổi độ sáng",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Ổn định (mặc định)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Thử nghiệm"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Thử nghiệm",
+    "SETTINGS_FEATURES_POWER_OFF": "Tắt nguồn màn hình"
 }

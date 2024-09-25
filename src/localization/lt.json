@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Atsisiųsti & Įdiegti {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Atnaujinimo kanalas",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabilus (numatytas)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Išjungti maitinimą"
 }

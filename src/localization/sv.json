@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Uppdatera kanal",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabil (standard)",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Inaktivera överlagring",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Stäng av"
 }

@@ -148,5 +148,6 @@
     "SETTINGS_TIME_ANIMATE_DESC": "Při změně časovačů bude přechod jasu plynulý. Může zvýšit využití procesoru. Jakékoliv manuální změny jasu budou během aktivního přechodu následovně přepsány při další aktualizaci přechodu.",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabilní (release, výchozí)",
     "SETTINGS_UPDATES_CHANNEL": "Kanál aktualizací",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Vypnout"
 }

@@ -148,5 +148,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Stiahnuť a nainštalovať {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Kanál aktualizácií",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabilný (predvolený)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Vypnúť"
 }

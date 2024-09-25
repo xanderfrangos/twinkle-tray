@@ -150,5 +150,10 @@
     "SETTINGS_TIME_ANIMATE_DESC": "De helderheidswaarden worden geanimeerd tussen de huidige en de volgende geplande gebeurtenis. Kan het CPU-gebruik verhogen. Handmatige helderheidsaanpassingen worden snel overschreven als dit actief is.",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Als de sneltoets-overlay van Twinkle Tray interfereert met toepassingen op volledig scherm, kunt u die hier uitschakelen.",
     "SETTINGS_UPDATES_CHANNEL": "Update kanaal",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Uitschakelen",
+    "GENERIC_DELETE": "Verwijderen",
+    "GENERIC_DEFAULT": "Standaard",
+    "GENERIC_OPTIONAL": "Optioneel",
+    "PANEL_LABEL_TURN_ON": "Inschakelen"
 }

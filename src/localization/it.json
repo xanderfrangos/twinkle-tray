@@ -149,5 +149,14 @@
     "GENERIC_DDC_WARNING": "Le funzioni DDC/CI, come il controllo dello stato di alimentazione, possono causare la mancata risposta del monitor. L'uso è a proprio rischio e pericolo.",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabile (predefinito)",
     "SETTINGS_UPDATES_CHANNEL": "Canale di aggiornamento",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Spegnimento",
+    "GENERIC_DELETE": "Elimina",
+    "GENERIC_DEFAULT": "Predefinito",
+    "GENERIC_OPTIONAL": "Facoltativo",
+    "PANEL_LABEL_TURN_ON": "Accendi",
+    "SETTINGS_GENERAL_OVERLAY_TITLE": "Comportamento predefinito dell'overlay",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Compatibilità maggiore",
+    "SETTINGS_GENERAL_OVERLAY_DESC": "Quanto forzatamente l'overlay del tasto di scelta rapida della luminosità cercherà di mostrarsi sopra ad altre applicazioni. Non dovresti aver bisogno di cambiare questa impostazione.",
+    "SETTINGS_GENERAL_ON_OVERLAY_DESC": "L'overlay si mostrerà sopra alla maggior parte delle finestre, ma non si forzerà al di sopra delle applicazioni contrassegnate come \"sempre in primo piano\"."
 }

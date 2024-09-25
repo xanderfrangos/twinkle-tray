@@ -150,5 +150,6 @@
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Ako preklapanje tipki prečaca Twinkle Tray-a ometa aplikacije preko cijelog zaslona, možete ga onemogućiti ovdje.",
     "SETTINGS_TIME_ANIMATE_TITLE": "Animirajte između vremena",
     "SETTINGS_UPDATES_CHANNEL": "Ažurirajte kanal",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Isključi"
 }

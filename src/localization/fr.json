@@ -150,5 +150,6 @@
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stable (par défaut)",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "Si vous souhaitez masquer certains affichages dans le menu déroulant, vous pouvez les désactiver ici.",
     "SETTINGS_UPDATES_CHANNEL": "Canal de mise à jour",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Bêta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Bêta",
+    "SETTINGS_FEATURES_POWER_OFF": "Eteindre"
 }

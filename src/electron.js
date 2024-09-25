@@ -760,10 +760,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       }, 500)
     }
 
-    if (true || settings.udpEnabled === true) {
+    if (settings.udpEnabled === true) {
       if (!udp.server) udp.start(settings.udpPort);
     } else if (settings.udpEnabled === false) {
-      if (!udp.server) udp.stop();
+      if (udp.server) udp.stop();
     }
 
     if (newSettings.order !== undefined) {
@@ -4511,7 +4511,11 @@ const udp = {
   },
   stop: function () {
     try {
-      if (udp.server) udp.server.close();
+      if (udp.server) {
+        console.log("[UDP] Stopping local UDP Server.")
+        udp.server.close()
+        udp.server = false
+      }
     } catch (e) {
       console.log("[UDP] Couldn't close UDP server.")
     }

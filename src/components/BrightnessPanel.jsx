@@ -34,7 +34,7 @@ export default class BrightnessPanel extends PureComponent {
         if(lastValidMonitor) {
           const monitor = lastValidMonitor
           return (
-            <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+            <Slider name={T.t("GENERIC_ALL_DISPLAYS")} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
           )
         }
         return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
@@ -103,7 +103,7 @@ export default class BrightnessPanel extends PureComponent {
               if (!useFeatures || !hasFeatures) {
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
-                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} />
+                    <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
                   </div>
                 )
               } else {
@@ -118,9 +118,9 @@ export default class BrightnessPanel extends PureComponent {
                     </div>
                     <div className="feature-row feature-brightness">
                       <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
-                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} />
+                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     </div>
-                    <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} />
+                    <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
                   </div>
                 )
               }

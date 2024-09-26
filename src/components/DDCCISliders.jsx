@@ -32,7 +32,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-contrast" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else if(vcp === "0x62") {
@@ -40,7 +40,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else {
@@ -58,7 +58,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon">{ icon }</div>
-                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} />
+                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 }

@@ -440,6 +440,7 @@ const defaultSettings = {
   analytics: !isDev,
   scrollShortcut: true,
   scrollShortcutAmount: 2,
+  scrollFlyoutAmount: 2,
   useAcrylic: false,
   useNativeAnimation: false,
   sleepAction: "ps",

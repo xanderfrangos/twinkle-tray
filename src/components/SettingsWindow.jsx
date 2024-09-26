@@ -1419,6 +1419,8 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Hardware change time" description="How long (in seconds) after detecting a hardware change to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.hardwareRestoreSeconds * 1} onChange={(e) => this.setSetting("hardwareRestoreSeconds", e.target.value)} /> } />
 
                                     <SettingsOption title="VCP read delay" description="How long (in miliseconds) to delay returning a VCP code value. This can help some displays not return random errors." input={<input type="number" min="0" max="200" value={this.state.rawSettings.checkVCPWaitMS * 1} onChange={(e) => this.setSetting("checkVCPWaitMS", e.target.value)} /> } />
+
+                                    <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />

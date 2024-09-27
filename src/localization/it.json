@@ -158,5 +158,6 @@
     "SETTINGS_GENERAL_OVERLAY_TITLE": "Comportamento predefinito dell'overlay",
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Compatibilità maggiore",
     "SETTINGS_GENERAL_OVERLAY_DESC": "Quanto forzatamente l'overlay del tasto di scelta rapida della luminosità cercherà di mostrarsi sopra ad altre applicazioni. Non dovresti aver bisogno di cambiare questa impostazione.",
-    "SETTINGS_GENERAL_ON_OVERLAY_DESC": "L'overlay si mostrerà sopra alla maggior parte delle finestre, ma non si forzerà al di sopra delle applicazioni contrassegnate come \"sempre in primo piano\"."
+    "SETTINGS_GENERAL_ON_OVERLAY_DESC": "L'overlay si mostrerà sopra alla maggior parte delle finestre, ma non si forzerà al di sopra delle applicazioni contrassegnate come \"sempre in primo piano\".",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Compatibilità maggiore"
 }

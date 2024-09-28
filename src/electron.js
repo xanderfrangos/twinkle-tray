@@ -3689,6 +3689,9 @@ function handleMetricsChange(type) {
     // if handleMonitorChange is going to run, we don't need to do anything
     if(handleChangeTimeout2) return;
 
+    // Do a quick check to ensure handles are all good
+    await refreshMonitors(true)
+
     if (!settings.disableAutoApply) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 

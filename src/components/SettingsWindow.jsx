@@ -563,8 +563,8 @@ export default class SettingsWindow extends PureComponent {
                         }}>
                             <option value="dawn">Dawn ({times.dawn})</option>
                             <option value="sunrise">Sunrise ({times.sunrise})</option>
-                            <option value="goldenHour">Golden Hour ({times.goldenHour})</option>
                             <option value="solarNoon">Solar Noon ({times.solarNoon})</option>
+                            <option value="goldenHour">Golden Hour ({times.goldenHour})</option>
                             <option value="sunsetStart">Sunset Start ({times.sunsetStart})</option>
                             <option value="sunset">Sunset ({times.sunset})</option>
                             <option value="dusk">Dusk ({times.dusk})</option>

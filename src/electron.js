@@ -468,6 +468,7 @@ const defaultSettings = {
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
+  useWmDisplayChangeEvent: true,
   defaultOverlayType: "safe",
   disableMouseEvents: false,
   disableThrottling: false,
@@ -2431,6 +2432,10 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     } catch (e) { }
   })
 
+  mainWindow.hookWindowMessage(126, (wParam, lParam) => {
+    if(settings.useWmDisplayChangeEvent) handleMetricsChange("wm_displaychange")
+  })
+
 }
 
 function currentOverlayType() {
@@ -3580,7 +3585,7 @@ function addEventListeners() {
   addDisplayChangeListener(() => { if(settings.useWin32Event) handleMonitorChange("win32") })
   screen.addListener("display-added", () => { if(settings.useElectronEvents) handleMonitorChange("display-added") })
   screen.addListener("display-removed", () => { if(settings.useElectronEvents) handleMonitorChange("display-removed") })
-  screen.addListener("display-metrics-changed", () => { if(settings.useElectronEvents) handleMonitorChange("display-metrics-changed") })
+  screen.addListener("display-metrics-changed", () => { if(settings.useElectronEvents) handleMetricsChange("display-metrics-changed") })
 
   enableMouseEvents()
 
@@ -3669,6 +3674,31 @@ powerMonitor.on("resume", () => {
   )
 
 })
+
+function handleMetricsChange(type) {
+  console.log(`Event: handleMetricsChange (${type})`);
+
+  const block = blockBadDisplays("handleMetricsChange")
+
+  // Defer actions for a moment just in case of repeat events
+  if (handleChangeTimeout1) {
+    clearTimeout(handleChangeTimeout1)
+  }
+  handleChangeTimeout1 = setTimeout(async () => {
+
+    // if handleMonitorChange is going to run, we don't need to do anything
+    if(handleChangeTimeout2) return;
+
+    if (!settings.disableAutoApply) setKnownBrightness();
+    handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
+
+    handleChangeTimeout1 = false
+  }, parseInt(settings.idleRestoreSeconds || 2) * 1000)
+
+  setTimeout(() => {
+    block.release()
+  }, parseInt(settings.idleRestoreSeconds || 2) * 1000)
+}
 
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler

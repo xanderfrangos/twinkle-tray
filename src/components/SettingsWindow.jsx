@@ -1425,6 +1425,7 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
                                     <SettingsOption title="Use Electron hardware events" input={this.renderToggle("useElectronEvents")} />
+                                    <SettingsOption title="Use WM_DISPLAYCHANGE events" input={this.renderToggle("useWmDisplayChangeEvent")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />

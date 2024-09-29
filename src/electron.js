@@ -469,6 +469,8 @@ const defaultSettings = {
   useWin32Event: true,
   useElectronEvents: true,
   useWmDisplayChangeEvent: true,
+  reloadTray: true,
+  reloadFlyout: true,
   defaultOverlayType: "safe",
   disableMouseEvents: false,
   disableThrottling: false,
@@ -2343,6 +2345,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     title: "Twinkle Tray Flyout",
     maximizable: false,
     minimizable: false,
+    paintWhenInitiallyHidden: false,
     webPreferences: {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,
@@ -2464,19 +2467,23 @@ function setAlwaysOnTop(onTop = true) {
   return true
 }
 
+function destroyPanel() {
+  if (mainWindow) {
+    mainWindow.close()
+    mainWindow = null
+  }
+}
+
 function restartPanel(show = false) {
   console.log("Function: restartPanel");
   if (mainWindow) {
+    mainWindow.setBounds({ x: 0, y: 0, width: 0, height: 0 })
     mainWindow.setOpacity(1)
     mainWindow.restore()
-    mainWindow.show()
-    mainWindow.setBounds({ x: 0, y: 0, width: 0, height: 0 })
+    mainWindow.showInactive()
   }
   setTimeout(() => {
-    if (mainWindow) {
-      mainWindow.close()
-      mainWindow = null
-    }
+    destroyPanel()
     createPanel(show)
   }, 1)
 }
@@ -2799,7 +2806,7 @@ function showPanel(show = true, height = 300) {
     }
     // Pause mouse events
     pauseMouseEvents(true)
-    startHidePanel()
+    if(mainWindow.isVisible) startHidePanel();
   }
 }
 
@@ -3643,7 +3650,10 @@ function handleMonitorChange(t, e, d) {
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     // If displays not shown, refresh mainWindow
-    if(!panelSize.visible) restartPanel();
+    if(settings.reloadFlyout && !panelSize.visible) {
+      destroyPanel()
+      createPanel(false)
+    }
 
     handleChangeTimeout2 = false
   }, parseInt(settings.hardwareRestoreSeconds || 5) * 1000)
@@ -3661,10 +3671,10 @@ powerMonitor.on("resume", () => {
   setTimeout(
     () => {
       block.release()
-      recreateTray()
+      if(settings.reloadTray) reloadTray();
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
-        if(!panelSize.visible) restartPanel();
+        if(settings.reloadFlyout && !panelSize.visible) restartPanel();
 
         // Check if time adjustments should apply
         applyCurrentAdjustmentEvent(true, false)
@@ -3687,13 +3697,18 @@ function handleMetricsChange(type) {
   handleChangeTimeout1 = setTimeout(async () => {
 
     // if handleMonitorChange is going to run, we don't need to do anything
-    if(handleChangeTimeout2) return;
+    if(handleChangeTimeout2) return false;
 
     // Do a quick check to ensure handles are all good
     await refreshMonitors(true)
 
     if (!settings.disableAutoApply) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
+
+    if(settings.reloadFlyout && !panelSize.visible) {
+      destroyPanel()
+      createPanel(false)
+    }
 
     handleChangeTimeout1 = false
   }, parseInt(settings.idleRestoreSeconds || 2) * 1000)

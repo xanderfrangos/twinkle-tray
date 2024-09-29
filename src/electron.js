@@ -646,7 +646,7 @@ function readSettings(doProcessSettings = true) {
 
   if (settingsVersion < Utils.getVersionValue("v1.16.1")) {
     // Disable win32display-config events by default as of v1.16.1
-    settings.useWin32Event = false
+    // settings.useWin32Event = false
   }
 
   // Fix missing UUIDs for app profiles

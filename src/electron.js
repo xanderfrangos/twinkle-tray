@@ -2113,10 +2113,11 @@ function transitionlessBrightness(level, eventMonitors = []) {
   }
 }
 
+let sleepTimeout
 function sleepDisplays(mode = "ps") {
   try {
-
-    setTimeout(async () => {
+    if(sleepTimeout) clearTimeout(sleepTimeout);
+    sleepTimeout = setTimeout(async () => {
       startIdleCheckShort()
       if (mode === "ddcci" || mode === "ps_ddcci") {
         for (let monitorID in monitors) {
@@ -2126,9 +2127,9 @@ function sleepDisplays(mode = "ps") {
       }
 
       if (mode === "ps" || mode === "ps_ddcci") {
-        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(-1,0x0112,0xF170,2)`)
+        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(0xFFFF,0x0112,0xF170,0x0002)`)
       }
-
+      sleepTimeout = false
     }, 333)
 
   } catch (e) {

@@ -48,7 +48,6 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-watch": "^8.0.0",
     "markdown-toc": "^1.2.0",
-    "node-gyp": "^9.0.0",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
     "standard-version": "^9.5.0",

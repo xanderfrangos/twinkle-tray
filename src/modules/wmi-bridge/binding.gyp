@@ -9,6 +9,9 @@
       	  "sources": [ "wmi-bridge.cc" ]
       	}],
       ],
+      "msvs_settings": {
+        "VCCLCompilerTool": { 'AdditionalOptions': ['/permissive'], },
+      },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
       ],

@@ -2127,7 +2127,7 @@ function sleepDisplays(mode = "ps") {
       }
 
       if (mode === "ps" || mode === "ps_ddcci") {
-        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int SendMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::SendMessage(0xFFFF,0x0112,0xF170,0x0002)`)
+        exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int PostMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::PostMessage(0xFFFF,0x0112,0xF170,0x0002)`)
       }
       sleepTimeout = false
     }, 333)

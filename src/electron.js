@@ -2345,7 +2345,6 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     title: "Twinkle Tray Flyout",
     maximizable: false,
     minimizable: false,
-    paintWhenInitiallyHidden: false,
     webPreferences: {
       preload: path.join(__dirname, 'panel-preload.js'),
       devTools: settings.isDev,

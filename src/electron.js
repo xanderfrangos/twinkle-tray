@@ -3705,11 +3705,6 @@ function handleMetricsChange(type) {
     if (!settings.disableAutoApply) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
-    if(settings.reloadFlyout && !panelSize.visible) {
-      destroyPanel()
-      createPanel(false)
-    }
-
     handleChangeTimeout1 = false
   }, parseInt(settings.idleRestoreSeconds || 2) * 1000)
 

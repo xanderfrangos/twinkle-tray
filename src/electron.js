@@ -3670,7 +3670,7 @@ powerMonitor.on("resume", () => {
   setTimeout(
     () => {
       block.release()
-      if(settings.reloadTray) reloadTray();
+      if(settings.reloadTray) recreateTray();
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
         if(settings.reloadFlyout && !panelSize.visible) restartPanel();

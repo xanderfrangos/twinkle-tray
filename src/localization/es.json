@@ -162,7 +162,7 @@
     "SETTINGS_GENERAL_SKIP_APPLY_DESC": "Inutiliza brillo sabido queaplicacoche después de todo casos/de poder del hardware para monitores concretos. Esto incluye el idle característica de detección.",
     "SETTINGS_FEATURES_POWER_TITLE": "Power Señal Estatal",
     "SETTINGS_FEATURES_POWER_DESC": "Cuándo enviando la DDC/CI orden para girar de vuestra exposición, el valor siguiente(s) será enviado.",
-    "SETTINGS_FEATURES_POWER_STANDBY": "Standby",
+    "SETTINGS_FEATURES_POWER_STANDBY": "En espera",
     "SETTINGS_FEATURES_POWER_COMPAT": "La mayoría de compatible",
     "SETTINGS_FEATURES_POWER_WARNING": "El \"Standby\" la opción es más probablemente para dejar toggling el monitor encima/fuera de Twinkle Bandeja. Aun así, muchos monitores no responden correctamente a cambiar estado de poder. Uso en vuestro riesgo propio.",
     "SETTINGS_FEATURES_ADD": "Añade Característica",

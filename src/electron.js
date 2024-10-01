@@ -2469,7 +2469,7 @@ function setAlwaysOnTop(onTop = true) {
 
 function destroyPanel() {
   if (mainWindow) {
-    mainWindow.close()
+    mainWindow.destroy()
     mainWindow = null
   }
 }

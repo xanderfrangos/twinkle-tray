@@ -2464,13 +2464,19 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       if(setting.data === 2) {
         // Idle
         if(!isWindowsUserIdle) {
+          console.log("Displays have gone to sleep.")
+
+          // If we were about to do a hardware event, stop.
+          if (handleChangeTimeout1) clearTimeout(handleChangeTimeout1);
+          if (handleChangeTimeout2) clearTimeout(handleChangeTimeout2);
           //if(!isUserIdle) startIdleCheckShort();
         }
         isWindowsUserIdle = true
       } else if(setting.data === 0) {
         // Active
         if(isWindowsUserIdle) {
-          handleMonitorChange("GUID_SESSION_USER_PRESENCE")
+          console.log("Displays have woken up.")
+          handleMetricsChange("GUID_SESSION_USER_PRESENCE")
         }
         isWindowsUserIdle = false
       }
@@ -3777,11 +3783,11 @@ function handleMetricsChange(type) {
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     handleChangeTimeout1 = false
-  }, parseInt(settings.idleRestoreSeconds || 2) * 1000)
+  }, parseInt(settings.idleRestoreSeconds || 3) * 1000)
 
   setTimeout(() => {
     block.release()
-  }, parseInt(settings.idleRestoreSeconds || 2) * 1000)
+  }, parseInt(settings.idleRestoreSeconds || 3) * 1000)
 }
 
 

@@ -290,7 +290,7 @@ body[data-is-win11="false"] #root {
         }
 
         .monitor-item .name-row .icon {
-            display: none;
+            display: none !important;
         }
 
         .input--range {

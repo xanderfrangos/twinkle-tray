@@ -2453,7 +2453,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       if(setting.data === 2) {
         // Idle
         if(!isWindowsUserIdle) {
-          if(!isUserIdle) startIdleCheckShort();
+          //if(!isUserIdle) startIdleCheckShort();
         }
         isWindowsUserIdle = true
       } else if(setting.data === 0) {
@@ -2477,7 +2477,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       if(lParam.readUInt32LE() === 2) {
         // 2 = Display is being shut off
         console.log("Event: SC_MONITORPOWER")
-        if(!isUserIdle) startIdleCheckShort();
+        //if(!isUserIdle) startIdleCheckShort();
       }
     }
   })

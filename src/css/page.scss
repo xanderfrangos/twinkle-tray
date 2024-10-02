@@ -105,6 +105,12 @@ body {
         padding: 0 10px;
         display: flex;
         align-items: center;
+        z-index: 4;
+        opacity: 1;
+        transition: opacity 0.2s;
+        @media (max-width: 880px) {
+            opacity: 0;
+        }
     }
 
     .window-controls-container {
@@ -1021,6 +1027,7 @@ body[data-is-win11="true"] {
         position: relative;
         top: 8px;
         left: 10px;
+        opacity: 1 !important;
     }
     input, select {
         border-radius: 5px;

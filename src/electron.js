@@ -469,6 +469,9 @@ const defaultSettings = {
   useWin32Event: true,
   useElectronEvents: true,
   useWmDisplayChangeEvent: true,
+  useScMonitorPowerEvent: true,
+  useGuidPresenceEvent: true,
+  useGuidBrightnessEvent: true,
   reloadTray: true,
   reloadFlyout: true,
   defaultOverlayType: "safe",
@@ -2457,6 +2460,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     }
 
     if(setting.name === "GUID_SESSION_USER_PRESENCE") {
+      if(!settings.useGuidPresenceEvent) return false;
       if(setting.data === 2) {
         // Idle
         if(!isWindowsUserIdle) {
@@ -2476,6 +2480,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       // "Make my device sleep after"
     } else if(setting.name === "GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS") {
       // Internal display brightness change
+      if(!settings.useGuidBrightnessEvent) return false;
       if(!ignoreBrightnessEvent) {
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
@@ -2492,6 +2497,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
 
   // WM_SYSCOMMAND
   mainWindow.hookWindowMessage(0x0112, (wParam, lParam) => {
+    if(!settings.useScMonitorPowerEvent) return false;
     if(wParam.readUInt32LE() === 61808) {
       // SC_MONITORPOWER
       if(lParam.readUInt32LE() === 2) {

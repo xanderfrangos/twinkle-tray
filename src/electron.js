@@ -2118,7 +2118,7 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
   try {
     if(sleepTimeout) clearTimeout(sleepTimeout);
     sleepTimeout = setTimeout(async () => {
-      startIdleCheckShort()
+      //startIdleCheckShort()
       if (mode === "ddcci" || mode === "ps_ddcci") {
         for (let monitorID in monitors) {
           const monitor = monitors[monitorID]
@@ -2438,6 +2438,51 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
   mainWindow.hookWindowMessage(126, (wParam, lParam) => {
     if(settings.useWmDisplayChangeEvent) handleMetricsChange("wm_displaychange")
   })
+
+  // WM_POWERBROADCAST
+  mainWindow.hookWindowMessage(0x218, (wParam, lParam) => {
+    if(wParam.readUInt32LE() !== 32787) return false;
+    // PBT_POWERSETTINGCHANGE
+
+    const setting = WindowUtils.getPowerSetting(lParam.readBigInt64LE(0))
+    if(setting.name !== "" || setting.guid) {
+      console.log(`Event: ${setting.name || setting.guid} (${setting.data})`)
+    }
+
+    if(setting.name === "GUID_SESSION_USER_PRESENCE") {
+      if(setting.data === 2) {
+        // Idle
+        if(!isWindowsUserIdle) {
+          if(!isUserIdle) startIdleCheckShort();
+        }
+        isWindowsUserIdle = true
+      } else if(setting.data === 0) {
+        // Active
+        if(isWindowsUserIdle) {
+          handleMonitorChange("GUID_SESSION_USER_PRESENCE")
+        }
+        isWindowsUserIdle = false
+      }
+    } else if(setting.name === "GUID_VIDEO_POWERDOWN_TIMEOUT") {
+      // "Turn off my screen after"
+    } else if(setting.name === "GUID_STANDBY_TIMEOUT") {
+      // "Make my device sleep after"
+    }
+  })
+
+  // WM_SYSCOMMAND
+  mainWindow.hookWindowMessage(0x0112, (wParam, lParam) => {
+    if(wParam.readUInt32LE() === 61808) {
+      // SC_MONITORPOWER
+      if(lParam.readUInt32LE() === 2) {
+        // 2 = Display is being shut off
+        console.log("Event: SC_MONITORPOWER")
+        if(!isUserIdle) startIdleCheckShort();
+      }
+    }
+  })
+
+  WindowUtils.registerPowerSettingNotifications(getMainWindowHandle())
 
 }
 
@@ -3757,11 +3802,12 @@ function restartBackgroundUpdate() {
 
 
 // Idle detection
-let isUserIdle = false
+let isUserIdle = false // Idle detection as defined by Twinkle Tray
 let userIdleInterval = false // Check if idle
 let userCheckingForActiveInterval = false // Check if came back
 let userIdleDimmed = false
 let idleMonitorBlock
+let isWindowsUserIdle = false // Idle detection as defined by Windows
 
 let idleMonitor = setInterval(idleCheckLong, 5000)
 let notIdleMonitor

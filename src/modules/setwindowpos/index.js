@@ -8,5 +8,7 @@ module.exports = {
     setForegroundWindow: addon.setForegroundWindow,
     getForegroundWindow: addon.getForegroundWindow,
     getWindowLong: addon.getWindowLong,
-    getWindowFullscreen: addon.getWindowFullscreen
+    getWindowFullscreen: addon.getWindowFullscreen,
+    registerPowerSettingNotifications: addon.registerPowerSettingNotifications,
+    getPowerSetting: addon.getPowerSetting
 }

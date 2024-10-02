@@ -1867,7 +1867,8 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 
 
-
+let ignoreBrightnessEvent = false
+let ignoreBrightnessEventTimeout = false
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   try {
     let level = newLevel
@@ -1970,12 +1971,18 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         id: monitor.id
       })
     } else if (monitor.type == "wmi") {
+      ignoreBrightnessEvent = true // Don't listen for Windows brightness events
       monitor.brightness = level
       monitor.brightnessRaw = normalized
       monitorsThread.send({
         type: "brightness",
         brightness: normalized
       })
+      if(ignoreBrightnessEventTimeout) clearTimeout(ignoreBrightnessEventTimeout);
+      ignoreBrightnessEventTimeout = setTimeout(() => {
+        ignoreBrightnessEvent = false
+        ignoreBrightnessEventTimeout = false
+      }, 500)
     }
 
     setTrayPercent()
@@ -2467,6 +2474,19 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       // "Turn off my screen after"
     } else if(setting.name === "GUID_STANDBY_TIMEOUT") {
       // "Make my device sleep after"
+    } else if(setting.name === "GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS") {
+      // Internal display brightness change
+      if(!ignoreBrightnessEvent) {
+        for(const hwid2 in monitors) {
+          const monitor = monitors[hwid2]
+          if(monitor.type === "wmi") {
+            const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max)
+            monitor.brightness = normalized
+            monitor.brightnessRaw = setting.data
+          }
+          sendToAllWindows('monitors-updated', monitors)
+        }
+      }
     }
   })
 

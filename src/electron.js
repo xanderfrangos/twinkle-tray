@@ -1069,7 +1069,7 @@ async function doHotkey(hotkey) {
 
         if (action.type === "off") {
           showOverlay = false
-          sleepDisplays(settings.sleepAction)
+          sleepDisplays(settings.sleepAction, 500)
         } else if (action.type === "refresh") {
           showOverlay = false
           await refreshMonitors(true, true)
@@ -2114,7 +2114,7 @@ function transitionlessBrightness(level, eventMonitors = []) {
 }
 
 let sleepTimeout
-function sleepDisplays(mode = "ps") {
+function sleepDisplays(mode = "ps", delayMS = 333) {
   try {
     if(sleepTimeout) clearTimeout(sleepTimeout);
     sleepTimeout = setTimeout(async () => {
@@ -2130,7 +2130,7 @@ function sleepDisplays(mode = "ps") {
         exec(`powershell.exe -NoProfile (Add-Type '[DllImport(\\"user32.dll\\")]^public static extern int PostMessage(int hWnd, int hMsg, int wParam, int lParam);' -Name a -Pas)::PostMessage(0xFFFF,0x0112,0xF170,0x0002)`)
       }
       sleepTimeout = false
-    }, 333)
+    }, delayMS)
 
   } catch (e) {
     console.log(e)
@@ -2280,7 +2280,7 @@ ipcMain.on('show-acrylic', () => {
 
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
-ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction))
+ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)

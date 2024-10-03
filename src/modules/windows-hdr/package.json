@@ -1,0 +1,25 @@
+{
+  "name": "windows-hdr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run rebuild",
+    "rebuild": "node-gyp rebuild",
+    "install": "npm run rebuild"
+  },
+  "keywords": [],
+  "author": "xanderfrangos",
+  "license": "MIT",
+  "bugs": {},
+  "homepage": "",
+  "dependencies": {
+    "bindings": "1.5.0",
+    "node-addon-api": "^7.0.0"
+  },
+  "files": [
+    "index.js",
+    "binding.gyp",
+    "windows-hdr.cc"
+  ]
+}

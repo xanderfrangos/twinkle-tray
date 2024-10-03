@@ -232,6 +232,11 @@ window.addEventListener("setVCP", e => {
     ipc.send("set-vcp", { monitor, code, value })
 })
 
+window.addEventListener("set-sdr-brightness", e => {
+    const { monitor, value } = e.detail
+    ipc.send("set-sdr-brightness", { monitor, value })
+})
+
 const SunCalc = require('suncalc')
 function getSunCalcTimes(lat, long) {
     const localTimes = SunCalc.getTimes(new Date(), lat, long)

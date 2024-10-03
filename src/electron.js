@@ -465,6 +465,7 @@ const defaultSettings = {
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,
+  enableHDR: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
@@ -1875,7 +1876,12 @@ let ignoreBrightnessEventTimeout = false
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   try {
     let level = newLevel
-    let vcp = (vcpValue === "brightness" ? "brightness" : `0x${parseInt(vcpValue).toString(16)}`)
+    let vcp = "brightness"
+    switch(vcpValue) {
+      case "brightness": vcp = "brightness"; break;
+      case "sdr": vcp = "sdr"; break;
+      default: vcp = `0x${parseInt(vcpValue).toString(16)}`;
+    }
 
     let monitor = false
     if (typeof index == "string" && index * 1 != index) {
@@ -1909,9 +1915,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       return false
     }
 
-    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
+    const normalized = normalizeBrightness(level, false, 0, 100)
 
-    if (monitor.type == "ddcci") {
+    if (vcp === "sdr") {
+      monitorsThread.send({
+        type: "sdr",
+        brightness: normalized,
+        id: monitor.id
+      })
+    } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
         monitor.brightnessRaw = normalized
@@ -2294,6 +2306,9 @@ ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
+})
+ipcMain.on('set-sdr-brightness', (e, values) => {
+  updateBrightnessThrottle(values.monitor, values.value, false, true, "sdr")
 })
 
 ipcMain.on('get-window-history', () => sendToAllWindows('window-history', windowHistory))

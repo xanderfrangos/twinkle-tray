@@ -4,6 +4,7 @@ console.log = (...args) => { args.unshift(tag); oLog(...args) }
 console.log("Monitors.js starting. If you see this again, something bad happened!")
 const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
+const hdr = require("windows-hdr");
 const { exec } = require('child_process');
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
@@ -37,6 +38,8 @@ process.on('message', async (data) => {
             })
         } else if (data.type === "brightness") {
             setBrightness(data.brightness, data.id)
+        }  else if (data.type === "sdr") {
+            setSDRBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
             settings = data.settings
 
@@ -184,6 +187,17 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                     console.log(`getStudioDisplay() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
                 } catch (e) {
                     console.log("\x1b[41m" + "getStudioDisplay() failed!" + "\x1b[0m", e)
+                }
+            }
+
+            // HDR
+            if (settings.enableHDR) {
+                try {
+                    startTime = process.hrtime.bigint()
+                    monitorsHDR = await getHDRDisplays(monitors);
+                    console.log(`getHDRDisplays() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+                } catch (e) {
+                    console.log("\x1b[41m" + "getHDRDisplays() failed!" + "\x1b[0m", e)
                 }
             }
 
@@ -363,6 +377,17 @@ getAllMonitors = async (ddcciMethod = "default") => {
         console.log("getBrightnessWMI() skipped due to previous failure.")
     }
 
+    // HDR
+    if (settings.enableHDR) {
+        try {
+            startTime = process.hrtime.bigint()
+            monitorsHDR = await getHDRDisplays(foundMonitors);
+            console.log(`getHDRDisplays() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+        } catch (e) {
+            console.log("\x1b[41m" + "getHDRDisplays() failed!" + "\x1b[0m", e)
+        }
+    }
+
     // Hide internal
     if (settings?.hideClosedLid) {
         const wmiMonitor = Object.values(foundMonitors).find(mon => mon.type === "wmi")
@@ -445,6 +470,29 @@ setStudioDisplayBrightness = async (serial, brightness) => {
     } catch (e) {
         console.log("\x1b[41m" + "setStudioDisplayBrightness(): failed to set brightness" + "\x1b[0m", e)
     }
+}
+
+getHDRDisplays = async (monitors) => {
+    try {
+        const displays = hdr.getDisplays()
+        for(const display of displays) {
+            const hwid = display.path.split("#")
+            updateDisplay(monitors, hwid[2], {
+                name: display.name,
+                key: hwid[2],
+                id: display.path,
+                hwid,
+                sdrNits: display.nits,
+                sdrLevel: parseInt((display.nits - 80) / 4),
+                hdr: "supported"
+            });
+            displays[hwid[2]] = display
+        }
+    } catch(e) {
+        console.log("\x1b[41m" + "getHDRDisplays(): failed to access displays" + "\x1b[0m", e)
+    }
+
+    return monitors
 }
 
 let wmiFailed = false
@@ -823,6 +871,16 @@ updateDisplay = (monitors, hwid2, info = {}) => {
     }
     Object.assign(monitors[hwid2], info)
     return true
+}
+
+function setSDRBrightness(brightness, id) {
+    if(!settings.enableHDR) return false;
+    try {
+        console.log("sdr", brightness, id)
+        hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
+    } catch(e) {
+        console.log(`Couldn't update SDR brightness! [${id}]`, e);
+    }
 }
 
 function setBrightness(brightness, id) {

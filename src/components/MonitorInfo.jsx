@@ -7,6 +7,7 @@ export default function MonitorInfo(props) {
     const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? monitor?.features?.["0x12"][0] : 50)
     const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
     const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
+    const [sdr, setSDR] = useState(monitor.sdrLevel >= 0 ? monitor.sdrLevel : 50)
     const [manualVCP, setManualVCP] = useState("")
     const [manualValue, setManualValue] = useState("")
 
@@ -75,6 +76,14 @@ export default function MonitorInfo(props) {
         </div>
     )
 
+    // SDR test
+    extraHTML.push(
+        <div className="feature-row" key="sdrLevel">
+            <div className="feature-icon">SDR</div>
+            <Slider type="sdrLevel" monitorID={monitor.id} level={sdr} monitorName={monitor.name} max={100} monitortype={monitor.type} onChange={val => { setSDR(val); setSDRBrightness(monitor.id, val) }} scrolling={false} />
+        </div>
+    )
+
     return (
         <div key={monitor.key}>
             <br />
@@ -96,6 +105,15 @@ function setVCP(monitor, code, value) {
         detail: {
             monitor,
             code,
+            value
+        }
+    }))
+}
+
+function setSDRBrightness(monitor, value) {
+    window.dispatchEvent(new CustomEvent("set-sdr-brightness", {
+        detail: {
+            monitor,
             value
         }
     }))

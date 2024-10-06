@@ -453,7 +453,8 @@ const defaultSettings = {
   detectIdleTimeEnabled: false,
   detectIdleTimeSeconds: 0,
   detectIdleTimeMinutes: 5,
-  detectIdleCheckFullscreen: true,
+  detectIdleCheckFullscreen: false,
+  detectIdleMedia: false,
   idleRestoreSeconds: 0,
   wakeRestoreSeconds: 0,
   hardwareRestoreSeconds: 0,
@@ -3891,11 +3892,22 @@ function isFocusedWindowFullscreen() {
   }
 }
 
+function isMediaPlaying() {
+  try {
+    if(!settings.detectIdleMedia) return false;
+    const mediaPlaying = MediaStatus.getPlaybackStatus()
+    return (mediaPlaying === "playing" ? true : false)
+  } catch(e) {
+    console.log(e)
+    return false
+  }
+}
+
 function idleCheckShort() {
   try {
     const idleTime = powerMonitor.getSystemIdleTime()
 
-    if (!userIdleDimmed && settings.detectIdleTimeEnabled && !settings.disableAutoApply && idleTime >= getIdleSettingValue() && !isFocusedWindowFullscreen()) {
+    if (!userIdleDimmed && settings.detectIdleTimeEnabled && !settings.disableAutoApply && idleTime >= getIdleSettingValue() && !isFocusedWindowFullscreen() && !isMediaPlaying()) {
       console.log(`\x1b[36mUser idle. Dimming displays.\x1b[0m`)
       userIdleDimmed = true
       idleMonitorBlock?.release?.()

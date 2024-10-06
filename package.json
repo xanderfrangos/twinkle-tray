@@ -139,6 +139,9 @@
       "node_modules\\wmi-client\\**\\*",
       "node_modules\\sharp\\**\\*",
       "**\\*.node",
+      "src\\assets\\tray-icons\\dark\\*.ico",
+      "src\\assets\\tray-icons\\light\\*.ico",
+      "src\\assets\\logo.ico"
     ],
     "win": {
       "target": [

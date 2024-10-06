@@ -2411,6 +2411,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       showPanel(false)
 
       setTimeout(() => {
+        if(!mainWindow) return false;
         if (!settings.useAcrylic || settings.isWin11) {
           tryVibrancy(mainWindow, false)
           mainWindow.setBackgroundColor("#00000000")
@@ -2569,10 +2570,8 @@ function restartPanel(show = false) {
     mainWindow.restore()
     mainWindow.showInactive()
   }
-  setTimeout(() => {
-    destroyPanel()
-    createPanel(show)
-  }, 1)
+  destroyPanel()
+  createPanel(show)
 }
 
 function getPrimaryDisplay() {
@@ -3120,9 +3119,8 @@ let recreatingTray = false
 async function recreateTray() {
   if(recreatingTray) return;
   recreatingTray = true
-  tray?.destroy()
+  tray?.destroy?.()
   tray = null
-  await Utils.wait(500)
   createTray()
   recreatingTray = false
 }
@@ -3758,9 +3756,9 @@ powerMonitor.on("resume", () => {
   setTimeout(
     () => {
       block.release()
-      if(settings.reloadTray) recreateTray();
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
+        if(settings.reloadTray) recreateTray();
         if(settings.reloadFlyout && !panelSize.visible) restartPanel();
 
         // Check if time adjustments should apply

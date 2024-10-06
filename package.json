@@ -40,7 +40,7 @@
     "global-mouse-events": "^1.2.0",
     "markdown-to-jsx": "^7.5.0",
     "native-reg": "^1.1.1",
-    "setwindowpos-binding": "file:src/modules/setwindowpos",
+    "tt-windows-utils": "file:src/modules/tt-windows-utils",
     "stackblur-canvas": "^2.7.0",
     "studio-display-control": "^0.2.0",
     "suncalc": "^1.9.0",
@@ -80,7 +80,7 @@
       "!node_modules/win32-displayconfig/node_modules*",
       "!node_modules/global-mouse-events/node_modules",
       "!node_modules/electron-acrylic-window/node_modules",
-      "!node_modules/setwindowpos-binding/node_modules",
+      "!node_modules/tt-windows-utils/node_modules",
       "!node_modules/windows-accent-colors/node_modules",
       "!node_modules/**/node-gyp/*",
       "!node_modules/**/*.ipdb",
@@ -104,7 +104,7 @@
       "node_modules/native-reg/prebuilds/${platform}-${arch}/*",
       "!node_modules/native-reg/src/*",
       "!node_modules/acrylic/bin/**/*.node",
-      "!node_modules/setwindowpos-binding/bin/**/*.node",
+      "!node_modules/tt-windows-utils/bin/**/*.node",
       "!node_modules/win32-displayconfig/bin/**/*.node",
       "!node_modules/@paymoapp/active-window/module/*",
       "!node_modules/@paymoapp/active-window/src/*",
@@ -138,7 +138,7 @@
     "asarUnpack": [
       "node_modules\\wmi-client\\**\\*",
       "node_modules\\sharp\\**\\*",
-      "**\\*.node"
+      "**\\*.node",
     ],
     "win": {
       "target": [

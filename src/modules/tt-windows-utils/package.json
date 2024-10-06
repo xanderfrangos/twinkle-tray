@@ -1,5 +1,5 @@
 {
-  "name": "setwindowpos-binding",
+  "name": "tt-windows-utils",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -20,6 +20,8 @@
   "files": [
     "index.js",
     "binding.gyp",
-    "setwindowpos.cc"
+    "windows_media_status.cc",
+    "windows_power_events.cc",
+    "windows_window_utils.cc"
   ]
 }

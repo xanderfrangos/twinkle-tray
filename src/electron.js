@@ -64,7 +64,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const WindowUtils = require("setwindowpos-binding")
+const {WindowUtils, MediaStatus, PowerEvents} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -2465,7 +2465,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     if(wParam.readUInt32LE() !== 32787) return false;
     // PBT_POWERSETTINGCHANGE
 
-    const setting = WindowUtils.getPowerSetting(lParam.readBigInt64LE(0))
+    const setting = PowerEvents.getPowerSetting(lParam.readBigInt64LE(0))
     if(setting.name !== "" || setting.guid) {
       console.log(`Event: ${setting.name || setting.guid} (${setting.data})`)
     }
@@ -2525,7 +2525,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
     }
   })
 
-  WindowUtils.registerPowerSettingNotifications(getMainWindowHandle())
+  PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
 
 }
 

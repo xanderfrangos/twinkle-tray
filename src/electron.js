@@ -1079,9 +1079,26 @@ async function doHotkey(hotkey) {
           await refreshMonitors(true, true)
         } else if (action.type === "set" || action.type === "offset" || action.type === "cycle") {
 
-          const determineHotkeyOutputValue = async monitor => {
-            switch (action.type) {
-              case "offset":
+          // Build list of all applicable monitors
+          const hotkeyMonitors = []
+
+          // Determine applicable monitors and new values
+          for (const monitor of Object.values(monitors)) {
+
+            let applicable = false
+            if (action.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
+              // Target all monitors
+              applicable = true
+            } else if (Object.keys(action.monitors)?.length && action.monitors[monitor.id]) {
+              // Target specified monitors
+              applicable = true
+            }
+
+            if (applicable) {
+              // Determine new value
+              newValue = 0
+
+              if (action.type === "offset") {
                 let currentValue = 0
                 if (action.target === "brightness") {
                   currentValue = monitor.brightness
@@ -1095,8 +1112,8 @@ async function doHotkey(hotkey) {
                   // Get VCP
                   currentValue = await getVCP(monitor, parseInt(action.target))
                 }
-                return currentValue + parseInt(action.value);
-              case "cycle":
+                newValue = currentValue + parseInt(action.value);
+              } else if (action.type === "cycle") {
                 if (!action.values?.length) return -1;
                 if (!hotkeyCycleIndexes[hotkey.id]) {
                   hotkeyCycleIndexes[hotkey.id] = 0
@@ -1117,7 +1134,7 @@ async function doHotkey(hotkey) {
                 }
 
                 // Update cycle if it's the first "cycle" action
-                if(!hasCheckedFirstCycleAction) {
+                if (!hasCheckedFirstCycleAction) {
                   hasCheckedFirstCycleAction = true
                   // If current value is same as measured, move onto next value. Else reset.
                   if (true || currentCycleValue == parseInt(action.values[hotkeyCycleIndexes[hotkey.id]])) {
@@ -1134,38 +1151,18 @@ async function doHotkey(hotkey) {
                     hotkeyCycleIndexes[hotkey.id] = 0
                   }
                 }
-                
-                return action.values[hotkeyCycleIndexes[hotkey.id]];
 
-              case "set": return parseInt(action.value);
-            }
-          }
+                newValue = action.values[hotkeyCycleIndexes[hotkey.id]];
+              } else if (action.type === "set") {
+                newValue = parseInt(action.value);
+              }
 
-          // Build list of all applicable monitors
-          const hotkeyMonitors = []
-          if (action.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
-            // Target all monitors
-            for (const monitor of Object.values(monitors)) {
               hotkeyMonitors.push({
                 monitor,
-                value: await determineHotkeyOutputValue(monitor)
+                value: newValue
               })
             }
-          } else {
-            // Use list, look up monitor objects
-            if (Object.keys(action.monitors)?.length) {
-              for (const id in action.monitors) {
-                if (action.monitors[id]) {
-                  const monitor = Object.values(monitors).find(m => m.id == id)
-                  if (monitor) {
-                    hotkeyMonitors.push({
-                      monitor,
-                      value: await determineHotkeyOutputValue(monitor)
-                    });
-                  }
-                }
-              }
-            }
+
           }
 
           // Apply change
@@ -1199,8 +1196,6 @@ async function doHotkey(hotkey) {
               }
             }
           }
-
-
 
         }
 

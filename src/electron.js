@@ -3728,7 +3728,7 @@ function handleMonitorChange(t, e, d) {
     clearTimeout(handleChangeTimeout2)
   }
   handleChangeTimeout2 = setTimeout(async () => {
-    recreateTray()
+    if(settings.recreateTray) recreateTray();
 
     // Reset all known displays
     await refreshMonitors(true)

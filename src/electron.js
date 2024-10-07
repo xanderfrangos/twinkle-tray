@@ -474,8 +474,8 @@ const defaultSettings = {
   useScMonitorPowerEvent: true,
   useGuidPresenceEvent: true,
   useGuidBrightnessEvent: true,
-  reloadTray: true,
-  reloadFlyout: true,
+  recreateTray: false,
+  recreateFlyout: false,
   defaultOverlayType: "safe",
   disableMouseEvents: false,
   disableThrottling: false,
@@ -3186,6 +3186,7 @@ function getDebugTrayMenuItems() {
   return {
     label: "DEBUG", visible: (settings.isDev ? true : false), submenu: [
       { label: "RESTART PANEL", type: 'normal', click: () => restartPanel() },
+      { label: "RECREATE TRAY", type: 'normal', click: () => recreateTray() },
       { label: "MINIMIZE PANEL", type: 'normal', click: () => mainWindow?.minimize() },
       { label: "HIDE PANEL", type: 'normal', click: () => showPanel(false) },
       { label: "OPACITY 0", type: 'normal', click: () => mainWindow?.setOpacity(0) },
@@ -3759,8 +3760,8 @@ powerMonitor.on("resume", () => {
       block.release()
       if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
         if (!settings.disableAutoApply) setKnownBrightness();
-        if(settings.reloadTray) recreateTray();
-        if(settings.reloadFlyout && !panelSize.visible) restartPanel();
+        if(settings.recreateTray) recreateTray();
+        if(settings.recreateFlyout && !panelSize.visible) restartPanel();
 
         // Check if time adjustments should apply
         applyCurrentAdjustmentEvent(true, false)

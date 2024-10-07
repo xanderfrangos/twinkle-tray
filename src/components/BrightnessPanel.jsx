@@ -1,6 +1,7 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
+import HDRSliders from "./HDRSliders";
 import TranslateReact from "../TranslateReact"
 
 const monitorSort = (a, b) => {
@@ -101,7 +102,7 @@ export default class BrightnessPanel extends PureComponent {
                 }
               }
 
-              if (!useFeatures || !hasFeatures) {
+              if ((!useFeatures || !hasFeatures) && false) {
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
@@ -122,6 +123,7 @@ export default class BrightnessPanel extends PureComponent {
                       <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     </div>
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                    <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} />
                   </div>
                 )
               }

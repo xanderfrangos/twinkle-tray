@@ -3566,6 +3566,12 @@ checkForUpdates = async (force = false) => {
           let foundVersion = false
           for (let release of releases) {
             if (!(settings.branch === "master" && release.prerelease === true)) {
+
+              // Skip versions older than current
+              const versionParsed =  Utils.getVersionValue(release.tag_name)
+              const appVersionValue = Utils.getVersionValue(`v${app.getVersion()}`)
+              if(versionParsed < appVersionValue) continue;
+
               foundVersion = true
               latestVersion = {
                 releaseURL: (release.html_url),

@@ -23,7 +23,7 @@ export default function HDRSliders(props) {
     )
 }
 
-function setSDRBrightness(monitor, code, value) {
+function setSDRBrightness(monitor, value) {
     window.dispatchEvent(new CustomEvent("set-sdr-brightness", {
         detail: {
             monitor,

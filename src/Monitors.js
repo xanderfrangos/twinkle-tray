@@ -484,7 +484,6 @@ getHDRDisplays = async (monitors) => {
         for(const display of displays) {
             const hwid = display.path.split("#")
             updateDisplay(monitors, hwid[2], {
-                name: display.name,
                 key: hwid[2],
                 id: display.path,
                 hwid,

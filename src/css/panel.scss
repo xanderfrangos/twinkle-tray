@@ -415,6 +415,9 @@ body[data-is-win11="false"] #root {
     align-items: center;
     font-size: 22px;
     padding-right: 18px;
+    .text {
+        font-size: 12.5px;
+    }
 }
 .feature-power-icon {
     display: flex;

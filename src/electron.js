@@ -1870,6 +1870,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 let ignoreBrightnessEvent = false
 let ignoreBrightnessEventTimeout = false
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
+  if(isWindowsUserIdle) return false; // Skip if displays are off
   try {
     let level = newLevel
     let vcp = "brightness"
@@ -2487,10 +2488,10 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       } else if(setting.data === 0) {
         // Active
         if(isWindowsUserIdle) {
+          isWindowsUserIdle = false
           console.log("Displays have woken up.")
           handleMetricsChange("GUID_SESSION_USER_PRESENCE")
         }
-        isWindowsUserIdle = false
       }
     } else if(setting.name === "GUID_VIDEO_POWERDOWN_TIMEOUT") {
       // "Turn off my screen after"

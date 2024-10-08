@@ -1185,6 +1185,7 @@ export default class SettingsWindow extends PureComponent {
                                             } />
                                     </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_TIME_IDLE_FS_TITLE")} description={T.t("SETTINGS_TIME_IDLE_FS_DESC")} input={this.renderToggle("detectIdleCheckFullscreen")} />
+                                    <SettingsOption title={T.t("SETTINGS_TIME_IDLE_MEDIA_TITLE")} description={T.t("SETTINGS_TIME_IDLE_MEDIA_DESC")} input={this.renderToggle("detectIdleMedia")} />
                                 </div>
                             </SettingsPage>
 
@@ -1434,7 +1435,6 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Enable HDR support" input={this.renderToggle("enableHDR")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
-                                    <SettingsOption title="Prevent idle detection while media is playing" input={this.renderToggle("detectIdleMedia")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />
 
                                 </div>

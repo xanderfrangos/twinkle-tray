@@ -158,6 +158,8 @@
     "SETTINGS_TIME_SUN_GET": "Get coordinates",
     "SETTINGS_TIME_IDLE_FS_TITLE": "Fullscreen apps are never idle",
     "SETTINGS_TIME_IDLE_FS_DESC": "Fullscreen apps block idle detection. This only applies to the focused window.",
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Media blocks idle detection",
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Idle detection will be disabled while any media is playing. This includes both video and audio. This only applies when Windows reports that media is playing.",
     "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
     "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all displays.",
     "SETTINGS_HOTKEYS_ADD": "Add Hotkey",

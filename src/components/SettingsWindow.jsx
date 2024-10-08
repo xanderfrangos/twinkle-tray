@@ -806,6 +806,34 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getHDRMonitors = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setHDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    setHDRMonitor = (value, monitor) => {
+        const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
+        hdrDisplays[monitor.key] = value
+        this.setSetting("hdrDisplays", hdrDisplays)
+    }
+
     getHideMonitors = () => {
         try {
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
@@ -1210,6 +1238,9 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="2000">{T.t("SETTINGS_MONITORS_RATE_4")}</option>
                                         </select>
                                     )} />
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
+                                        {this.getHDRMonitors()}
+                                    </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHideMonitors()}
                                     </SettingsOption>

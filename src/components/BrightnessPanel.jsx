@@ -95,6 +95,7 @@ export default class BrightnessPanel extends PureComponent {
               if(window.settings?.hdrDisplays?.[monitor.key]) {
                 // Has HDR slider enabled
                 hasFeatures = true
+                useFeatures = true
                 showHDRSliders = true
               }
 

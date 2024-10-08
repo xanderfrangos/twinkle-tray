@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_OVERLAY_DESC": "Wechselt das Benehmen von das hotkey #Overlay als das präzisiert #App ist fokussiert. Dieser Charakterzug arbeitet nicht als ist das Profil manuell aktiviert.",
     "SETTINGS_FEATURES_POWER_OFF": "Ausschalten",
     "SETTINGS_GENERAL_REPORT_TITLE": "Generier Bericht",
-    "SETTINGS_GENERAL_REPORT_DESC": "Speicher eine Text Datei mit Kunde von eure Monitore und Lagen für entwanzend."
+    "SETTINGS_GENERAL_REPORT_DESC": "Speicher eine Text Datei mit Kunde von eure Monitore und Lagen für entwanzend.",
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medien blocken müßige Entdeckung",
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Müßige Entdeckung will sein ausgeschaltet während spielen irgendwelche Medien. Dies schließt ein sowohl Video und Audio. #Der nur bewirbt als Fenster Berichte dass Medien spielen."
 }

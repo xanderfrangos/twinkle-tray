@@ -90,6 +90,14 @@ export default class BrightnessPanel extends PureComponent {
                   }
                 })
               }
+
+              let showHDRSliders = false
+              if(window.settings?.hdrDisplays?.[monitor.key]) {
+                // Has HDR slider enabled
+                hasFeatures = true
+                showHDRSliders = true
+              }
+
               const powerOff = () => {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
                 monitor.features["0xD6"][0] = (monitor.features["0xD6"][0] >= 4 ? 1 : settings.ddcPowerOffValue)
@@ -102,7 +110,7 @@ export default class BrightnessPanel extends PureComponent {
                 }
               }
 
-              if ((!useFeatures || !hasFeatures) && false) {
+              if (!useFeatures || !hasFeatures) {
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
@@ -123,7 +131,7 @@ export default class BrightnessPanel extends PureComponent {
                       <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     </div>
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                    <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                    { showHDRSliders ? <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} /> : null }
                   </div>
                 )
               }

@@ -119,6 +119,8 @@
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "When the lid is closed or the internal display has been disabled in Windows, hide the brightness slider in the panel.",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Hide Displays",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "If you would like to hide specific displays from the flyout, you can toggle them off here.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "Show HDR Settings",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Enable HDR brightness sliders for specific monitors.",
     "SETTINGS_FEATURES_DESCRIPTION": "Enable or disable specific DDC/CI features in the brightness panel. At least one feature must be enabled for your monitor to show up in the brightness panel. Not all displays support these features, such as laptop/tablet displays.",
     "SETTINGS_FEATURES_UNSUPPORTED": "This monitor does not support DDC/CI features.",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Check Current Values",

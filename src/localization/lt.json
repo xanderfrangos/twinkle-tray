@@ -209,5 +209,7 @@
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Perrašyti apvalkalo tipą",
     "SETTINGS_HOTKEY_OFF_WARN": "Šis veiksmas naudos parinktį, parinkta po – „Išjungti ekranų maitinimą“ veiksmu. Jei Jūs pageidaujate išjungti nurodytą/-us ekraną/-us, tada naudokite – „Nustatyti“ ar „Ciklo“ spartųjį veiksmą.",
     "SETTINGS_PROFILES_DESC": "Automatiškai derinti ryškumą ar nuorodos uždangos veikimą, priklausomai nuo fokusuotos programos/-ėlės. Jūs tai pat galite pridėti profilius prie dešinio paspaudimo meniu, sistemos juostelėje, norint greitai pakeisti ryškumą į jau nustatytus profilius.",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Pakeičia apvalkalo trumpinio elgseną, kai nurodyta programos/-ėlė fokusuota. Ši funkcija neveikia, kai profilis yra aktyvuotas rankiniu būdu."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Pakeičia apvalkalo trumpinio elgseną, kai nurodyta programos/-ėlė fokusuota. Ši funkcija neveikia, kai profilis yra aktyvuotas rankiniu būdu.",
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Neaktyvumo aptikimas bus išjungtas/išgalintas kol leidžiama medija. Šis įskaito vaizdą ir garsą. Šis prisitaiko tik tada, kai „Windows“ praneša apie jos veikimą.",
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medijos veikimas blokuoja neaktyvumo aptikimą"
 }

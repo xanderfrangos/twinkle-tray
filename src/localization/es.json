@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_APP_DESC": "Si deseas que este perfil se active automáticamente cuando se enfoque en una aplicación específica, ingresa la ruta completa o parcial del EXE a continuación.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Override overlay Tipo",
     "SETTINGS_PROFILES_OVERLAY_DESC": "Cambios el comportamiento del hotkey overlay cuándo la aplicación especificada está enfocada. Esta característica no obra cuándo el perfil es manualmente activó.",
-    "SETTINGS_FEATURES_POWER_OFF": "Apagar"
+    "SETTINGS_FEATURES_POWER_OFF": "Apagar",
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Idle La detección será inutilizada mientras cualesquier medios de comunicación está tocando. Esto incluye ambos vídeo y audio. Esto sólo aplica cuándo las ventanas informa que los medios de comunicación está tocando.",
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Bloques de medios de comunicación idle detección"
 }

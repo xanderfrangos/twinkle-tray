@@ -710,6 +710,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   try {
 
     settings.settingsVer = "v" + appVersion
+    settings.settingsBuild = appBuild
 
     if (settings.theme) {
       nativeTheme.themeSource = determineTheme(settings.theme)

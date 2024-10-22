@@ -1,10 +1,14 @@
 const { app } = require('electron')
+const fs = require('fs')
 
 const path = require('path');
 
 let isDev = app.commandLine.hasSwitch("dev")
 
-const appVersionFull = app.getVersion()
+let package = fs.readFileSync(isDev ? "package.json" : __dirname + '/../package.json')
+if(package) package = JSON.parse(package)
+
+const appVersionFull = (package?.versionBuild ?? app.getVersion())
 const appVersion = appVersionFull.split('+')[0]
 const appVersionTag = appVersion?.split('-')[1]
 const appBuild = (isDev ? "dev" : appVersionFull.split('+')[1])
@@ -41,7 +45,6 @@ if(app.commandLine.hasSwitch("show-console")) {
   reopenAppWithConsole()
 }
 
-const fs = require('fs')
 const { Readable } = require("node:stream")
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')

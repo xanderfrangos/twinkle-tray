@@ -1912,12 +1912,12 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       return false
     }
 
-    const normalized = normalizeBrightness(level, false, 0, 100)
+    const normalized = normalizeBrightness(level, false, monitor.min, monitor.max)
 
     if (vcp === "sdr") {
       monitorsThread.send({
         type: "sdr",
-        brightness: normalized,
+        brightness: level,
         id: monitor.id
       })
     } else if (monitor.type == "ddcci") {

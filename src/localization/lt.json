@@ -53,7 +53,7 @@
     "SETTINGS_GENERAL_STARTUP": "Paleisti pajungimo metu",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Pritaikyti skaistį paleidimo metu",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Atkurti paskutinę skaisčio konfigūraciją kiekvienam ekranui, kai „Twinkle Tray“ pasileidžia.",
-    "SETTINGS_GENERAL_THEME_TITLE": "Tema",
+    "SETTINGS_GENERAL_THEME_TITLE": "Apipavidalinimas",
     "SETTINGS_GENERAL_THEME_SYSTEM": "Sistemos pageidavimas (numatytai)",
     "SETTINGS_GENERAL_THEME_DARK": "Tamsus",
     "SETTINGS_GENERAL_THEME_LIGHT": "Šviesus",

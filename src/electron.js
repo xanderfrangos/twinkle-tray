@@ -46,7 +46,7 @@ if(app.commandLine.hasSwitch("show-console")) {
 }
 
 const { Readable } = require("node:stream")
-require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
+//require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')
 const uuid = require('crypto').randomUUID
 

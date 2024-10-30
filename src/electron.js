@@ -2568,8 +2568,14 @@ function destroyPanel() {
   }
 }
 
+let restartingPanel = false
 function restartPanel(show = false) {
   console.log("Function: restartPanel");
+  if(restartingPanel) {
+    console.log("Function: restartPanel: already restarting")
+    return false
+  }
+  restartingPanel = true
   if (mainWindow) {
     mainWindow.setBounds({ x: 0, y: 0, width: 0, height: 0 })
     mainWindow.setOpacity(1)
@@ -2578,6 +2584,7 @@ function restartPanel(show = false) {
   }
   destroyPanel()
   createPanel(show)
+  restartingPanel = false
 }
 
 function getPrimaryDisplay() {
@@ -3743,8 +3750,7 @@ function handleMonitorChange(t, e, d) {
 
     // If displays not shown, refresh mainWindow
     if(settings.reloadFlyout && !panelSize.visible) {
-      destroyPanel()
-      createPanel(false)
+      restartPanel(false)
     }
 
     handleChangeTimeout2 = false

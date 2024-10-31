@@ -151,5 +151,12 @@
     "SETTINGS_UPDATES_CHANNEL": "Обновление канала",
     "SETTINGS_TIME_ANIMATE_DESC": "Значения яркости будут анимированы между текущим и следующим запланированным событием. Может увеличить использование процессора. Ручные настройки яркости будут быстро перезаписываться, пока эта функция активна.",
     "SETTINGS_UPDATES_BRANCH_BETA": "Бета",
-    "SETTINGS_FEATURES_POWER_OFF": "Выключить"
+    "SETTINGS_FEATURES_POWER_OFF": "Выключить",
+    "GENERIC_DELETE": "Удалить",
+    "GENERIC_DEFAULT": "По умолчанию",
+    "GENERIC_OPTIONAL": "Опционально",
+    "SETTINGS_HOTKEY_ACTION": "Действие",
+    "SETTINGS_HOTKEY_ACTION_SET": "Присвоить значение",
+    "SETTINGS_HOTKEY_ACTION_OFFSET": "Изменить значение",
+    "SETTINGS_HOTKEY_ADD_VALUE": "Добавить значение"
 }

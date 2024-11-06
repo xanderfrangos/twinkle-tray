@@ -151,5 +151,6 @@
     "SETTINGS_TIME_TRANSITON_TITLE": "Overgangshastighet for lysstyrke",
     "SETTINGS_UPDATES_CHANNEL": "Oppdater kanalen",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Slå av"
+    "SETTINGS_FEATURES_POWER_OFF": "Slå av",
+    "GENERIC_DELETE": "Slett"
 }

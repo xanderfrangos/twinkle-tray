@@ -148,5 +148,6 @@
     "GENERIC_SPEED_VERY_FAST": "Muito rápido",
     "SETTINGS_UPDATES_CHANNEL": "Canal de atualização",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Estável (padrão)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Apagar"
 }

@@ -167,5 +167,13 @@
     "SETTINGS_GENERAL_REPORT_DESC": "Hata ayıklama için monitörleriniz ve ayarlarınız hakkında bilgi içeren bir metin dosyası kaydedin.",
     "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "Belirli monitörlerde otomatik uygulamayı atla",
     "SETTINGS_GENERAL_SKIP_APPLY_DESC": "Belirli monitörler için tüm donanım/güç olaylarından sonra bilinen parlaklığın otomatik olarak uygulanmasını devre dışı bırakın. Buna boşta algılama özelliği de dahildir.",
-    "SETTINGS_PROFILES_ADD": "New Profile"
+    "SETTINGS_PROFILES_ADD": "Yeni Profil",
+    "SETTINGS_PROFILES_NAME": "Profil Adı",
+    "SETTINGS_PROFILES_BRIGHTNESS_TOGGLE": "Aktifken parlaklığı ayarla",
+    "SETTINGS_PROFILES_SHOW_MENU": "Sağ tuş tepsi menüsünde göster",
+    "SETTINGS_PROFILES_TRIGGER_TITLE": "Uygulama tetiklenme ayarları",
+    "SETTINGS_PROFILES_APP_PATH": "Uygulama yolu",
+    "SETTINGS_PROFILES_APP_DESC": "Belirli bir uygulamaya odaklanıldığında bu profilin otomatik olarak etkinleştirilmesini istiyorsanız, EXE'nin tam veya kısmi yolunu aşağıya girin.",
+    "SETTINGS_PROFILES_OVERLAY_TITLE": "Baskılama türünü geçersiz kıl",
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Belirtilen uygulama odaklandığında kısayol tuşu baskılama davranışını değiştirir. Profil manuel olarak etkinleştirildiğinde bu özellik çalışmaz."
 }

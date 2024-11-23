@@ -3925,11 +3925,19 @@ function idleCheckShort() {
       idleMonitorBlock?.release?.()
       idleMonitorBlock = blockBadDisplays("idle:start")
       try {
+        const transitionMonitors = {}
         Object.values(monitors)?.forEach((monitor) => {
           if(!shouldSkipDisplay(monitor, true)) {
-            updateBrightness(monitor.id, 0, true, "brightness")
+            if(settings.idleTransitionSpeed) {
+              transitionMonitors[monitor.id] = 0
+            } else {
+              updateBrightness(monitor.id, 0, true, "brightness")
+            }
           }
         })
+        if(Object.keys(transitionMonitors).length) {
+          transitionBrightness(0, transitionMonitors, settings.idleTransitionSpeed)
+        }
       } catch (e) {
         console.log(`Error dimming displays`, e)
       }

@@ -173,11 +173,11 @@
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/preset-react": "^7.23.3",
     "cross-env": "^7.0.3",
-    "electron": "^31.7.1",
+    "electron": "^33.2.0",
     "electron-builder": "^24.13.3",
     "node-gyp": "^10.2.0",
     "bindings": "1.5.0",
-    "node-addon-api": "8.1.0",
+    "node-addon-api": "^8.2.2",
     "parcel-bundler": "^1.12.5",
     "react": "18.3.1",
     "react-beautiful-dnd": "^13.1.1",
@@ -187,12 +187,12 @@
   "overrides": {
     "node-gyp": "$node-gyp",
     "bindings@<1.5.0": "1.5.0",
-    "node-addon-api@<8.1.0": "8.1.0",
     "win32-displayconfig": {
       "node-gyp": "$node-gyp",
       "bindings": "$bindings",
       "node-addon-api": "$node-addon-api"
     },
+    "node-addon-api@<8.2.2": "8.2.2",
     "node-active-window": {
       "node-gyp": "$node-gyp",
       "bindings": "$bindings",

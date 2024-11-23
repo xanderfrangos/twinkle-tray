@@ -44,7 +44,7 @@
     "stackblur-canvas": "^2.7.0",
     "studio-display-control": "^0.2.0",
     "suncalc": "^1.9.0",
-    "win32-displayconfig": "^0.1.0",
+    "win32-displayconfig": "file:src/modules/win32-displayconfig",
     "windows-accent-colors": "^1.0.1",
     "windows-hdr": "file:src/modules/windows-hdr",
     "wmi-bridge": "file:src/modules/wmi-bridge",
@@ -187,11 +187,6 @@
   "overrides": {
     "node-gyp": "$node-gyp",
     "bindings@<1.5.0": "1.5.0",
-    "win32-displayconfig": {
-      "node-gyp": "$node-gyp",
-      "bindings": "$bindings",
-      "node-addon-api": "$node-addon-api"
-    },
     "node-addon-api@<8.2.2": "8.2.2",
     "node-active-window": {
       "node-gyp": "$node-gyp",

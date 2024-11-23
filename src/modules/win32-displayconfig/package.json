@@ -1,0 +1,44 @@
+{
+  "name": "win32-displayconfig",
+  "version": "0.1.0",
+  "description": "Inspect and reconfigure displays in Windows",
+  "main": "index.js",
+  "scripts": {
+    "rebuild": "node-gyp rebuild",
+    "install": "npm run rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djsweet/win32-displayconfig.git"
+  },
+  "keywords": [
+    "windows"
+  ],
+  "author": "djsweet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/djsweet/win32-displayconfig/issues"
+  },
+  "homepage": "https://github.com/djsweet/win32-displayconfig#readme",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^8.2.2",
+    "node-gyp": "^10.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.27",
+    "robotjs": "^0.6.0",
+    "typescript": "^3.9.7"
+  },
+  "engines": {
+    "node": ">=10.16 <11 || >= 11.8"
+  },
+  "files": [
+    "CONTRIBUTORS",
+    "COPYRIGHT",
+    "index.js",
+    "index.d.ts",
+    "binding.gyp",
+    "win32-displayconfig.cc"
+  ]
+}

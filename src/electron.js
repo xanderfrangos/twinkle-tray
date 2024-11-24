@@ -2350,7 +2350,7 @@ ipcMain.on('save-report', async () => {
 let panelState = "hidden"
 let panelReady = false
 
-function createPanel(toggleOnLoad = false, isRefreshing = false) {
+function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = true) {
 
   console.log("Creating panel...")
 
@@ -2414,7 +2414,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false) {
       console.log("Panel ready!")
       createTray()
 
-      showPanel(false)
+      if(showOnLoad) showPanel(false);
 
       setTimeout(() => {
         if(!mainWindow) return false;
@@ -2579,11 +2579,11 @@ function restartPanel(show = false) {
   if (mainWindow) {
     mainWindow.setBounds({ x: 0, y: 0, width: 0, height: 0 })
     mainWindow.setOpacity(1)
-    mainWindow.restore()
+    //mainWindow.restore()
     mainWindow.showInactive()
   }
   destroyPanel()
-  createPanel(show)
+  createPanel(show, false, false)
   restartingPanel = false
 }
 

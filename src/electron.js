@@ -808,7 +808,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     if (newSettings.useAcrylic !== undefined) {
       lastTheme["UseAcrylic"] = newSettings.useAcrylic
       sendToAllWindows('theme-settings', lastTheme)
-      sendMicaWallpaper()
+      if(newSettings.useAcrylic) {
+        currentWallpaperTime = false
+        sendMicaWallpaper()
+      }
       doRestartPanel = true
     }
 
@@ -4465,8 +4468,7 @@ ipcMain.on('mica-wallpaper-same', (event, data) => {
 })
 
 async function sendMicaWallpaper() {
-  // Skip if Win10 or Mica disabled
-  if (!settings?.useAcrylic || !settings?.isWin11 || !mainWindow) return false;
+  if (!mainWindow) return false;
   checkMicaWallpaper()
 }
 

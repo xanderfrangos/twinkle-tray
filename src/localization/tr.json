@@ -175,5 +175,6 @@
     "SETTINGS_PROFILES_APP_PATH": "Uygulama yolu",
     "SETTINGS_PROFILES_APP_DESC": "Belirli bir uygulamaya odaklanıldığında bu profilin otomatik olarak etkinleştirilmesini istiyorsanız, EXE'nin tam veya kısmi yolunu aşağıya girin.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Baskılama türünü geçersiz kıl",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Belirtilen uygulama odaklandığında kısayol tuşu baskılama davranışını değiştirir. Profil manuel olarak etkinleştirildiğinde bu özellik çalışmaz."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Belirtilen uygulama odaklandığında kısayol tuşu baskılama davranışını değiştirir. Profil manuel olarak etkinleştirildiğinde bu özellik çalışmaz.",
+    "SETTINGS_FEATURES_POWER_COMPAT": "En Uygun"
 }

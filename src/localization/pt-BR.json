@@ -124,10 +124,10 @@
     "SETTINGS_TIME_IDLE_TITLE": "Detecção de inactividade",
     "SETTINGS_HOTKEYS_TOD_BOTH": "Sinal de hardware* & software",
     "SETTINGS_HOTKEYS_TOD_NOTE": "*Nota: Nem todos os monitores DDC/CI apoiam esta funcionalidade.",
-    "PANEL_LABEL_TURN_OFF": "Desligar a energia",
+    "PANEL_LABEL_TURN_OFF": "Apagar",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Obter Brilho de Corrente",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Obtenha sempre o mais recente nível de brilho do monitor ao abrir a página de brilho. Activar isto se o brilho for alterado frequentemente a partir do exterior do Twinkle Tray (ex. outra aplicação).",
-    "GENERIC_PAUSE_TOD": "Ajustes do tempo de pausa",
+    "GENERIC_PAUSE_TOD": "Pausar Ajustes do tempo",
     "SETTINGS_GENERAL_TROUBLESHOOTING": "Solução de problemas",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Desabilitar a sobreposição",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Ocultar monitores",
@@ -135,7 +135,7 @@
     "SETTINGS_TIME_TRANSITON_TITLE": "Velocidade de transição de luminosidade",
     "SETTINGS_TIME_TRANSITON_DESC": "Quão rapidamente o brilho deve transitar quando os ajustes da hora do dia são ativados.",
     "SETTINGS_TIME_ANIMATE_DESC": "Os valores de brilho serão animados entre o evento atual e o próximo evento programado. Pode aumentar o uso da CPU. Ajustes manuais de luminosidade serão rapidamente sobrescritos enquanto isto estiver ativo.",
-    "GENERIC_PAUSE_IDLE": "Pausa para detecção de ociosidade",
+    "GENERIC_PAUSE_IDLE": "Pausar detecção de ociosidade",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Desativar os métodos de detecção do monitor",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Se a camada de hotkey da Twinkle Tray estiver interferindo nas aplicações em tela cheia, você pode desativá-la aqui.",
     "SETTINGS_TIME_ANIMATE_TITLE": "Animar entre os tempos",
@@ -148,5 +148,6 @@
     "GENERIC_SPEED_VERY_FAST": "Muito rápido",
     "SETTINGS_UPDATES_CHANNEL": "Canal de atualização",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Estável (padrão)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Apagar"
 }

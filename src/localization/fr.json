@@ -151,5 +151,22 @@
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "Si vous souhaitez masquer certains affichages dans le menu déroulant, vous pouvez les désactiver ici.",
     "SETTINGS_UPDATES_CHANNEL": "Canal de mise à jour",
     "SETTINGS_UPDATES_BRANCH_BETA": "Bêta",
-    "SETTINGS_FEATURES_POWER_OFF": "Eteindre"
+    "SETTINGS_FEATURES_POWER_OFF": "Eteindre",
+    "SETTINGS_GENERAL_AUTOBRIGHT_TITLE": "Appliquer la luminosité automatiquement",
+    "SETTINGS_FEATURES_POWER_TITLE": "Signal d'état d'allumage",
+    "SETTINGS_FEATURES_POWER_STANDBY": "Repos",
+    "SETTINGS_FEATURES_ADD_VCP": "Code VCP",
+    "SETTINGS_GENERAL_REPORT_TITLE": "Rapport général",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Le plus compatible",
+    "SETTINGS_FEATURES_ADD": "Ajouter une fonction",
+    "SETTINGS_FEATURES_ADD_EXISTS": "Cette fonctionnalité est déjà active.",
+    "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Forcé on",
+    "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "Méthode de détection DDC/CI legacy",
+    "SETTINGS_GENERAL_LEGACY_DDC_DESC": "Utiliser l'ancienne méthode v1.15.5 de détection d'écrans DDC/CI.",
+    "GENERIC_DELETE": "Supprimer",
+    "GENERIC_DEFAULT": "Défaut",
+    "GENERIC_OPTIONAL": "Optionnel",
+    "SETTINGS_GENERAL_OVERLAY_TITLE": "Comportement par défaut de l'overlay",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Le plus compatible",
+    "PANEL_LABEL_TURN_ON": "Mise en marche"
 }

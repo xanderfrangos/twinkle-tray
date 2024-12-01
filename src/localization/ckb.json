@@ -73,7 +73,7 @@
     "SETTINGS_GENERAL_SCROLL_DESC": "ڕووناکیی هەموو شاشەکان دیاری بکە بە یەک جار بە کێشان لەسەر ئایکۆنی بەرکەشی سیستەم. ئەمە لەگەڵ هەندێک ماوسدا کار ناکات.",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "ئایکۆنی بەرکەش",
     "SETTINGS_GENERAL_TROUBLESHOOTING": "کێشەڕەوێنی",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "شێوازەکانی دۆزینەوەی مۆنیتەرەکان ناچالاک بکە",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "شێوازەکانی دۆزینەوەی مۆنیتەرەکان چالاک بکە",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "ئەگەر توینکڵ ترەی ناکارا بوو لەکاتی کلیککردن لە ئایکۆنی بەرکەش یان شاشەکانت نادۆزێتەوە، دەتوانیت هەندێک لە شێوازەکانی دۆزینەوەی مۆنیتەر ناچالاک بکەیت. توینکڵ ترەی دابخە و بیکەرەوە بۆ بینینی کاریگەرییەکان. {{1}}",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "ئۆڤەرلەی ناچالاک بکە",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "ئەگەر ئۆڤەرلەیی قەدبڕئ توینکڵ ترەی کێشە لەگەڵ بەرنامە فووڵسکرینەکاندا دروست دەکات، دەتوانیت لێرەوە ناچالاکی بکەیت.",
@@ -149,5 +149,11 @@
     "SETTINGS_UPDATES_CHANNEL": "",
     "SETTINGS_UPDATES_BRANCH_STABLE": "جێگیر (بنچینەیی)",
     "SETTINGS_UPDATES_BRANCH_BETA": "بێتا",
-    "SETTINGS_FEATURES_POWER_OFF": "بیکوژێنەرەوە"
+    "SETTINGS_FEATURES_POWER_OFF": "بیکوژێنەرەوە",
+    "GENERIC_DELETE": "سڕینەوە",
+    "SETTINGS_GENERAL_OVERLAY_TITLE": "ڕەفتاری ئۆڤەرلەیی بنچینەیی",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "گونجاوترین",
+    "GENERIC_DEFAULT": "بنچینەیی",
+    "GENERIC_OPTIONAL": "ئارەزوومەندانەیە",
+    "SETTINGS_FEATURES_POWER_COMPAT": "گونجاوترین"
 }

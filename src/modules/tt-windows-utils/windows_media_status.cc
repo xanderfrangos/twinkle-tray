@@ -19,7 +19,12 @@ typedef Windows::Media::MediaPlaybackType MediaPlaybackType;
 Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
   std::string statusStr = "closed";
 
-  GSMTCSM manager = GSMTCSM::RequestAsync().get();
+  auto session_async = GSMTCSM::RequestAsync();
+  if (session_async.wait_for(std::chrono::seconds{ 1 }) != winrt::Windows::Foundation::AsyncStatus::Completed) {
+    return Napi::String::New(info.Env(), statusStr);
+  }
+
+  GSMTCSM manager = session_async.get();
   GlobalSystemMediaTransportControlsSession session =
       manager.GetCurrentSession();
 
@@ -51,7 +56,11 @@ Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
 
 Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
   Napi::Object obj = Napi::Object::New(info.Env());
-  GSMTCSM manager = GSMTCSM::RequestAsync().get();
+  auto session_async = GSMTCSM::RequestAsync();
+  if (session_async.wait_for(std::chrono::seconds{ 1 }) != winrt::Windows::Foundation::AsyncStatus::Completed) {
+    return obj;
+  }
+  GSMTCSM manager = session_async.get();
   GlobalSystemMediaTransportControlsSession session =
       manager.GetCurrentSession();
 

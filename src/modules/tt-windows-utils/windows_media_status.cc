@@ -16,47 +16,6 @@ typedef GlobalSystemMediaTransportControlsSessionMediaProperties
     MediaProperties;
 typedef Windows::Media::MediaPlaybackType MediaPlaybackType;
 
-winrt::Windows::Foundation::IAsyncAction Run() {
-  auto manager =
-      co_await GlobalSystemMediaTransportControlsSessionManager::RequestAsync();
-  auto current = manager.GetCurrentSession();
-  if (current) {
-    auto mediaProperties = co_await current.TryGetMediaPropertiesAsync();
-    if (mediaProperties) {
-      printf("\tTitle: %ls\n", mediaProperties.Title().c_str());
-      printf("\tSubtitle: %ls\n", mediaProperties.Subtitle().c_str());
-      printf("\tArtist: %ls\n", mediaProperties.Artist().c_str());
-      printf("\tAlbum: %ls\n", mediaProperties.AlbumTitle().c_str());
-      printf("\tSource: %ls\n", current.SourceAppUserModelId().c_str());
-      printf("\tTrack number: %d\n", mediaProperties.TrackNumber());
-      printf("\tTracks: %d\n", mediaProperties.AlbumTrackCount());
-
-      std::string typeStr = "unknown";
-      MediaPlaybackType type = mediaProperties.PlaybackType().Value();
-
-      switch (type) {
-      case MediaPlaybackType::Music:
-        typeStr = "music";
-        break;
-      case MediaPlaybackType::Video:
-        typeStr = "video";
-        break;
-      case MediaPlaybackType::Image:
-        typeStr = "image";
-        break;
-      }
-
-      printf("\tType: %s\n", typeStr);
-    }
-  }
-}
-
-Napi::String getPlaybackStatusAlt(const Napi::CallbackInfo &info) {
-  winrt::init_apartment(winrt::apartment_type::multi_threaded);
-  Run().get();
-  return Napi::String::New(info.Env(), "test");
-}
-
 Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
   std::string statusStr = "closed";
 

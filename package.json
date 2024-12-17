@@ -174,7 +174,7 @@
     "@babel/preset-react": "^7.23.3",
     "cross-env": "^7.0.3",
     "electron": "^33.2.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "22.14.13",
     "node-gyp": "^10.2.0",
     "bindings": "1.5.0",
     "node-addon-api": "^8.2.2",

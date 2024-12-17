@@ -144,6 +144,7 @@ let monitorsThread = {
         startMonitorThread()
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
+      if(!monitorsThreadReal.connected || monitorsThreadReal.exitCode !== null) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(100)
       }

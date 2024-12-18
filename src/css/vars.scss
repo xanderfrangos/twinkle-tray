@@ -41,7 +41,7 @@
     --slider-track-color-focus: rgba(0, 0, 0, 0.65);
 
 
-    @media screen and (prefers-color-scheme: dark) {
+    body[data-theme="dark"] {
         --tray-background-base: #1f1f1f;
         --tray-background-transparent: rgba(41, 41, 41, 0.95);
         --tray-background-blur: rgba(41, 41, 41, 0);
@@ -110,8 +110,8 @@ body[data-transparent="true"][data-acrylic="true"][data-use-native-animation="tr
     }
 }
 
-@media screen and (prefers-color-scheme: dark) {
-    body[data-colored-taskbar="true"] {
+html body[data-theme="dark"] {
+    &[data-colored-taskbar="true"] {
         .window-base {
             --tray-background: var(--system-accent-dark) !important;
         }
@@ -192,7 +192,7 @@ html body[data-is-win11="true"], html body[data-is-win11="true"] {
 
     --mica-base-color: #f1f1f1;
 
-    @media screen and (prefers-color-scheme: dark) {
+    &[data-theme="dark"] {
 
         --page-background: #202020 !important;
         --page-section-bg: #ffffff0a;

@@ -718,6 +718,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
     if (settings.theme) {
       nativeTheme.themeSource = determineTheme(settings.theme)
+      sendToAllWindows('theme-settings', lastTheme)
     }
 
     updateStartupOption((settings.openAtLogin || false))
@@ -803,6 +804,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
         settings.isWin11 = isReallyWin11
       }
       newSettings.useAcrylic = settings.useAcrylic
+      sendToAllWindows('theme-settings', lastTheme)
       doRestartPanel = true
     }
 

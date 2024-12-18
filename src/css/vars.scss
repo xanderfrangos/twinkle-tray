@@ -42,6 +42,7 @@
 
 
     body[data-theme="dark"] {
+        --tray-background: var(--tray-background-base);
         --tray-background-base: #1f1f1f;
         --tray-background-transparent: rgba(41, 41, 41, 0.95);
         --tray-background-blur: rgba(41, 41, 41, 0);

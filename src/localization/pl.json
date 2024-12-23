@@ -149,5 +149,14 @@
     "GENERIC_SPEED_SLOW": "Powoli",
     "GENERIC_SPEED_INSTANT": "Natychmiast",
     "GENERIC_SPEED_VERY_SLOW": "Bardzo wolno",
-    "SETTINGS_FEATURES_POWER_OFF": "Wyłącz zasilanie"
+    "SETTINGS_FEATURES_POWER_OFF": "Wyłącz zasilanie",
+    "SETTINGS_GENERAL_OVERLAY_DESC": "Z jaką siłą nakładka wywoływana przez klawisz skrótu jasności będzie próbowała wyświetlić się nad innymi aplikacjami. Nie powinno być potrzeby dostosowywania tego.",
+    "SETTINGS_GENERAL_ON_OVERLAY_DESC": "Nakładka będzie pokazywać się nad większością aplikacji, lecz nie będzie wymuszać się nad aplikacjami, które zaznaczono jako \"zawsze na górze\".",
+    "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "Przestarzała detekcja DD/CI",
+    "SETTINGS_GENERAL_LEGACY_DDC_DESC": "Używaj starej metody v1.15.5 wykrywania ekranów DDC/CI.",
+    "SETTINGS_GENERAL_AUTOBRIGHT_TITLE": "Automatycznie stosuj jasność",
+    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "Jeśli twój monitor zachowuje się dziwnie po wyłączeniu tego/odłączaniu/podłączaniu urządzeń, wyłączenie tego może pomóc.",
+    "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "Pomiń auto stosowanie dla specyficznych monitorów",
+    "SETTINGS_GENERAL_FORCE_OVERLAY_DESC": "Zawsze próbuj wyświetlać nakładkę ponad innymi oknami. To może spowodować problemy z aplikacjami i grami pełnoekranowymi. Może również wywoływać anti-cheat w niektórych grach.",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najbardziej kompatybilne"
 }

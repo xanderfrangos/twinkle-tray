@@ -134,7 +134,7 @@
     "SETTINGS_TIME_TRANSITON_DESC": "Milyen gyorsan változzon a fényerő, amikor a napszakbeállítások aktiválódnak.",
     "SETTINGS_TIME_ANIMATE_DESC": "A fényerő értékek animálva lesznek az aktuális és a következő tervezett esemény között. Növelheti a CPU-használatot. A manuális fényerő-beállítások gyorsan felülíródnak, amíg ez aktív.",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Ha a Twinkle Tray gyorsbillentyű-felület zavarja a teljes képernyős alkalmazásokat, itt letilthatja.",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Monitorérzékelési módszerek letiltása",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Monitorérzékelési módszerek engedélyezve",
     "GENERIC_SPEED_INSTANT": "Azonnali",
     "GENERIC_SPEED_SLOW": "Lassú",
     "GENERIC_SPEED_VERY_SLOW": "Nagyon lassú",
@@ -149,5 +149,12 @@
     "SETTINGS_TIME_ANIMATE_TITLE": "Animáció az idők között",
     "SETTINGS_UPDATES_CHANNEL": "Frissítési csatorna",
     "SETTINGS_UPDATES_BRANCH_BETA": "Béta",
-    "SETTINGS_FEATURES_POWER_OFF": "Kikapcsolás"
+    "SETTINGS_FEATURES_POWER_OFF": "Kikapcsolás",
+    "GENERIC_OPTIONAL": "Választható",
+    "PANEL_LABEL_TURN_ON": "Bekapcsolás",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Legkombatibilisebb",
+    "SETTINGS_GENERAL_OVERLAY_TITLE": "Alapértelmezett borítóviselkedés",
+    "SETTINGS_GENERAL_OVERLAY_DESC": "Milyen erőszakosan próbálja meg a gyorsbillentyű felületet más alkalmazások felett megjeleníteni. Nem kellene szünkségenek lennie a módosítására.",
+    "GENERIC_DEFAULT": "Alapértelmezett",
+    "GENERIC_DELETE": "Törlés"
 }

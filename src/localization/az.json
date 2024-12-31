@@ -68,7 +68,7 @@
     "SETTINGS_MONITORS_RENAME_TITLE": "Monitorları Yenidən Adlandır",
     "SETTINGS_MONITORS_RENAME_DESC": "Hər bir monitor üçün fərqli ad daxil etmək istəsəniz, aşağıya daxil edə bilərsiniz. Boş buraxmaq əsl adı geri yükləyəcəkdir.",
     "SETTINGS_MONITORS_ENTER_NAME": "Ad daxil edin",
-    "SETTINGS_MONITORS_REORDER_TITLE": "Monitorları yenidən sırala",  
+    "SETTINGS_MONITORS_REORDER_TITLE": "Monitorları yenidən sırala",
     "SETTINGS_MONITORS_REORDER_DESC": "Monitorların tray-də görünmə sırasını dəyişdirin. Dəyişiklik etmək üçün klikləyin və sürüşdürün.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Parlaqlığı Normallaşdır",
     "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitorlar adətən fərqli parlaqlıq aralığına sahibdir. Hər ekran üçün minimum/maksimum parlaqlığı məhdudlaşdıraraq bu ekranlar arasındakı parlaqlıq səviyyələrini daha uyğun hala gətirə bilərsiniz. Oxşar monitorlar eyni parametrləri istifadə edir.",
@@ -148,5 +148,6 @@
     "SETTINGS_GENERAL_TROUBLESHOOTING": "Problem Həll Edilməsi",
     "SETTINGS_UPDATES_CHANNEL": "Yeniləmə kanalı",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Sabit (susmaya görə)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_POWER_OFF": "Enerji bağlıdır"
 }

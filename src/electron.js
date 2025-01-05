@@ -1147,6 +1147,8 @@ async function doHotkey(hotkey) {
                 let currentValue = 0
                 if (action.target === "brightness") {
                   currentValue = monitor.brightness
+                } else if (action.target === "sdr") {
+                  currentValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
                   currentValue = await getVCP(monitor, parseInt("0x12"))
                 } else if (action.target === "volume") {
@@ -1167,6 +1169,8 @@ async function doHotkey(hotkey) {
                 let currentCycleValue = 0
                 if (action.target === "brightness") {
                   currentCycleValue = monitor.brightness
+                } else if (action.target === "sdr") {
+                  currentCycleValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
                   currentCycleValue = await getVCP(monitor, parseInt("0x12"))
                 } else if (action.target === "volume") {
@@ -1227,6 +1231,8 @@ async function doHotkey(hotkey) {
                   writeSettings({ linkedLevelsActive: false })
                 }
                 showOverlay = true
+              } else if(action.target === "sdr") {
+                updateBrightnessThrottle(monitor.id, parseInt(value), false, true, "sdr")
               } else {
                 let vcpCode = action.target
                 if (action.target === "contrast") {
@@ -1962,6 +1968,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         brightness: level,
         id: monitor.id
       })
+      monitor.sdrLevel = level
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level

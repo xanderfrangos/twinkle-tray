@@ -1653,7 +1653,7 @@ function ActionItem(props) {
             return null
         } else {
             let selectBoxValue = action.target
-            if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
+            if (!(selectBoxValue === "brightness" || selectBoxValue === "sdr" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
                 selectBoxValue = "vcp"
             }
             const selectBox = (
@@ -1672,6 +1672,7 @@ function ActionItem(props) {
                         <option value="contrast">{T.t("PANEL_LABEL_CONTRAST")}</option>
                         <option value="volume">{T.t("PANEL_LABEL_VOLUME")}</option>
                         <option value="vcp">{T.t("SETTINGS_FEATURES_ADD_VCP")}</option>
+                        <option value="sdr">{T.t("SETTINGS_FEATURES_SDR_BRIGHTNESS")}</option>
                     </select>
                 </div>
             )

@@ -139,6 +139,7 @@
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "All VCP codes reported by this display",
     "SETTINGS_FEATURES_VCP_LIST_DESC": "The following is a list of available VCP codes reported by this display to Windows. Twinkle Tray does not validate the functionality or stability of these VCP codes. Use them at your own risk.",
     "SETTINGS_FEATURES_VCP_EXPECTED": "Expected values",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Brightness",
     "SETTINGS_TIME_TITLE": "Time of Day Adjustments",
     "SETTINGS_TIME_DESC": "Automatically set your monitors to a specific brightness level at a desired time. All monitors will be set to the same, normalized levels.",
     "SETTINGS_TIME_ADD": "Add a time",

@@ -278,7 +278,8 @@ function enableMouseEvents() {
       try {
         if (!bounds) return false;
         if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-          const amount = Math.round(event.delta) * settings.scrollShortcutAmount;
+          const delta = settings.invertScroll ? -Math.round(event.delta) : Math.round(event.delta);
+          const amount = delta * settings.scrollShortcutAmount;
 
           refreshMonitors()
           updateAllBrightness(amount)
@@ -445,6 +446,7 @@ const defaultSettings = {
   scrollShortcut: true,
   scrollShortcutAmount: 2,
   scrollFlyoutAmount: 2,
+  invertScroll: false,
   useAcrylic: false,
   useNativeAnimation: false,
   sleepAction: "ps",

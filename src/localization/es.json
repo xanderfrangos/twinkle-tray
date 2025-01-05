@@ -213,5 +213,7 @@
     "SETTINGS_PROFILES_OVERLAY_DESC": "Cambia el comportamiento de la superposición de teclas de acceso rápido cuando la app especificada está enfocada. Esta función no funciona cuando el perfil se activa manualmente.",
     "SETTINGS_FEATURES_POWER_OFF": "Apagar",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "La detección de inactividad se desactivará mientras se esté reproduciendo cualquier contenido multimedia. Esto incluye tanto vídeo como audio. Esto solo se aplica cuando Windows informa de que se está reproduciendo algún contenido multimedia.",
-    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Multimedia bloquea la detección de inactividad"
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Multimedia bloquea la detección de inactividad",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Invert Rollo",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Cuándo desplazamiento sobre el icono de bandeja del sistema, la dirección de rollo será revocada."
 }

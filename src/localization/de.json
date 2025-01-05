@@ -213,5 +213,7 @@
     "SETTINGS_GENERAL_REPORT_TITLE": "Bericht generieren",
     "SETTINGS_GENERAL_REPORT_DESC": "Zu Fehlerbehebungszwecken eine Textdatei mit Informationen über Monitore und Einstellungen speichern.",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medien blocken müßige Entdeckung",
-    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Müßige Entdeckung will sein ausgeschaltet während spielen irgendwelche Medien. Dies schließt ein sowohl Video und Audio. #Der nur bewirbt als Fenster Berichte dass Medien spielen."
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "Müßige Entdeckung will sein ausgeschaltet während spielen irgendwelche Medien. Dies schließt ein sowohl Video und Audio. #Der nur bewirbt als Fenster Berichte dass Medien spielen.",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Kehr um #Buchrolle",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Als #Bildlauf über die #Infobereich Ikone, die #Buchrolle Richtung will sein umgedreht."
 }

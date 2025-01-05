@@ -316,6 +316,12 @@ getAllMonitors = async (ddcciMethod = "default") => {
             } else {
                 brightness = await checkVCP(id, parseInt(brightnessType))
             }
+            
+            // Force lower max brightness for testing
+            if(brightness?.[1]) {
+                if(settings.debugForceBrightnessMax) brightness[1] = settings.debugForceBrightnessMax
+            }
+
             if(brightness) {
                 ddcciInfo.brightnessValues = brightness
                 features[vcpStr(brightnessType)] = brightness
@@ -975,6 +981,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
         }
+        if(settings.debugForceBrightnessMax && vcpString == "0x10") result[1] = settings.debugForceBrightnessMax; // Force lower max brightness for testing
         await wait(parseInt(settings?.checkVCPWaitMS || 20))
         return result
     } catch (e) {

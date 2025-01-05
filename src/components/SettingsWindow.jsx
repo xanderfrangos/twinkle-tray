@@ -1298,6 +1298,7 @@ export default class SettingsWindow extends PureComponent {
                                                 this.forceUpdate()
                                             }} />
                                         } />
+                                        <SettingsChild title={T.t("SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE")} description={T.t("SETTINGS_HOTKEYS_INVERT_SCROLL_DESC")} input={this.renderToggle("invertScroll")} />
                                     </SettingsOption>
                                 </div>
 

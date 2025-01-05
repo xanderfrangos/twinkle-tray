@@ -902,6 +902,11 @@ function setBrightness(brightness, id) {
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
                 }
+                // Update tracked brightness values
+                const brightnessRaw = parseInt(brightness)
+                monitor.brightness = brightnessRaw * (100 / (monitor.brightnessMax || 100))
+                monitor.brightnessRaw = brightnessRaw
+                if(monitor.brightnessValues) monitor.brightnessValues[0] = brightnessRaw;
             }
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
@@ -1033,11 +1038,6 @@ async function setHighLevelBrightness(monitor, value) {
     if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy   
     try {
         let result = ddcci._setHighLevelBrightness(monitor, value)
-        const hwid = monitor.split("#")
-        if(monitors[hwid[2]]) {
-            monitors[hwid[2]].brightness = parseInt(value)
-            monitors[hwid[2]].brightnessRaw = parseInt(value)
-        }
         return result
     } catch (e) {
         console.log(e)

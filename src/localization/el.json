@@ -209,6 +209,5 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Λήψη και Εγκατάσταση {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Κανάλι Ενημέρωσης",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Σταθερό (προεπιλογή)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "έκδοση ΒΕΤΑ",
-    "SETTINGS_FEATURES_POWER_OFF": "Απενεργοποίηση"
+    "SETTINGS_UPDATES_BRANCH_BETA": "έκδοση ΒΕΤΑ"
 }

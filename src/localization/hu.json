@@ -156,5 +156,6 @@
     "SETTINGS_GENERAL_OVERLAY_TITLE": "Alapértelmezett borítóviselkedés",
     "SETTINGS_GENERAL_OVERLAY_DESC": "Milyen erőszakosan próbálja meg a gyorsbillentyű felületet más alkalmazások felett megjeleníteni. Nem kellene szünkségenek lennie a módosítására.",
     "GENERIC_DEFAULT": "Alapértelmezett",
-    "GENERIC_DELETE": "Törlés"
+    "GENERIC_DELETE": "Törlés",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Legkombatibilisebb"
 }

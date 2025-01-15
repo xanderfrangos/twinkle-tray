@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_DESC": "Automatiškai derinti skaistį ar nuorodos uždangos veikimą, priklausomai nuo fokusuotos programos/-ėlės. Jūs tai pat galite pridėti profilius prie dešinio paspaudimo meniu, sistemos juostelėje, norint greitai pakeisti skaistį į jau nustatytus profilius.",
     "SETTINGS_PROFILES_OVERLAY_DESC": "Pakeičia apvalkalo trumpinio elgseną, kai nurodyta programos/-ėlė fokusuota. Ši funkcija neveikia, kai profilis yra aktyvuotas rankiniu būdu.",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "Neaktyvumo aptikimas bus išjungtas/išgalintas kol leidžiama medija. Šis įskaito vaizdą ir garsą. Šis prisitaiko tik tada, kai „Windows“ praneša apie jos veikimą.",
-    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medijos veikimas blokuoja neaktyvumo aptikimą"
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medijos veikimas blokuoja neaktyvumo aptikimą",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Apgręžti slinkimą",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kai slinkama virš sistemos srities piktogramos, slinkimo kryptis bus apversta/priešinga nuo pradžios."
 }

@@ -165,7 +165,7 @@
     "SETTINGS_GENERAL_OVERLAY_DESC": "亮度快捷键叠加层在其他应用程序上显示的力度。您应该不需要对此进行调整。",
     "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "老旧的 DDC/CI 检测方式",
     "SETTINGS_GENERAL_LEGACY_DDC_DESC": "使用旧的 v1.15.5 方式检测 DDC/CI 显示器。",
-    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "如果您的显示器在关闭/或断开/连接硬件后出现异常反应，禁用此功能可能会有帮助。",
+    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "如果您的显示器在关闭/打开或断开/连接硬件后响应异常，禁用此功能可能会有所帮助。",
     "SETTINGS_GENERAL_SKIP_APPLY_DESC": "在特定显示器的所有硬件/电源事件发生后禁用自动应用已知亮度。这包括空闲检测功能。",
     "SETTINGS_TIME_SUN_TITLE": "太阳位置坐标",
     "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "滚动数量",
@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_BRIGHTNESS_TOGGLE": "设置激活时的亮度",
     "SETTINGS_PROFILES_DESC": "根据聚焦的应用程序自动调整亮度或快捷方式叠加层行为。您还可以将配置文件添加到系统托盘的右键菜单中，以快速将亮度更改为预定义的配置文件。",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "覆盖叠加层类型",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "更改指定应用程序聚焦时快捷键叠加层的行为。手动激活配置文件时，此功能不起作用。"
+    "SETTINGS_PROFILES_OVERLAY_DESC": "更改指定应用程序聚焦时快捷键叠加层的行为。手动激活配置文件时，此功能不起作用。",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "在系统托盘图标上滚动时，滚动方向将反转。",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "反转滚动"
 }

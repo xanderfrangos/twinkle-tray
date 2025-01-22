@@ -82,6 +82,8 @@
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Brilho máximo",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Normalização de brilho",
     "SETTINGS_FEATURES_DESCRIPTION": "Ativar ou desativar recursos específicos de DDC/CI no painel de brilho. Pelo menos um recurso deve estar ativado para que seu monitor apareça no painel de brilho. Nem todos os monitores suportam estes recursos, como os monitores de laptop/tablet.",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Mais compatível",
+    "SETTINGS_FEATURES_POWER_DESC": "Quando enviando o comando DDC/CI para desligar seu monitor, o(s) seguinte valor será enviado.",
     "SETTINGS_TIME_TITLE": "Ajustes da hora do dia",
     "SETTINGS_TIME_DESC": "Ajuste automaticamente os seus monitores para um nível de brilho específico em um momento desejado. Todos os monitores serão ajustados para os mesmos níveis normalizados.",
     "SETTINGS_TIME_ADD": "Adicionar programação",

@@ -176,7 +176,7 @@
     "SETTINGS_TIME_LAT": "Широта",
     "SETTINGS_TIME_LONG": "Довгота",
     "SETTINGS_TIME_SUN_GET": "Отримати координати",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Повноекранні застосунки ніколи не простоюють",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Повноекранні застосунки блокують виявлення простою",
     "SETTINGS_TIME_IDLE_FS_DESC": "Повноекранні застосунки блокують виявлення простою. Це стосується лише сфокусованого вікна.",
     "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "Кількість для прокрутки",
     "SETTINGS_HOTKEY_TARGET": "Ціль дії",

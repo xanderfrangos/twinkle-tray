@@ -185,7 +185,7 @@
     "SETTINGS_FEATURES_ADD_DESC": "Įveskite „VCP“ kodą funkcijai, kurią Jūs norėtumėte pridėti savo ekranui. Atkreipkite dėmesį, kad „Twinkle Tray“ nepatikrina ar Jūsų ekranai iš tikrųjų palaiko šį „VCP“ kodą. Naudokite savo nuožiūra.",
     "SETTINGS_TIME_LONG": "Ilguma",
     "SETTINGS_TIME_SUN_GET": "Gauti koordinates",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Pilno ekrano programos/-ėlės niekada nėra budinčios",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Pilno ekrano programos/-ėlės blokuoja budėjančiosios būsenos aptikimą",
     "SETTINGS_TIME_SUN_TITLE": "Koordinatės saulės pozicijai",
     "SETTINGS_TIME_SUN_DESC": "Kad naudotumėte „saulės poziciją“ laiko koregavimams, prašome įvesti savo dabartinę ilgumą ir platumą, kad teisingi laikai būtų nustatyti.",
     "SETTINGS_FEATURES_VCP_LIST_DESC": "Toliau esantis sąrašas galimų „VCP“ kodų, kuriuos praneša šis ekranas „Windows'ams“. „Twinkle Tray“ netikrina šių „VCP“ kodų funkcionalumą ar stabilumą. Naudokite juos savo nuožiūra.",

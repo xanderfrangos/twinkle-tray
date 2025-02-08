@@ -179,7 +179,7 @@
     "SETTINGS_TIME_SUN_TITLE": "Koordinater för solens position",
     "SETTINGS_TIME_SUN_DESC": "För att använda ”solens position” för tidsjusteringar anger du din aktuella latitud och longitud så att rätt tider kan bestämmas.",
     "SETTINGS_TIME_SUN_GET": "Hämta koordinater",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Appar i helskärm är aldrig inaktiva",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Helskärmsappar blockerar identifiering av inaktivitet",
     "SETTINGS_TIME_IDLE_FS_DESC": "Appar i helskärm blockerar inaktivitetsdetektering. Detta gäller endast för fönstret i fokus.",
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "Alla VCP-koder som rapporteras av din bildskärm",
     "SETTINGS_PROFILES_ADD": "Ny profil",

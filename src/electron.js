@@ -1394,7 +1394,7 @@ async function updateStartupOption(openAtLogin) {
 
   // Set autolaunch for AppX
   try {
-    if (isAppX) {
+    if (false && isAppX) {
       const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
       if (openAtLogin) {
         WindowsStoreAutoLaunch.enable()

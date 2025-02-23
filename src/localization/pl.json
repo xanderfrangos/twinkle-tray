@@ -181,7 +181,7 @@
     "SETTINGS_TIME_SUN_TITLE": "Współrzędne położenia słońca",
     "SETTINGS_TIME_SUN_DESC": "Aby użyć „pozycji słońca” do regulacji czasu, wprowadź swoją aktualną szerokość i długość geograficzną, aby można było określić prawidłowe godziny.",
     "SETTINGS_TIME_LAT": "Szerokość",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Aplikacje pełnoekranowe nigdy nie są bezczynne",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Aplikacje pełnoekranowe blokują mechanizm wykrywania bezczynności",
     "SETTINGS_TIME_IDLE_FS_DESC": "Aplikacje pełnoekranowe blokują wykrywanie bezczynności. Dotyczy to tylko okna, w którym znajduje się fokus.",
     "SETTINGS_HOTKEY_TARGET": "Cel akcji",
     "SETTINGS_PROFILES_NAME": "Nazwa profilu",

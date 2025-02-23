@@ -174,6 +174,7 @@ function startMonitorThread() {
     if (data?.type) {
       if (data.type === "ready") {
         monitorsThreadReady = true
+        isRefreshing = false
         monitorsThreadReal.send({
           type: "settings",
           settings

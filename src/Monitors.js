@@ -126,7 +126,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             try {
                 if (settings?.getDDCBrightnessUpdates) {
                     if(!getDDCCI()) {
-                        ddcci._refresh(determineDDCCIMethod())
+                        ddcci._refresh(determineDDCCIMethod(), true, !settings.disableHighLevel)
                     }
                     for (const hwid2 in monitors) {
                         if (monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
@@ -606,7 +606,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             await wait(10)
 
             // Sometimes the handles returned are NULL, so we should try again.
-            let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+            let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
             if(tmpDdcciMonitors) {
                 let doRetry = false
                 for(const monitor of tmpDdcciMonitors) {
@@ -618,7 +618,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                 if(doRetry) {
                     console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
                     await wait(200)
-                    tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod)
+                    tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
                     for(const monitor of tmpDdcciMonitors) {
                         if(monitor.handleIsValid === false) {
                             console.log(`DDC/CI results still contain a null handle (${doRetry?.deviceKey}). Continuing anyway.`)

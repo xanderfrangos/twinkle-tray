@@ -17,13 +17,13 @@ module.exports = {
   , _clearDisplayCache: ddcci.clearDisplayCache
   , _setLogLevel: ddcci.setLogLevel
   , _parseCapabilitiesString: parseCapabilitiesString
-  , _refresh: (method = "accurate", usePreviousResults = true) => ddcci.refresh(method, usePreviousResults)
-  , getMonitorList: (method = "accurate", usePreviousResults = true) => { 
-        ddcci.refresh(method, usePreviousResults);
+  , _refresh: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => ddcci.refresh(method, usePreviousResults, checkHighLevel)
+  , getMonitorList: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => { 
+        ddcci.refresh(method, usePreviousResults, checkHighLevel);
         return ddcci.getMonitorList();
     }
-  , getAllMonitors: (method = "accurate", usePreviousResults = true) => { 
-        ddcci.refresh(method, usePreviousResults);
+  , getAllMonitors: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => { 
+        ddcci.refresh(method, usePreviousResults, checkHighLevel);
         const monitors = ddcci.getAllMonitors();
         for(const monitor of monitors) {
             if(monitor.result && monitor.result != "ok" && monitor.result != "invalid") {

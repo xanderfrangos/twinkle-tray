@@ -541,7 +541,7 @@ populateHandlesMapLegacy()
 }
 
 void
-populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
+populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
 {
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
@@ -638,7 +638,12 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
 
             // Test high level capabilities
             if((newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
-                newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
+                if(checkHighLevel) {
+                    p("-- -- High Level: Checking...");
+                    newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
+                } else {
+                    p("-- -- High Level: Skipped");
+                }
             }
             if(newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) {
                 p("-- -- High Level: Supported");
@@ -701,15 +706,15 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults)
 }
 
 void
-populateHandlesMap(std::string validationMethod, bool usePreviousResults)
+populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
 {
     if (validationMethod == "legacy")
         return populateHandlesMapLegacy();
 
     if (validationMethod == "accurate" || validationMethod == "no-validation")
-        return populateHandlesMapNormal(validationMethod, usePreviousResults);
+        return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel);
 
-    return populateHandlesMapNormal("fast", usePreviousResults);
+    return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
 }
 
 Napi::Value
@@ -717,15 +722,15 @@ refresh(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
 
-    if (info.Length() < 1) {
+    if (info.Length() < 2) {
         throw Napi::TypeError::New(env, "Not enough arguments");
     }
-    if (!info[0].IsString() || !info[1].IsBoolean()) {
+    if (!info[0].IsString() || !info[1].IsBoolean() || !info[2].IsBoolean()) {
         throw Napi::TypeError::New(env, "Invalid arguments");
     }
 
     try {
-        populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean());
+        populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean(), info[2].As<Napi::Boolean>().ToBoolean());
     } catch (std::runtime_error& e) {
         throw Napi::Error::New(env, e.what());
     }

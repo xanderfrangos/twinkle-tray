@@ -144,7 +144,7 @@ let monitorsThread = {
         startMonitorThread()
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
-      if(!monitorsThreadReal.connected || monitorsThreadReal.exitCode !== null) throw("Thread not available!");
+      if(!monitorsThreadReal?.connected || monitorsThreadReal?.exitCode !== null) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(100)
       }
@@ -168,6 +168,8 @@ let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 function startMonitorThread() {
+  if(monitorsThreadReal?.connected) return false;
+  console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest], { silent: false })
   monitorsThreadReal.on("message", (data) => {
@@ -195,6 +197,14 @@ function startMonitorThread() {
       monitorsEventEmitter.emit(data.type, data)
     }
   })
+}
+
+function stopMonitorThread() {
+  if(monitorsThreadReal?.connected) {
+    console.log("Killing monitor thread")
+    monitorsThreadReal.kill()
+    setIsRefreshing(false)
+  }
 }
 
 function getVCP(monitor, code) {
@@ -3774,6 +3784,7 @@ function handleMonitorChange(t, e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
+  stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
   setTimeout(
     () => {
@@ -3823,7 +3834,7 @@ function handleMetricsChange(type) {
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
-powerMonitor.on("suspend", () => { console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("suspend", () => { console.log("Event: suspend"); stopMonitorThread(); recentlyWokeUp = true })
 powerMonitor.on("lock-screen", () => { console.log("Event: lock-screen"); recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");

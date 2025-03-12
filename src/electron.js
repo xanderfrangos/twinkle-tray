@@ -140,7 +140,7 @@ function vcpStr(code) {
 let monitorsThread = {
   send: async function (data) {
     try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+      if (monitorsThreadReal && !monitorsThreadReal?.connected) {
         startMonitorThread()
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
@@ -189,6 +189,7 @@ function startMonitorThread() {
           type: "wmi-bridge-ok",
           value: wmiBridgeOK
         })
+        getLocalization()
       }
       if (data.type === "ddcciModeTestResult") {
         ddcciModeTestResult = data.value
@@ -203,6 +204,7 @@ function stopMonitorThread() {
   if(monitorsThreadReal?.connected) {
     console.log("Killing monitor thread")
     monitorsThreadReal.kill()
+    monitorsThreadReady = false
     setIsRefreshing(false)
   }
 }

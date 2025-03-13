@@ -13,7 +13,7 @@
     "GENERIC_DISMISS": "Hylkää",
     "GENERIC_DISPLAY_SINGLE": "Näyttö",
     "GENERIC_ALL_DISPLAYS": "Kaikki näytöt",
-    "GENERIC_REFRESH_DISPLAYS": "Päivitä näytöt",
+    "GENERIC_REFRESH_DISPLAYS": "Virkistä näytöt",
     "GENERIC_MINIMUM": "Min",
     "GENERIC_MAXIMUM": "Max",
     "GENERIC_NO_DISPLAYS": "Näyttöjä ei havaittu. Liitä näyttö tietokoneeseesi.",
@@ -161,7 +161,7 @@
     "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "Vanha DDC/CI-tunnistusmenetelmä",
     "SETTINGS_GENERAL_LEGACY_DDC_DESC": "Käytä vanhaa v1.15.5-menetelmää DDC/CI-näyttöjen tunnistamiseen.",
     "SETTINGS_GENERAL_AUTOBRIGHT_TITLE": "Lisää kirkkautta automaattisesti",
-    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "Jos näyttösi reagoi oudosti sen sammuttamisen/tai laitteiston irrottamisen/liittämisen jälkeen, tämän poistaminen käytöstä voi auttaa.",
+    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "Jos näyttösi reagoi oudosti sen sammuttamisen/käynnistyksen tai laitteiston irrottamisen/liittämisen jälkeen, tämän poistaminen käytöstä voi auttaa.",
     "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "Ohita automaattinen lisäys tietyille näytöille",
     "SETTINGS_FEATURES_POWER_TITLE": "Virtatilan signaali",
     "SETTINGS_FEATURES_POWER_DESC": "Kun lähetät DDC/CI-komennon näytön sammuttamiseksi, seuraavat arvot lähetetään.",
@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_BRIGHTNESS_TOGGLE": "Aseta kirkkaus kun aktiivisena",
     "SETTINGS_PROFILES_SHOW_MENU": "Näytä hiiren kakkospainikkeen valikossa",
     "SETTINGS_PROFILES_TRIGGER_TITLE": "Sovelluksen käynnistysasetukset",
-    "SETTINGS_PROFILES_OVERLAY_TITLE": "Ohita peittokuvatyyppi"
+    "SETTINGS_PROFILES_OVERLAY_TITLE": "Ohita peittokuvatyyppi",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Käännä vieritys",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kun vierität ilmaisinalueen kuvaketta, vierityssuunta vaihtuu."
 }

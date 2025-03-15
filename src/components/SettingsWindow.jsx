@@ -1025,7 +1025,8 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
 
                                     <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
-                                    <SettingsOption title={T.t("SETTINGS_GENERAL_STARTUP")} input={this.renderToggle("openAtLogin")} />
+                                    
+                                    { window.isAppX ? null : <SettingsOption title={T.t("SETTINGS_GENERAL_STARTUP")} input={this.renderToggle("openAtLogin")} /> }
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")} description={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")} input={this.renderToggle("brightnessAtStartup")} />
 

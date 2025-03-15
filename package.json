@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.16.6",
+  "version": "1.16.7",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {

@@ -160,7 +160,7 @@
     "SETTINGS_GENERAL_FORCE_OVERLAY_DESC": "Zawsze próbuj wyświetlać nakładkę ponad innymi oknami. To może spowodować problemy z aplikacjami i grami pełnoekranowymi. Może również wywoływać anti-cheat w niektórych grach.",
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najbardziej kompatybilne",
     "GENERIC_DELETE": "Usuń",
-    "GENERIC_DEFAULT": "Domyślnie",
+    "GENERIC_DEFAULT": "Podstawowe",
     "GENERIC_OPTIONAL": "Opcjonalnie",
     "PANEL_LABEL_TURN_ON": "Włącz zasilanie",
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Wymuszone",
@@ -181,7 +181,7 @@
     "SETTINGS_TIME_SUN_TITLE": "Współrzędne położenia słońca",
     "SETTINGS_TIME_SUN_DESC": "Aby użyć „pozycji słońca” do regulacji czasu, wprowadź swoją aktualną szerokość i długość geograficzną, aby można było określić prawidłowe godziny.",
     "SETTINGS_TIME_LAT": "Szerokość",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Aplikacje pełnoekranowe nigdy nie są bezczynne",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Aplikacje pełnoekranowe blokują mechanizm wykrywania bezczynności",
     "SETTINGS_TIME_IDLE_FS_DESC": "Aplikacje pełnoekranowe blokują wykrywanie bezczynności. Dotyczy to tylko okna, w którym znajduje się fokus.",
     "SETTINGS_HOTKEY_TARGET": "Cel akcji",
     "SETTINGS_PROFILES_NAME": "Nazwa profilu",
@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Zastąp typ nakładki",
     "SETTINGS_FEATURES_ADD_EXISTS": "Ta funkcja jest już aktywna.",
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "Wszystkie kody VCP zgłaszane przez ten wyświetlacz",
-    "SETTINGS_FEATURES_ADD_PLACEHOLDER": "Kod VCP (np. 0x12)"
+    "SETTINGS_FEATURES_ADD_PLACEHOLDER": "Kod VCP (np. 0x12)",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Odwróć przewijanie",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Podczas przewijania kółkiem myszki nad ikoną w zasobniku systemowym kierunek przewijania zostanie odwrócony."
 }

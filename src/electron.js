@@ -140,13 +140,16 @@ function vcpStr(code) {
 let monitorsThread = {
   send: async function (data) {
     try {
-      if (monitorsThreadReal && !monitorsThreadReal?.connected) {
+      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode !== null)) {
         startMonitorThread()
+        while(!monitorsThreadReady) {
+          await Utils.wait(50)
+        }
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
       if(!monitorsThreadReal?.connected || monitorsThreadReal?.exitCode !== null) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
-        await Utils.wait(100)
+        await Utils.wait(50)
       }
       monitorsThreadReal.send(data)
     } catch (e) {
@@ -167,8 +170,11 @@ let monitorsThread = {
 let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
+let monitorsThreadStarting = false
 function startMonitorThread() {
-  if(monitorsThreadReal?.connected) return false;
+  if(monitorsThreadReal?.connected || monitorsThreadStarting) return false;
+  monitorsThreadReady = false
+  monitorsThreadStarting = true
   console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest], { silent: false })
@@ -176,6 +182,7 @@ function startMonitorThread() {
     if (data?.type) {
       if (data.type === "ready") {
         monitorsThreadReady = true
+        monitorsThreadStarting = false
         isRefreshing = false
         monitorsThreadReal.send({
           type: "settings",

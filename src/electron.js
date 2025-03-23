@@ -3797,19 +3797,22 @@ powerMonitor.on("resume", () => {
   const block = blockBadDisplays("powerMonitor:resume")
   setTimeout(
     () => {
-      block.release()
-      if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
-        if (!settings.disableAutoApply) setKnownBrightness();
-        if(settings.recreateTray) recreateTray();
-        if(settings.recreateFlyout && !panelSize.visible) restartPanel();
-
-        // Check if time adjustments should apply
-        applyCurrentAdjustmentEvent(true, false)
-      })
-    },
-    parseInt(settings.wakeRestoreSeconds || 8) * 1000 // Give Windows a few seconds to... you know... wake up.
-  )
-
+      startMonitorThread()
+      setTimeout(
+        () => {
+          block.release()
+          if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
+            if (!settings.disableAutoApply) setKnownBrightness();
+            if(settings.recreateTray) recreateTray();
+            if(settings.recreateFlyout && !panelSize.visible) restartPanel();
+    
+            // Check if time adjustments should apply
+            applyCurrentAdjustmentEvent(true, false)
+          })
+        },
+        parseInt(settings.wakeRestoreSeconds || 8) * 1000 // Give Windows a few seconds to... you know... wake up.
+      )
+  }, 100)
 })
 
 function handleMetricsChange(type) {

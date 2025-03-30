@@ -210,7 +210,7 @@
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "このディスプレイが報告したすべてのVCPコード",
     "SETTINGS_FEATURES_ADD_DESC": "ディスプレイに追加したい機能に対応したVCPコードを入力してください。お使いのディスプレイが本当にそのVCPコードに対応するかは、TwinkleTrayからは分かりません。自己責任でご利用ください。",
     "SETTINGS_FEATURES_VCP_LIST_DESC": "このディスプレイが Windows に報告した、利用できるVCPコードの一覧です。Twinkle Tray は、このVCPコードの機能性や安定性を検証していません。自己責任でご利用ください。",
-    "SETTINGS_FEATURES_VCP_EXPECTED": "可能性のある値",
+    "SETTINGS_FEATURES_VCP_EXPECTED": "期待する値",
     "SETTINGS_PROFILES_DESC": "焦点が当たっているアプリによって、明るさやショートカットキーによるオーバーレイの動作を自動的に調整します。また、システムトレイでの右クリックメニューにプロファイルを追加し、定義したプロファイルの明るさへ簡単に変更します。",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "メディアの再生中はアイドル状態を検出しません。これは動画と音楽の両方です。メディアの再生中だとWindowsが報告する際にのみ適用されます。",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "メディア再生時にアイドル検出しない",

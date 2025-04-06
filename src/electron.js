@@ -3795,6 +3795,12 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
+  
+  // Screw it, just restart the whole app.
+  tray.destroy()
+  app.relaunch()
+  app.exit()
+
   setTimeout(
     () => {
       startMonitorThread()

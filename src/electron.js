@@ -484,6 +484,7 @@ const defaultSettings = {
   idleRestoreSeconds: 0,
   wakeRestoreSeconds: 0,
   hardwareRestoreSeconds: 0,
+  restartOnWake: true,
   checkVCPWaitMS: 20,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
@@ -3796,10 +3797,12 @@ powerMonitor.on("resume", () => {
   stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
   
+  if(settings.restartOnWake) {
   // Screw it, just restart the whole app.
-  tray.destroy()
-  app.relaunch()
-  app.exit()
+    tray.destroy()
+    app.relaunch()
+    app.exit()
+  }
 
   setTimeout(
     () => {

@@ -2618,7 +2618,13 @@ function restartPanel(show = false) {
 
 function getPrimaryDisplay() {
   let displays = screen.getAllDisplays()
+  // Use coordinate (0,0) to choose the primary display.
   let primaryDisplay = displays.find((display) => {
+    return display.bounds.x == 0 && display.bounds.y == 0
+  })
+
+  // Fall back on previous logic if none is found.
+  if (!primaryDisplay) primaryDisplay = displays.find((display) => {
     return display.bounds.x == 0 || display.bounds.y == 0
   })
 

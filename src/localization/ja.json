@@ -162,7 +162,7 @@
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "高い互換性",
     "SETTINGS_GENERAL_FORCE_OVERLAY_DESC": "オーバーレイは、常にほかのウィンドウに適用されます。全画面専用のゲームや他の全画面アプリの問題になることがあります。ゲームによっては不正防止機構が発動します。",
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "強制",
-    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "ディスプレイの電源の入り切りや、ハードウェアを接続/切断した後に、ディスプレイの反応がおかしい場合、無効にすると解決することもあります。",
+    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "ディスプレイの電源の入り切りや、ハードウェアの接続/切断後に、ディスプレイの反応がおかしい場合、無効にすると解決することもあります。",
     "SETTINGS_GENERAL_SKIP_APPLY_TITLE": "特定のディスプレイに自動適用しない",
     "SETTINGS_FEATURES_POWER_TITLE": "電源状態の信号",
     "SETTINGS_FEATURES_POWER_STANDBY": "スタンバイ",

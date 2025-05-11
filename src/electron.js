@@ -487,7 +487,7 @@ const defaultSettings = {
   idleRestoreSeconds: 0,
   wakeRestoreSeconds: 0,
   hardwareRestoreSeconds: 0,
-  restartOnWake: true,
+  restartOnWake: false,
   checkVCPWaitMS: 20,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,

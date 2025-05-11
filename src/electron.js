@@ -67,7 +67,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, MediaStatus, PowerEvents} = require("tt-windows-utils")
+const {WindowUtils, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -1418,14 +1418,12 @@ async function updateStartupOption(openAtLogin) {
 
   // Set autolaunch for AppX
   try {
-    if (false && isAppX) {
-      const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
+    if (isAppX) {
       if (openAtLogin) {
-        WindowsStoreAutoLaunch.enable()
+        AppStartup.enable()
       } else {
-        WindowsStoreAutoLaunch.disable()
+        AppStartup.disable()
       }
-      Utils.unloadModule('electron-winstore-auto-launch')
     }
   } catch (e) {
     debug.error(e)

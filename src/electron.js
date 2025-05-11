@@ -205,6 +205,9 @@ function startMonitorThread() {
       monitorsEventEmitter.emit(data.type, data)
     }
   })
+  monitorsThreadReal.on("error", err => {
+    console.error(err)
+  })
 }
 
 function stopMonitorThread() {

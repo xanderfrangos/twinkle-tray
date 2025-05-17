@@ -12,6 +12,8 @@
     "GENERIC_SETTINGS": "การตั้งค่า",
     "GENERIC_INSTALL": "ติดตั้ง",
     "GENERIC_DISMISS": "ยกเลิก",
+    "GENERIC_DEFAULT": "ค่าเริ่มต้น",
+    "GENERIC_OPTIONAL": "ไม่บังคับ",
     "GENERIC_DISPLAY_SINGLE": "หน้าจอ",
     "GENERIC_ALL_DISPLAYS": "ทุกหน้าจอ",
     "GENERIC_REFRESH_DISPLAYS": "รีเฟรชหน้าจอ",

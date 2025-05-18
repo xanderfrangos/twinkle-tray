@@ -88,7 +88,7 @@
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "หากการซ้อนทับปุ่มลัดของ Twinkle Tray รบกวนการใช้งานแบบเต็มหน้าจอ คุณสามารถปิดใช้งานได้ที่นี่",
     "SETTINGS_MONITORS_RATE_TITLE": "อัตราการอัปเดตความสว่าง",
     "SETTINGS_MONITORS_RATE_DESC": "ความถี่ที่ความสว่างจะได้รับการอัปเดตบนจอแสดงผลของคุณในขณะที่คุณปรับค่า เพิ่มเวลาหากจอภาพของคุณกะพริบ",
-    "SETTINGS_MONITORS_RATE_0": "น่าหัวเราะ",
+    "SETTINGS_MONITORS_RATE_0": "ทันที",
     "SETTINGS_MONITORS_RATE_1": "เร็ว (250 มิลลิวินาที)",
     "SETTINGS_MONITORS_RATE_2": "ปกติ (500 มิลลิวินาที)",
     "SETTINGS_MONITORS_RATE_3": "ช้า (1 วินาที)",

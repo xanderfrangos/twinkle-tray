@@ -87,7 +87,7 @@
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "Saat layar tertutup atau layar internal telah dinonaktifkan di Windows, sembunyikan slider kecerahan di panel.",
     "SETTINGS_FEATURES_DESCRIPTION": "Mengaktifkan atau menonaktifkan fitur DDC/CI tertentu di panel kecerahan. Setidaknya satu fitur harus diaktifkan agar monitor Anda muncul di panel kecerahan. Tidak semua layar mendukung fitur ini, seperti layar laptop/tablet.",
     "SETTINGS_FEATURES_UNSUPPORTED": "Monitor ini tidak mendukung fitur DDC/CI.",
-    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Dapatkan Kecerahan Saat Ini",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Periksa Nilai Saat Ini",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Selalu dapatkan nilai terbaru dari monitor saat membuka panel kecerahan. Aktifkan ini jika kecerahan (atau kode VCP lainnya seperti kontras) sering berubah dari luar Twinkle Tray.",
     "SETTINGS_TIME_TITLE": "Penyesuaian Waktu Hari",
     "SETTINGS_TIME_DESC": "Secara otomatis mengatur monitor Anda ke tingkat kecerahan tertentu pada waktu yang diinginkan. Semua monitor akan diatur ke level yang sama dan dinormalisasi.",
@@ -129,7 +129,7 @@
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC": "Jika Twinkle Tray tidak responsif ketika mengklik ikon tray atau tidak mendeteksi tampilan Anda, Anda bisa mencoba menonaktifkan metode deteksi monitor tertentu. Restart Twinkle Tray agar perubahan yang terjadi bisa diterapkan. {{1}}",
     "GENERIC_PAUSE_TOD": "Penyesuaian Waktu Jeda",
     "GENERIC_PAUSE_IDLE": "Jeda Deteksi Idle",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Metode pendeteksian monitor yang diaktifkan",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Metode deteksi monitor yang diaktifkan",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Nonaktifkan hamparan",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Jika overlay hotkey Twinkle Tray mengganggu aplikasi layar penuh, Anda bisa menonaktifkannya di sini.",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Sembunyikan Tampilan",
@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_APP_PATH": "Jalur aplikasi",
     "SETTINGS_PROFILES_APP_DESC": "Jika Anda ingin profil ini aktif secara otomatis saat aplikasi tertentu difokuskan, masukkan jalur lengkap atau sebagian EXE di bawah ini.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Ganti jenis overlay",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Mengubah perilaku hotkey overlay saat aplikasi tertentu difokuskan. Fitur ini tidak berfungsi saat profil diaktifkan secara manual."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Mengubah perilaku hotkey overlay saat aplikasi tertentu difokuskan. Fitur ini tidak berfungsi saat profil diaktifkan secara manual.",
+    "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Dipaksa menyala",
+    "SETTINGS_HOTKEY_ACTION_CYCLE": "Siklus daftar nilai"
 }

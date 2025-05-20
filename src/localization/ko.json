@@ -194,9 +194,9 @@
     "SETTINGS_PROFILES_TRIGGER_TITLE": "앱 트리거 설정",
     "SETTINGS_PROFILES_APP_PATH": "앱 경로",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "오버레이 유형 재정의",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "전체 화면 앱은 절대 유휴 상태가 아닙니다",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "전체 화면 앱에서 유휴 상태 감지 차단",
     "SETTINGS_GENERAL_OVERLAY_DESC": "밝기 단축키 오버레이가 다른 앱에 얼마나 강력하게 표시되는지. 이를 조정할 필요는 없습니다.",
-    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "모니터를 끄거나 하드웨어를 분리/연결한 후 모니터가 이상하게 반응하는 경우 이 기능을 비활성화하면 도움이 될 수 있습니다.",
+    "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "모니터를 끄기/켜기 후 또는 하드웨어를 분리/연결한 후 모니터가 이상하게 반응하는 경우 이 기능을 비활성화하면 도움이 될 수 있습니다.",
     "SETTINGS_TIME_LONG": "경도",
     "SETTINGS_FEATURES_POWER_DESC": "디스플레이를 끄라는 DDC/CI 명령을 전송하면 다음 값이 전송됩니다.",
     "SETTINGS_FEATURES_POWER_WARNING": "\"대기\" 옵션을 사용하면 Twinkle 트레이에서 모니터를 켜거나 끌 수 있습니다. 그러나 많은 모니터가 전원 상태 변경에 올바르게 반응하지 않습니다. 위험을 감수하고 사용하세요.",
@@ -211,5 +211,7 @@
     "SETTINGS_PROFILES_OVERLAY_DESC": "지정한 앱이 포커스를 맞출 때 단축키 오버레이의 동작을 변경합니다. 프로필을 수동으로 활성화하면 이 기능이 작동하지 않습니다.",
     "SETTINGS_PROFILES_APP_DESC": "특정 앱에 포커스가 맞춰졌을 때 이 프로필이 자동으로 활성화되도록 하려면 아래에 EXE의 전체 또는 부분 경로를 입력하세요.",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "미디어 차단 유휴 감지",
-    "SETTINGS_TIME_IDLE_MEDIA_DESC": "미디어가 재생되는 동안 유휴 감지가 비활성화됩니다. 여기에는 비디오와 오디오가 모두 포함됩니다. 이는 Windows에서 미디어가 재생 중이라고 보고할 때만 적용됩니다."
+    "SETTINGS_TIME_IDLE_MEDIA_DESC": "미디어가 재생되는 동안 유휴 감지가 비활성화됩니다. 여기에는 비디오와 오디오가 모두 포함됩니다. 이는 Windows에서 미디어가 재생 중이라고 보고할 때만 적용됩니다.",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "시스템 트레이 아이콘을 스크롤할 때 스크롤 방향이 반대로 바뀝니다.",
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "스크롤 반전"
 }

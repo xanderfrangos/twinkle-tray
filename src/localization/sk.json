@@ -153,5 +153,6 @@
     "GENERIC_DELETE": "Vymazať",
     "GENERIC_DEFAULT": "Predvolené",
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najkompatibilnejšie",
-    "SETTINGS_FEATURES_VCP_EXPECTED": "Očakávané hodnoty"
+    "SETTINGS_FEATURES_VCP_EXPECTED": "Očakávané hodnoty",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Najkompatibilnejšie"
 }

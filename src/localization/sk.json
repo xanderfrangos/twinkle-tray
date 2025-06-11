@@ -103,7 +103,7 @@
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "Ak chcete skryť konkrétne displeje z rozbalovacieho zoznamu, môžete ich tu vypnúť.",
     "SETTINGS_FEATURES_DESCRIPTION": "Povoľte alebo zakážte konkrétne funkcie DDC/CI v paneli jasu. Aspoň jedna funkcia musí byť povolená, aby sa váš monitor zobrazil v paneli jasu. Nie všetky displeje podporujú tieto funkcie, ako napríklad displeje notebookov/tabletov.",
     "SETTINGS_FEATURES_UNSUPPORTED": "Tento monitor nepodporuje funkcie DDC/CI.",
-    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Získať aktuálny jas",
+    "SETTINGS_FEATURES_CUR_BRIGHTNESS_TITLE": "Skontrolovať aktuálne hodnoty jasu",
     "SETTINGS_FEATURES_CUR_BRIGHTNESS_DESC": "Vždy získajte najnovší úroveň jasu z monitora pri otvorení stránky jasu. Ak sa jas často mení mimo Twinkle Tray (napr. iná aplikácia), povoľte túto možnosť.",
     "SETTINGS_TIME_TITLE": "Úpravy podľa času",
     "SETTINGS_TIME_DESC": "Automaticky nastavte vaše monitory na konkrétnu úroveň jasu v požadovanom čase. Všetky monitory budú nastavené na rovnaké, normalizované úrovne.",
@@ -149,5 +149,10 @@
     "SETTINGS_UPDATES_CHANNEL": "Kanál aktualizácií",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabilný (predvolený)",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Vypnúť"
+    "SETTINGS_FEATURES_POWER_OFF": "Vypnúť",
+    "GENERIC_DELETE": "Vymazať",
+    "GENERIC_DEFAULT": "Predvolené",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najkompatibilnejšie",
+    "SETTINGS_FEATURES_VCP_EXPECTED": "Očakávané hodnoty",
+    "SETTINGS_FEATURES_POWER_COMPAT": "Najkompatibilnejšie"
 }

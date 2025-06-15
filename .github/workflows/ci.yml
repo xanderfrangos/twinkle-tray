@@ -23,29 +23,11 @@ jobs:
       - name: Get package.json info
         id: info
         uses: jaywcjlove/github-action-package@main
-
-      - name: Load cache
-        id: load-cache-node_modules
-        uses: actions/cache/restore@v4
-        with:
-          path: ./node_modules
-          key: node_modules-${{ hashFiles('package-lock.json') }}
-          enableCrossOsArchive: true
           
-      - name: Prepare dependencies for cache
-        if: steps.load-cache-node_modules.outputs.cache-hit != 'true'
+      - name: Prepare dependencies
         run: npm i --install-links
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Save cache
-        if: steps.load-cache-node_modules.outputs.cache-hit != 'true'
-        id: save-cache-node_modules
-        uses: actions/cache/save@v4
-        with:
-          path: ./node_modules
-          key: ${{ steps.load-cache-node_modules.outputs.cache-primary-key }}
-          enableCrossOsArchive: true
           
       - name: Build assets
         run: npm run parcel-build

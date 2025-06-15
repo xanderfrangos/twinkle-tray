@@ -8,16 +8,16 @@ env:
 jobs:
   build:
     name: Build all
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     steps:
       - uses: actions/checkout@v4
         name: Read repository
       
-      - name: Set up Node.js 18
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
           
       - name: Get package.json info

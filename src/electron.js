@@ -207,15 +207,22 @@ function startMonitorThread() {
   })
   monitorsThreadReal.on("error", err => {
     console.error(err)
+    stopMonitorThread()
+    setTimeout(() => {
+      if(!monitorsThreadReal?.connected && !monitorsThreadStarting) {
+        startMonitorThread()
+      }
+    }, 111)
   })
 }
 
 function stopMonitorThread() {
+  console.log("Killing monitor thread")
+  monitorsThreadReady = false
+  monitorsThreadStarting = false
+  setIsRefreshing(false)
   if(monitorsThreadReal?.connected) {
-    console.log("Killing monitor thread")
     monitorsThreadReal.kill()
-    monitorsThreadReady = false
-    setIsRefreshing(false)
   }
 }
 

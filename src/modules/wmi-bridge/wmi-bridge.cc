@@ -47,19 +47,19 @@ bool wmiConnect()
     return true;
 }
 
-string bstr_to_str(BSTR source)
+// https://stackoverflow.com/questions/6284524/bstr-to-stdstring-stdwstring-and-vice-versa
+std::string bstr_to_str(BSTR bstr)
 {
-    p("bstr_to_str 1");
-    //source = L"lol2inside";
-    _bstr_t wrapped_bstr = _bstr_t(source);
-    p("bstr_to_str 2");
-    int length = wrapped_bstr.length();
-    p("bstr_to_str 3");
-    char *char_array = new char[length];
-    p("bstr_to_str 4");
-    strcpy_s(char_array, length + 1, wrapped_bstr);
-    p("bstr_to_str 5 END");
-    return char_array;
+    int wslen = ::SysStringLen(bstr);
+    const wchar_t* pstr = (wchar_t*)bstr;
+    int len = ::WideCharToMultiByte(CP_ACP, 0, pstr, wslen, NULL, 0, NULL, NULL);
+
+    std::string dblstr(len, '\0');
+    len = ::WideCharToMultiByte(CP_ACP, 0 /* no flags */,
+                                pstr, wslen /* not necessary NULL-terminated */,
+                                &dblstr[0], len,
+                                NULL, NULL /* no default char */);
+    return dblstr;
 }
 
 // Used to read weird WMIMonitorID strings

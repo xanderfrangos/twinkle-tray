@@ -62,10 +62,16 @@ jobs:
         with:
           name: twinkle-tray-exe-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*.exe
+
+      - name: Get current date
+        id: date
+        uses: Kaven-Universe/github-action-current-date-time@v1
+        with:
+          format: "YYYY.1MMDD.1HHmm"
           
       - name: Build x64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --x64 --win appx --config.npmRebuild=false --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store.appx" --publish="never"
+        run: npm exec electron-builder -- --x64 --win appx --config.npmRebuild=false --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store.appx" --publish="never"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
@@ -78,7 +84,7 @@ jobs:
           
       - name: Build ARM64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --publish="never"
+        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --publish="never"
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             

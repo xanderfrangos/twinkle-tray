@@ -67,7 +67,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, MediaStatus, PowerEvents} = require("tt-windows-utils")
+const {WindowUtils, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -140,13 +140,16 @@ function vcpStr(code) {
 let monitorsThread = {
   send: async function (data) {
     try {
-      if (monitorsThreadReal && !monitorsThreadReal.connected) {
+      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode !== null)) {
         startMonitorThread()
+        while(!monitorsThreadReady) {
+          await Utils.wait(50)
+        }
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
-      if(!monitorsThreadReal.connected || monitorsThreadReal.exitCode !== null) throw("Thread not available!");
+      if(!monitorsThreadReal?.connected || monitorsThreadReal?.exitCode !== null) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
-        await Utils.wait(100)
+        await Utils.wait(50)
       }
       monitorsThreadReal.send(data)
     } catch (e) {
@@ -167,13 +170,20 @@ let monitorsThread = {
 let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
+let monitorsThreadStarting = false
 function startMonitorThread() {
+  if(monitorsThreadReal?.connected || monitorsThreadStarting) return false;
+  monitorsThreadReady = false
+  monitorsThreadStarting = true
+  console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest], { silent: false })
   monitorsThreadReal.on("message", (data) => {
     if (data?.type) {
       if (data.type === "ready") {
         monitorsThreadReady = true
+        monitorsThreadStarting = false
+        isRefreshing = false
         monitorsThreadReal.send({
           type: "settings",
           settings
@@ -186,6 +196,7 @@ function startMonitorThread() {
           type: "wmi-bridge-ok",
           value: wmiBridgeOK
         })
+        getLocalization()
       }
       if (data.type === "ddcciModeTestResult") {
         ddcciModeTestResult = data.value
@@ -194,6 +205,25 @@ function startMonitorThread() {
       monitorsEventEmitter.emit(data.type, data)
     }
   })
+  monitorsThreadReal.on("error", err => {
+    console.error(err)
+    stopMonitorThread()
+    setTimeout(() => {
+      if(!monitorsThreadReal?.connected && !monitorsThreadStarting) {
+        startMonitorThread()
+      }
+    }, 111)
+  })
+}
+
+function stopMonitorThread() {
+  console.log("Killing monitor thread")
+  monitorsThreadReady = false
+  monitorsThreadStarting = false
+  setIsRefreshing(false)
+  if(monitorsThreadReal?.connected) {
+    monitorsThreadReal.kill()
+  }
 }
 
 function getVCP(monitor, code) {
@@ -465,6 +495,7 @@ const defaultSettings = {
   idleRestoreSeconds: 0,
   wakeRestoreSeconds: 0,
   hardwareRestoreSeconds: 0,
+  restartOnWake: false,
   checkVCPWaitMS: 20,
   overrideTaskbarPosition: false,
   overrideTaskbarGap: false,
@@ -1402,13 +1433,11 @@ async function updateStartupOption(openAtLogin) {
   // Set autolaunch for AppX
   try {
     if (isAppX) {
-      const { WindowsStoreAutoLaunch } = require('electron-winstore-auto-launch');
       if (openAtLogin) {
-        WindowsStoreAutoLaunch.enable()
+        AppStartup.enable()
       } else {
-        WindowsStoreAutoLaunch.disable()
+        AppStartup.disable()
       }
-      Utils.unloadModule('electron-winstore-auto-launch')
     }
   } catch (e) {
     debug.error(e)
@@ -3787,22 +3816,34 @@ function handleMonitorChange(t, e, d) {
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", () => {
   console.log("Resuming......")
+  stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
+  
+  if(settings.restartOnWake) {
+  // Screw it, just restart the whole app.
+    tray.destroy()
+    app.relaunch()
+    app.exit()
+  }
+
   setTimeout(
     () => {
-      block.release()
-      if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
-        if (!settings.disableAutoApply) setKnownBrightness();
-        if(settings.recreateTray) recreateTray();
-        if(settings.recreateFlyout && !panelSize.visible) restartPanel();
-
-        // Check if time adjustments should apply
-        applyCurrentAdjustmentEvent(true, false)
-      })
-    },
-    parseInt(settings.wakeRestoreSeconds || 8) * 1000 // Give Windows a few seconds to... you know... wake up.
-  )
-
+      startMonitorThread()
+      setTimeout(
+        () => {
+          block.release()
+          if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
+            if (!settings.disableAutoApply) setKnownBrightness();
+            if(settings.recreateTray) recreateTray();
+            if(settings.recreateFlyout && !panelSize.visible) restartPanel();
+    
+            // Check if time adjustments should apply
+            applyCurrentAdjustmentEvent(true, false)
+          })
+        },
+        parseInt(settings.wakeRestoreSeconds || 8) * 1000 // Give Windows a few seconds to... you know... wake up.
+      )
+  }, 100)
 })
 
 function handleMetricsChange(type) {
@@ -3836,7 +3877,7 @@ function handleMetricsChange(type) {
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
-powerMonitor.on("suspend", () => { console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("suspend", () => { console.log("Event: suspend"); stopMonitorThread(); recentlyWokeUp = true })
 powerMonitor.on("lock-screen", () => { console.log("Event: lock-screen"); recentlyWokeUp = true })
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");

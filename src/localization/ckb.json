@@ -155,5 +155,7 @@
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "گونجاوترین",
     "GENERIC_DEFAULT": "بنچینەیی",
     "GENERIC_OPTIONAL": "ئارەزوومەندانەیە",
-    "SETTINGS_FEATURES_POWER_COMPAT": "گونجاوترین"
+    "SETTINGS_FEATURES_POWER_COMPAT": "گونجاوترین",
+    "PANEL_LABEL_TURN_ON": "پێکردن",
+    "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "کاراکردنی زۆرەملێ"
 }

@@ -3,6 +3,7 @@ const WindowUtils = require("bindings")("windows_window_utils");
 const PowerEvents = require("bindings")("windows_power_events");
 const MediaStatus = require("bindings")("windows_media_status");
 const WindowMaterial = require("bindings")("windows_window_material");
+const AppStartup = require("bindings")("windows_app_startup");
 
 module.exports = {
     WindowUtils: {
@@ -37,5 +38,9 @@ module.exports = {
         setTransitionSupported: (hwnd, enabled = 1) => {
             WindowMaterial.setWindowAttribute(hwnd, 3, enabled)
         }
+    },
+    AppStartup: {
+        enable: AppStartup.enable,
+        disable: AppStartup.disable
     }
 }

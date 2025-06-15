@@ -8,16 +8,16 @@ env:
 jobs:
   build:
     name: Build all
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
       - uses: actions/checkout@v4
         name: Read repository
       
-      - name: Set up Node.js 20
+      - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: 'npm'
           
       - name: Get package.json info
@@ -26,7 +26,7 @@ jobs:
 
       - name: Load cache
         id: load-cache-node_modules
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ./node_modules
           key: node_modules-${{ hashFiles('package-lock.json') }}
@@ -41,7 +41,7 @@ jobs:
       - name: Save cache
         if: steps.load-cache-node_modules.outputs.cache-hit != 'true'
         id: save-cache-node_modules
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ./node_modules
           key: ${{ steps.load-cache-node_modules.outputs.cache-primary-key }}

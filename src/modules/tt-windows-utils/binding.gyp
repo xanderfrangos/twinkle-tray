@@ -14,7 +14,6 @@
       "target_name": "windows_power_events",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
-      "cflags_cc": [ "-std=c++20" ],
       "sources": [ "windows_power_events.cc" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"

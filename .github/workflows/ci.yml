@@ -25,7 +25,7 @@ jobs:
         uses: jaywcjlove/github-action-package@main
           
       - name: Prepare dependencies
-        run: npm i --install-links
+        run: npm i
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           

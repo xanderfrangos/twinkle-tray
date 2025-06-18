@@ -3224,7 +3224,7 @@ function getProfilesMenuItem() {
       }
       if(profiles.length) {
         const submenu = Menu.buildFromTemplate(profiles)
-        return { label: "Profiles", submenu: submenu }
+        return { label: T.t("SETTINGS_PROFILES_TITLE"), submenu: submenu }
       }
     }
   } catch(e) { }

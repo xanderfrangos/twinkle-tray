@@ -193,7 +193,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             }
 
             // HDR
-            if (true || settings.enableHDR) {
+            if (!settings?.disableHDR) {
                 try {
                     startTime = process.hrtime.bigint()
                     monitorsHDR = await getHDRDisplays(monitors);
@@ -386,7 +386,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
     }
 
     // HDR
-    if (true || settings.enableHDR) {
+    if (!settings.disableHDR) {
         try {
             startTime = process.hrtime.bigint()
             monitorsHDR = await getHDRDisplays(foundMonitors);
@@ -889,7 +889,7 @@ updateDisplay = (monitors, hwid2, info = {}) => {
 }
 
 function setSDRBrightness(brightness, id) {
-    if(false && !settings.enableHDR) return false;
+    if(settings.disableHDR) return false;
     try {
         console.log("sdr", brightness, id)
         hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)

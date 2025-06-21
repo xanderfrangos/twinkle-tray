@@ -12,6 +12,7 @@ let lastDDCCIList = []
 let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
+let lastHDR = {}
 
 function deepCopy(obj) {
     try {
@@ -78,6 +79,7 @@ process.on('message', async (data) => {
                     lastDDCCIList,
                     lastWMI,
                     lastWin32,
+                    lastHDR,
                     monitorsAppleStudio,
                     monitorReports,
                     monitorReportsRaw,
@@ -481,6 +483,7 @@ setStudioDisplayBrightness = async (serial, brightness) => {
 getHDRDisplays = async (monitors) => {
     try {
         const displays = hdr.getDisplays()
+        lastHDR = displays
         for(const display of displays) {
             const hwid = display.path.split("#")
             

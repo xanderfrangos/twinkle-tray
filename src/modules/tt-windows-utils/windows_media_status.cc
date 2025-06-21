@@ -19,36 +19,40 @@ typedef Windows::Media::MediaPlaybackType MediaPlaybackType;
 Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
   std::string statusStr = "closed";
 
-  auto session_async = GSMTCSM::RequestAsync();
-  if (session_async.wait_for(std::chrono::seconds{ 1 }) != winrt::Windows::Foundation::AsyncStatus::Completed) {
-    return Napi::String::New(info.Env(), statusStr);
-  }
+  try {
+    auto session_async = GSMTCSM::RequestAsync();
+    if (session_async.wait_for(std::chrono::seconds{1}) !=
+        winrt::Windows::Foundation::AsyncStatus::Completed) {
+      return Napi::String::New(info.Env(), statusStr);
+    }
 
-  GSMTCSM manager = session_async.get();
-  GlobalSystemMediaTransportControlsSession session =
-      manager.GetCurrentSession();
+    GSMTCSM manager = session_async.get();
+    GlobalSystemMediaTransportControlsSession session =
+        manager.GetCurrentSession();
 
-  if (session == NULL)
-    return Napi::String::New(info.Env(), statusStr);
+    if (session == NULL)
+      return Napi::String::New(info.Env(), statusStr);
 
-  SessionPlaybackStatus status = session.GetPlaybackInfo().PlaybackStatus();
+    SessionPlaybackStatus status = session.GetPlaybackInfo().PlaybackStatus();
 
-  switch (status) {
-  case SessionPlaybackStatus::Opened:
-    statusStr = "opened";
-    break;
-  case SessionPlaybackStatus::Changing:
-    statusStr = "changing";
-    break;
-  case SessionPlaybackStatus::Stopped:
-    statusStr = "stopped";
-    break;
-  case SessionPlaybackStatus::Playing:
-    statusStr = "playing";
-    break;
-  case SessionPlaybackStatus::Paused:
-    statusStr = "paused";
-    break;
+    switch (status) {
+    case SessionPlaybackStatus::Opened:
+      statusStr = "opened";
+      break;
+    case SessionPlaybackStatus::Changing:
+      statusStr = "changing";
+      break;
+    case SessionPlaybackStatus::Stopped:
+      statusStr = "stopped";
+      break;
+    case SessionPlaybackStatus::Playing:
+      statusStr = "playing";
+      break;
+    case SessionPlaybackStatus::Paused:
+      statusStr = "paused";
+      break;
+    }
+  } catch (std::runtime_error &e) {
   }
 
   return Napi::String::New(info.Env(), statusStr);
@@ -56,70 +60,75 @@ Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
 
 Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
   Napi::Object obj = Napi::Object::New(info.Env());
-  auto session_async = GSMTCSM::RequestAsync();
-  if (session_async.wait_for(std::chrono::seconds{ 1 }) != winrt::Windows::Foundation::AsyncStatus::Completed) {
-    return obj;
+
+  try {
+    auto session_async = GSMTCSM::RequestAsync();
+    if (session_async.wait_for(std::chrono::seconds{1}) !=
+        winrt::Windows::Foundation::AsyncStatus::Completed) {
+      return obj;
+    }
+    GSMTCSM manager = session_async.get();
+    GlobalSystemMediaTransportControlsSession session =
+        manager.GetCurrentSession();
+
+    if (session == NULL)
+      return obj;
+
+    MediaProperties playback = session.TryGetMediaPropertiesAsync().get();
+
+    if (playback == NULL)
+      return obj;
+
+    obj.Set(Napi::String::New(info.Env(), "title"),
+            Napi::String::New(info.Env(),
+                              winrt::to_string(playback.Title().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "subtitle"),
+            Napi::String::New(info.Env(),
+                              winrt::to_string(playback.Subtitle().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "artist"),
+            Napi::String::New(info.Env(),
+                              winrt::to_string(playback.Artist().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "album"),
+            Napi::String::New(info.Env(),
+                              winrt::to_string(playback.AlbumTitle().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "albumartist"),
+            Napi::String::New(
+                info.Env(), winrt::to_string(playback.AlbumArtist().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "source"),
+            Napi::String::New(
+                info.Env(),
+                winrt::to_string(session.SourceAppUserModelId().c_str())));
+
+    obj.Set(Napi::String::New(info.Env(), "tracks"),
+            Napi::Number::New(info.Env(), playback.AlbumTrackCount()));
+
+    obj.Set(Napi::String::New(info.Env(), "tracknumber"),
+            Napi::Number::New(info.Env(), playback.TrackNumber()));
+
+    std::string typeStr = "unknown";
+    MediaPlaybackType type = playback.PlaybackType().Value();
+
+    switch (type) {
+    case MediaPlaybackType::Music:
+      typeStr = "music";
+      break;
+    case MediaPlaybackType::Video:
+      typeStr = "video";
+      break;
+    case MediaPlaybackType::Image:
+      typeStr = "image";
+      break;
+    }
+
+    obj.Set(Napi::String::New(info.Env(), "type"),
+            Napi::String::New(info.Env(), typeStr));
+  } catch (std::runtime_error &e) {
   }
-  GSMTCSM manager = session_async.get();
-  GlobalSystemMediaTransportControlsSession session =
-      manager.GetCurrentSession();
-
-  if (session == NULL)
-    return obj;
-
-  MediaProperties playback = session.TryGetMediaPropertiesAsync().get();
-
-  if (playback == NULL)
-    return obj;
-
-  obj.Set(Napi::String::New(info.Env(), "title"),
-          Napi::String::New(info.Env(),
-                            winrt::to_string(playback.Title().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "subtitle"),
-          Napi::String::New(info.Env(),
-                            winrt::to_string(playback.Subtitle().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "artist"),
-          Napi::String::New(info.Env(),
-                            winrt::to_string(playback.Artist().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "album"),
-          Napi::String::New(info.Env(),
-                            winrt::to_string(playback.AlbumTitle().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "albumartist"),
-          Napi::String::New(info.Env(),
-                            winrt::to_string(playback.AlbumArtist().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "source"),
-          Napi::String::New(
-              info.Env(),
-              winrt::to_string(session.SourceAppUserModelId().c_str())));
-
-  obj.Set(Napi::String::New(info.Env(), "tracks"),
-          Napi::Number::New(info.Env(), playback.AlbumTrackCount()));
-
-  obj.Set(Napi::String::New(info.Env(), "tracknumber"),
-          Napi::Number::New(info.Env(), playback.TrackNumber()));
-
-  std::string typeStr = "unknown";
-  MediaPlaybackType type = playback.PlaybackType().Value();
-
-  switch (type) {
-  case MediaPlaybackType::Music:
-    typeStr = "music";
-    break;
-  case MediaPlaybackType::Video:
-    typeStr = "video";
-    break;
-  case MediaPlaybackType::Image:
-    typeStr = "image";
-    break;
-  }
-
-  obj.Set(Napi::String::New(info.Env(), "type"),
-          Napi::String::New(info.Env(), typeStr));
 
   return obj;
 }

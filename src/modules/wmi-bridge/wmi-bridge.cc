@@ -25,26 +25,30 @@ void p(string str)
 // Set up COM stuff once
 bool wmiConnect()
 {
-    p("wmiConnect 1");
-    if (wmiConnected == true)
-        return true;
-    p("wmiConnect 2");
-    hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    if (FAILED(hRes))
-    {
-        cout << "Unable to launch COM: 0x" << std::hex << hRes << endl;
-        return false;
-    }
-    p("wmiConnect 3");
+    try {
+        p("wmiConnect 1");
+        if (wmiConnected == true)
+            return true;
+        p("wmiConnect 2");
+        hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+        if (FAILED(hRes))
+        {
+            cout << "Unable to launch COM: 0x" << std::hex << hRes << endl;
+            return false;
+        }
+        p("wmiConnect 3");
 
-    if ((FAILED(hRes = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_CONNECT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, 0))))
-    {
-        cout << "Unable to initialize security: 0x" << std::hex << hRes << endl;
+        if ((FAILED(hRes = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_CONNECT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, 0))))
+        {
+            cout << "Unable to initialize security: 0x" << std::hex << hRes << endl;
+            return false;
+        }
+        p("wmiConnect 4 END");
+        wmiConnected = true;
+        return true;
+    } catch (std::runtime_error& e) {
         return false;
     }
-    p("wmiConnect 4 END");
-    wmiConnected = true;
-    return true;
 }
 
 // https://stackoverflow.com/questions/6284524/bstr-to-stdstring-stdwstring-and-vice-versa

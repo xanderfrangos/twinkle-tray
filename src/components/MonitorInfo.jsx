@@ -94,6 +94,7 @@ export default function MonitorInfo(props) {
                 <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
                 <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
                 <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
+                <br />HDR: <b>{(monitor.hdr == "active" ? "Active" : monitor.hdr == "supported" ? "Supported" : "Unsupported")}</b>
             </p>
             {extraHTML}
         </div>

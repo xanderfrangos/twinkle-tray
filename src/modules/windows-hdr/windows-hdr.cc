@@ -35,6 +35,7 @@ struct Display {
     int nits;
     boolean hdrSupported;
     boolean hdrEnabled;
+    boolean hdrActive;
     DISPLAYCONFIG_PATH_INFO target;
     int bits;
 };
@@ -48,6 +49,35 @@ std::string wcharToString(const wchar_t* wstr, boolean hasNullTerminator) {
     } catch (std::runtime_error& e) {
         return (std::string)("");
     }
+}
+
+boolean setSDRBrightness(DISPLAYCONFIG_PATH_INFO target, int desiredNits, bool silent) {
+    int nits = desiredNits;
+
+    try {
+        if (nits < 80) {
+            nits = 80;
+        }
+
+        if (nits > 480) {
+            nits = 480;
+        }
+
+        if (nits % 4 != 0) {
+            nits += 4 - (nits % 4);
+        }
+
+        LONG result = pathSetSdrWhite(target, nits);
+
+        if (result != ERROR_SUCCESS) {
+            if(!silent) fprintf(stderr, "Error on DisplayConfigSetDeviceInfo for SDR white level\n");
+            return false;
+        }
+    } catch (std::runtime_error& e) {
+        return false;
+    }
+
+    return true;
 }
 
 std::map<std::string, Display> getDisplays() {
@@ -141,39 +171,12 @@ std::map<std::string, Display> getDisplays() {
       newDisplay.bits = hdrInfo.bitsPerColorChannel;
       newDisplay.target = path;
 
+      newDisplay.hdrActive = setSDRBrightness(path, nits, true);
+
       newDisplays.insert({newDisplay.name, newDisplay});
     }
 
     return newDisplays;
-}
-
-boolean setSDRBrightness(DISPLAYCONFIG_PATH_INFO target, int desiredNits) {
-    int nits = desiredNits;
-
-    try {
-        if (nits < 80) {
-            nits = 80;
-        }
-
-        if (nits > 480) {
-            nits = 480;
-        }
-
-        if (nits % 4 != 0) {
-            nits += 4 - (nits % 4);
-        }
-
-        LONG result = pathSetSdrWhite(target, nits);
-
-        if (result != ERROR_SUCCESS) {
-            fprintf(stderr, "Error on DisplayConfigSetDeviceInfo for SDR white level\n");
-            return false;
-        }
-    } catch (std::runtime_error& e) {
-        return false;
-    }
-
-    return true;
 }
 
 
@@ -198,6 +201,7 @@ Napi::Array nodeGetDisplays(const Napi::CallbackInfo& info) {
         displayObj.Set(Napi::String::New(env, "nits"), Napi::Number::New(env, display.second.nits));
         displayObj.Set(Napi::String::New(env, "hdrSupported"), Napi::Boolean::New(env, display.second.hdrSupported));
         displayObj.Set(Napi::String::New(env, "hdrEnabled"), Napi::Boolean::New(env, display.second.hdrEnabled));
+        displayObj.Set(Napi::String::New(env, "hdrActive"), Napi::Boolean::New(env, display.second.hdrActive));
         displayObj.Set(Napi::String::New(env, "bits"), Napi::Number::New(env, display.second.bits));
         out.Set(i++, displayObj);
     }
@@ -218,7 +222,7 @@ Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
     boolean result = false;
     for (auto& display : displays) {
         if(display.second.path == (std::string)path) {
-            result = setSDRBrightness(display.second.target, nits);
+            result = setSDRBrightness(display.second.target, nits, false);
             break;
         }
     }

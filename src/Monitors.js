@@ -486,14 +486,14 @@ getHDRDisplays = async (monitors) => {
         lastHDR = displays
         for(const display of displays) {
             const hwid = display.path.split("#")
-            
+
             const newDisplay = {
                 key: hwid[2],
                 id: display.path,
                 hwid,
                 sdrNits: display.nits,
                 sdrLevel: parseInt((display.nits - 80) / 4),
-                hdr: "supported"
+                hdr: (display.hdrActive ? "active" : display.hdrEnabled ? "supported" : "unsupported")
             }
 
             if(display.name) {
@@ -892,9 +892,10 @@ function setSDRBrightness(brightness, id) {
     if(settings.disableHDR) return false;
     try {
         console.log("sdr", brightness, id)
-        hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
+        return hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
     } catch(e) {
         console.log(`Couldn't update SDR brightness! [${id}]`, e);
+        return false
     }
 }
 

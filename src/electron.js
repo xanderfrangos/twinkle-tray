@@ -469,6 +469,8 @@ const defaultSettings = {
   monitorFeaturesSettings: {},
   hideDisplays: {},
   hdrDisplays: {},
+  sdrAsMainSliderDisplays: {},
+  sdrAsMainSlider: false,
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
@@ -1829,6 +1831,12 @@ const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => 
       // Brightness
       monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
 
+
+      // Replace DDC/CI brightness with SDR
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+        monitor.brightness = monitor.sdrLevel
+      }
+
       // Other DDC/CI normalizations
       const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
       if(featuresSettings) {
@@ -1953,6 +1961,12 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
 
     if (settings.hideDisplays?.[monitor.key] === true) {
       return false
+    }
+    
+
+    if(vcp == "brightness" && monitor.hdr === "active" && settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+      vcp = "sdr"
+      useCap = false
     }
 
     if (clearTransition && currentTransition) {

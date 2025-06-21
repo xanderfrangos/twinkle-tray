@@ -829,10 +829,38 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getSDRMonitorsSettings = () => {
+                try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setSDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     setHDRMonitor = (value, monitor) => {
         const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
         hdrDisplays[monitor.key] = value
         this.setSetting("hdrDisplays", hdrDisplays)
+    }
+
+    setSDRMonitor = (value, monitor) => {
+        const sdrDisplays = Object.assign({}, this.state.rawSettings?.sdrAsMainSliderDisplays)
+        sdrDisplays[monitor.key] = value
+        this.setSetting("sdrAsMainSliderDisplays", sdrDisplays)
     }
 
     getHideMonitors = () => {
@@ -1254,6 +1282,9 @@ export default class SettingsWindow extends PureComponent {
                                             </div>
                                         } />
                                     </SettingsOption>
+                                    <SettingsOption title={"SDR Replaces Primary Slider"} description={"Control SDR brightness from main brightness slider while HDR is active."} expandable={true}>
+                                        {this.getSDRMonitorsSettings()}
+                                    </SettingsOption>
                                 </div>
 
                                 <div className="pageSection">
@@ -1460,6 +1491,7 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
                                     <SettingsOption title="Restart app on wake" input={this.renderToggle("restartOnWake")} />
+                                    <SettingsOption title="SDR as main slider" input={this.renderToggle("sdrAsMainSlider")} />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
                                     <SettingsOption title="Use Electron hardware events" input={this.renderToggle("useElectronEvents")} />

@@ -483,14 +483,21 @@ getHDRDisplays = async (monitors) => {
         const displays = hdr.getDisplays()
         for(const display of displays) {
             const hwid = display.path.split("#")
-            updateDisplay(monitors, hwid[2], {
+            
+            const newDisplay = {
                 key: hwid[2],
                 id: display.path,
                 hwid,
                 sdrNits: display.nits,
                 sdrLevel: parseInt((display.nits - 80) / 4),
                 hdr: "supported"
-            });
+            }
+
+            if(display.name) {
+                newDisplay.name = display.name
+            }
+
+            updateDisplay(monitors, hwid[2], newDisplay);
             displays[hwid[2]] = display
         }
     } catch(e) {

@@ -705,6 +705,11 @@ function readSettings(doProcessSettings = true) {
   // Fix rawSettings bug
   if(settings.rawSettings) delete settings.rawSettings;
 
+  // Remove hdrDisplays from v1.17.0-beta1
+  if (settings.settingsVer == "v1.17.0-beta1" || settingsVersion < Utils.getVersionValue("v1.16.8")) {
+    if(settings.hdrDisplays) delete settings.hdrDisplays;
+  }
+
   if (doProcessSettings) processSettings({ isReadSettings: true });
 }
 

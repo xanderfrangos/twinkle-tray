@@ -1241,9 +1241,6 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="2000">{T.t("SETTINGS_MONITORS_RATE_4")}</option>
                                         </select>
                                     )} />
-                                    <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
-                                        {this.getHDRMonitors()}
-                                    </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHideMonitors()}
                                     </SettingsOption>
@@ -1448,6 +1445,10 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="legacy">Legacy (v1.15.4 behavior)</option>
                                         </select>
                                     } />
+
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
+                                        {this.getHDRMonitors()}
+                                    </SettingsOption>
 
                                     <SettingsOption title="Idle restore time" description="How long (in seconds) after going idle to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.idleRestoreSeconds * 1} onChange={(e) => this.setSetting("idleRestoreSeconds", e.target.value)} /> } />
 

@@ -1026,7 +1026,7 @@ export default class SettingsWindow extends PureComponent {
 
                                     <div className="sectionTitle">{T.t("SETTINGS_GENERAL_TITLE")}</div>
                                     
-                                    { window.isAppX ? null : <SettingsOption title={T.t("SETTINGS_GENERAL_STARTUP")} input={this.renderToggle("openAtLogin")} /> }
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_STARTUP")} input={this.renderToggle("openAtLogin")} />
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")} description={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")} input={this.renderToggle("brightnessAtStartup")} />
 
@@ -1425,6 +1425,7 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
+                                    <SettingsOption title="Restart app on wake" input={this.renderToggle("restartOnWake")} />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
                                     <SettingsOption title="Use Electron hardware events" input={this.renderToggle("useElectronEvents")} />

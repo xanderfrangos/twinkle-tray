@@ -35,7 +35,6 @@
     "@paymoapp/active-window": "file:src/modules/node-active-window",
     "acrylic": "file:src/modules/acrylic",
     "color": "^4.2.3",
-    "electron-winstore-auto-launch": "^2.0.6",
     "ga4-mp": "^1.0.3",
     "global-mouse-events": "^1.2.0",
     "markdown-to-jsx": "^7.5.0",
@@ -158,7 +157,8 @@
       "identityName": "38002AlexanderFrangos.TwinkleTray",
       "publisher": "CN=B8E9A58B-32A7-4C6C-A474-D4BE2A3CEAD8",
       "showNameOnTiles": false,
-      "backgroundColor": "#6b479c"
+      "backgroundColor": "#6b479c",
+      "addAutoLaunchExtension": true
     },
     "nsis": {
       "deleteAppDataOnUninstall": true,
@@ -173,7 +173,7 @@
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/preset-react": "^7.23.3",
     "cross-env": "^7.0.3",
-    "electron": "^34.3.2",
+    "electron": "^36.4.0",
     "electron-builder": "22.14.13",
     "node-gyp": "^10.2.0",
     "bindings": "1.5.0",

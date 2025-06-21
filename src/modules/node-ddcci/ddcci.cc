@@ -708,13 +708,17 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 void
 populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
 {
-    if (validationMethod == "legacy")
-        return populateHandlesMapLegacy();
+    try {
+        if (validationMethod == "legacy")
+            return populateHandlesMapLegacy();
 
-    if (validationMethod == "accurate" || validationMethod == "no-validation")
-        return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel);
+        if (validationMethod == "accurate" || validationMethod == "no-validation")
+            return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel);
 
-    return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
+        return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
+    } catch (std::runtime_error& e) {
+        
+    }
 }
 
 Napi::Value

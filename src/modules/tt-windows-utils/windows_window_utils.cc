@@ -10,7 +10,7 @@ Napi::Boolean SetWindowPosition(const Napi::CallbackInfo& info) {
     Napi::Number height = info[5].As<Napi::Number>();
     Napi::Number flags = info[6].As<Napi::Number>();
 
-    boolean result = SetWindowPos((HWND) hwnd.Int32Value(), (HWND) hwndAfter.Int32Value(), X, Y, width, height, flags);
+    boolean result = SetWindowPos(reinterpret_cast<HWND>(hwnd.Int32Value()), reinterpret_cast<HWND>(hwndAfter.Int32Value()), X, Y, width, height, flags);
 
     return Napi::Boolean::New(info.Env(), result);
 }
@@ -29,20 +29,20 @@ Napi::Object RectToObj(Napi::Env env, RECT rect) {
 Napi::Object GetWindowPosition(const Napi::CallbackInfo& info) {
     Napi::Number hwnd = info[0].As<Napi::Number>();
     RECT rect;
-    GetWindowRect((HWND) hwnd.Int32Value(), &rect);
+    GetWindowRect(reinterpret_cast<HWND>(hwnd.Int32Value()), &rect);
     return RectToObj(info.Env(), rect);
 }
 
 Napi::Object GetClientPosition(const Napi::CallbackInfo& info) {
     Napi::Number hwnd = info[0].As<Napi::Number>();
     RECT rect;
-    GetClientRect((HWND) hwnd.Int32Value(), &rect);
+    GetClientRect(reinterpret_cast<HWND>(hwnd.Int32Value()), &rect);
     return RectToObj(info.Env(), rect);
 }
 
 Napi::Boolean GetWindowFullscreen(const Napi::CallbackInfo& info)
 {
-    HWND hwnd = (HWND) info[0].As<Napi::Number>().Int32Value();
+    HWND hwnd = reinterpret_cast<HWND>(info[0].As<Napi::Number>().Int32Value());
 
     MONITORINFO monitorInfo = { 0 };
     monitorInfo.cbSize = sizeof(MONITORINFO);
@@ -68,7 +68,7 @@ Napi::Number GetForegroundWin(const Napi::CallbackInfo& info) {
 Napi::Boolean SetForegroundWin(const Napi::CallbackInfo& info) {
     Napi::Number hwnd = info[0].As<Napi::Number>();
 
-    boolean result = SetForegroundWindow((HWND) hwnd.Int32Value());
+    boolean result = SetForegroundWindow(reinterpret_cast<HWND>(hwnd.Int32Value()));
 
     return Napi::Boolean::New(info.Env(), result);
 }
@@ -77,7 +77,7 @@ Napi::Number GetWinLong(const Napi::CallbackInfo& info) {
     Napi::Number hwnd = info[0].As<Napi::Number>();
     Napi::Number index = info[1].As<Napi::Number>();
 
-    LONG_PTR result = GetWindowLongPtr((HWND) hwnd.Int32Value(), (int) index.Int32Value());
+    LONG_PTR result = GetWindowLongPtr(reinterpret_cast<HWND>(hwnd.Int32Value()), (int) index.Int32Value());
 
     return Napi::Number::New(info.Env(), result);
 }

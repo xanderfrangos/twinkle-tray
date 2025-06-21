@@ -165,5 +165,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Canal de atualização",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Estável (padrão)",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Apagar"
+    "SETTINGS_FEATURES_POWER_OFF": "Apagar",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Mais compatível"
 }

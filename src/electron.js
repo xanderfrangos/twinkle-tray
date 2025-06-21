@@ -504,7 +504,7 @@ const defaultSettings = {
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,
-  enableHDR: false,
+  disableHDR: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,

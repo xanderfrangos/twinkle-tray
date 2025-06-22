@@ -1493,7 +1493,6 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
                                     <SettingsOption title="Restart app on wake" input={this.renderToggle("restartOnWake")} />
-                                    <SettingsOption title="SDR as main slider" input={this.renderToggle("sdrAsMainSlider")} />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
                                     <SettingsOption title="Use Electron hardware events" input={this.renderToggle("useElectronEvents")} />
@@ -1503,7 +1502,6 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Use GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS events" input={this.renderToggle("useGuidBrightnessEvent")} />
                                     <SettingsOption title="Reload tray icon on hardware events" input={this.renderToggle("reloadTray")} />
                                     <SettingsOption title="Reload flyout panel on hardware events" input={this.renderToggle("reloadFlyout")} />
-                                    <SettingsOption title="Enable HDR support" input={this.renderToggle("enableHDR")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />

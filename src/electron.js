@@ -1839,7 +1839,7 @@ const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => 
 
 
       // Replace DDC/CI brightness with SDR
-      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
         monitor.brightness = monitor.sdrLevel
       }
 

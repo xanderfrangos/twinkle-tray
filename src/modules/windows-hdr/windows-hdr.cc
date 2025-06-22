@@ -171,7 +171,11 @@ std::map<std::string, Display> getDisplays() {
       newDisplay.bits = hdrInfo.bitsPerColorChannel;
       newDisplay.target = path;
 
-      newDisplay.hdrActive = setSDRBrightness(path, nits, true);
+      // Only check for HDR if Windows reports it's on
+      newDisplay.hdrActive = false;
+      if(hdrInfo.advancedColorEnabled) {
+        newDisplay.hdrActive = setSDRBrightness(path, nits, true);
+      }
 
       newDisplays.insert({newDisplay.name, newDisplay});
     }

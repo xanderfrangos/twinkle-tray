@@ -1284,7 +1284,7 @@ export default class SettingsWindow extends PureComponent {
                                             </div>
                                         } />
                                     </SettingsOption>
-                                    <SettingsOption title={"SDR Replaces Primary Slider"} description={"Control SDR brightness from main brightness slider while HDR is active."} expandable={true}>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_SDR_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION")} expandable={true}>
                                         {this.getSDRMonitorsSettings()}
                                     </SettingsOption>
                                 </div>

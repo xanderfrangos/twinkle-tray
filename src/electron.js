@@ -141,6 +141,7 @@ let isDisabledOnLockScreen = false
 let monitorsThread = {
   send: async function (data) {
     try {
+      if (isDisabledOnLockScreen) return false;
       if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode !== null)) {
         startMonitorThread()
         while(!monitorsThreadReady) {
@@ -152,17 +153,18 @@ let monitorsThread = {
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(50)
       }
-      if (!isDisabledOnLockScreen) monitorsThreadReal.send(data)
+      monitorsThreadReal.send(data)
     } catch (e) {
       console.log("Couldn't communicate with Monitor thread.", e)
     }
   },
   once: function (message, callback) {
     try {
+      if (isDisabledOnLockScreen) callback({});
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
       }
-      if (!isDisabledOnLockScreen) monitorsEventEmitter.once(message, callback)
+      monitorsEventEmitter.once(message, callback)
     } catch (e) {
       console.log("Couldn't listen to Monitor thread.", e)
     }

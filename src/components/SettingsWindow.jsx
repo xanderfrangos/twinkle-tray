@@ -1030,6 +1030,8 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE")} description={T.t("SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC")} input={this.renderToggle("brightnessAtStartup")} />
 
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE")} description={T.t("SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC")} input={this.renderToggle("disableOnLockScreen")} />
+
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_LANGUAGE_TITLE")} input={(
                                         <select value={window.settings.language} onChange={(e) => {
                                             this.setState({ language: e.target.value })

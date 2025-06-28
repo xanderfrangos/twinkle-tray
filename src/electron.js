@@ -172,7 +172,7 @@ let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
 function startMonitorThread() {
-  if(monitorsThreadReal?.connected || monitorsThreadStarting) return false;
+  if(monitorsThreadReal?.connected || monitorsThreadStarting || isWindowsUserIdle) return false;
   monitorsThreadReady = false
   monitorsThreadStarting = true
   console.log("Starting monitor thread")
@@ -524,6 +524,7 @@ const defaultSettings = {
   ddcPowerOffValue: 5,
   disableAutoRefresh: false,
   disableAutoApply: false,
+  disableOnLockScreen: false,
   udpEnabled: false,
   udpRemote: false,
   udpPortStart: 14715,
@@ -1760,6 +1761,11 @@ let lastRefreshMonitors = 0
 
 const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
 
+  if (isWindowsUserIdle) {
+    console.log("Displays are off, no updates.")
+    return monitors
+  }
+
   if (!monitorsThreadReady || pausedMonitorUpdates) {
     console.log("Sorry, no updates right now!")
     return monitors
@@ -2128,6 +2134,7 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
   const step = (stepSpeed * stepSpeedMult)
 
   currentTransition = setInterval(() => {
+    if (recentlyWokeUp || isWindowsUserIdle) clearInterval(currentTransition);
     let numDone = 0
     for (let key in monitors) {
       const monitor = monitors[key]
@@ -2531,7 +2538,13 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
         if(isWindowsUserIdle) {
           isWindowsUserIdle = false
           console.log("Displays have woken up.")
+          recentlyWokeUp = true
           handleMetricsChange("GUID_SESSION_USER_PRESENCE")
+          setTimeout(() => {
+            recentlyWokeUp = false
+          },
+            15000
+          )
         }
       }
     } else if(setting.name === "GUID_VIDEO_POWERDOWN_TIMEOUT") {
@@ -3859,7 +3872,7 @@ function handleMetricsChange(type) {
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     handleChangeTimeout1 = false
-  }, parseInt(settings.idleRestoreSeconds || 3) * 1000)
+  }, parseInt(settings.idleRestoreSeconds || 7) * 1000)
 
   setTimeout(() => {
     block.release()
@@ -3869,21 +3882,26 @@ function handleMetricsChange(type) {
 
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
-powerMonitor.on("suspend", () => { console.log("Event: suspend"); stopMonitorThread(); recentlyWokeUp = true })
-powerMonitor.on("lock-screen", () => { console.log("Event: lock-screen"); recentlyWokeUp = true })
+powerMonitor.on("suspend", () => { console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => {
+  console.log("Event: lock-screen");
+  if (settings.disableOnLockScreen) recentlyWokeUp = true
+})
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");
-  recentlyWokeUp = true
-  if (!settings.disableAutoRefresh) refreshMonitors(true);
-  setTimeout(() => {
-    recentlyWokeUp = false
-  },
-    15000
-  )
+  if (recentlyWokeUp) {
+    if (!settings.disableAutoRefresh) handleMetricsChange("unlock-screen");
+    setTimeout(() => {
+      recentlyWokeUp = false
+    },
+      15000
+    )
+  }
 })
 powerMonitor.on("resume", () => {
   console.log("Event: resume");
   recentlyWokeUp = true
+  if (!settings.disableAutoRefresh) handleMetricsChange("resume");
   setTimeout(() => {
     recentlyWokeUp = false
   },

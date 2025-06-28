@@ -34,10 +34,10 @@
     "PANEL_BUTTON_TURN_OFF_DISPLAYS": "Vypnout všechny monitory",
     "PANEL_LABEL_BRIGHTNESS": "Jas",
     "PANEL_LABEL_CONTRAST": "Kontrast",
-    "PANEL_LABEL_OFF_ON": "Napájení",
+    "PANEL_LABEL_OFF_ON": "Stav napájení",
     "PANEL_LABEL_COLOR_TEMPERATURE": "Teplota barvy",
     "PANEL_LABEL_VOLUME": "Hlasitost",
-    "PANEL_LABEL_TURN_OFF": "Vypnout",
+    "PANEL_LABEL_TURN_OFF": "Vypnout displej",
     "INTRO_TITLE": "Zdravím, Twinkle Tray!",
     "INTRO_INSTRUCTIONS": "Twinkle Tray ikonka na liště je pravděpodobně schovaná, doporučím Vám, abyste si ji přesunuli na dostupnější místo. Podrobnější návod viz níže.",
     "SETTINGS_TITLE": "Twinkle Tray Nastavení",
@@ -149,5 +149,8 @@
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabilní (release, výchozí)",
     "SETTINGS_UPDATES_CHANNEL": "Kanál aktualizací",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Vypnout"
+    "SETTINGS_FEATURES_POWER_OFF": "Vypnout",
+    "PANEL_LABEL_TURN_ON": "Zapnout displej",
+    "SETTINGS_FEATURES_POWER_TITLE": "Signál stavu napájení",
+    "SETTINGS_FEATURES_POWER_STANDBY": "Pohotovosť"
 }

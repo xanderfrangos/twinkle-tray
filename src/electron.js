@@ -137,6 +137,7 @@ function vcpStr(code) {
 // Monitors thread
 // Handles WMI + DDC/CI activity
 
+let isDisabledOnLockScreen = false
 let monitorsThread = {
   send: async function (data) {
     try {
@@ -151,7 +152,7 @@ let monitorsThread = {
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(50)
       }
-      monitorsThreadReal.send(data)
+      if (!isDisabledOnLockScreen) monitorsThreadReal.send(data)
     } catch (e) {
       console.log("Couldn't communicate with Monitor thread.", e)
     }
@@ -161,7 +162,7 @@ let monitorsThread = {
       if (monitorsThreadReal && !monitorsThreadReal.connected) {
         startMonitorThread()
       }
-      monitorsEventEmitter.once(message, callback)
+      if (!isDisabledOnLockScreen) monitorsEventEmitter.once(message, callback)
     } catch (e) {
       console.log("Couldn't listen to Monitor thread.", e)
     }
@@ -524,6 +525,7 @@ const defaultSettings = {
   ddcPowerOffValue: 5,
   disableAutoRefresh: false,
   disableAutoApply: false,
+  disableOnLockScreen: true,
   udpEnabled: false,
   udpRemote: false,
   udpPortStart: 14715,
@@ -3870,10 +3872,15 @@ function handleMetricsChange(type) {
 // Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
 let recentlyWokeUp = false
 powerMonitor.on("suspend", () => { console.log("Event: suspend"); stopMonitorThread(); recentlyWokeUp = true })
-powerMonitor.on("lock-screen", () => { console.log("Event: lock-screen"); recentlyWokeUp = true })
+powerMonitor.on("lock-screen", () => {
+  console.log("Event: lock-screen");
+  if (settings.disableOnLockScreen) isDisabledOnLockScreen = true
+  recentlyWokeUp = true
+})
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");
   recentlyWokeUp = true
+  if (settings.disableOnLockScreen) isDisabledOnLockScreen = false
   if (!settings.disableAutoRefresh) refreshMonitors(true);
   setTimeout(() => {
     recentlyWokeUp = false

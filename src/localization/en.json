@@ -57,6 +57,8 @@
     "SETTINGS_GENERAL_STARTUP": "Launch at startup",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_TITLE": "Apply brightness at startup",
     "SETTINGS_GENERAL_BRIGHTNESS_STARTUP_DESC": "Restore the last known brightness for each display when Twinkle Tray starts.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Disable on Lock Screen",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Don't access monitors while the user session is locked to avoid conflicts in multi-user environments.",
     "SETTINGS_GENERAL_THEME_TITLE": "Theme",
     "SETTINGS_GENERAL_THEME_SYSTEM": "System preferences (default)",
     "SETTINGS_GENERAL_THEME_DARK": "Dark",

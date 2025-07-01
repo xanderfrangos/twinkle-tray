@@ -21,7 +21,7 @@
     "GENERIC_NO_DISPLAYS_SHORT": "Neboli zistené žiadne kompatibilné displeje.",
     "GENERIC_SECONDS": "sekúnd",
     "GENERIC_MINUTES": "minút",
-    "GENERIC_DDC_WARNING": "DDC/CI funkcie ako napríklad ovládanie napájania môžu spôsobiť, že váš monitor prestane reagovať. Používajte na vlastné nebezpečenstvo.",
+    "GENERIC_DDC_WARNING": "Funkcie DDC/CI ako ovládanie stavu napájania môžu spôsobiť, že váš monitor sa stane neodzivným. Používajte na vlastné nebezpečenstvo.",
     "GENERIC_SPEED_INSTANT": "Okamžité",
     "GENERIC_SPEED_SLOW": "Pomalé",
     "GENERIC_SPEED_VERY_SLOW": "Veľmi pomalé",

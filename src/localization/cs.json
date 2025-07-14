@@ -162,5 +162,6 @@
     "SETTINGS_HOTKEY_ACTION": "Akce",
     "SETTINGS_HOTKEY_ACTION_SET": "Nastavit hodnotu",
     "SETTINGS_HOTKEY_ACTION_OFFSET": "Upravit hodnotu",
-    "SETTINGS_HOTKEY_ACTION_CYCLE": "Procházet seznam hodnot"
+    "SETTINGS_HOTKEY_ACTION_CYCLE": "Procházet seznam hodnot",
+    "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Nejvíce kompatibilní"
 }

@@ -52,7 +52,7 @@ Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
       statusStr = "paused";
       break;
     }
-  } catch (std::runtime_error &e) {
+  } catch (...) {
   }
 
   return Napi::String::New(info.Env(), statusStr);
@@ -127,7 +127,7 @@ Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
 
     obj.Set(Napi::String::New(info.Env(), "type"),
             Napi::String::New(info.Env(), typeStr));
-  } catch (std::runtime_error &e) {
+  } catch (...) {
   }
 
   return obj;

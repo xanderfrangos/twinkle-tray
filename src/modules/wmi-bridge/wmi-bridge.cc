@@ -46,7 +46,7 @@ bool wmiConnect()
         p("wmiConnect 4 END");
         wmiConnected = true;
         return true;
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         return false;
     }
 }
@@ -189,7 +189,7 @@ Napi::Object getWMIBrightness(const Napi::CallbackInfo &info)
         pLocator->Release();
         p("getWMIBrightness 8 END");
     }
-    catch (int e)
+    catch (...)
     {
         p("getWMIBrightness FAILED");
         return failed;
@@ -278,7 +278,7 @@ Napi::Object getWMIMonitors(const Napi::CallbackInfo &info)
                         p("getWMIMonitors 8");
                     }
                 }
-                catch (int e)
+                catch (...)
                 {
                     p("getWMIMonitors Loop failed to get optional values");
                 }
@@ -286,7 +286,7 @@ Napi::Object getWMIMonitors(const Napi::CallbackInfo &info)
                 monitors.Set(InstanceName, monitor);
                 p("getWMIMonitors 12");
             }
-            catch (int e)
+            catch (...)
             {
                 p("getWMIMonitors loop failed");
             }
@@ -298,7 +298,7 @@ Napi::Object getWMIMonitors(const Napi::CallbackInfo &info)
         pService->Release();
         pLocator->Release();
     }
-    catch (int e)
+    catch (...)
     {
         p("getWMIMonitors FAILED");
         return failed;
@@ -495,7 +495,7 @@ bool setWMIBrightness(int brightness)
         VariantClear(&pathVariable);
         p("setWMIBrightness 25 END");
     }
-    catch (int e)
+    catch (...)
     {
         p("setWMIBrightness FAILED");
         return false;
@@ -515,14 +515,14 @@ Napi::Boolean setBrightness(const Napi::CallbackInfo &info)
         {
             ok = setWMIBrightness(level);
         }
-        catch (const exception &e)
+        catch (...)
         {
 
             p("setBrightness failed");
         }
         return Napi::Boolean::New(info.Env(), ok);
     }
-    catch (const exception &e)
+    catch (...)
     {
         return Napi::Boolean::New(info.Env(), false);
     }
@@ -536,7 +536,7 @@ Napi::Object getBrightness(const Napi::CallbackInfo &info)
         Napi::Object monInfo = getWMIBrightness(info);
         return monInfo;
     }
-    catch (const exception &e)
+    catch (...)
     {
         return failedObj;
     }
@@ -550,7 +550,7 @@ Napi::Object getMonitors(const Napi::CallbackInfo &info)
         Napi::Object monInfo = getWMIMonitors(info);
         return monInfo;
     }
-    catch (const exception &e)
+    catch (...)
     {
         return failedObj;
     }

@@ -46,7 +46,7 @@ std::string wcharToString(const wchar_t* wstr, boolean hasNullTerminator) {
         std::string str(size_needed, 0);
         WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], size_needed, nullptr, nullptr);
         return str;
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         return (std::string)("");
     }
 }
@@ -73,7 +73,7 @@ boolean setSDRBrightness(DISPLAYCONFIG_PATH_INFO target, int desiredNits, bool s
             if(!silent) fprintf(stderr, "Error on DisplayConfigSetDeviceInfo for SDR white level\n");
             return false;
         }
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         return false;
     }
 
@@ -190,7 +190,7 @@ Napi::Array nodeGetDisplays(const Napi::CallbackInfo& info) {
 
     try {
         displays = getDisplays();
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         fprintf(stderr, "Error on nodeGetDisplays\n");
     }
 

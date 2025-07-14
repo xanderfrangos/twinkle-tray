@@ -716,7 +716,7 @@ populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool c
             return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel);
 
         return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         
     }
 }
@@ -735,8 +735,8 @@ refresh(const Napi::CallbackInfo& info)
 
     try {
         populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean(), info[2].As<Napi::Boolean>().ToBoolean());
-    } catch (std::runtime_error& e) {
-        throw Napi::Error::New(env, e.what());
+    } catch (...) {
+        throw Napi::Error::New(env, "Error refreshing DDC/CI displays!");
     }
 
     return env.Undefined();

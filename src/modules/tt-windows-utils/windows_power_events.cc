@@ -63,7 +63,7 @@ Napi::Object GetPowerSetting(const Napi::CallbackInfo& info) {
 
             DWORD data = *reinterpret_cast<DWORD*>(setting->Data);
             obj.Set(Napi::String::New(env, "data"), Napi::Number::New(env, data));
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         
     }
     
@@ -87,7 +87,7 @@ Napi::Boolean RegisterPowerSettingNotifications(const Napi::CallbackInfo& info) 
         RegisterPowerSettingNotification(reinterpret_cast<HWND>(hwnd.Int32Value()), &GUID_SLEEP_IDLE_THRESHOLD, 0);
         RegisterPowerSettingNotification(reinterpret_cast<HWND>(hwnd.Int32Value()), &GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS, 0);
         RegisterPowerSettingNotification(reinterpret_cast<HWND>(hwnd.Int32Value()), &GUID_VIDEO_POWERDOWN_TIMEOUT, 0);
-    } catch (std::runtime_error& e) {
+    } catch (...) {
         return Napi::Boolean::New(info.Env(), false);
     }
 

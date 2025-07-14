@@ -171,6 +171,7 @@ let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
+let monitorsThreadFailed = false
 function startMonitorThread() {
   if(monitorsThreadReal?.connected || monitorsThreadStarting || isWindowsUserIdle) return false;
   monitorsThreadReady = false
@@ -207,12 +208,24 @@ function startMonitorThread() {
   })
   monitorsThreadReal.on("error", err => {
     console.error(err)
+
+    if(monitorsThreadFailed) return false;
+    monitorsThreadFailed = true
+
+    const options = {
+    title: 'Monitors thread failed',
+    message: 'The monitors thread failed with the following message:',
+    detail: err
+  };
+
+  require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
+
     stopMonitorThread()
     setTimeout(() => {
       if(!monitorsThreadReal?.connected && !monitorsThreadStarting) {
         startMonitorThread()
       }
-    }, 111)
+    }, 1000)
   })
 }
 

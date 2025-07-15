@@ -215,5 +215,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medienwiedergabe verhindert Inaktivitäts-Erkennung",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "Inaktivitäts-Erkennung deaktivieren, während Medien wiedergegeben werden. Dies schließt sowohl Video als auch Audiowiedergaben ein. Funktioniert nur, wenn Windows erkennt, dass Medien wiedergegeben werden.",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Bildlauf (Scrollen) invertieren",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Mausrad-Richtung invertieren, wenn die Helligkeit über das Symbolleisten-Icon angepasst wird."
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Mausrad-Richtung invertieren, wenn die Helligkeit über das Symbolleisten-Icon angepasst wird.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Schalte aus auf #Abschließen #Durchsieben",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Greif zu nicht während Monitore die Nutzer Session ist #abschließen zu vermeiden herein Konflikte multi-Nutzer Umwelten."
 }

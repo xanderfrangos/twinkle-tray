@@ -215,5 +215,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "La detección de inactividad se desactivará mientras se esté reproduciendo cualquier contenido multimedia. Esto incluye tanto vídeo como audio. Esto solo se aplica cuando Windows informa de que se está reproduciendo algún contenido multimedia.",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Multimedia bloquea la detección de inactividad",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Invertir scroll",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Al hacer scroll sobre el icono de bandeja del sistema, la dirección del desplazamiento será invertida."
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Al hacer scroll sobre el icono de bandeja del sistema, la dirección del desplazamiento será invertida.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Inutiliza encima Pantalla de Cerradura",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "No accede monitores mientras la sesión de usuario está cerrada para evitar conflictos en multi-entornos de usuario."
 }

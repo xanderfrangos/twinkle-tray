@@ -4,8 +4,8 @@
     "GENERIC_CANCEL": "إلغاء",
     "GENERIC_SAVE": "حفظ",
     "GENERIC_CLEAR": "مسح",
-    "GENERIC_OFF": "قفل",
-    "GENERIC_ON": "فتح",
+    "GENERIC_OFF": "إيقاف",
+    "GENERIC_ON": "تشغيل",
     "GENERIC_QUIT": "خروج",
     "GENERIC_CLOSE": "اغلاق",
     "GENERIC_SETTINGS": "الإعدادات",
@@ -18,7 +18,7 @@
     "GENERIC_MAXIMUM": "اكثر",
     "GENERIC_NO_DISPLAYS": "لم يتم الكشف عن أي شاشات. يرجى توصيل شاشة بجهاز الكمبيوتر الخاص بك.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "لم يتم العثور على شاشات متوافقة. يرجى التحقق من تمكين \"DDC / CI\" لشاشات العرض الخاصة بك.",
-    "GENERIC_NO_DISPLAYS_SHORT": "لم يت العثور على شاشات متطابقة",
+    "GENERIC_NO_DISPLAYS_SHORT": "لم يت العثور على شاشات متطابقة.",
     "GENERIC_SECONDS": "ثواني",
     "GENERIC_MINUTES": "دقائق",
     "GENERIC_DDC_WARNING": "DDC/CI يمكن أن تتسبب ميزات مثل التحكم في حالة الطاقة في عدم استجابة شاشتك. استخدام على مسؤوليتك الخاصة.",
@@ -149,5 +149,8 @@
     "SETTINGS_UPDATES_CHANNEL": "تحديث القناة",
     "SETTINGS_UPDATES_BRANCH_STABLE": "ثابت (افتراضي)",
     "SETTINGS_UPDATES_BRANCH_BETA": "بيتا",
-    "SETTINGS_FEATURES_POWER_OFF": "ايقاف الطاقة"
+    "SETTINGS_FEATURES_POWER_OFF": "ايقاف الطاقة",
+    "GENERIC_DELETE": "حذف",
+    "GENERIC_DEFAULT": "الإفتراضي",
+    "GENERIC_OPTIONAL": "اختياري"
 }

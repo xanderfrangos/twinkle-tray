@@ -213,5 +213,7 @@
     "SETTINGS_PROFILES_APP_PATH": "Cesta k aplikácii",
     "SETTINGS_PROFILES_APP_DESC": "Ak chcete tento profil aktivovať automaticky, keď je aktívna určitá aplikácia, vložte úplnú alebo čiastočnú cestu k EXE nižšie.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Nadradiť typ prekrytia",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Zmení správanie prekrytia skratky keď je určitá aplikácia aktívna. Táto funkcia nepracuje, keď je profil aktivovaný ručne."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Zmení správanie prekrytia skratky keď je určitá aplikácia aktívna. Táto funkcia nepracuje, keď je profil aktivovaný ručne.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Vypnúť na obrazovke uzamknutia",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nepristupovať k monitorom, kým je používateľská relácia uzamknutá, aby sa predišlo konfliktom v prostrediach s viacerými používateľmi."
 }

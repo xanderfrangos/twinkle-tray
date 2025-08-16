@@ -213,5 +213,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "Neaktyvumo aptikimas bus išjungtas/išgalintas kol leidžiama medija. Šis įskaito vaizdą ir garsą. Šis prisitaiko tik tada, kai „Windows“ praneša apie jos veikimą.",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Medijos veikimas blokuoja neaktyvumo aptikimą",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Apgręžti slinkimą",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kai slinkama virš sistemos srities piktogramos, slinkimo kryptis bus apversta/priešinga nuo pradžios."
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kai slinkama virš sistemos srities piktogramos, slinkimo kryptis bus apversta/priešinga nuo pradžios.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Išjungti/Išgalinti veikiant užrakinimo ekrane",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nepasiekti monitorių/vaizduoklių, kol naudotojo/vartotojo seansas yra užrakintas. Kai turite kelis veikiančius naudotojus/vartotojus su savo atskirais veikimais ir aplinkomis; tai daroma siekiant išvengti konfliktų."
 }

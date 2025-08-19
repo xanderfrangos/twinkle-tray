@@ -1129,6 +1129,7 @@ async function doHotkey(hotkey) {
     hotkeyThrottle[hotkey.id] = now
     let showOverlay = false
     doingHotkey = true
+    setRecentlyInteracted(true)
 
     // First let's figure out where we're at in the cycle, if applicable
 
@@ -2240,6 +2241,20 @@ function transitionlessBrightness(level, eventMonitors = []) {
   }
 }
 
+// Flag recent user activity to skip certain events
+let hasRecentlyInteracted = false
+function setRecentlyInteracted(hasInteracted) {
+  if(hasRecentlyInteracted) clearTimeout(hasRecentlyInteracted);
+  if(!hasInteracted) {
+    hasRecentlyInteracted = false
+  } else {
+    hasRecentlyInteracted = setTimeout(() => {
+      hasRecentlyInteracted = false
+    }, 5000)
+  }
+
+}
+
 let sleepTimeout
 function sleepDisplays(mode = "ps", delayMS = 333) {
   try {
@@ -2320,6 +2335,7 @@ ipcMain.on('request-colors', () => {
 })
 
 ipcMain.on('update-brightness', function (event, data) {
+  setRecentlyInteracted(true)
   updateBrightness(data.index, data.level)
 
   // If overlay is visible, keep it open
@@ -2410,9 +2426,11 @@ ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
+  setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
 })
 ipcMain.on('set-sdr-brightness', (e, values) => {
+  setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, "sdr")
 })
 
@@ -3889,6 +3907,7 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
+  setRecentlyInteracted(false)
   
   if(settings.restartOnWake) {
   // Screw it, just restart the whole app.
@@ -3904,7 +3923,7 @@ powerMonitor.on("resume", () => {
         () => {
           block.release()
           if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
-            if (!settings.disableAutoApply) setKnownBrightness();
+            if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
             if(settings.recreateTray) recreateTray();
             if(settings.recreateFlyout && !panelSize.visible) restartPanel();
     
@@ -3934,7 +3953,7 @@ function handleMetricsChange(type) {
     // Do a quick check to ensure handles are all good
     await refreshMonitors(true)
 
-    if (!settings.disableAutoApply) setKnownBrightness();
+    if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     handleChangeTimeout1 = false

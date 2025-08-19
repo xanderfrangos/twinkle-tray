@@ -324,7 +324,8 @@ function enableMouseEvents() {
           const delta = settings.invertScroll ? -Math.round(event.delta) : Math.round(event.delta);
           const amount = delta * settings.scrollShortcutAmount;
 
-          refreshMonitors()
+          //refreshMonitors()
+          setRecentlyInteracted(true)
           updateAllBrightness(amount)
 
           // If panel isn't open, use the overlay

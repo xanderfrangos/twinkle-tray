@@ -2011,6 +2011,10 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         id: monitor.id
       })
       monitor.sdrLevel = level
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+        monitor.brightness = level
+        monitor.brightnessRaw = normalized
+      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
@@ -2020,6 +2024,11 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           brightness: normalized * ((monitor.brightnessMax || 100) / 100),
           id: monitor.id
         })
+
+        // Replace DDC/CI brightness with SDR
+        if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+          monitor.brightness = monitor.sdrLevel
+        }
 
         // Apply linked DDC/CI features
         const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
@@ -2105,6 +2114,11 @@ function updateAllBrightness(brightness, mode = "offset") {
     const monitor = monitors[key]
     if (monitor.type !== "none") {
 
+      // Replace DDC/CI brightness with SDR
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+        monitor.brightness = monitor.sdrLevel
+      }
+
       let normalizedAdjust = minMax(mode == "set" ? brightness : brightness + monitor.brightness)
 
       // Use linked levels, if applicable
@@ -2118,6 +2132,7 @@ function updateAllBrightness(brightness, mode = "offset") {
       }
 
       monitors[key].brightness = normalizedAdjust
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) monitors[key].sdrLevel = normalizedAdjust;
     }
   }
 

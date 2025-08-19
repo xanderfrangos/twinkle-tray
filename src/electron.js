@@ -1077,6 +1077,10 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
 
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          // Replace DDC/CI brightness with SDR
+          if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+            monitor.brightness = monitor.sdrLevel
+          }
           updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }

@@ -1790,7 +1790,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 let lastRefreshMonitors = 0
 
-const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
+async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
 
   if (isWindowsUserIdle) {
     console.log("Displays are off, no updates.")

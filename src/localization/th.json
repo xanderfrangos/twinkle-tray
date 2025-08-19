@@ -166,5 +166,7 @@
     "SETTINGS_TIME_TRANSITON_TITLE": "ความเร็วในการเปลี่ยนความสว่าง",
     "SETTINGS_UPDATES_BRANCH_STABLE": "เสถียร (ค่าเริ่มต้น)",
     "SETTINGS_UPDATES_CHANNEL": "ช่องทางการอัปเดต",
-    "SETTINGS_UPDATES_BRANCH_BETA": "เบต้า"
+    "SETTINGS_UPDATES_BRANCH_BETA": "เบต้า",
+    "SETTINGS_FEATURES_POWER_COMPAT": "เข้ากันได้ดีที่สุด",
+    "SETTINGS_FEATURES_POWER_OFF": "ปิด"
 }

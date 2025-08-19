@@ -213,5 +213,7 @@
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "Wszystkie kody VCP zgłaszane przez ten wyświetlacz",
     "SETTINGS_FEATURES_ADD_PLACEHOLDER": "Kod VCP (np. 0x12)",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Odwróć przewijanie",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Podczas przewijania kółkiem myszki nad ikoną w zasobniku systemowym kierunek przewijania zostanie odwrócony."
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Podczas przewijania kółkiem myszki nad ikoną w zasobniku systemowym kierunek przewijania zostanie odwrócony.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Wyłącz, gdy ekran jest zablokowany",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nie uzyskuj dostępu do monitorów, gdy sesja użytkownika jest zablokowana, aby uniknąć konfliktów w środowiskach z wieloma użytkownikami."
 }

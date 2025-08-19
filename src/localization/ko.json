@@ -213,5 +213,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "미디어 차단 유휴 감지",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "미디어가 재생되는 동안 유휴 감지가 비활성화됩니다. 여기에는 비디오와 오디오가 모두 포함됩니다. 이는 Windows에서 미디어가 재생 중이라고 보고할 때만 적용됩니다.",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "시스템 트레이 아이콘을 스크롤할 때 스크롤 방향이 반대로 바뀝니다.",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "스크롤 반전"
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "스크롤 반전",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "잠금 화면에서 사용 안 함",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "다중 사용자 환경에서 충돌을 방지하기 위해 사용자 세션이 잠긴 상태에서는 모니터에 접근하지 마세요."
 }

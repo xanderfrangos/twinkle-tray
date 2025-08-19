@@ -189,7 +189,7 @@
     "SETTINGS_FEATURES_POWER_WARNING": "\"Valmiustila\" -vaihtoehto mahdollistaa todennäköisemmin näytön kytkemisen päälle/pois Twinkle Traysta. Monet näytöt eivät kuitenkaan reagoi oikein muuttuvaan virtatilaan. Käytä omalla vastuullasi.",
     "SETTINGS_FEATURES_ADD_DESC": "Anna sen ominaisuuden VCP-koodi, jonka haluat lisätä näyttöön. Huomaa, että Twinkle Tray ei vahvista, tukeeko näyttö todella tätä VCP-koodia. Käytä omalla vastuullasi.",
     "SETTINGS_TIME_SUN_DESC": "Jos haluat käyttää \"auringon sijaintia\" ajan säätämiseen, anna nykyinen leveys- ja pituusaste, jotta oikeat ajat voidaan määrittää.",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "Koko näytön sovellukset eivät ole koskaan käyttämättömiä",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Koko näytön sovellukset estävät käyttämättömyyden tunnistuksen",
     "SETTINGS_TIME_IDLE_FS_DESC": "Koko näytön sovellukset estävät käyttämättömän käytön. Tämä koskee vain tarkennettua ikkunaa.",
     "SETTINGS_HOTKEY_OFF_WARN": "Tämä toiminto käyttää kohdassa \"Näytöt pois päältä -toiminto\" valittua vaihtoehtoa. Jos haluat sen sijaan sammuttaa tietyt näytöt, käytä sen sijaan \"Aseta\" tai \"Kierrä\"-pikanäppäintoimintoa.",
     "SETTINGS_PROFILES_OVERLAY_DESC": "Muuttaa pikanäppäinpeittokuvan toimintaa, kun määritetty sovellus on kohdistettu. Tämä ominaisuus ei toimi, kun profiili on aktivoitu manuaalisesti.",

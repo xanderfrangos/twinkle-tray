@@ -186,5 +186,7 @@
     "SETTINGS_HOTKEY_ACTION_SET": "دانانی بەها",
     "SETTINGS_HOTKEY_ACTION_OFFSET": "ڕێکخستنی بەها",
     "SETTINGS_PROFILES_ADD": "پڕۆفایلی نوێ",
-    "SETTINGS_PROFILES_NAME": "ناوی پڕۆفایل"
+    "SETTINGS_PROFILES_NAME": "ناوی پڕۆفایل",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "لە قفڵکردنی شاشەدا ناچالاکی بکە",
+    "SETTINGS_GENERAL_REPORT_DESC": "پەڕگەیەکی دەق پاشەکەوت بکە کە زانیاریی تێدایە لەسەر مۆنیتەرەکەت و ڕێکخستنەکانت بۆ ھەڵەدۆزی."
 }

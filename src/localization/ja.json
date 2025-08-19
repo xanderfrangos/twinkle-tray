@@ -215,5 +215,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "メディアの再生中はアイドル状態を検出しません。これは動画と音楽の両方です。メディアの再生中だとWindowsが報告する際にのみ適用されます。",
     "SETTINGS_TIME_IDLE_MEDIA_TITLE": "メディア再生時にアイドル検出しない",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "タスクトレイのアイコン上でスクロールする際のスクロール方向が逆になります。",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "スクロール方向を逆に"
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "スクロール方向を逆に",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "ユーザーのセッションがロックされている間はスクリーンにアクセスしない。複数ユーザーでの競合を回避します。",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "ロック画面では無効化"
 }

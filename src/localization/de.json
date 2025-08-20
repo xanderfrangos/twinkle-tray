@@ -217,5 +217,10 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Bildlauf (Scrollen) invertieren",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Mausrad-Richtung invertieren, wenn die Helligkeit über das Symbolleisten-Icon angepasst wird.",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Auf Sperrbildschirm deaktivieren",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Greifen Sie nicht auf Monitore zu, während die Benutzersitzung gesperrt ist, um Konflikte in Mehrbenutzerumgebungen zu vermeiden."
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Greifen Sie nicht auf Monitore zu, während die Benutzersitzung gesperrt ist, um Konflikte in Mehrbenutzerumgebungen zu vermeiden.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR Display Lagen",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Aktivier SDR Helligkeit Schieber für spezifisch Monitore. Die Monitore müssen haben HDR aktiviert in Fenster für dies zu arbeiten.",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Tauscht aus Primären Schieber",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Aufsicht SDR Helligkeit von hauptsächlich Helligkeit Schieber #während HDR ist tätig.",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Helligkeit"
 }

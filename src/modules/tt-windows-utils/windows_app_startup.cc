@@ -26,7 +26,7 @@ StartupTask getStartupTask() {
         return task;
       }
     }
-  } catch (int e) {
+  } catch (...) {
     return NULL;
   }
 
@@ -41,7 +41,7 @@ Napi::Boolean Enable(const Napi::CallbackInfo &info) {
     }
 
     return Napi::Boolean::New(info.Env(), true);
-  } catch (int e) {
+  } catch (...) {
     return Napi::Boolean::New(info.Env(), false);
   }
 }
@@ -53,7 +53,7 @@ Napi::Boolean Disable(const Napi::CallbackInfo &info) {
       task.Disable();
     }
     return Napi::Boolean::New(info.Env(), true);
-  } catch (int e) {
+  } catch (...) {
     return Napi::Boolean::New(info.Env(), false);
   }
 }

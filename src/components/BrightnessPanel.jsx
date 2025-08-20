@@ -1,6 +1,7 @@
 import React, { PureComponent } from "react";
 import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
+import HDRSliders from "./HDRSliders";
 import TranslateReact from "../TranslateReact"
 
 const monitorSort = (a, b) => {
@@ -89,6 +90,15 @@ export default class BrightnessPanel extends PureComponent {
                   }
                 })
               }
+
+              let showHDRSliders = false
+              if((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
+                // Has HDR slider enabled
+                hasFeatures = true
+                useFeatures = true
+                showHDRSliders = true
+              }
+
               const powerOff = () => {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
                 monitor.features["0xD6"][0] = (monitor.features["0xD6"][0] >= 4 ? 1 : settings.ddcPowerOffValue)
@@ -122,6 +132,7 @@ export default class BrightnessPanel extends PureComponent {
                       <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     </div>
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                    { showHDRSliders ? <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} /> : null }
                   </div>
                 )
               }

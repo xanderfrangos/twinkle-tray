@@ -753,6 +753,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
                             <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : brightnessMax)}</b>
                             <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
+                            <br />HDR: <b>{(monitor.hdr == "active" ? "Active" : monitor.hdr == "supported" ? "Supported" : "Unsupported")}</b>
                         </p>
                     </div>
                 )
@@ -804,6 +805,62 @@ export default class SettingsWindow extends PureComponent {
         } catch (e) {
 
         }
+    }
+
+    getHDRMonitors = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setHDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    getSDRMonitorsSettings = () => {
+                try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setSDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    setHDRMonitor = (value, monitor) => {
+        const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
+        hdrDisplays[monitor.key] = value
+        this.setSetting("hdrDisplays", hdrDisplays)
+    }
+
+    setSDRMonitor = (value, monitor) => {
+        const sdrDisplays = Object.assign({}, this.state.rawSettings?.sdrAsMainSliderDisplays)
+        sdrDisplays[monitor.key] = value
+        this.setSetting("sdrAsMainSliderDisplays", sdrDisplays)
     }
 
     getHideMonitors = () => {
@@ -1090,6 +1147,7 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE")} description={T.h("SETTINGS_GENERAL_DIS_MONITOR_FEATURES_DESC", '<a href="javascript:window.openURL(\'troubleshooting-features\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} expandable={true}>
                                         <SettingsChild title={"Apple Studio Displays"} input={this.renderToggle("disableAppleStudio", true, "right", true)} />
                                         <SettingsChild title={"DDC/CI HL"} input={this.renderToggle("disableHighLevel", true, "right", true)} />
+                                        <SettingsChild title={"HDR"} input={this.renderToggle("disableHDR", true, "right", true)} />
                                         <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC", true, "right", true)} />
                                         <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI", true, "right", true)} />
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />
@@ -1225,6 +1283,9 @@ export default class SettingsWindow extends PureComponent {
                                                 {this.getReorderMonitors()}
                                             </div>
                                         } />
+                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_SDR_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION")} expandable={true}>
+                                        {this.getSDRMonitorsSettings()}
                                     </SettingsOption>
                                 </div>
 
@@ -1417,6 +1478,10 @@ export default class SettingsWindow extends PureComponent {
                                         </select>
                                     } />
 
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
+                                        {this.getHDRMonitors()}
+                                    </SettingsOption>
+
                                     <SettingsOption title="Idle restore time" description="How long (in seconds) after going idle to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.idleRestoreSeconds * 1} onChange={(e) => this.setSetting("idleRestoreSeconds", e.target.value)} /> } />
 
                                     <SettingsOption title="Wake restore time" description="How long (in seconds) after waking from sleep to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.wakeRestoreSeconds * 1} onChange={(e) => this.setSetting("wakeRestoreSeconds", e.target.value)} /> } />
@@ -1437,7 +1502,6 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Use GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS events" input={this.renderToggle("useGuidBrightnessEvent")} />
                                     <SettingsOption title="Reload tray icon on hardware events" input={this.renderToggle("reloadTray")} />
                                     <SettingsOption title="Reload flyout panel on hardware events" input={this.renderToggle("reloadFlyout")} />
-                                    <SettingsOption title="Enable HDR support" input={this.renderToggle("enableHDR")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />
@@ -1624,7 +1688,7 @@ function ActionItem(props) {
             return null
         } else {
             let selectBoxValue = action.target
-            if (!(selectBoxValue === "brightness" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
+            if (!(selectBoxValue === "brightness" || selectBoxValue === "sdr" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
                 selectBoxValue = "vcp"
             }
             const selectBox = (
@@ -1643,6 +1707,7 @@ function ActionItem(props) {
                         <option value="contrast">{T.t("PANEL_LABEL_CONTRAST")}</option>
                         <option value="volume">{T.t("PANEL_LABEL_VOLUME")}</option>
                         <option value="vcp">{T.t("SETTINGS_FEATURES_ADD_VCP")}</option>
+                        <option value="sdr">{T.t("SETTINGS_FEATURES_SDR_BRIGHTNESS")}</option>
                     </select>
                 </div>
             )

@@ -12,6 +12,7 @@ let lastDDCCIList = []
 let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
+let lastHDR = {}
 
 function deepCopy(obj) {
     try {
@@ -78,6 +79,7 @@ process.on('message', async (data) => {
                     lastDDCCIList,
                     lastWMI,
                     lastWin32,
+                    lastHDR,
                     monitorsAppleStudio,
                     monitorReports,
                     monitorReportsRaw,
@@ -191,7 +193,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             }
 
             // HDR
-            if (settings.enableHDR) {
+            if (!settings?.disableHDR) {
                 try {
                     startTime = process.hrtime.bigint()
                     monitorsHDR = await getHDRDisplays(monitors);
@@ -384,7 +386,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
     }
 
     // HDR
-    if (settings.enableHDR) {
+    if (!settings.disableHDR) {
         try {
             startTime = process.hrtime.bigint()
             monitorsHDR = await getHDRDisplays(foundMonitors);
@@ -481,17 +483,24 @@ setStudioDisplayBrightness = async (serial, brightness) => {
 getHDRDisplays = async (monitors) => {
     try {
         const displays = hdr.getDisplays()
+        lastHDR = displays
         for(const display of displays) {
             const hwid = display.path.split("#")
-            updateDisplay(monitors, hwid[2], {
-                name: display.name,
+
+            const newDisplay = {
                 key: hwid[2],
                 id: display.path,
                 hwid,
                 sdrNits: display.nits,
                 sdrLevel: parseInt((display.nits - 80) / 4),
-                hdr: "supported"
-            });
+                hdr: (display.hdrActive ? "active" : display.hdrEnabled ? "supported" : "unsupported")
+            }
+
+            if(display.name) {
+                newDisplay.name = display.name
+            }
+
+            updateDisplay(monitors, hwid[2], newDisplay);
             displays[hwid[2]] = display
         }
     } catch(e) {
@@ -880,12 +889,13 @@ updateDisplay = (monitors, hwid2, info = {}) => {
 }
 
 function setSDRBrightness(brightness, id) {
-    if(!settings.enableHDR) return false;
+    if(settings.disableHDR) return false;
     try {
         console.log("sdr", brightness, id)
-        hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
+        return hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
     } catch(e) {
         console.log(`Couldn't update SDR brightness! [${id}]`, e);
+        return false
     }
 }
 

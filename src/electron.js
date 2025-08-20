@@ -171,6 +171,7 @@ let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
+let monitorsThreadFailed = false
 function startMonitorThread() {
   if(monitorsThreadReal?.connected || monitorsThreadStarting || isWindowsUserIdle) return false;
   monitorsThreadReady = false
@@ -207,12 +208,24 @@ function startMonitorThread() {
   })
   monitorsThreadReal.on("error", err => {
     console.error(err)
+
+    if(monitorsThreadFailed) return false;
+    monitorsThreadFailed = true
+
+    const options = {
+    title: 'Monitors thread failed',
+    message: 'The monitors thread failed with the following message:',
+    detail: err
+  };
+
+  require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
+
     stopMonitorThread()
     setTimeout(() => {
       if(!monitorsThreadReal?.connected && !monitorsThreadStarting) {
         startMonitorThread()
       }
-    }, 111)
+    }, 1000)
   })
 }
 
@@ -311,7 +324,8 @@ function enableMouseEvents() {
           const delta = settings.invertScroll ? -Math.round(event.delta) : Math.round(event.delta);
           const amount = delta * settings.scrollShortcutAmount;
 
-          refreshMonitors()
+          //refreshMonitors()
+          setRecentlyInteracted(true)
           updateAllBrightness(amount)
 
           // If panel isn't open, use the overlay
@@ -468,6 +482,9 @@ const defaultSettings = {
   monitorFeatures: {},
   monitorFeaturesSettings: {},
   hideDisplays: {},
+  hdrDisplays: {},
+  sdrAsMainSliderDisplays: {},
+  sdrAsMainSlider: false,
   checkForUpdates: !isDev,
   dismissedUpdate: '',
   language: "system",
@@ -503,7 +520,7 @@ const defaultSettings = {
   disableWMIC: false,
   disableWMI: false,
   disableWin32: false,
-  enableHDR: false,
+  disableHDR: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
@@ -703,6 +720,11 @@ function readSettings(doProcessSettings = true) {
 
   // Fix rawSettings bug
   if(settings.rawSettings) delete settings.rawSettings;
+
+  // Remove hdrDisplays from v1.17.0-beta1
+  if (settings.settingsVer == "v1.17.0-beta1" || settingsVersion < Utils.getVersionValue("v1.16.8")) {
+    if(settings.hdrDisplays) delete settings.hdrDisplays;
+  }
 
   if (doProcessSettings) processSettings({ isReadSettings: true });
 }
@@ -1056,6 +1078,10 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
 
         // Apply brightness to valid display types
         if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          // Replace DDC/CI brightness with SDR
+          if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+            monitor.brightness = monitor.sdrLevel
+          }
           updateBrightness(monitor.id, monitor.brightness)
         }
       } catch (e) { console.log("Couldn't set brightness for known display!") }
@@ -1103,6 +1129,7 @@ async function doHotkey(hotkey) {
     hotkeyThrottle[hotkey.id] = now
     let showOverlay = false
     doingHotkey = true
+    setRecentlyInteracted(true)
 
     // First let's figure out where we're at in the cycle, if applicable
 
@@ -1147,6 +1174,8 @@ async function doHotkey(hotkey) {
                 let currentValue = 0
                 if (action.target === "brightness") {
                   currentValue = monitor.brightness
+                } else if (action.target === "sdr") {
+                  currentValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
                   currentValue = await getVCP(monitor, parseInt("0x12"))
                 } else if (action.target === "volume") {
@@ -1167,6 +1196,8 @@ async function doHotkey(hotkey) {
                 let currentCycleValue = 0
                 if (action.target === "brightness") {
                   currentCycleValue = monitor.brightness
+                } else if (action.target === "sdr") {
+                  currentCycleValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
                   currentCycleValue = await getVCP(monitor, parseInt("0x12"))
                 } else if (action.target === "volume") {
@@ -1227,6 +1258,8 @@ async function doHotkey(hotkey) {
                   writeSettings({ linkedLevelsActive: false })
                 }
                 showOverlay = true
+              } else if(action.target === "sdr") {
+                updateBrightnessThrottle(monitor.id, parseInt(value), false, true, "sdr")
               } else {
                 let vcpCode = action.target
                 if (action.target === "contrast") {
@@ -1759,7 +1792,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 let lastRefreshMonitors = 0
 
-const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => {
+async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
 
   if (isWindowsUserIdle) {
     console.log("Displays are off, no updates.")
@@ -1822,6 +1855,12 @@ const refreshMonitors = async (fullRefresh = false, bypassRateLimit = false) => 
       const monitor = newMonitors[id]
       // Brightness
       monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+
+
+      // Replace DDC/CI brightness with SDR
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+        monitor.brightness = monitor.sdrLevel
+      }
 
       // Other DDC/CI normalizations
       const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
@@ -1948,6 +1987,12 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     if (settings.hideDisplays?.[monitor.key] === true) {
       return false
     }
+    
+
+    if(vcp == "brightness" && monitor.hdr === "active" && settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+      vcp = "sdr"
+      useCap = false
+    }
 
     if (clearTransition && currentTransition) {
       clearInterval(currentTransition)
@@ -1967,6 +2012,11 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         brightness: level,
         id: monitor.id
       })
+      monitor.sdrLevel = level
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+        monitor.brightness = level
+        monitor.brightnessRaw = normalized
+      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
@@ -1976,6 +2026,11 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           brightness: normalized * ((monitor.brightnessMax || 100) / 100),
           id: monitor.id
         })
+
+        // Replace DDC/CI brightness with SDR
+        if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+          monitor.brightness = monitor.sdrLevel
+        }
 
         // Apply linked DDC/CI features
         const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
@@ -2061,6 +2116,11 @@ function updateAllBrightness(brightness, mode = "offset") {
     const monitor = monitors[key]
     if (monitor.type !== "none") {
 
+      // Replace DDC/CI brightness with SDR
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+        monitor.brightness = monitor.sdrLevel
+      }
+
       let normalizedAdjust = minMax(mode == "set" ? brightness : brightness + monitor.brightness)
 
       // Use linked levels, if applicable
@@ -2074,6 +2134,7 @@ function updateAllBrightness(brightness, mode = "offset") {
       }
 
       monitors[key].brightness = normalizedAdjust
+      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) monitors[key].sdrLevel = normalizedAdjust;
     }
   }
 
@@ -2180,6 +2241,20 @@ function transitionlessBrightness(level, eventMonitors = []) {
   }
 }
 
+// Flag recent user activity to skip certain events
+let hasRecentlyInteracted = false
+function setRecentlyInteracted(hasInteracted) {
+  if(hasRecentlyInteracted) clearTimeout(hasRecentlyInteracted);
+  if(!hasInteracted) {
+    hasRecentlyInteracted = false
+  } else {
+    hasRecentlyInteracted = setTimeout(() => {
+      hasRecentlyInteracted = false
+    }, 5000)
+  }
+
+}
+
 let sleepTimeout
 function sleepDisplays(mode = "ps", delayMS = 333) {
   try {
@@ -2260,6 +2335,7 @@ ipcMain.on('request-colors', () => {
 })
 
 ipcMain.on('update-brightness', function (event, data) {
+  setRecentlyInteracted(true)
   updateBrightness(data.index, data.level)
 
   // If overlay is visible, keep it open
@@ -2350,9 +2426,11 @@ ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
+  setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
 })
 ipcMain.on('set-sdr-brightness', (e, values) => {
+  setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, "sdr")
 })
 
@@ -3566,6 +3644,12 @@ checkForUpdates = async (force = false) => {
           let foundVersion = false
           for (let release of releases) {
             if (!(settings.branch === "master" && release.prerelease === true)) {
+
+              // Skip versions older than current
+              const versionParsed =  Utils.getVersionValue(release.tag_name)
+              const appVersionValue = Utils.getVersionValue(`v${app.getVersion()}`)
+              if(versionParsed < appVersionValue) continue;
+
               foundVersion = true
               latestVersion = {
                 releaseURL: (release.html_url),
@@ -3823,6 +3907,7 @@ powerMonitor.on("resume", () => {
   console.log("Resuming......")
   stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
+  setRecentlyInteracted(false)
   
   if(settings.restartOnWake) {
   // Screw it, just restart the whole app.
@@ -3838,7 +3923,7 @@ powerMonitor.on("resume", () => {
         () => {
           block.release()
           if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
-            if (!settings.disableAutoApply) setKnownBrightness();
+            if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
             if(settings.recreateTray) recreateTray();
             if(settings.recreateFlyout && !panelSize.visible) restartPanel();
     
@@ -3868,7 +3953,7 @@ function handleMetricsChange(type) {
     // Do a quick check to ensure handles are all good
     await refreshMonitors(true)
 
-    if (!settings.disableAutoApply) setKnownBrightness();
+    if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     handleChangeTimeout1 = false

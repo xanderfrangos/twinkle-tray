@@ -217,5 +217,10 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "タスクトレイのアイコン上でスクロールする際のスクロール方向が逆になります。",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "スクロール方向を逆に",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "ユーザーのセッションがロックされている間はスクリーンにアクセスしない。複数ユーザーでの競合を回避します。",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "ロック画面では無効化"
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "ロック画面では無効化",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR対応モニタの設定",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "特定のモニターでSDRの明るさスライダーを有効にします。動作には、WindowsでHDRを有効にする必要があります。",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "HDRが有効なら、メインの明るさスライダーからSDRの明るさを調整します。",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "メインのスライダーからSDRを調整",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDRの明るさ"
 }

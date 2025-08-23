@@ -217,5 +217,10 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Invertir scroll",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Al hacer scroll sobre el icono de bandeja del sistema, la dirección del desplazamiento será invertida.",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Inutiliza encima Pantalla de Cerradura",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "No accede monitores mientras la sesión de usuario está cerrada para evitar conflictos en multi-entornos de usuario."
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "No accede monitores mientras la sesión de usuario está cerrada para evitar conflictos en multi-entornos de usuario.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR Encuadres de exposición",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Habilita SDR brillo sliders para monitores concretos. Los monitores tienen que haber HDR habilitados en Ventanas para este para obrar.",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Reemplaza Primario Slider",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Control SDR brillo de brillo principal slider mientras HDR es activo.",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Brillo"
 }

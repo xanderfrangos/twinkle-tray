@@ -22,6 +22,10 @@
     "GENERIC_NO_DISPLAYS": "No displays detected. Please connect a display to your PC.",
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "No compatible displays found. Please check that \"DDC/CI\" is enabled for your displays.",
     "GENERIC_NO_DISPLAYS_SHORT": "No compatible displays detected.",
+    "GENERIC_NOT_SUPPORTED": "Not supported",
+    "GENERIC_SUPPORTED": "Supported",
+    "GENERIC_UNSUPPORTED": "Unsupported",
+    "GENERIC_ACTIVE": "Active",
     "GENERIC_SECONDS": "seconds",
     "GENERIC_MINUTES": "minutes",
     "GENERIC_DDC_WARNING": "DDC/CI features such as controlling the power state can cause your monitor to become unresponsive. Use at your own risk.",
@@ -61,6 +65,7 @@
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Disable on Lock Screen",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Don't access monitors while the user session is locked to avoid conflicts in multi-user environments.",
     "SETTINGS_GENERAL_THEME_TITLE": "Theme",
+    "SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE": "Windows UI Style",
     "SETTINGS_GENERAL_THEME_SYSTEM": "System preferences (default)",
     "SETTINGS_GENERAL_THEME_DARK": "Dark",
     "SETTINGS_GENERAL_THEME_LIGHT": "Light",
@@ -118,6 +123,7 @@
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS": "Current Brightness",
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Max Brightness",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Brightness Normalization",
+    "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
     "SETTINGS_MONITORS_HIDE_INTERNAL_TITLE": "Hide Inactive Internal Display",
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "When the lid is closed or the internal display has been disabled in Windows, hide the brightness slider in the panel.",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Hide Displays",
@@ -195,6 +201,7 @@
     "SETTINGS_HOTKEY_VALUE_PLACEHOLDER": "Enter a number",
     "SETTINGS_HOTKEY_VALUES": "Values",
     "SETTINGS_HOTKEY_ADD_VALUE": "Add Value",
+    "SETTINGS_HOTKEY_ADD_ACTION": "Add Action",
     "SETTINGS_HOTKEY_ACTION": "Action",
     "SETTINGS_HOTKEY_ACTION_SET": "Set value",
     "SETTINGS_HOTKEY_ACTION_OFFSET": "Adjust value",
@@ -221,5 +228,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Update channel",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stable (default)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_USE_SUN_POSITION": "Use sun position"
 }

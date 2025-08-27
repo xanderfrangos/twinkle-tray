@@ -160,7 +160,7 @@
     "SETTINGS_GENERAL_FORCE_OVERLAY_DESC": "Zawsze próbuj wyświetlać nakładkę ponad innymi oknami. To może spowodować problemy z aplikacjami i grami pełnoekranowymi. Może również wywoływać anti-cheat w niektórych grach.",
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najbardziej kompatybilne",
     "GENERIC_DELETE": "Usuń",
-    "GENERIC_DEFAULT": "Podstawowe",
+    "GENERIC_DEFAULT": "Domyślnie",
     "GENERIC_OPTIONAL": "Opcjonalnie",
     "PANEL_LABEL_TURN_ON": "Włącz zasilanie",
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Wymuszone",

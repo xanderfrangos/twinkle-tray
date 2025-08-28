@@ -133,7 +133,7 @@
     "SETTINGS_UPDATES_BRANCH_STABLE": "Стабильный (по умолчанию)",
     "GENERIC_PAUSE_TOD": "Приостановить корректировки по времени",
     "SETTINGS_GENERAL_TROUBLESHOOTING": "Устранение неполадок",
-    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Отключить методы обнаружения монитора",
+    "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Включить методы обнаружения монитора",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Отключить наложение",
     "SETTINGS_GENERAL_DIS_OVERLAY_DESC": "Если наложение горячих клавиш Twinkle Tray мешает работе полноэкранных приложений, вы можете отключить его здесь.",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Скрыть дисплеи",
@@ -158,5 +158,8 @@
     "SETTINGS_HOTKEY_ACTION": "Действие",
     "SETTINGS_HOTKEY_ACTION_SET": "Присвоить значение",
     "SETTINGS_HOTKEY_ACTION_OFFSET": "Изменить значение",
-    "SETTINGS_HOTKEY_ADD_VALUE": "Добавить значение"
+    "SETTINGS_HOTKEY_ADD_VALUE": "Добавить значение",
+    "PANEL_LABEL_TURN_ON": "Включить",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Отключить на экране блокировки",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Не взаимодействовать с мониторами, пока пользовательская сессия заблокирована, чтобы избежать конфликты при использовании системы несколькими пользователями."
 }

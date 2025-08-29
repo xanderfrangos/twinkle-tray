@@ -145,10 +145,10 @@
     "GENERIC_PAUSE_IDLE": "暂停空闲检测",
     "SETTINGS_TIME_ANIMATE_TITLE": "时间之间的动画",
     "SETTINGS_TIME_ANIMATE_DESC": "亮度值将在当前和下一个预定事件之间进行动画处理。可能会增加CPU的使用率。当此功能激活时，手动亮度调整将很快被覆盖。",
-    "SETTINGS_UPDATES_CHANNEL": "更新渠道",
-    "GENERIC_PAUSE_TOD": "暂停时间的调整",
-    "SETTINGS_UPDATES_BRANCH_STABLE": "稳定（默认）",
-    "SETTINGS_UPDATES_BRANCH_BETA": "β",
+    "SETTINGS_UPDATES_CHANNEL": "更新频道",
+    "GENERIC_PAUSE_TOD": "调整暂停时间",
+    "SETTINGS_UPDATES_BRANCH_STABLE": "稳定版（默认）",
+    "SETTINGS_UPDATES_BRANCH_BETA": "测试版",
     "SETTINGS_FEATURES_POWER_OFF": "关机",
     "GENERIC_DELETE": "删除",
     "GENERIC_OPTIONAL": "可选",
@@ -213,5 +213,11 @@
     "SETTINGS_PROFILES_OVERLAY_TITLE": "覆盖叠加层类型",
     "SETTINGS_PROFILES_OVERLAY_DESC": "更改指定应用程序聚焦时快捷键叠加层的行为。手动激活配置文件时，此功能不起作用。",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "在系统托盘图标上滚动时，滚动方向将反转。",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "反转滚动"
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "反转滚动",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "锁定屏幕时禁用",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR 显示设置",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "为特定显示器启用 SDR 亮度滑块。要使此功能生效，显示器必须在系统中启用 HDR 功能。",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR 替换主滑块",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "当 HDR 激活时，通过主亮度滑块控制 SDR 内容的亮度（而不是默认情况下的 HDR 最高亮度）。",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR 亮度"
 }

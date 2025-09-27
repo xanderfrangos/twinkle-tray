@@ -215,5 +215,10 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "시스템 트레이 아이콘을 스크롤할 때 스크롤 방향이 반대로 바뀝니다.",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "스크롤 반전",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "잠금 화면에서 사용 안 함",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "다중 사용자 환경에서 충돌을 방지하기 위해 사용자 세션이 잠긴 상태에서는 모니터에 접근하지 마세요."
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "다중 사용자 환경에서 충돌을 방지하기 위해 사용자 세션이 잠긴 상태에서는 모니터에 접근하지 마세요.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR 디스플레이 설정",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "특정 모니터에서 SDR 밝기 슬라이더를 활성화합니다. 이것을 사용하기 위해서는 Windows에서 모니터의 HDR이 활성화되어 있어야 합니다.",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR이 주 슬라이더 대체",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "HDR이 활성화되었을 때 SDR 밝기를 주 밝기 슬라이더에서 제어합니다.",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR 밝기"
 }

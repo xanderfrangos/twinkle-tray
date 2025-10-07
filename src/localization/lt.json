@@ -215,5 +215,10 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Apgręžti slinkimą",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kai slinkama virš sistemos srities piktogramos, slinkimo kryptis bus apversta/priešinga nuo pradžios.",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Išjungti/Išgalinti veikiant užrakinimo ekrane",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nepasiekti monitorių/vaizduoklių, kol naudotojo/vartotojo seansas yra užrakintas. Kai turite kelis veikiančius naudotojus/vartotojus su savo atskirais veikimais ir aplinkomis; tai daroma siekiant išvengti konfliktų."
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nepasiekti monitorių/vaizduoklių, kol naudotojo/vartotojo seansas yra užrakintas. Kai turite kelis veikiančius naudotojus/vartotojus su savo atskirais veikimais ir aplinkomis; tai daroma siekiant išvengti konfliktų.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "Ekrano „HDR“ nustatymai",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Įjungti/Įgalinti „SDR“ skaisčio šliaužiklius/slinktukus nurodytams monitoriams/vaizduokliams. Šie monitoriai/vaizduokliai turi turėti „HDR“ parametrą įjungtą/įgalintą per „Windows“, kad šis veiktų.",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "„SDR“ pakeičia pagrindinį šliaužiklį/slinktuką",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Valdykite „SDR“ skaistį iš pagrindinio skaisčio šliaužiklio/slinktuko, kol „HDR“ yra veikiantis.",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "„SDR“ skaistis"
 }

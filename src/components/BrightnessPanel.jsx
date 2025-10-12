@@ -111,7 +111,25 @@ export default class BrightnessPanel extends PureComponent {
                 }
               }
 
+              // 检查是否为HDR显示器且只支持SDR亮度调节
+              const isHDROnlySDR = (monitor.hdr === "active" || monitor.hdr === "supported") && monitor.type === "none";
+              
               if (!useFeatures || !hasFeatures) {
+                // 对于HDR显示器且只支持SDR，直接显示HDR滑块而不是常规亮度滑块
+                if (isHDROnlySDR && showHDRSliders) {
+                  return (
+                    <div className="monitor-sliders extended" key={monitor.key}>
+                      <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
+                        <div className="name-row">
+                          <div className="icon"><span>&#xE7F4;</span></div>
+                          <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
+                          { showPowerButton() }
+                        </div>
+                      </div>
+                      <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                    </div>
+                  )
+                }
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={this.getMonitorName(monitor, this.state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
@@ -127,10 +145,13 @@ export default class BrightnessPanel extends PureComponent {
                         { showPowerButton() }
                       </div>
                     </div>
-                    <div className="feature-row feature-brightness">
-                      <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
-                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                    </div>
+                    {/* 对于HDR显示器且只支持SDR，隐藏常规亮度滑块 */}
+                    { !isHDROnlySDR && (
+                      <div className="feature-row feature-brightness">
+                        <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
+                        <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                      </div>
+                    )}
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     { showHDRSliders ? <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} /> : null }
                   </div>

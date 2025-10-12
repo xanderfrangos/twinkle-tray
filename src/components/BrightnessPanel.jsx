@@ -28,7 +28,7 @@ export default class BrightnessPanel extends PureComponent {
         let lastValidMonitor
         for(const key in this.state.monitors) {
           const monitor = this.state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || (monitor.hdr === "active" || monitor.hdr === "supported")) {
            lastValidMonitor = monitor 
           }
         }
@@ -68,10 +68,10 @@ export default class BrightnessPanel extends PureComponent {
         }
 
         return sorted.map((monitor, index) => {
-          if (monitor.type == "none" || window.settings?.hideDisplays?.[monitor.key] === true) {
+          if ((monitor.type == "none" && !(monitor.hdr === "active" || monitor.hdr === "supported")) || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || (monitor.hdr === "active" || monitor.hdr === "supported")) {
 
               let hasFeatures = true
               let featureCount = 0
@@ -92,7 +92,7 @@ export default class BrightnessPanel extends PureComponent {
               }
 
               let showHDRSliders = false
-              if((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
+              if((monitor.hdr === "active" || monitor.hdr === "supported" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
                 // Has HDR slider enabled
                 hasFeatures = true
                 useFeatures = true

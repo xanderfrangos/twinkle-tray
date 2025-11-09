@@ -18,7 +18,7 @@ export default class BrightnessPanel extends PureComponent {
   getMonitors = () => {
     if (!this.state.monitors || this.numMonitors == 0) {
       if (this.state.isRefreshing) {
-        return (<div className="no-displays-message" style={{textAlign:"center", paddingBottom:"15px"}}>Detecting displays...</div>)
+        return (<div className="no-displays-message" style={{textAlign:"center", paddingBottom:"15px"}}>{T.t(GENERIC_DETECTING_DISPLAYS)}</div>)
       }
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {

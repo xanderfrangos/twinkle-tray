@@ -417,6 +417,7 @@ const vcpMap = {
     0x13: "brightness",
     0x12: "contrast",
     0xD6: "powerState",
+    0x60: "inputs",
     0x62: "volume"
 }
 window.addEventListener("setVCP", e => {

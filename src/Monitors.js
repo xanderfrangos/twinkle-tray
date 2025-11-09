@@ -726,6 +726,7 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
                 features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
                 features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
                 features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
+                features["0x60"] = await checkVCPIfEnabled(monitor, 0x60, "inputControls", skipCache)
                 features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
             }
 
@@ -992,6 +993,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
     if(!code || code == "0x0") return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
+        if (code === 96) return ddcci.getMonitorInputs(monitor)
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
@@ -1129,7 +1131,7 @@ function getDDCCI() {
     }
 }
 
-let wmicUnavailable = false
+let wmicUnavailable = false 
 let wmi = false
 // WMIC
 function getWMIC() {

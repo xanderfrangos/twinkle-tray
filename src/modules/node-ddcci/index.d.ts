@@ -5,6 +5,7 @@ export function _saveCurrentSettings (monitorId: string): boolean;
 export function _refresh (): void;
 
 export function getMonitorList (): string[];
+export function getMonitorInputs (monitorFullName: string): object[]
 
 export function getVCP (monitorId: string, code: number): number;
 export function setVCP (monitorId: string, code: number, value: number): void;

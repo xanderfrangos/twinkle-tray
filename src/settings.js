@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from 'react-dom/client';
-import SettingsWindow from "./Components/SettingsWindow";
+import SettingsWindow from "./components/SettingsWindow.jsx";
 
 const micaDisplays = document.querySelector("#mica .displays")
 

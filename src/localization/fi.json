@@ -213,5 +213,12 @@
     "SETTINGS_PROFILES_TRIGGER_TITLE": "Sovelluksen käynnistysasetukset",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Ohita peittokuvatyyppi",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Käännä vieritys",
-    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kun vierität ilmaisinalueen kuvaketta, vierityssuunta vaihtuu."
+    "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Kun vierität ilmaisinalueen kuvaketta, vierityssuunta vaihtuu.",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Poista käytöstä lukitusnäytössä",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Älä käytä monitoreja, kun käyttäjäistunto on lukittu välttääksesi ristiriidat usean käyttäjän ympäristöissä.",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR-näytön asetukset",
+    "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Ota SDR-kirkkauden liukusäätimet käyttöön. Näytöissä on oltava HDR käytössä Windowsissa, jotta tämä toimisi.",
+    "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Korvaa ensisijaisen liukusäätimen",
+    "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Ohjaa SDR-kirkkautta kirkkauden pääliukusäätimellä, kun HDR on aktiivinen.",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR-kirkkaus"
 }

@@ -47,7 +47,8 @@
     "windows-accent-colors": "^1.0.1",
     "windows-hdr": "file:src/modules/windows-hdr",
     "wmi-bridge": "file:src/modules/wmi-bridge",
-    "wmi-client": "^0.5.0"
+    "wmi-client": "^0.5.0",
+    "yoctolib-es2017": "^1.11.6320"
   },
   "build": {
     "productName": "Twinkle Tray",

@@ -22,6 +22,11 @@ class YoctoLight {
     this.updateBrightnessThrottle = updateBrightnessThrottle
   }
 
+  async reconnect() {
+    await this.disconnect();
+    await this.connect()
+  }
+
   async connect() {
     if (!this.settings?.yoctoEnabled) return;
     

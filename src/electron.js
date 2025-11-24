@@ -917,9 +917,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       } else if (newSettings.yoctoEnabled === false) {
         yoctoLight.disconnect()
       } else if (newSettings.yoctoHubUrl !== undefined && settings.yoctoEnabled) {
-        // URL changed while enabled - reconnect
-        yoctoLight.disconnect()
-        yoctoLight.connect()
+        yoctoLight.reconnect()
       }
     }
 
@@ -3864,7 +3862,6 @@ function addEventListeners() {
 
   startFocusTracking()
 
-  // Initialize Yocto connection if enabled
   if (settings.yoctoEnabled) {
     yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
     yoctoLight.connect()

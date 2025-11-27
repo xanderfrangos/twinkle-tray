@@ -4133,7 +4133,7 @@ function idleCheckShort() {
         if (settings.detectIdleTimeEnabled) {
           // Always restore when dimmed, then check ToD
           setKnownBrightness(false)
-          applyCurrentAdjustmentEvent(true, false)
+          applyCurrentAdjustmentEvent(false, false)
         } else {
           // Not dimmed, try checking ToD first. sKB as backup.
           const foundEvent = applyCurrentAdjustmentEvent(true, true)

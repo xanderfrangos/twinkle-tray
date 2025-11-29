@@ -51,27 +51,6 @@ export default function MonitorFeatures(props) {
             )
         }
 
-        // Input
-        if (monitor.features["0x60"]) {
-            const vcp = "0x60"
-            const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
-            const enabled = monitorFeatures?.["0x60"];
-            extraHTML.push(
-                <SettingsOption className="monitor-feature-item" key={vcp} icon="e839" title={T.t("PANEL_LABEL_INPUTS")} expandable={true} input={
-                    <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
-                }>
-                    <SettingsChild>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                            {monitor.features["0x60"][1].map(e =>
-                                <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
-                            )}
-                        </div>
-                        
-                    </SettingsChild>
-                </SettingsOption>
-            )
-        }
-
         // Volume
         if (monitor.features["0x62"]) {
             const vcp = "0x62"
@@ -83,6 +62,32 @@ export default function MonitorFeatures(props) {
                 }>
                     <SettingsChild>
                         <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                    </SettingsChild>
+                </SettingsOption>
+            )
+        }
+
+        // Input
+        if (monitor.features["0x60"]) {
+            const vcp = "0x60"
+            const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
+            const enabled = monitorFeatures?.["0x60"];
+            extraHTML.push(
+                <SettingsOption className="monitor-feature-item" key={vcp} icon="e839" title={`${T.t("PANEL_LABEL_INPUTS")} ⚠️`} expandable={true} input={
+                    <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
+                }>
+                    <SettingsChild description={
+                        <>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                                {monitor.features["0x60"][1].map(e =>
+                                    <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
+                                )}
+                            </div>
+                            <div style={{ marginTop: "10px" }}>
+                                ⚠️ {T.t("GENERIC_DDC_WARNING")}
+                            </div>
+                        </>
+                    }>
                     </SettingsChild>
                 </SettingsOption>
             )

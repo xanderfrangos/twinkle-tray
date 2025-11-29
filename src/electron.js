@@ -140,14 +140,14 @@ function vcpStr(code) {
 let monitorsThread = {
   send: async function (data) {
     try {
-      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode !== null)) {
+      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) {
         startMonitorThread()
         while(!monitorsThreadReady) {
           await Utils.wait(50)
         }
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
-      if(!monitorsThreadReal?.connected || monitorsThreadReal?.exitCode !== null) throw("Thread not available!");
+      if(!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(50)
       }
@@ -173,7 +173,7 @@ let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
 function startMonitorThread() {
-  if(monitorsThreadReal?.connected || monitorsThreadStarting || isWindowsUserIdle) return false;
+  if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || isWindowsUserIdle) return false;
   monitorsThreadReady = false
   monitorsThreadStarting = true
   console.log("Starting monitor thread")

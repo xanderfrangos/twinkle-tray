@@ -747,13 +747,13 @@ export default class SettingsWindow extends PureComponent {
                     <div key={monitor.key} className="monitorItem">
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                        <p>{T.t(SETTINGS_MONITORS_DETAILS_NAME)}: <b>{getMonitorName(monitor, this.state.names)}</b>
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_INTERNAL_NAME)}: <b>{monitor.hwid[1]}</b>
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_COMMUNICATION)}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_BRIGHTNESS)}: <b>{(monitor.type == "none" ? T.t(GENERIC_NOT_SUPPORTED) : brightness)}</b>
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS)}: <b>{(monitor.type !== "ddcci" ? T.t(GENERIC_NOT_SUPPORTED) : brightnessMax)}</b>
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION)}: <b>{(monitor.type == "none" ? T.t(GENERIC_NOT_SUPPORTED) : monitor.min + " - " + monitor.max)}</b>
-                            <br />{T.t(SETTINGS_MONITORS_DETAILS_HDR)}: <b>{(monitor.hdr == "active" ? T.t(GENERIC_ACTIVE) : monitor.hdr == "supported" ? T.t(GENERIC_SUPPORTED) : T.t(GENERIC_UNSUPPORTED))}</b>
+                        <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
                         </p>
                     </div>
                 )

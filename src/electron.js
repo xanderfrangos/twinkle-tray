@@ -215,7 +215,7 @@ function startMonitorThread() {
     const options = {
     title: 'Monitors thread failed',
     message: 'The monitors thread failed with the following message:',
-    detail: err
+    detail: err.message || err.toString(),
   };
 
   require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });

@@ -10,6 +10,9 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <cstdint>
 
 struct Monitor {
     HMONITOR handle;
@@ -1077,6 +1080,133 @@ setLogLevel(const Napi::CallbackInfo& info) {
     logLevel = (int)info[0].ToNumber();
 }
 
+Napi::Array
+getMonitorInputs(const Napi::CallbackInfo& info)
+{
+    napi_env env = info.Env();
+    
+    if (info.Length() < 1) {
+        Napi::TypeError::New(env, "Monitor key required").ThrowAsJavaScriptException();
+        return Napi::Array::New(env);
+    }
+    
+    std::string searchKey = info[0].As<Napi::String>();
+    
+    // Ищем монитор по разным ключам
+    const PhysicalMonitor* foundMonitor = nullptr;
+    
+    for (auto const& pair : physicalMonitorHandles) {
+        const PhysicalMonitor& monitor = pair.second;
+        
+        // Проверяем разные варианты ключей
+        if (pair.first == searchKey ||
+            monitor.name == searchKey ||
+            monitor.fullName == searchKey ||
+            monitor.physicalName == searchKey ||
+            monitor.deviceKey == searchKey ||
+            monitor.deviceID == searchKey) {
+            
+            foundMonitor = &monitor;
+            break;
+        }
+    }
+    
+    if (foundMonitor == nullptr) {
+        Napi::Error::New(env, "Monitor not found. Search key: " + searchKey).ThrowAsJavaScriptException();
+        return Napi::Array::New(env);
+    }
+    
+    const PhysicalMonitor& monitor = *foundMonitor;
+    std::string result = monitor.result;
+    
+    Napi::Array resultArray = Napi::Array::New(env);
+    
+    try {
+        // Ищем подстроку с информацией о входах (VCP code 60)
+        size_t inputStart = result.find("60(");
+        if (inputStart == std::string::npos) {
+            return resultArray;
+        }
+        
+        size_t inputEnd = result.find(")", inputStart);
+        if (inputEnd == std::string::npos) {
+            return resultArray;
+        }
+        
+        // Извлекаем подстроку с кодами входов
+        std::string inputsStr = result.substr(inputStart + 3, inputEnd - inputStart - 3);
+        
+        // Разбиваем на отдельные коды
+        std::vector<std::string> inputCodes;
+        std::istringstream iss(inputsStr);
+        std::string code;
+        
+        while (std::getline(iss, code, ' ')) {
+            if (!code.empty()) {
+                inputCodes.push_back(code);
+            }
+        }
+        
+        if (inputCodes.empty()) {
+            return resultArray;
+        }
+        
+        // Получаем текущий вход монитора
+        DWORD currentInput = 0;
+        DWORD inputs = 0;
+        BOOL success = GetVCPFeatureAndVCPFeatureReply(
+            monitor.handle, 
+            (BYTE)0x60,
+            NULL, 
+            &currentInput,
+            &inputs
+        );
+
+        DWORD currentInput1 = 0;
+        DWORD inputs1 = 0;
+
+        BOOL success1 = GetVCPFeatureAndVCPFeatureReply(
+            monitor.handle, 
+            (BYTE)0xDC,
+            NULL, 
+            &currentInput1,
+            &inputs1
+        );
+        std::cout << inputs1 << "," << currentInput1;
+        // Преобразуем текущий вход в число
+        unsigned int currentCodeValue = 0;
+        if (success) {
+            std::stringstream ss;
+            ss << std::hex << currentInput;
+            ss >> currentCodeValue;
+        }
+        
+        // Создаем массив всех доступных входов (только коды)
+        Napi::Array availableInputs = Napi::Array::New(env);
+        int availableIndex = 0;
+        
+        for (const auto& code : inputCodes) {
+            // Преобразуем hex строку в число
+            unsigned int codeValue;
+            std::stringstream ss;
+            ss << std::hex << code;
+            ss >> codeValue;
+            
+            availableInputs.Set(uint32_t(availableIndex++), Napi::Number::New(env, codeValue));
+        }
+        
+        // Возвращаем массив из двух элементов
+        resultArray.Set(uint32_t(0), Napi::Number::New(env, currentCodeValue));  // Первый элемент - текущий вход (число)
+        resultArray.Set(uint32_t(1), availableInputs);                          // Второй элемент - массив всех входов (числа)
+        
+    } catch (const std::exception& e) {
+        Napi::Error::New(env, std::string("Error parsing monitor inputs: ") + e.what()).ThrowAsJavaScriptException();
+    }
+    
+    return resultArray;
+}
+
+
 Napi::Object
 Init(Napi::Env env, Napi::Object exports)
 {
@@ -1101,6 +1231,7 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set("getHighLevelContrast", Napi::Function::New(env, getHighLevelContrast, "getHighLevelContrast"));
     exports.Set("setHighLevelContrast", Napi::Function::New(env, setHighLevelContrast, "setHighLevelContrast"));
     exports.Set("setLogLevel", Napi::Function::New(env, setLogLevel, "setLogLevel"));
+    exports.Set("getMonitorInputs", Napi::Function::New(env, getMonitorInputs, "getMonitorInputs"));
 
     getAllHandles(); // Returns bad handles the first time??
 

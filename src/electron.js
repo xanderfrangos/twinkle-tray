@@ -1455,7 +1455,10 @@ function determineTheme(themeName) {
 
 async function updateStartupOption(openAtLogin) {
   if (!isDev)
-    app.setLoginItemSettings({ openAtLogin })
+    app.setLoginItemSettings({
+      openAtLogin,
+      path: `"${app.getPath('exe')}"`,
+    })
 
   // Set autolaunch for AppX
   try {

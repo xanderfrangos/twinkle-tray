@@ -99,6 +99,8 @@
     "SETTINGS_GENERAL_REPORT_DESC": "Save a text file with information about your monitors and settings for debugging.",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Theme update detection",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Detects accent/wallpaper/theme changes from Windows to update the tray icon and Mica effect. Disabling this may help if a 3rd party app is frequently changing the theme, increasing CPU usage.",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE": "Monitor power state detection",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Detects changes to the power state of monitors. Disabling this may help if you experience errors when monitors are turned off/on or are idle. Requires a restart to take effect.",
     "SETTINGS_MONITORS_RATE_TITLE": "Brightness update rate",
     "SETTINGS_MONITORS_RATE_DESC": "How often the brightness will be updated on your displays as you're adjusting their values. Increase the time if your displays are flickering.",
     "SETTINGS_MONITORS_RATE_0": "Ludicrous",

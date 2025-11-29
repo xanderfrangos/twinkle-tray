@@ -1184,6 +1184,8 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC")} input={this.renderToggle("disableThemeChanges", undefined, undefined, true)} />
 
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC")} input={this.renderToggle("disablePowerNotifications", undefined, undefined, true)} />
+
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_REPORT_TITLE")} description={T.t("SETTINGS_GENERAL_REPORT_DESC")} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>{T.t("SETTINGS_GENERAL_REPORT_TITLE")}</a></>} />
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />

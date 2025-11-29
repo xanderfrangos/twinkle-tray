@@ -2590,11 +2590,12 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
   })
 
   mainWindow.hookWindowMessage(126, (wParam, lParam) => {
-    if(settings.useWmDisplayChangeEvent) handleMetricsChange("wm_displaychange")
+    if(settings.useWmDisplayChangeEvent && !settings.disablePowerNotifications) handleMetricsChange("wm_displaychange")
   })
 
   // WM_POWERBROADCAST
   mainWindow.hookWindowMessage(0x218, (wParam, lParam) => {
+    if(settings.disablePowerNotifications) return false;
     if(wParam.readUInt32LE() !== 32787) return false;
     // PBT_POWERSETTINGCHANGE
 
@@ -2653,7 +2654,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
 
   // WM_SYSCOMMAND
   mainWindow.hookWindowMessage(0x0112, (wParam, lParam) => {
-    if(!settings.useScMonitorPowerEvent) return false;
+    if(!settings.useScMonitorPowerEvent || settings.disablePowerNotifications) return false;
     if(wParam.readUInt32LE() === 61808) {
       // SC_MONITORPOWER
       if(lParam.readUInt32LE() === 2) {
@@ -2664,7 +2665,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
     }
   })
 
-  PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
+  if(!settings.disablePowerNotifications) PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
 
 }
 

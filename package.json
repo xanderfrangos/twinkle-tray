@@ -158,7 +158,8 @@
       "publisher": "CN=B8E9A58B-32A7-4C6C-A474-D4BE2A3CEAD8",
       "showNameOnTiles": false,
       "backgroundColor": "#6b479c",
-      "addAutoLaunchExtension": true
+      "addAutoLaunchExtension": true,
+      "customExtensionsPath": "resources/appx/extensions.xml"
     },
     "nsis": {
       "deleteAppDataOnUninstall": true,

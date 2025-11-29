@@ -588,7 +588,7 @@ export default class SettingsWindow extends PureComponent {
                                 time.useSunCalc = e.target.checked
                                 this.updateAdjustmentTime(time, index)
                             }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
-                            <div className="text">Use sun position</div>
+                            <div className="text">{T.t("SETTINGS_TIME_USE_SUN_POSITION")}</div>
                         </div>
                     }>
                         <SettingsChild>
@@ -679,7 +679,7 @@ export default class SettingsWindow extends PureComponent {
                         {this.getHotkeyStatusIcon(hotkey)}
                     </div>
                 } expandable={true} input={
-                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>Delete</span></a>
+                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
                 }>
                     { hotkey.actions?.map((action, actionIdx) => {
                         return (
@@ -695,7 +695,7 @@ export default class SettingsWindow extends PureComponent {
                             }
                             hotkey.actions.push(Object.assign({}, defaultAction))
                             this.updateHotkey(hotkey, idx)
-                        }}>+ Add Action</a>
+                        }}>+ {T.t("SETTINGS_HOTKEY_ADD_ACTION")}</a>
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -747,17 +747,16 @@ export default class SettingsWindow extends PureComponent {
                     <div key={monitor.key} className="monitorItem">
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                        <p>Name: <b>{getMonitorName(monitor, this.state.names)}</b>
-                            <br />Internal name: <b>{monitor.hwid[1]}</b>
-                            <br />Communication Method: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
-                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
-                            <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : brightnessMax)}</b>
-                            <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
-                            <br />HDR: <b>{(monitor.hdr == "active" ? "Active" : monitor.hdr == "supported" ? "Supported" : "Unsupported")}</b>
+                        <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
                         </p>
                     </div>
                 )
-
             })
         }
     }
@@ -1107,7 +1106,7 @@ export default class SettingsWindow extends PureComponent {
                                         </select>
                                     )} />
 
-                                    <SettingsOption title={"Windows UI Style"} input={(
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE")} input={(
                                         <select value={window.settings.windowsStyle} onChange={(e) => this.setSetting("windowsStyle", e.target.value)}>
                                             <option value="system">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
                                             <option value="win10">Windows 10</option>

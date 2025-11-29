@@ -210,7 +210,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const getMonitors = () => {
     if (!state.monitors || numMonitors == 0) {
       if (state.isRefreshing) {
-        return (<div className="no-displays-message" style={{ textAlign: "center", paddingBottom: "15px" }}>Detecting displays...</div>)
+        return (<div className="no-displays-message" style={{ textAlign: "center", paddingBottom: "15px" }}>{T.t("GENERIC_DETECTING_DISPLAYS")}</div>)
       }
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
     } else {

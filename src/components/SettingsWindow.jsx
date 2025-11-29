@@ -679,7 +679,7 @@ export default class SettingsWindow extends PureComponent {
                         {this.getHotkeyStatusIcon(hotkey)}
                     </div>
                 } expandable={true} input={
-                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>{T.t(GENERIC_DELETE)}</span></a>
+                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
                 }>
                     { hotkey.actions?.map((action, actionIdx) => {
                         return (

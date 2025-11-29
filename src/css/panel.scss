@@ -1,3 +1,5 @@
+@import "common.scss";
+
 //
 // Defaults
 //
@@ -17,21 +19,6 @@ body {
 //
 // Panel
 //
-
-.button {
-    background-color: var(--tray-background-base);
-    display: block;
-    border-radius: 5px;
-    width: 100%;
-    padding: 5px;
-    text-align: center;
-    box-sizing: border-box;
-    color: var(--tray-text);
-}
-
-.button.disabled {
-    color: var(--system-accent-light);
-}
 
 #root {
 

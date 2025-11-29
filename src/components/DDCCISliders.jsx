@@ -72,12 +72,13 @@ export default function DDCCISliders(props) {
                         </div>
                     )
                 } else if (vcp === "0x60") {
+                    // Input
                     extraHTML.push(
                         <div className="feature-row feature-inputs" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE839;</span></div>
-                            <div style={{ display: "flex", flexWrap: 'wrap' }}>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
                                 {values["0x60"][1].map(e =>
-                                    <div key={e + monitor.id}><button className={values["0x60"][0] === e ? "button disabled" : "button"}  disabled={values["0x60"][0] === e} onClick={() => { setVCP(monitor.id, parseInt(vcp), e); changeInputsState(e) }}>{inputsData[e]}</button></div>
+                                    <button key={e + monitor.id} className={values["0x60"][0] === e ? "button disabled" : "button"} disabled={values["0x60"][0] === e} onClick={() => { setVCP(monitor.id, parseInt(vcp), e); changeInputsState(e) }}>{inputsData[e]}</button>
                                 )}
                             </div>
                         </div >

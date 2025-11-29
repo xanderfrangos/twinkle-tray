@@ -50,6 +50,8 @@ export default function MonitorFeatures(props) {
                 </SettingsOption>
             )
         }
+
+        // Input
         if (monitor.features["0x60"]) {
             const vcp = "0x60"
             const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
@@ -59,9 +61,12 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        {monitor.features["0x60"][1].map(e =>
-                            <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
-                        )}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                            {monitor.features["0x60"][1].map(e =>
+                                <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
+                            )}
+                        </div>
+                        
                     </SettingsChild>
                 </SettingsOption>
             )

@@ -18,6 +18,8 @@ import MonitorInfo from "./MonitorInfo"
 import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
+import { getMonitorName } from './utilts/monitor.util';
+import { YoctoSettings } from "./YoctoSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
@@ -360,6 +362,11 @@ export default class SettingsWindow extends PureComponent {
                 id: "hotkeys",
                 label: T.t("SETTINGS_SIDEBAR_HOTKEYS"),
                 icon: "&#xF210;"
+            },
+            {
+                id: "yocto-light-sensor",
+                label: 'Yocto Light Sensor',
+                icon: "&#xE957;"
             },
             {
                 id: "updates",
@@ -1326,10 +1333,6 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </SettingsPage>
 
-
-
-
-
                             <SettingsPage current={this.state.activePage} id="hotkeys">
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
@@ -1414,7 +1417,9 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </SettingsPage>
 
-
+                            <SettingsPage current={this.state.activePage} id="yocto-light-sensor">
+                                <YoctoSettings T={T} renderToggle={this.renderToggle.bind(this)} monitors={this.state.monitors}></YoctoSettings>
+                            </SettingsPage>
 
                             <SettingsPage current={this.state.activePage} id="updates">
                                 <div className="pageSection">
@@ -1594,14 +1599,6 @@ function getProfileMonitors(monitors, profile, onChange) {
             }} level={level} scrolling={false} />)
         }
     })
-}
-
-function getMonitorName(monitor, renames) {
-    if (Object.keys(renames).indexOf(monitor.id) >= 0 && renames[monitor.id] != "") {
-        return renames[monitor.id] + ` (${monitor.name})`
-    } else {
-        return monitor.name
-    }
 }
 
 function AppProfile(props) {

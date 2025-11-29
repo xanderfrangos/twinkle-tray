@@ -1,4 +1,4 @@
-const { app } = require('electron')
+const { app, shell } = require('electron');
 const fs = require('fs')
 
 const path = require('path');
@@ -87,6 +87,10 @@ let ddcciModeTestResult = "auto"
 let lastKnownDisplays
 
 const SunCalc = require('suncalc')
+
+// Yocto Light Sensor
+const { YoctoLight } = require('./YoctoLight')
+const yoctoLight = new YoctoLight()
 
 app.allowRendererProcessReuse = true
 
@@ -550,7 +554,10 @@ const defaultSettings = {
   showConsole: false,
   profiles: [],
   uuid: uuid(),
-  branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master")
+  branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
+  yoctoEnabled: false,
+  yoctoHubUrl: 'user:password@localhost',
+  yoctoMonitorSettings: {}
 }
 
 const tempSettings = {
@@ -903,6 +910,17 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       lastCheck = false
       settings.dismissedUpdate = false
       checkForUpdates()
+    }
+
+    if (newSettings.yoctoEnabled !== undefined || newSettings.yoctoHubUrl !== undefined) {
+      yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
+      if (newSettings.yoctoEnabled) {
+        yoctoLight.connect()
+      } else if (newSettings.yoctoEnabled === false) {
+        yoctoLight.disconnect()
+      } else if (newSettings.yoctoHubUrl !== undefined && settings.yoctoEnabled) {
+        yoctoLight.reconnect()
+      }
     }
 
     if (settings.analytics) {
@@ -3576,6 +3594,10 @@ function createSettings() {
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.setMenu(windowMenu)
 
+    settingsWindow.webContents.setWindowOpenHandler((edata) => {
+      shell.openExternal(edata.url);
+      return { action: "deny" };
+    });
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       sendMicaWallpaper()
@@ -3845,6 +3867,11 @@ function addEventListeners() {
   pauseMouseEvents(true)
 
   startFocusTracking()
+
+  if (settings.yoctoEnabled) {
+    yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
+    yoctoLight.connect()
+  }
 }
 
 let handleAccentChangeTimeout = false

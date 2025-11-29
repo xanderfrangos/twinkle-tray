@@ -172,6 +172,7 @@
     "SETTINGS_TIME_ANIMATE_DESC": "Brightness values will be animated between the current and next scheduled event. May increase CPU usage. Manual brightness adjustments will quickly be overwritten while this is active.",
     "SETTINGS_TIME_SUN_TITLE": "Coordinates for sun position",
     "SETTINGS_TIME_SUN_DESC": "To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined.",
+    "SETTINGS_TIME_USE_SUN_POSITION": "Use sun position",
     "SETTINGS_TIME_LAT": "Latitude",
     "SETTINGS_TIME_LONG": "Longitude",
     "SETTINGS_TIME_SUN_GET": "Get coordinates",
@@ -233,6 +234,5 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Download & Install {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Update channel",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stable (default)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_USE_SUN_POSITION": "Use sun position"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
 }

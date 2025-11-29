@@ -588,7 +588,7 @@ export default class SettingsWindow extends PureComponent {
                                 time.useSunCalc = e.target.checked
                                 this.updateAdjustmentTime(time, index)
                             }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
-                            <div className="text">{T.t("SETTINGS_USE_SUN_POSITION")}</div>
+                            <div className="text">{T.t("SETTINGS_TIME_USE_SUN_POSITION")}</div>
                         </div>
                     }>
                         <SettingsChild>

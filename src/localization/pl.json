@@ -224,5 +224,5 @@
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Podczas przewijania kółkiem myszki nad ikoną w zasobniku systemowym kierunek przewijania zostanie odwrócony.",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Wyłącz, gdy ekran jest zablokowany",
     "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_DESC": "Nie uzyskuj dostępu do monitorów, gdy sesja użytkownika jest zablokowana, aby uniknąć konfliktów w środowiskach z wieloma użytkownikami.",
-    "SETTINGS_USE_SUN_POSITION": "Użyj poz. słońca"
+    "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca"
 }

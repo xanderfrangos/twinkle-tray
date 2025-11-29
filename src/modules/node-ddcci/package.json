@@ -13,5 +13,8 @@
     "bindings": "^1.5.0",
     "node-addon-api": "^2.0.0"
   },
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "devDependencies": {
+    "@babel/core": "^7.28.5"
+  }
 }

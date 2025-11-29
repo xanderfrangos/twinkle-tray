@@ -1,3 +1,5 @@
+@use "common.scss";
+
 $sidebarWidth: 300px;
 $sidebarWidthSmall: 44px;
 
@@ -369,6 +371,7 @@ label {
     .supported-values {
         font-size: 16px;
         opacity: 0.7;
+        overflow-wrap: anywhere;
     }
 }
 
@@ -415,27 +418,7 @@ select {
 }
 
 
-.button {
-    background: var(--button-background);
-    border: 2px solid var(--button-background);
-    line-height: 0;
-    padding: 15px 12px;
-    //margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
 
-    .icon {
-        margin-right: 8px;
-    }
-
-    &:hover {
-        border-color: var(--input-border);
-    }
-}
 
 .inputToggle-generic {
     display: flex;
@@ -1000,28 +983,6 @@ body[data-is-win11="true"] {
     #page {
         padding-top: 19px;
         border-top-color: transparent;
-    }
-    .button {
-        background: var(--button-background);
-        color: var(--page-text);
-        border-radius: 6px;
-        border: 0;
-        box-shadow: inset 0 0.25px 0 0.5px var(--button-border), 0 0.5px 1px 0 rgba(0, 0, 0, 0.203);
-        font-weight: 400;
-        box-sizing: border-box;
-        &:hover {
-            background: var(--button-highlight);
-        }
-        &.button-primary {
-            background-color: var(--button-primary-background);
-            color: var(--page-background);
-            &:hover {
-                background-color: var(--button-primary-background-hover);
-            }
-        }
-        &.full-width {
-            width: 100%;
-        }
     }
     .window-titlebar .window-title {
         position: relative;

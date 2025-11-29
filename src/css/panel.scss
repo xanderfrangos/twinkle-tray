@@ -1,3 +1,5 @@
+@use "common.scss";
+
 //
 // Defaults
 //
@@ -409,6 +411,11 @@ body[data-is-win11="false"] #root {
         }
     }
 }
+
+.feature-inputs {
+    height: 60px;
+}
+
 .feature-icon {
     display: flex;
     justify-content: center;

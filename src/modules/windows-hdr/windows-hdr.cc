@@ -177,7 +177,7 @@ std::map<std::string, Display> getDisplays() {
         newDisplay.hdrActive = setSDRBrightness(path, nits, true);
       }
 
-      newDisplays.insert({newDisplay.name, newDisplay});
+      newDisplays.insert({newDisplay.path, newDisplay});
     }
 
     return newDisplays;
@@ -234,7 +234,7 @@ Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), result);
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports) { 
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "getDisplays"), Napi::Function::New(env, nodeGetDisplays));
     exports.Set(Napi::String::New(env, "setSDRBrightness"), Napi::Function::New(env, nodeSetSDRBrightness));
     return exports;

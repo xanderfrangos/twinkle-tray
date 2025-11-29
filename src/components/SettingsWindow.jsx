@@ -1181,6 +1181,10 @@ export default class SettingsWindow extends PureComponent {
                                         {this.getSkipRestoreMonitors()}
                                     </SettingsOption>
 
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC")} input={this.renderToggle("disableThemeChanges", undefined, undefined, true)} />
+
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC")} input={this.renderToggle("disablePowerNotifications", undefined, undefined, true)} />
+
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_REPORT_TITLE")} description={T.t("SETTINGS_GENERAL_REPORT_DESC")} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>{T.t("SETTINGS_GENERAL_REPORT_TITLE")}</a></>} />
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_RESET_TITLE")} description={T.t("SETTINGS_GENERAL_RESET_DESC")} input={<a className="button" onClick={window.resetSettings}>{T.t("SETTINGS_GENERAL_RESET_BUTTON")}</a>} />
@@ -1491,6 +1495,7 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
+                                    <SettingsOption title="Disable theme update detection" description="Prevent the app from detecting theme/wallpaper changes from Windows. This may help if a 3rd party app is frequently changing the theme, increasing CPU usage." input={this.renderToggle("disableThemeChanges")} />
                                     <SettingsOption title="Restart app on wake" input={this.renderToggle("restartOnWake")} />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />

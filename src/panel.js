@@ -4,7 +4,7 @@ import BrightnessPanel from "./components/BrightnessPanel";
 
 if (window.settings == undefined) window.settings = {}
 
-createRoot(document.getElementById("root")).render(<BrightnessPanel monitors={window.allMonitors} lastUpdate={window.lastUpdate} />)
+createRoot(document.getElementById("root")).render(<BrightnessPanel />)
 
 window.updateMica = () => {
     const pos = [window.winPosition[0], window.winPosition[1]]

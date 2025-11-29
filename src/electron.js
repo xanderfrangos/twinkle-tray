@@ -777,6 +777,8 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       sendToAllWindows('theme-settings', lastTheme)
     }
 
+    handleAccentChange()
+
     updateStartupOption((settings.openAtLogin || false))
     applyOrder()
     applyRemaps()
@@ -3827,9 +3829,9 @@ ipcMain.on('clear-update', (event, dismissedUpdate) => {
 
 let backgroundInterval = null
 function addEventListeners() {
-  systemPreferences.on('accent-color-changed', handleAccentChange)
-  systemPreferences.on('color-changed', handleAccentChange)
-  nativeTheme.on('updated', handleAccentChange)
+  systemPreferences.on('accent-color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
+  systemPreferences.on('color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
+  nativeTheme.on('updated', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
 
   addDisplayChangeListener(() => { if(settings.useWin32Event) handleMonitorChange("win32") })
   screen.addListener("display-added", () => { if(settings.useElectronEvents) handleMonitorChange("display-added") })

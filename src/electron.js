@@ -897,6 +897,11 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
     if (newSettings.profiles) {
       rebuildTray = true
+      if (settings.profiles?.length > 0 && !focusTrackingID) {
+        startFocusTracking()
+      } else if(focusTrackingID) {
+        stopFocusTracking()
+      }
     }
 
     if (newSettings.branch) {
@@ -2862,9 +2867,13 @@ const ignoreAppList = [
 ]
 const windowHistory = []
 let preProfileBrightness = {}
+let focusTrackingID = 0
 function startFocusTracking() {
-  ActiveWindow.subscribe(async window => {
+  if(focusTrackingID) return false; // Already tracking
+
+  focusTrackingID = ActiveWindow.subscribe(async window => {
     if (!window) return false;
+    if (settings.profiles?.length == 0) return false;
 
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
@@ -2910,6 +2919,16 @@ function startFocusTracking() {
     }
     currentProfile = profile
   })
+
+  console.log(`Starting focus tracking... (#${focusTrackingID})`)
+}
+
+function stopFocusTracking() {
+  if (focusTrackingID) {
+    console.log("Stopping focus tracking...")
+    ActiveWindow.unsubscribe(focusTrackingID)
+    focusTrackingID = 0
+  }
 }
 
 function windowMatchesProfile(window) {
@@ -3843,8 +3862,6 @@ function addEventListeners() {
 
   // Disable mouse events at startup
   pauseMouseEvents(true)
-
-  startFocusTracking()
 }
 
 let handleAccentChangeTimeout = false

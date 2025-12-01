@@ -220,5 +220,10 @@
     "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Įjungti/Įgalinti „SDR“ skaisčio šliaužiklius/slinktukus nurodytams monitoriams/vaizduokliams. Šie monitoriai/vaizduokliai turi turėti „HDR“ parametrą įjungtą/įgalintą per „Windows“, kad šis veiktų.",
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "„SDR“ pakeičia pagrindinį šliaužiklį/slinktuką",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Valdykite „SDR“ skaistį iš pagrindinio skaisčio šliaužiklio/slinktuko, kol „HDR“ yra veikiantis.",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "„SDR“ skaistis"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "„SDR“ skaistis",
+    "GENERIC_NOT_SUPPORTED": "nepalaikoma",
+    "GENERIC_SUPPORTED": "Palaikomos",
+    "GENERIC_ACTIVE": "Aktyvus:",
+    "PANEL_LABEL_INPUTS": "Šaltiniai",
+    "SETTINGS_MONITORS_DETAILS_HDR": "HDR"
 }

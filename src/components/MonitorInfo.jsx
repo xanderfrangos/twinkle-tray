@@ -1,5 +1,6 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Slider from "./Slider"
+import TranslateReact from "../TranslateReact"
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
@@ -10,8 +11,15 @@ export default function MonitorInfo(props) {
     const [sdr, setSDR] = useState(monitor.sdrLevel >= 0 ? monitor.sdrLevel : 50)
     const [manualVCP, setManualVCP] = useState("")
     const [manualValue, setManualValue] = useState("")
+    const [T] = useState(new TranslateReact({}, {}))
 
     let extraHTML = []
+
+    useEffect(() => {
+        window.addEventListener("localizationUpdated", (e) => T.setLocalizationData(e.detail.desired, e.detail.default))
+        window.ipc.send('request-localization')
+        return () => { }
+    }, [])
 
     if (props.debug === true) {
         extraHTML.push(

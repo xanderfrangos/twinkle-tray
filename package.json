@@ -52,11 +52,13 @@
   "build": {
     "productName": "Twinkle Tray",
     "appId": "com.xanderfrangos.twinkle-tray",
-    "compression": "maximum",
+    "compression": "normal",
+    "electronLanguages": ["en-US"],
     "directories": {
       "buildResources": "resources"
     },
     "files": [
+      "README.md",
       "src/electron.js",
       "src/panel-preload.js",
       "src/Translate.js",
@@ -68,8 +70,8 @@
       "src/Monitors.js",
       "src/wmi-bridge-test.js",
       "src/vcp-codes.js",
-      "src/assets/tray-icons/dark/*",
-      "src/assets/tray-icons/light/*",
+      "src/assets/tray-icons/dark/*.ico",
+      "src/assets/tray-icons/light/*.ico",
       "build/*",
       "!node_modules/@hensm/ddcci/build",
       "node_modules/@hensm/ddcci/build/Release/ddcci.node",
@@ -148,7 +150,7 @@
       ],
       "artifactName": "${productName} v${version}.${ext}",
       "icon": "src/assets/logo.ico",
-      "publisherName": "Xander Frangos"
+      "legalTrademarks": "Xander Frangos"
     },
     "appx": {
       "publisherDisplayName": "Xander Frangos",
@@ -176,7 +178,7 @@
     "bindings": "1.5.0",
     "cross-env": "^7.0.3",
     "electron": "^37.10.3",
-    "electron-builder": "22.14.13",
+    "electron-builder": "26.3.2",
     "node-addon-api": "^8.2.2",
     "node-gyp": "^12.1.0",
     "parcel-bundler": "^1.12.5",

@@ -64,15 +64,19 @@ jobs:
           name: twinkle-tray-appx-x64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store.appx
           
+      - name: Build ARM64 Modules
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'electron-builder-upgrade' }}
+        run: npx electron-rebuild --arch arm64 --types "prod"
+          
       - name: Build ARM64 AppX
-        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --publish="never"
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'electron-builder-upgrade' }}
+        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --config.npmRebuild=false --publish="never"
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
       - uses: actions/upload-artifact@v4
         name: Upload ARM64 AppX
-        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'electron-builder-upgrade' }}
         with:
           name: twinkle-tray-appx-arm64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store-arm64.appx

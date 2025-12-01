@@ -94,6 +94,7 @@
     "PANEL_LABEL_COLOR_TEMPERATURE": "Цветовая температура",
     "PANEL_LABEL_OFF_ON": "Состояние питания",
     "PANEL_LABEL_CONTRAST": "Контрастность",
+    "PANEL_LABEL_INPUTS": "Входы",
     "PANEL_LABEL_BRIGHTNESS": "Яркость",
     "SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION": "Нормализация яркости",
     "SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS": "Максимальная яркость",

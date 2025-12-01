@@ -1,6 +1,6 @@
 {
   "name": "twinkle-tray",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "description": "Manage the brightness of monitors from your system tray",
   "main": "src/electron.js",
   "scripts": {
@@ -158,7 +158,8 @@
       "publisher": "CN=B8E9A58B-32A7-4C6C-A474-D4BE2A3CEAD8",
       "showNameOnTiles": false,
       "backgroundColor": "#6b479c",
-      "addAutoLaunchExtension": true
+      "addAutoLaunchExtension": true,
+      "customExtensionsPath": "resources/appx/extensions.xml"
     },
     "nsis": {
       "deleteAppDataOnUninstall": true,
@@ -174,10 +175,10 @@
     "@babel/runtime": "^7.23.6",
     "bindings": "1.5.0",
     "cross-env": "^7.0.3",
-    "electron": "^37.3.1",
+    "electron": "^37.10.3",
     "electron-builder": "22.14.13",
     "node-addon-api": "^8.2.2",
-    "node-gyp": "^10.2.0",
+    "node-gyp": "^12.1.0",
     "parcel-bundler": "^1.12.5",
     "react": "18.3.1",
     "react-beautiful-dnd": "^13.1.1",

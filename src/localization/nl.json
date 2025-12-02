@@ -211,5 +211,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Downloaden en installeren {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Update kanaal",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabiel (standaard)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Helderheid"
 }

@@ -222,5 +222,19 @@
     "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Aktivier SDR Helligkeit Schieber für spezifisch Monitore. Die Monitore müssen haben HDR aktiviert in Fenster für dies zu arbeiten.",
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Tauscht aus Primären Schieber",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Aufsicht SDR Helligkeit von hauptsächlich Helligkeit Schieber #während HDR ist tätig.",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Helligkeit"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Helligkeit",
+    "GENERIC_NOT_SUPPORTED": "Nicht unterstützt",
+    "GENERIC_SUPPORTED": "#Abgestützt",
+    "GENERIC_UNSUPPORTED": "Unsupported",
+    "GENERIC_ACTIVE": "Tätig",
+    "GENERIC_DETECTING_DISPLAYS": "#Herausfinden Displays...",
+    "PANEL_LABEL_INPUTS": "Inputs",
+    "SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE": "Fenster UI Stil",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Thema Update Entdeckung",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Findet heraus Akzent/Tapete/Thema Änderungen von Fenster zu verbessern die Tablett Ikone und #Glimmer Effekt. #Ausschalten dies darf helfen ob ein 3rd Party #App ist häufig das Thema wechseln, ansteigender #CPU Gebrauch.",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE": "#Monitor #ausrüsten staatliche Entdeckung",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Findet heraus Änderungen zu den Kraft Staat von Monitore. #Ausschalten dies darf helfen ob du erfährst #wann Fehler Monitore sind abgestellt/weiter oder sind #leerlaufen. Bedürft einen #Neuanfang zu wirken.",
+    "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
+    "SETTINGS_TIME_USE_SUN_POSITION": "Nutzung Sonne Stelle",
+    "SETTINGS_HOTKEY_ADD_ACTION": "Füg zu Aktion"
 }

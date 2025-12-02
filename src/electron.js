@@ -140,14 +140,14 @@ function vcpStr(code) {
 let monitorsThread = {
   send: async function (data) {
     try {
-      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode !== null)) {
+      if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) {
         startMonitorThread()
         while(!monitorsThreadReady) {
           await Utils.wait(50)
         }
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
-      if(!monitorsThreadReal?.connected || monitorsThreadReal?.exitCode !== null) throw("Thread not available!");
+      if(!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) throw("Thread not available!");
       if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
         await Utils.wait(50)
       }
@@ -173,7 +173,7 @@ let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
 function startMonitorThread() {
-  if(monitorsThreadReal?.connected || monitorsThreadStarting || isWindowsUserIdle) return false;
+  if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || isWindowsUserIdle) return false;
   monitorsThreadReady = false
   monitorsThreadStarting = true
   console.log("Starting monitor thread")
@@ -215,7 +215,7 @@ function startMonitorThread() {
     const options = {
     title: 'Monitors thread failed',
     message: 'The monitors thread failed with the following message:',
-    detail: err
+    detail: err.message || err.toString(),
   };
 
   require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
@@ -777,6 +777,8 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       sendToAllWindows('theme-settings', lastTheme)
     }
 
+    handleAccentChange()
+
     updateStartupOption((settings.openAtLogin || false))
     applyOrder()
     applyRemaps()
@@ -895,6 +897,11 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
     if (newSettings.profiles) {
       rebuildTray = true
+      if (settings.profiles?.length > 0 && !focusTrackingID) {
+        startFocusTracking()
+      } else if(focusTrackingID) {
+        stopFocusTracking()
+      }
     }
 
     if (newSettings.branch) {
@@ -1087,7 +1094,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
       } catch (e) { console.log("Couldn't set brightness for known display!") }
     }
   }
-
+  
   sendToAllWindows('monitors-updated', monitors);
 }
 
@@ -1455,7 +1462,10 @@ function determineTheme(themeName) {
 
 async function updateStartupOption(openAtLogin) {
   if (!isDev)
-    app.setLoginItemSettings({ openAtLogin })
+    app.setLoginItemSettings({
+      openAtLogin,
+      path: `"${app.getPath('exe')}"`,
+    })
 
   // Set autolaunch for AppX
   try {
@@ -2053,25 +2063,26 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {
-
+          
           // Normalize VCP value, if applicable
           const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
           if(featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
             level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
           }
-
+          
           if(monitor.features?.[vcpString]) {
             monitor.features[vcpString][0] = parseInt(level)
           }
           
-
+          
           monitorsThread.send({
             type: "vcp",
             monitor: monitor.hwid.join("#"),
             code: parseInt(vcp),
             value: parseInt(level)
           })
-
+          console.log('monitors-updated', monitor.features?.[vcpString])
+          
         } catch(e) {
           console.log(`Couldn't set VCP code ${vcpString} for monitor ${monitor.id}`, e)
         }
@@ -2585,11 +2596,12 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
   })
 
   mainWindow.hookWindowMessage(126, (wParam, lParam) => {
-    if(settings.useWmDisplayChangeEvent) handleMetricsChange("wm_displaychange")
+    if(settings.useWmDisplayChangeEvent && !settings.disablePowerNotifications) handleMetricsChange("wm_displaychange")
   })
 
   // WM_POWERBROADCAST
   mainWindow.hookWindowMessage(0x218, (wParam, lParam) => {
+    if(settings.disablePowerNotifications) return false;
     if(wParam.readUInt32LE() !== 32787) return false;
     // PBT_POWERSETTINGCHANGE
 
@@ -2648,7 +2660,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
 
   // WM_SYSCOMMAND
   mainWindow.hookWindowMessage(0x0112, (wParam, lParam) => {
-    if(!settings.useScMonitorPowerEvent) return false;
+    if(!settings.useScMonitorPowerEvent || settings.disablePowerNotifications) return false;
     if(wParam.readUInt32LE() === 61808) {
       // SC_MONITORPOWER
       if(lParam.readUInt32LE() === 2) {
@@ -2659,7 +2671,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
     }
   })
 
-  PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
+  if(!settings.disablePowerNotifications) PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
 
 }
 
@@ -2856,9 +2868,13 @@ const ignoreAppList = [
 ]
 const windowHistory = []
 let preProfileBrightness = {}
+let focusTrackingID = 0
 function startFocusTracking() {
-  ActiveWindow.subscribe(async window => {
+  if(focusTrackingID) return false; // Already tracking
+
+  focusTrackingID = ActiveWindow.subscribe(async window => {
     if (!window) return false;
+    if (settings.profiles?.length == 0) return false;
 
     const hwnd = WindowUtils.getForegroundWindow()
     const profile = windowMatchesProfile(window)
@@ -2904,6 +2920,16 @@ function startFocusTracking() {
     }
     currentProfile = profile
   })
+
+  console.log(`Starting focus tracking... (#${focusTrackingID})`)
+}
+
+function stopFocusTracking() {
+  if (focusTrackingID) {
+    console.log("Stopping focus tracking...")
+    ActiveWindow.unsubscribe(focusTrackingID)
+    focusTrackingID = 0
+  }
 }
 
 function windowMatchesProfile(window) {
@@ -3824,9 +3850,9 @@ ipcMain.on('clear-update', (event, dismissedUpdate) => {
 
 let backgroundInterval = null
 function addEventListeners() {
-  systemPreferences.on('accent-color-changed', handleAccentChange)
-  systemPreferences.on('color-changed', handleAccentChange)
-  nativeTheme.on('updated', handleAccentChange)
+  systemPreferences.on('accent-color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
+  systemPreferences.on('color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
+  nativeTheme.on('updated', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
 
   addDisplayChangeListener(() => { if(settings.useWin32Event) handleMonitorChange("win32") })
   screen.addListener("display-added", () => { if(settings.useElectronEvents) handleMonitorChange("display-added") })
@@ -3837,8 +3863,6 @@ function addEventListeners() {
 
   // Disable mouse events at startup
   pauseMouseEvents(true)
-
-  startFocusTracking()
 }
 
 let handleAccentChangeTimeout = false

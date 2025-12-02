@@ -22,10 +22,6 @@
 								"/std:c++17"
 							]
 						}
-					},
-					"msvs_configuration_platform": "x64",
-					"msvs_configuration_attributes": {
-						"PlatformToolset": "v143"
 					}
 				}]
 			],

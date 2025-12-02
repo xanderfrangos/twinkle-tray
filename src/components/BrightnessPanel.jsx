@@ -217,8 +217,8 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       if (state.linkedLevelsActive) {
         // Combine all monitors
         let lastValidMonitor
-        for(const key in this.state.monitors) {
-          const monitor = this.state.monitors[key]
+        for(const key in state.monitors) {
+          const monitor = state.monitors[key]
           if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || (monitor.hdr === "active" || monitor.hdr === "supported")) {
            lastValidMonitor = monitor 
           }
@@ -258,7 +258,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
           }
         }
 
-        return sorted.map((monitor, index) => {
+        return sorted.map((monitor) => {
           if ((monitor.type == "none" && !(monitor.hdr === "active" || monitor.hdr === "supported")) || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
@@ -310,7 +310,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                       <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
                         <div className="name-row">
                           <div className="icon"><span>&#xE7F4;</span></div>
-                          <div className="title">{this.getMonitorName(monitor, this.state.names)}</div>
+                          <div className="title">{getMonitorName(monitor, state.names)}</div>
                           { showPowerButton() }
                         </div>
                       </div>
@@ -337,7 +337,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                     { !isHDROnlySDR && (
                       <div className="feature-row feature-brightness">
                         <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
-                        <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={this.handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                        <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
                       </div>
                     )}
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />

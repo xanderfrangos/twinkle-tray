@@ -212,5 +212,6 @@
     "SETTINGS_PROFILES_OVERLAY_DESC": "Modifica il comportamento della sovrapposizione dei tasti di scelta rapida quando l'applicazione specificata è focalizzata. Questa funzione non va quando il profilo è attivato manualmente.",
     "SETTINGS_HOTKEY_TARGET": "Obiettivo dell'azione",
     "SETTINGS_FEATURES_POWER_WARNING": "È più probabile che l'opzione \"In attesa\" consentirà di accendere e spegnere il monitor da Twinkle Tray. Tuttavia, molti monitor non rispondono correttamente al cambiamento di stato di alimentazione. Utilizzare a proprio rischio e pericolo.",
-    "SETTINGS_FEATURES_ADD_PLACEHOLDER": "Codice VCP (Es. 0x12)"
+    "SETTINGS_FEATURES_ADD_PLACEHOLDER": "Codice VCP (Es. 0x12)",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Luminosità"
 }

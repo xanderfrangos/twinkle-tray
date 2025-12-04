@@ -227,7 +227,7 @@
     "GENERIC_SUPPORTED": "Soportado",
     "GENERIC_UNSUPPORTED": "Unsupported",
     "GENERIC_ACTIVE": "Activo",
-    "GENERIC_DETECTING_DISPLAYS": "Detectando exposiciones...",
+    "GENERIC_DETECTING_DISPLAYS": "Detectando exposiciones…",
     "PANEL_LABEL_INPUTS": "Entradas",
     "SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE": "Windows UI Moda",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Detección de actualización del tema",

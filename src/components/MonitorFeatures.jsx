@@ -215,17 +215,17 @@ function MonitorFeaturesSettings(props) {
 
     const iconType = (
         <div className="field">
-            <label>Slider Indicator Type</label>
+            <label>{T.t("GENERIC_SLIDER_INDICATOR_TYPE")}</label>
             <select value={settingsObj.iconType} onChange={e => onChangeHandler("iconType", e.target.value)} style={{ flex: "0.65" }}>
-                <option value="windows">Icon</option>
-                <option value="text">Text</option>
+                <option value="windows">{T.t("GENERIC_ICON")}</option>
+                <option value="text">{T.t("GENERIC_TEXT")}</option>
             </select>
         </div>
     )
 
     const icon = (
         <div className="field">
-            <label>Slider Icon</label>
+            <label>{T.t("GENERIC_SLIDER_ICON")}</label>
             <select style={{ fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"` }} value={settingsObj.icon} onChange={e => onChangeHandler("icon", e.target.value)}>
                 <WindowsIconsOptions />
             </select>
@@ -234,8 +234,8 @@ function MonitorFeaturesSettings(props) {
 
     const iconText = (
         <div className="field">
-            <label>Slider Text</label>
-            <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={"Enter name for slider"} />
+            <label>{T.t("GENERIC_SLIDER_TEXT")}</label>
+            <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={T.t("GENERIC_SLIDER_NAME")} />
         </div>
     )
 
@@ -251,18 +251,18 @@ function MonitorFeaturesSettings(props) {
         <div className="feature-toggle-settings">
             {ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null}
             <div className="input-row">
-                <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
-                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("GENERIC_MINIMUM")} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("GENERIC_MAXIMUM")} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
             </div>
             <div className="input-row">
                 <div className="feature-toggle-row">
                     <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span>Linked to brightness</span></div>
+                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS")}</span></div>
                 </div>
             </div>
             <div style={{ display: (settingsObj.linked ? "block" : "none") }}>
                 <br />
-                <Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("SETTINGS_FEATURES_STOP_ON_BRIGHTNESS")} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
             </div>
         </div>
     )

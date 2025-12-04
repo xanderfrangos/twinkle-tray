@@ -23,6 +23,12 @@
     "GENERIC_SUPPORTED": "Obsługiwane",
     "GENERIC_UNSUPPORTED": "Nieobsługiwane",
     "GENERIC_ACTIVE": "Aktywne",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Typ suwaka",
+    "GENERIC_ICON": "Ikona",
+    "GENERIC_TEXT": "Tekst",
+    "GENERIC_SLIDER_ICON": "Ikona suwaka",
+    "GENERIC_SLIDER_TEXT": "Tekst suwaka",
+    "GENERIC_SLIDER_NAME": "Wpisz nazwę suwaka",
     "PANEL_TITLE": "Regulacja jasności",
     "PANEL_UPDATE_AVAILABLE": "Dostępna jest nowa wersja",
     "PANEL_BUTTON_LINK_LEVELS": "Poziomy połączeń",
@@ -229,5 +235,7 @@
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Zastępuje główny suwak",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Steruj jasnością SDR za pomocą głównego suwaka jasności, gdy HDR jest aktywny.",
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Jasność SDR",
-    "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca"
+    "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca",
+    "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Połączony z jasnością",
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Zatrzymaj przy tej jasności"
 }

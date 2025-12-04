@@ -166,7 +166,7 @@
     "SETTINGS_GENERAL_REPORT_TITLE": "Sukurti at(a)skaita",
     "SETTINGS_GENERAL_REPORT_DESC": "Išsaugoti teksto failą su informacija apie Jūsų monitorius/vaizduoklius ir nustatymus; derinimo tikslams.",
     "SETTINGS_FEATURES_POWER_TITLE": "Elektros būsenos signalas",
-    "SETTINGS_FEATURES_POWER_DESC": "Kai siunčiama „DDC/CI“ komanda, kad išjungtų Jūsų ekraną, ši/-os nurodyta/-os reikšmė/-s bus nusiųsta/-os:",
+    "SETTINGS_FEATURES_POWER_DESC": "Kai siunčiama „DDC/CI“ komanda, kad išjungtų Jūsų ekraną, ši/-os nurodyta/-os reikšmė/-s bus nusiųsta/-os.",
     "SETTINGS_FEATURES_POWER_COMPAT": "Daugiausiai palaikoma/-s",
     "SETTINGS_FEATURES_ADD": "Pridėti funkciją",
     "SETTINGS_FEATURES_ADD_VCP": "„VCP“ kodas",

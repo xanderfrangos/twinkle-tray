@@ -52,6 +52,23 @@ process.on('message', async (data) => {
 
         } else if (data.type === "ddcBrightnessVCPs") {
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
+            // Update brightnessType for all monitors when user changes VCP settings
+            if (monitors) {
+                for (const hwid2 in monitors) {
+                    if (monitors[hwid2].type === "ddcci") {
+                        const hwid = monitors[hwid2].hwid
+                        if (hwid) {
+                            if (ddcBrightnessVCPs[hwid[1]]) {
+                                // Custom VCP code set - use it
+                                monitors[hwid2].brightnessType = parseInt(ddcBrightnessVCPs[hwid[1]])
+                            } else {
+                                // No custom VCP - reset to default (0x10 = 16)
+                                monitors[hwid2].brightnessType = 0x10
+                            }
+                        }
+                    }
+                }
+            }
         } else if (data.type === "localization") {
             localization = data.localization
         } else if (data.type === "vcp") {
@@ -906,9 +923,11 @@ function setBrightness(brightness, id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             if(monitor) {
                 monitor.brightness = brightness
+                // Check if user has set a custom brightness VCP code for this monitor
+                const hasCustomBrightnessVCP = monitor.hwid && ddcBrightnessVCPs[monitor.hwid[1]]
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
-                } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness) {
+                } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !hasCustomBrightnessVCP) {
                     setHighLevelBrightness(monitor.hwid.join("#"), brightness)
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)

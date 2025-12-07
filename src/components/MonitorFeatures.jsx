@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useObject } from "../hooks/useObject"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
@@ -33,7 +33,20 @@ export default function MonitorFeatures(props) {
         18: "HDMI-2"
     }
 
-    if (monitor.ddcciSupported && Object.keys(monitor.features).length > 0) {
+    if (monitor.ddcciSupported && Object.keys(monitor.features || {}).length > 0) {
+
+        // Brightness (with VCP Code Selection in expanded section)
+        if (monitor.features["0x10"]) {
+            const currentBrightnessVCP = window.settings?.userDDCBrightnessVCPs?.[monitor?.hwid?.[1]] || ""
+            
+            extraHTML.push(
+                <SettingsOption className="monitor-feature-item" key="brightness" icon="e706" title={T.t("PANEL_LABEL_BRIGHTNESS")} expandable={true}>
+                    <SettingsChild>
+                        <BrightnessFeatureSettings hwid={monitor?.hwid?.[1]} currentBrightnessVCP={currentBrightnessVCP} T={T} />
+                    </SettingsChild>
+                </SettingsOption>
+            )
+        }
 
         // Contrast
         if (monitor.features["0x12"]) {
@@ -68,7 +81,7 @@ export default function MonitorFeatures(props) {
         }
 
         // Input
-        if (monitor.features["0x60"]) {
+        if (monitor.features["0x60"] && Array.isArray(monitor.features["0x60"]) && monitor.features["0x60"][1]) {
             const vcp = "0x60"
             const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
             const enabled = monitorFeatures?.["0x60"];
@@ -79,7 +92,7 @@ export default function MonitorFeatures(props) {
                     <SettingsChild description={
                         <>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                                {monitor.features["0x60"][1].map(e =>
+                                {(Array.isArray(monitor.features["0x60"][1]) ? monitor.features["0x60"][1] : []).map(e =>
                                     <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
                                 )}
                             </div>
@@ -264,6 +277,44 @@ function MonitorFeaturesSettings(props) {
                 <br />
                 <Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
             </div>
+        </div>
+    )
+}
+
+function BrightnessFeatureSettings(props) {
+    const { hwid, currentBrightnessVCP, T } = props
+
+    const [vcpInput, setVcpInput] = useState(currentBrightnessVCP)
+
+    // Sync input value when settings change externally
+    useEffect(() => {
+        setVcpInput(currentBrightnessVCP)
+    }, [currentBrightnessVCP])
+
+    const handleVCPChange = (e) => {
+        const value = e.target.value.trim()
+        setVcpInput(value)
+        
+        const newUserVCPs = Object.assign({}, window.settings?.userDDCBrightnessVCPs || {})
+        if (value === "") {
+            delete newUserVCPs[hwid]
+        } else {
+            newUserVCPs[hwid] = value
+        }
+        window.sendSettings({ userDDCBrightnessVCPs: newUserVCPs })
+    }
+
+    return (
+        <div className="feature-toggle-settings">
+            <div className="input-row">
+                <div className="field" style={{ flex: 1 }}>
+                    <label>{T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_TITLE") || "VCP Code"}</label>
+                    <input type="text" value={vcpInput} onChange={handleVCPChange} placeholder="0x10" style={{ maxWidth: "120px" }} />
+                </div>
+            </div>
+            <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC") || "Enter a custom VCP code (e.g. 0x6B). Leave empty for default (0x10)."}
+            </p>
         </div>
     )
 }

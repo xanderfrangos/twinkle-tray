@@ -281,6 +281,19 @@ function MonitorFeaturesSettings(props) {
     )
 }
 
+/**
+ * Component for setting a custom VCP code for brightness control.
+ * 
+ * This component allows the user to specify a custom VCP (Virtual Control Panel) code
+ * for controlling monitor brightness. The expected format for VCP codes is a hexadecimal
+ * string (e.g., "0x10", "0x6B"). The setting is persisted in the application's settings
+ * under `userDDCBrightnessVCPs` and applied immediately via `window.sendSettings`.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.hwid - Hardware ID of the monitor
+ * @param {string} props.currentBrightnessVCP - Current custom VCP code (hex string like "0x10")
+ * @param {Object} props.T - Translation object
+ */
 function BrightnessFeatureSettings(props) {
     const { hwid, currentBrightnessVCP, T } = props
 

@@ -326,7 +326,7 @@ function BrightnessFeatureSettings(props) {
                 </div>
             </div>
             <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>
-                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC") || "Enter a custom VCP code (e.g. 0x6B). Leave empty for default (0x10)."}
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC") || "Enter a custom VCP code (e.g. 0x13, 0x6B, ...). Leave empty for default (0x10). Find codes in the list below."}
             </p>
         </div>
     )

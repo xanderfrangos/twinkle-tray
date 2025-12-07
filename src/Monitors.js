@@ -60,7 +60,7 @@ process.on('message', async (data) => {
                         if (hwid) {
                             if (ddcBrightnessVCPs[hwid[1]]) {
                                 // Custom VCP code set - use it
-                                monitors[hwid2].brightnessType = parseInt(ddcBrightnessVCPs[hwid[1]])
+                                monitors[hwid2].brightnessType = parseInt(ddcBrightnessVCPs[hwid[1]], 16)
                             } else {
                                 // No custom VCP - reset to default (0x10 = 16)
                                 monitors[hwid2].brightnessType = 0x10

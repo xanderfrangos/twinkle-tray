@@ -59,10 +59,10 @@ process.on('message', async (data) => {
                         const hwid = monitors[hwid2].hwid
                         if (hwid) {
                             if (ddcBrightnessVCPs[hwid[1]]) {
-                                // Custom VCP code set - use it
-                                const parsed = parseInt(ddcBrightnessVCPs[hwid[1]], 16)
-                                if (!isNaN(parsed) && parsed >= 0 && parsed <= 0xFF) {
-                                    monitors[hwid2].brightnessType = parsed
+                                // Custom VCP code set - use it (already parsed as int in electron.js)
+                                const vcpCode = ddcBrightnessVCPs[hwid[1]]
+                                if (!isNaN(vcpCode) && vcpCode >= 0 && vcpCode <= 0xFF) {
+                                    monitors[hwid2].brightnessType = vcpCode
                                 } else {
                                     // Invalid VCP code, fall back to default
                                     monitors[hwid2].brightnessType = 0x10

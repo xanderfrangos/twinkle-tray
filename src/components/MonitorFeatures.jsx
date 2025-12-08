@@ -312,6 +312,12 @@ function BrightnessFeatureSettings(props) {
         if (value === "") {
             delete newUserVCPs[hwid]
         } else {
+            // Validate the input is a valid hex VCP code (0x00-0xFF)
+            const parsed = parseInt(value, 16)
+            if (isNaN(parsed) || parsed < 0 || parsed > 0xFF) {
+                // Invalid input - don't save, just update the input field
+                return
+            }
             newUserVCPs[hwid] = value
         }
         window.sendSettings({ userDDCBrightnessVCPs: newUserVCPs })

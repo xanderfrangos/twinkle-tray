@@ -152,7 +152,7 @@
     "SETTINGS_UPDATES_CHANNEL": "Kanał aktualizacji",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
     "GENERIC_SPEED_VERY_FAST": "Bardzo szybko",
-    "GENERIC_DDC_WARNING": "Funkcje DDC/CI, takie jak kontrolowanie stanu zasilania, mogą spowodować, że monitor przestanie odpowiadać. Używaj ich na własne ryzyko.",
+    "GENERIC_DDC_WARNING": "Funkcje DDC/CI mogą spowodować, że monitor przestanie odpowiadać. Używaj ich na własne ryzyko.",
     "GENERIC_SPEED_SLOW": "Powoli",
     "GENERIC_SPEED_INSTANT": "Natychmiast",
     "GENERIC_SPEED_VERY_SLOW": "Bardzo wolno",

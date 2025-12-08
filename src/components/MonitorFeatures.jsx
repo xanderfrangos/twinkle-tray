@@ -319,6 +319,9 @@ function BrightnessFeatureSettings(props) {
 
     return (
         <div className="feature-toggle-settings">
+            <p className="description" style={{ marginBottom: "12px", opacity: 0.8, fontSize: "12px" }}>
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO") || "If your monitor uses a non-standard VCP code for brightness (such as 0x13 or 0x6B), or if you would like to remap the brightness slider to a different VCP code, you can enter that code below."}
+            </p>
             <div className="input-row">
                 <div className="field" style={{ flex: 1 }}>
                     <label>{T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_TITLE") || "VCP Code"}</label>
@@ -326,7 +329,7 @@ function BrightnessFeatureSettings(props) {
                 </div>
             </div>
             <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>
-                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC") || "Enter a custom VCP code (e.g. 0x13, 0x6B, ...). Leave empty for default (0x10). Find codes in the list below."}
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC") || "Leave empty for default (0x10). Find supported codes in the list below."}
             </p>
         </div>
     )

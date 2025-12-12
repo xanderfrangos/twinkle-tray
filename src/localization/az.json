@@ -149,5 +149,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Yeniləmə kanalı",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Sabit (susmaya görə)",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Enerji bağlıdır"
+    "SETTINGS_FEATURES_POWER_OFF": "Enerji bağlıdır",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Parlaqlıq"
 }

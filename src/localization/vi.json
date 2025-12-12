@@ -172,5 +172,6 @@
     "SETTINGS_HOTKEY_ADD_VALUE": "Thêm giá trị",
     "SETTINGS_HOTKEY_ACTION_OFFSET": "Chỉnh giá trị",
     "SETTINGS_HOTKEY_VALUES": "Các giá trị",
-    "SETTINGS_HOTKEY_ACTION_SET": "Đặt giá trị"
+    "SETTINGS_HOTKEY_ACTION_SET": "Đặt giá trị",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Độ sáng"
 }

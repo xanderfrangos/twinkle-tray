@@ -213,5 +213,6 @@
     "SETTINGS_PROFILES_TITLE": "Profiler",
     "SETTINGS_PROFILES_NAME": "Profilnamn",
     "SETTINGS_PROFILES_SHOW_MENU": "Visa i systemfältets högerklicksmeny",
-    "SETTINGS_HOTKEY_ADD_VALUE": "Lägg till värde"
+    "SETTINGS_HOTKEY_ADD_VALUE": "Lägg till värde",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Ljusstyrka"
 }

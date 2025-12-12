@@ -152,5 +152,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Oppdater kanalen",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
     "SETTINGS_FEATURES_POWER_OFF": "Slå av",
-    "GENERIC_DELETE": "Slett"
+    "GENERIC_DELETE": "Slett",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Lysstyrke"
 }

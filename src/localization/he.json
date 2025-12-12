@@ -213,5 +213,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "הורד והתקן {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "עדכון ערוץ",
     "SETTINGS_UPDATES_BRANCH_STABLE": "יציב (ברירת מחדל)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "גרסת ניסיון"
+    "SETTINGS_UPDATES_BRANCH_BETA": "גרסת ניסיון",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "בהירות"
 }

@@ -152,5 +152,6 @@
     "SETTINGS_FEATURES_POWER_OFF": "ايقاف الطاقة",
     "GENERIC_DELETE": "حذف",
     "GENERIC_DEFAULT": "الإفتراضي",
-    "GENERIC_OPTIONAL": "اختياري"
+    "GENERIC_OPTIONAL": "اختياري",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "السطوع"
 }

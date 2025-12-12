@@ -149,5 +149,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Canalul de actualizare",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabil (implicit)",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Oprește"
+    "SETTINGS_FEATURES_POWER_OFF": "Oprește",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Luminozitate"
 }

@@ -185,5 +185,6 @@
     "SETTINGS_PROFILES_BRIGHTNESS_TOGGLE": "تنظیم روشنایی هنگام فعال بودن",
     "SETTINGS_PROFILES_TRIGGER_TITLE": "تنظیمات فعال کردن با برنامه",
     "SETTINGS_PROFILES_APP_PATH": "اضافه کردن مسیر",
-    "SETTINGS_FEATURES_POWER_COMPAT": "سازگار ترین"
+    "SETTINGS_FEATURES_POWER_COMPAT": "سازگار ترین",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "روشنایی"
 }

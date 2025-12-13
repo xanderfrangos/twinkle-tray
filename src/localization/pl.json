@@ -135,7 +135,7 @@
     "SETTINGS_HOTKEYS_BREAK_DESC": "W przypadku użycia klawisza skrótu dla pojedynczego ekranu i gdy „połączone poziomy” są aktywne, zostaną one zdezaktywowane.",
     "GENERIC_PAUSE_TOD": "Regulacja czasu pauzy",
     "GENERIC_PAUSE_IDLE": "Wstrzymaj wykrywanie bezczynności",
-    "GENERIC_DETECTING_DISPLAYS": "Wykrywanie wyświetlaczy...",
+    "GENERIC_DETECTING_DISPLAYS": "Wykrywanie wyświetlaczy…",
     "SETTINGS_GENERAL_TROUBLESHOOTING": "Rozwiązywanie problemów",
     "SETTINGS_GENERAL_DIS_MONITOR_FEATURES_TITLE": "Włączone metody wykrywania monitorów",
     "SETTINGS_GENERAL_DIS_OVERLAY_TITLE": "Wyłączenie nakładki",
@@ -152,7 +152,7 @@
     "SETTINGS_UPDATES_CHANNEL": "Kanał aktualizacji",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
     "GENERIC_SPEED_VERY_FAST": "Bardzo szybko",
-    "GENERIC_DDC_WARNING": "Funkcje DDC/CI, takie jak kontrolowanie stanu zasilania, mogą spowodować, że monitor przestanie odpowiadać. Używaj ich na własne ryzyko.",
+    "GENERIC_DDC_WARNING": "Funkcje DDC/CI mogą spowodować, że monitor przestanie odpowiadać. Używaj ich na własne ryzyko.",
     "GENERIC_SPEED_SLOW": "Powoli",
     "GENERIC_SPEED_INSTANT": "Natychmiast",
     "GENERIC_SPEED_VERY_SLOW": "Bardzo wolno",
@@ -229,5 +229,10 @@
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Zastępuje główny suwak",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Steruj jasnością SDR za pomocą głównego suwaka jasności, gdy HDR jest aktywny.",
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Jasność SDR",
-    "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca"
+    "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca",
+    "PANEL_LABEL_INPUTS": "Źródła sygnału",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Wykrywaj zmianę motywu",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Wykrywa zmiany akcentów/tapet/motywów w systemie Windows w celu aktualizacji ikony w zasobniku systemowym i efektu Mica. Wyłączenie tej funkcji może pomóc, jeśli aplikacja innej firmy często zmienia motyw, zwiększając zużycie procesora.",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE": "Wykrywanie stanu zasialania monitora",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Wykrywa zmiany stanu zasilania monitorów. Wyłączenie tej opcji może pomóc w przypadku występowania błędów podczas wyłączania/włączania monitorów lub gdy są one w stanie bezczynności. Aby zmiany zaczęły obowiązywać, konieczne jest ponowne uruchomienie."
 }

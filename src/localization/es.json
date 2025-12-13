@@ -222,5 +222,19 @@
     "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Habilita SDR brillo sliders para monitores concretos. Los monitores tienen que haber HDR habilitados en Ventanas para este para obrar.",
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Reemplaza Primario Slider",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Control SDR brillo de brillo principal slider mientras HDR es activo.",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Brillo"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "SDR Brillo",
+    "GENERIC_NOT_SUPPORTED": "No apoyado",
+    "GENERIC_SUPPORTED": "Soportado",
+    "GENERIC_UNSUPPORTED": "Unsupported",
+    "GENERIC_ACTIVE": "Activo",
+    "GENERIC_DETECTING_DISPLAYS": "Detectando exposiciones…",
+    "PANEL_LABEL_INPUTS": "Entradas",
+    "SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE": "Windows UI Moda",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Detección de actualización del tema",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Detecta acento/wallpaper/cambios de tema de Ventanas para actualizar el icono de bandeja y Mica efecto. Inutilizando esto puede ayudar si una 3.ª aplicación de fiesta frecuentemente está cambiando el tema, aumentando CPU uso.",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE": "Monitor poder detección estatal",
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Detecta cambios al estado de poder de monitores. Inutilizando esto puede ayudar si  experimentas errores cuándo los monitores están girados fuera/encima o es idle. Requiere un retomar para tomar efecto.",
+    "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
+    "SETTINGS_TIME_USE_SUN_POSITION": "#Puesto de sol del uso",
+    "SETTINGS_HOTKEY_ADD_ACTION": "Añade Acción"
 }

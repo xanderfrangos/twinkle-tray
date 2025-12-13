@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron . --dev",
     "parcel": "node src/parcel.js --mode dev",
-    "parcel-build": "node src/parcel.js --mode build",
+    "parcel-build": "node src/parcel.js --mode build --no-minify",
     "clean": "npm ci",
     "dev": "electron . --dev",
     "electron-build": "electron-builder --x64",

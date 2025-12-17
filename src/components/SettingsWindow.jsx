@@ -243,7 +243,8 @@ export default class SettingsWindow extends PureComponent {
             return {
                 isFallback: true,
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
         return this.state.remaps[name]
@@ -258,7 +259,8 @@ export default class SettingsWindow extends PureComponent {
         if (remaps[name] === undefined) {
             remaps[name] = {
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
 
@@ -461,11 +463,73 @@ export default class SettingsWindow extends PureComponent {
                                     </div>
                                 </div>
                             } />
+                            <SettingsChild content={
+                                <div className="calibration-points-menu">
+                                    { this.getMonitorCalibration(monitor.id) }
+                                    <div className="input-row">
+                                        <div className="button" onClick={() => this.addCalibrationPoint(monitor.id)}>+ {T.t("GENERIC_CALIBRATION_POINT")}</div>
+                                    </div>
+                                </div>
+                            } />
                         </SettingsOption>
 
                     )
                 }
             })
+        }
+    }
+
+    getMonitorCalibration = (monitorID) => {
+        const pointsElems = []
+
+        const remap = this.getRemap(monitorID)
+
+        if(remap) for(const pointIdx in remap.calibration) {
+            const point = remap.calibration[pointIdx]
+
+            pointsElems.push(
+                <div className="input-row" key={pointIdx}>
+                    <div className="monitor-item">
+                        <label>Input</label>
+                        <Slider level={point.input} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "input", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div className="monitor-item">
+                        <label>Output</label>
+                        <Slider level={point.output} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "output", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-end" }}>
+                        <a className="add-new button button-primary block" onClick={() => this.deleteCalibrationPoint(monitorID, pointIdx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
+                    </div>
+                </div>
+            )
+        }
+        return pointsElems
+    }
+
+    addCalibrationPoint = (monitorID) => {
+        const remap = this.getRemap(monitorID)
+        if(remap) {
+            remap.calibration.push({ input: 0, output: 100 })
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    updateCalibrationPoint = (monitorID, pointIdx, field, value) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration[pointIdx][field] = value
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    deleteCalibrationPoint = (monitorID, pointIdx) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration.splice(pointIdx, 1)
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
         }
     }
 
@@ -1295,6 +1359,7 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_MONITORS_NORMALIZE_TITLE")}</div>
                                     <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
+                                    <p>{T.t("SETTINGS_MONITORS_CALIBRATION_DESC")}</p>
                                     {this.getMinMaxMonitors()}
                                 </div>
 

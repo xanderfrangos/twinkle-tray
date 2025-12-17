@@ -228,7 +228,8 @@ Flag to show brightness levels in the panel
     upgradeAdjustmentTimes,
     getVersionValue,
     lerp,
-    parseTime
+    parseTime,
+    getCalibratedValue
 }
 
 
@@ -285,4 +286,86 @@ function getKnownDisplays(knownDisplaysPath) {
     }
 
     return known
+}
+
+/**
+ * Maps a value (0–100) using calibration points.
+ * By default, maps input to output. Can also reverse map output back to input.
+ *
+ * @param {number} value - The value to map (expected range: 0–100).
+ * @param {Array<{input: number, output: number}>} calibrationPoints - 
+ *        An array of calibration points.
+ *        Example: [{input: 15, output: 30}, {input: 50, output: 60}]
+ * @param {boolean} reverse - If true, maps output to input. Default is false (input to output).
+ * @returns {number} - The mapped value.
+ */
+function getCalibratedValue(value, calibrationPoints = [], reverse = false) {
+    // Ensure value is within 0–100
+    value = Math.max(0, Math.min(100, value));
+
+    // Add default start and end points if not provided
+    const points = calibrationPoints.slice();
+
+    // Handle min/max values if those points haven't been provided
+    let hasMin = false;
+    let hasMax = false;
+    for (const point of points) {
+        point.input = Math.max(0, Math.min(100, point.input));
+        if (point.input === 0) hasMin = true;
+        if (point.input === 100) hasMax = true;
+    }
+
+    if (!hasMin) {
+        points.unshift({ input: 0, output: 0 });
+    }
+    if (!hasMax) {
+        points.push({ input: 100, output: 100 });
+    }
+
+    // Sort points by input value
+    points.sort((a, b) => a.input - b.input);
+
+    if (reverse) {
+        // Reverse mapping: output -> input
+        // Find the two points between which the output falls
+        for (let i = 0; i < points.length - 1; i++) {
+            const p1 = points[i];
+            const p2 = points[i + 1];
+
+            // Check if output falls between these two points
+            const minOutput = Math.min(p1.output, p2.output);
+            const maxOutput = Math.max(p1.output, p2.output);
+
+            if (value >= minOutput && value <= maxOutput) {
+                // Linear interpolation in reverse
+                if (p2.output === p1.output) {
+                    // If outputs are the same, return the midpoint input
+                    return (p1.input + p2.input) / 2;
+                }
+                const ratio = (value - p1.output) / (p2.output - p1.output);
+                return p1.input + ratio * (p2.input - p1.input);
+            }
+        }
+        // Fallback
+        return value;
+    } else {
+        // Forward mapping: input -> output
+        if (value === 0 && points.length > 0 && points[0].input === 0) {
+            return points[0].output;
+        }
+
+        // Find the two points between which the input falls
+        for (let i = 0; i < points.length - 1; i++) {
+            const p1 = points[i];
+            const p2 = points[i + 1];
+
+            if (value >= p1.input && value <= p2.input) {
+                // Linear interpolation
+                const ratio = (value - p1.input) / (p2.input - p1.input);
+                return p1.output + ratio * (p2.output - p1.output);
+            }
+        }
+        // Fallback
+        return value;
+    }
 }

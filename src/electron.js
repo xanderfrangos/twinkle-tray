@@ -1459,13 +1459,35 @@ function determineTheme(themeName) {
   }
 }
 
+function enableStartup(appName, appPath) {
+    const runKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Run', reg.Access.ALL_ACCESS);
+    reg.setValueSZ(runKey, appName, `"${appPath}"`);
+}
+
+function disableStartup(appName) {
+    const runKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Run', reg.Access.ALL_ACCESS);
+    reg.deleteValue(runKey, appName);
+    
+    const approvedKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run', reg.Access.ALL_ACCESS);
+    reg.deleteValue(approvedKey, appName);
+}
+
 
 async function updateStartupOption(openAtLogin) {
-  if (!isDev)
+  if (!isDev && !isAppX) {
+    /*
     app.setLoginItemSettings({
       openAtLogin,
       path: `"${app.getPath('exe')}"`,
     })
+    */
+
+    if(openAtLogin) {
+      enableStartup('electron.app.Twinkle Tray', app.getPath('exe'))
+    } else {
+      disableStartup('electron.app.Twinkle Tray')
+    }
+  }
 
   // Set autolaunch for AppX
   try {

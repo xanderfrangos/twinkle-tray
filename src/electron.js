@@ -1461,7 +1461,7 @@ function determineTheme(themeName) {
 
 function enableStartup(appName, appPath) {
     const runKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Run', reg.Access.ALL_ACCESS);
-    reg.setValueSZ(runKey, appName, `"${appPath}"`);
+    //reg.setValueSZ(runKey, appName, `"${appPath}"`);
 }
 
 function disableStartup(appName) {

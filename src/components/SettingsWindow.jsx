@@ -509,6 +509,7 @@ export default class SettingsWindow extends PureComponent {
     addCalibrationPoint = (monitorID) => {
         const remap = this.getRemap(monitorID)
         if(remap) {
+            if(!remap.calibration) remap.calibration = [];
             remap.calibration.push({ input: 0, output: 100 })
             this.setState({ remaps: { ...this.state.remaps } })
             window.sendSettings({ remaps: this.state.remaps })

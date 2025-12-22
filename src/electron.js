@@ -1434,6 +1434,7 @@ function applyRemap(monitor) {
         let remap = settings.remaps[remapName]
         monitor.min = remap.min
         monitor.max = remap.max
+        monitor.calibration = remap.calibration
         // Stop if using new scheme
         if (remapName == monitor.id) return monitor;
       }
@@ -1886,7 +1887,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
     for (let id in newMonitors) {
       const monitor = newMonitors[id]
       // Brightness
-      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
 
 
       // Replace DDC/CI brightness with SDR
@@ -2036,7 +2037,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       return false
     }
 
-    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
+    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
 
     if (vcp === "sdr") {
       monitorsThread.send({
@@ -2181,9 +2182,16 @@ function updateAllBrightness(brightness, mode = "offset") {
 }
 
 
-function normalizeBrightness(brightness, normalize = false, min = 0, max = 100) {
+function normalizeBrightness(brightness, normalize = false, min = 0, max = 100, calibrationPoints = []) {
   // normalize = true when recieving from Monitors.js
   // normalize = false when sending to Monitors.js
+
+  const points = calibrationPoints.slice()
+  if(min > 0) points.push({ input: 0, output: min })
+  if(max < 100) points.push({ input: 100, output: max })
+
+  return Utils.getCalibratedValue(brightness, points, normalize)
+  
   let level = brightness
   if (level > 100) level = 100;
   if (level < 0) level = 0;
@@ -2670,7 +2678,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
           if(monitor.type === "wmi") {
-            const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max)
+            const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max, monitor.calibration)
             monitor.brightness = normalized
             monitor.brightnessRaw = setting.data
           }

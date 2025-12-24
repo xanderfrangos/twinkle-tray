@@ -202,5 +202,6 @@
     "SETTINGS_HOTKEY_TARGET": "Cible de l’action",
     "SETTINGS_HOTKEY_VALUE": "Valeur",
     "SETTINGS_HOTKEY_VALUES": "Valeurs",
-    "SETTINGS_HOTKEY_ADD_VALUE": "Ajouter une valeur"
+    "SETTINGS_HOTKEY_ADD_VALUE": "Ajouter une valeur",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Luminosité"
 }

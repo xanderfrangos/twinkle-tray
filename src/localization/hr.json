@@ -151,5 +151,6 @@
     "SETTINGS_TIME_ANIMATE_TITLE": "Animirajte između vremena",
     "SETTINGS_UPDATES_CHANNEL": "Ažurirajte kanal",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_POWER_OFF": "Isključi"
+    "SETTINGS_FEATURES_POWER_OFF": "Isključi",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Svjetlina"
 }

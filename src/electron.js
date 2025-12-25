@@ -1614,7 +1614,8 @@ function getSettings() {
 
 function getDDCBrightnessVCPs() {
   try {
-    let ids = Object.assign(knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
+    // Create a new object to avoid mutating knownDDCBrightnessVCPs
+    let ids = Object.assign({}, knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
     for (let mon in ids) {
       ids[mon] = parseInt(ids[mon])
     }

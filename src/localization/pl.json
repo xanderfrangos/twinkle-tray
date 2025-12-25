@@ -237,7 +237,7 @@
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Jasność SDR",
     "SETTINGS_TIME_USE_SUN_POSITION": "Użyj poz. słońca",
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Połączony z jasnością",
-    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Zatrzymaj przy tej jasności"
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Zatrzymaj przy tej jasności",
     "PANEL_LABEL_INPUTS": "Źródła sygnału",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Wykrywaj zmianę motywu",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Wykrywa zmiany akcentów/tapet/motywów w systemie Windows w celu aktualizacji ikony w zasobniku systemowym i efektu Mica. Wyłączenie tej funkcji może pomóc, jeśli aplikacja innej firmy często zmienia motyw, zwiększając zużycie procesora.",

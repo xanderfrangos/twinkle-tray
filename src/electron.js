@@ -895,10 +895,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
-    if (newSettings.profiles) {
+    if (settings.profiles) {
       rebuildTray = true
-      if (settings.profiles?.length > 0 && !focusTrackingID) {
-        startFocusTracking()
+      if(settings.profiles?.length > 0) {
+        if(!focusTrackingID) startFocusTracking();
       } else if(focusTrackingID) {
         stopFocusTracking()
       }

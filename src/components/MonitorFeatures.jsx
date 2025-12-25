@@ -58,7 +58,7 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -74,7 +74,7 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -141,7 +141,7 @@ export default function MonitorFeatures(props) {
                         <div className="input-row"><div style={{ cursor: "pointer" }} onClick={() => deleteFeature(vcp)}>{deleteIcon}</div><div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div></div>
                     }>
                         <SettingsChild>
-                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                         </SettingsChild>
                     </SettingsOption>
                 )
@@ -196,7 +196,7 @@ export default function MonitorFeatures(props) {
 }
 
 function MonitorFeaturesSettings(props) {
-    const { enabled, settings, hwid, vcp, onChange } = props
+    const { enabled, settings, hwid, vcp, onChange, T } = props
     //if(!enabled) return (<></>);
 
     const [settingsObj, updateSettings] = useObject(Object.assign({

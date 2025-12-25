@@ -25,7 +25,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if (state.monitors[key].type != "none" && !(window.settings?.hideDisplays?.[key] === true)) localNumMonitors++;
+      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(window.settings?.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
   }, [state.monitors])
@@ -219,7 +219,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         let lastValidMonitor
         for(const key in state.monitors) {
           const monitor = state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || (monitor.hdr === "active" || monitor.hdr === "supported")) {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
            lastValidMonitor = monitor 
           }
         }
@@ -259,10 +259,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         }
 
         return sorted.map((monitor) => {
-          if ((monitor.type == "none" && !(monitor.hdr === "active" || monitor.hdr === "supported")) || window.settings?.hideDisplays?.[monitor.key] === true) {
+          if ((monitor.type == "none" && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || (monitor.hdr === "active" || monitor.hdr === "supported")) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
 
               let hasFeatures = true
               let featureCount = 0
@@ -282,7 +282,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                 })
               }
               let showHDRSliders = false
-              if((monitor.hdr === "active" || monitor.hdr === "supported" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
+              if((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
                 // Has HDR slider enabled
                 hasFeatures = true
                 useFeatures = true
@@ -304,7 +304,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
               
               if (!useFeatures || !hasFeatures) {
                 // For HDR displays that only support SDR, the HDR slider is displayed directly instead of the regular brightness slider.
-                if (isHDROnlySDR && showHDRSliders) {
+                if (isHDROnlySDR) {
                   return (
                     <div className="monitor-sliders extended" key={monitor.key}>
                       <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>

@@ -895,10 +895,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
-    if (newSettings.profiles) {
+    if (settings.profiles) {
       rebuildTray = true
-      if (settings.profiles?.length > 0 && !focusTrackingID) {
-        startFocusTracking()
+      if(settings.profiles?.length > 0) {
+        if(!focusTrackingID) startFocusTracking();
       } else if(focusTrackingID) {
         stopFocusTracking()
       }
@@ -1434,6 +1434,7 @@ function applyRemap(monitor) {
         let remap = settings.remaps[remapName]
         monitor.min = remap.min
         monitor.max = remap.max
+        monitor.calibration = remap.calibration
         // Stop if using new scheme
         if (remapName == monitor.id) return monitor;
       }
@@ -1459,13 +1460,35 @@ function determineTheme(themeName) {
   }
 }
 
+function enableStartup(appName, appPath) {
+    const runKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Run', reg.Access.ALL_ACCESS);
+    reg.setValueSZ(runKey, appName, `"${appPath}"`);
+}
+
+function disableStartup(appName) {
+    const runKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Run', reg.Access.ALL_ACCESS);
+    reg.deleteValue(runKey, appName);
+    
+    const approvedKey = reg.openKey(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run', reg.Access.ALL_ACCESS);
+    reg.deleteValue(approvedKey, appName);
+}
+
 
 async function updateStartupOption(openAtLogin) {
-  if (!isDev)
+  if (!isDev && !isAppX) {
+    /*
     app.setLoginItemSettings({
       openAtLogin,
       path: `"${app.getPath('exe')}"`,
     })
+    */
+
+    if(openAtLogin) {
+      enableStartup('electron.app.Twinkle Tray', app.getPath('exe'))
+    } else {
+      disableStartup('electron.app.Twinkle Tray')
+    }
+  }
 
   // Set autolaunch for AppX
   try {
@@ -1591,7 +1614,8 @@ function getSettings() {
 
 function getDDCBrightnessVCPs() {
   try {
-    let ids = Object.assign(knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
+    // Create a new object to avoid mutating knownDDCBrightnessVCPs
+    let ids = Object.assign({}, knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
     for (let mon in ids) {
       ids[mon] = parseInt(ids[mon])
     }
@@ -1864,7 +1888,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
     for (let id in newMonitors) {
       const monitor = newMonitors[id]
       // Brightness
-      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max)
+      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
 
 
       // Replace DDC/CI brightness with SDR
@@ -2014,7 +2038,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       return false
     }
 
-    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100))
+    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
 
     if (vcp === "sdr") {
       monitorsThread.send({
@@ -2159,9 +2183,16 @@ function updateAllBrightness(brightness, mode = "offset") {
 }
 
 
-function normalizeBrightness(brightness, normalize = false, min = 0, max = 100) {
+function normalizeBrightness(brightness, normalize = false, min = 0, max = 100, calibrationPoints = []) {
   // normalize = true when recieving from Monitors.js
   // normalize = false when sending to Monitors.js
+
+  const points = calibrationPoints.slice()
+  if(min > 0) points.push({ input: 0, output: min })
+  if(max < 100) points.push({ input: 100, output: max })
+
+  return Utils.getCalibratedValue(brightness, points, normalize)
+  
   let level = brightness
   if (level > 100) level = 100;
   if (level < 0) level = 0;
@@ -2648,7 +2679,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
           if(monitor.type === "wmi") {
-            const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max)
+            const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max, monitor.calibration)
             monitor.brightness = normalized
             monitor.brightnessRaw = setting.data
           }

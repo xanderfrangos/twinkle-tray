@@ -243,7 +243,8 @@ export default class SettingsWindow extends PureComponent {
             return {
                 isFallback: true,
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
         return this.state.remaps[name]
@@ -258,7 +259,8 @@ export default class SettingsWindow extends PureComponent {
         if (remaps[name] === undefined) {
             remaps[name] = {
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
 
@@ -461,11 +463,82 @@ export default class SettingsWindow extends PureComponent {
                                     </div>
                                 </div>
                             } />
+                            <SettingsChild content={
+                                <div className="calibration-points-menu">
+                                    { this.getMonitorCalibration(monitor.id) }
+                                    <div className="input-row">
+                                        <div className="button" onClick={() => this.addCalibrationPoint(monitor.id)}>+ {T.t("GENERIC_CALIBRATION_POINT")}</div>
+                                    </div>
+                                </div>
+                            } />
                         </SettingsOption>
 
                     )
                 }
             })
+        }
+    }
+
+    getMonitorCalibration = (monitorID) => {
+        const pointsElems = []
+
+        const remap = this.getRemap(monitorID)
+
+        if(remap) for(const pointIdx in remap.calibration) {
+            const point = remap.calibration[pointIdx]
+
+            pointsElems.push(
+                <div className="input-row" key={pointIdx}>
+                    <div className="monitor-item">
+                        <label>Input</label>
+                        <Slider level={point.input} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "input", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div className="monitor-item">
+                        <label>Output</label>
+                        <Slider level={point.output} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "output", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-end" }}>
+                        <a className="add-new button button-primary block" onClick={() => this.deleteCalibrationPoint(monitorID, pointIdx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
+                    </div>
+                </div>
+            )
+        }
+        return pointsElems
+    }
+
+    addCalibrationPoint = (monitorID) => {
+        if (this.state.remaps[monitorID] === undefined) {
+            this.state.remaps[monitorID] = {
+                min: 0,
+                max: 100,
+                calibration: []
+            }
+        }
+
+        const remap = this.getRemap(monitorID)
+        if(remap) {
+            if(!remap.calibration) remap.calibration = [];
+            remap.calibration.push({ input: 0, output: 100 })
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    updateCalibrationPoint = (monitorID, pointIdx, field, value) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration[pointIdx][field] = value
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    deleteCalibrationPoint = (monitorID, pointIdx) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration.splice(pointIdx, 1)
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
         }
     }
 
@@ -1295,6 +1368,7 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_MONITORS_NORMALIZE_TITLE")}</div>
                                     <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
+                                    <p>{T.t("SETTINGS_MONITORS_CALIBRATION_DESC")}</p>
                                     {this.getMinMaxMonitors()}
                                 </div>
 
@@ -1607,39 +1681,43 @@ function AppProfile(props) {
 
     return (
         <SettingsOption title={<input type="text" placeholder={T.t("SETTINGS_PROFILES_NAME")} value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
-            <SettingsChild>
-                <div className="feature-toggle-row">
-                    <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
-                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
-                </div>
-
-                <div className="profile-monitors">
-                    {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
-                </div>
-
-                {(profile.setBrightness ? (
+            <SettingsChild content={
+                <>
                     <div className="feature-toggle-row">
-                        <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
+                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
                     </div>
-                ) : null)}
-            </SettingsChild>
-            <SettingsChild>
-                <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
-                <br />
 
-                <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
-                <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
-                <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
-                <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
-                <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
-                <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-                    <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
-                    <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
-                    <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
-                    <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
-                </select>
-            </SettingsChild>
+                    <div className="profile-monitors">
+                        {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+                    </div>
+
+                    {(profile.setBrightness ? (
+                        <div className="feature-toggle-row">
+                            <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+                            <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        </div>
+                    ) : null)}
+                </>
+            } />
+            <SettingsChild content={
+                <>
+                    <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
+                    <br />
+
+                    <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
+                    <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
+                    <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
+                    <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
+                        <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
+                        <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
+                        <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
+                        <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
+                    </select>
+                </>
+            } />
         </SettingsOption>
     )
 }

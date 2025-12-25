@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useObject } from "../hooks/useObject"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
@@ -33,7 +33,20 @@ export default function MonitorFeatures(props) {
         18: "HDMI-2"
     }
 
-    if (monitor.ddcciSupported && Object.keys(monitor.features).length > 0) {
+    if (monitor.ddcciSupported && Object.keys(monitor.features || {}).length > 0) {
+
+        // Brightness (with VCP Code Selection in expanded section)
+        if (monitor.features["0x10"]) {
+            const currentBrightnessVCP = window.settings?.userDDCBrightnessVCPs?.[monitor?.hwid?.[1]] || ""
+            
+            extraHTML.push(
+                <SettingsOption className="monitor-feature-item" key="brightness" icon="e706" title={T.t("PANEL_LABEL_BRIGHTNESS")} expandable={true}>
+                    <SettingsChild>
+                        <BrightnessFeatureSettings hwid={monitor?.hwid?.[1]} currentBrightnessVCP={currentBrightnessVCP} T={T} />
+                    </SettingsChild>
+                </SettingsOption>
+            )
+        }
 
         // Contrast
         if (monitor.features["0x12"]) {
@@ -45,7 +58,7 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -61,14 +74,14 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                     </SettingsChild>
                 </SettingsOption>
             )
         }
 
         // Input
-        if (monitor.features["0x60"]) {
+        if (monitor.features["0x60"] && Array.isArray(monitor.features["0x60"]) && monitor.features["0x60"][1]) {
             const vcp = "0x60"
             const settings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.[vcp]
             const enabled = monitorFeatures?.["0x60"];
@@ -79,7 +92,7 @@ export default function MonitorFeatures(props) {
                     <SettingsChild description={
                         <>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                                {monitor.features["0x60"][1].map(e =>
+                                {(Array.isArray(monitor.features["0x60"][1]) ? monitor.features["0x60"][1] : [])?.map(e =>
                                     <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
                                 )}
                             </div>
@@ -128,7 +141,7 @@ export default function MonitorFeatures(props) {
                         <div className="input-row"><div style={{ cursor: "pointer" }} onClick={() => deleteFeature(vcp)}>{deleteIcon}</div><div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div></div>
                     }>
                         <SettingsChild>
-                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} vcp={vcp} />
+                            <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
                         </SettingsChild>
                     </SettingsOption>
                 )
@@ -183,7 +196,7 @@ export default function MonitorFeatures(props) {
 }
 
 function MonitorFeaturesSettings(props) {
-    const { enabled, settings, hwid, vcp, onChange } = props
+    const { enabled, settings, hwid, vcp, onChange, T } = props
     //if(!enabled) return (<></>);
 
     const [settingsObj, updateSettings] = useObject(Object.assign({
@@ -215,17 +228,17 @@ function MonitorFeaturesSettings(props) {
 
     const iconType = (
         <div className="field">
-            <label>Slider Indicator Type</label>
+            <label>{T.t("GENERIC_SLIDER_INDICATOR_TYPE")}</label>
             <select value={settingsObj.iconType} onChange={e => onChangeHandler("iconType", e.target.value)} style={{ flex: "0.65" }}>
-                <option value="windows">Icon</option>
-                <option value="text">Text</option>
+                <option value="windows">{T.t("GENERIC_ICON")}</option>
+                <option value="text">{T.t("GENERIC_TEXT")}</option>
             </select>
         </div>
     )
 
     const icon = (
         <div className="field">
-            <label>Slider Icon</label>
+            <label>{T.t("GENERIC_SLIDER_ICON")}</label>
             <select style={{ fontFamily: `"Segoe Fluent Icons", "Segoe MDL2 Assets"` }} value={settingsObj.icon} onChange={e => onChangeHandler("icon", e.target.value)}>
                 <WindowsIconsOptions />
             </select>
@@ -234,8 +247,8 @@ function MonitorFeaturesSettings(props) {
 
     const iconText = (
         <div className="field">
-            <label>Slider Text</label>
-            <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={"Enter name for slider"} />
+            <label>{T.t("GENERIC_SLIDER_TEXT")}</label>
+            <input type="text" value={settingsObj.iconText} onChange={e => onChangeHandler("iconText", e.target.value)} placeholder={T.t("GENERIC_SLIDER_NAME")} />
         </div>
     )
 
@@ -251,19 +264,79 @@ function MonitorFeaturesSettings(props) {
         <div className="feature-toggle-settings">
             {ignoreCodes.indexOf(vcp) === -1 ? iconSettings : null}
             <div className="input-row">
-                <Slider min={0} max={100} name={"Min"} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
-                <Slider min={0} max={100} name={"Max"} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("GENERIC_MINIMUM")} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("GENERIC_MAXIMUM")} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
             </div>
             <div className="input-row">
                 <div className="feature-toggle-row">
                     <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />
-                    <div className="feature-toggle-label"><span>Linked to brightness</span></div>
+                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS")}</span></div>
                 </div>
             </div>
             <div style={{ display: (settingsObj.linked ? "block" : "none") }}>
                 <br />
-                <Slider min={0} max={100} name={"Stop after this brightness level"} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
+                <Slider min={0} max={100} name={T.t("SETTINGS_FEATURES_STOP_ON_BRIGHTNESS")} onChange={value => onChangeHandler("maxVisual", value)} level={settingsObj.maxVisual ?? 100} scrolling={false} height={"short"} icon={false} />
             </div>
+        </div>
+    )
+}
+
+/**
+ * Component for setting a custom VCP code for brightness control.
+ * 
+ * This component allows the user to specify a custom VCP (Virtual Control Panel) code
+ * for controlling monitor brightness. The expected format for VCP codes is a hexadecimal
+ * string (e.g., "0x10", "0x6B"). The setting is persisted in the application's settings
+ * under `userDDCBrightnessVCPs` and applied immediately via `window.sendSettings`.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.hwid - Hardware ID of the monitor
+ * @param {string} props.currentBrightnessVCP - Current custom VCP code (hex string like "0x10")
+ * @param {Object} props.T - Translation object
+ */
+function BrightnessFeatureSettings(props) {
+    const { hwid, currentBrightnessVCP, T } = props
+
+    const [vcpInput, setVcpInput] = useState(currentBrightnessVCP)
+
+    // Sync input value when settings change externally
+    useEffect(() => {
+        setVcpInput(currentBrightnessVCP)
+    }, [currentBrightnessVCP])
+
+    const handleVCPChange = (e) => {
+        const value = e.target.value.trim()
+        setVcpInput(value)
+        
+        const newUserVCPs = Object.assign({}, window.settings?.userDDCBrightnessVCPs || {})
+        if (value === "") {
+            delete newUserVCPs[hwid]
+        } else {
+            // Validate the input is a valid hex VCP code (0x00-0xFF)
+            const parsed = parseInt(value, 16)
+            if (isNaN(parsed) || parsed < 0 || parsed > 0xFF) {
+                // Invalid input - don't save, just update the input field
+                return
+            }
+            newUserVCPs[hwid] = value
+        }
+        window.sendSettings({ userDDCBrightnessVCPs: newUserVCPs })
+    }
+
+    return (
+        <div className="feature-toggle-settings">
+            <p className="description" style={{ marginBottom: "12px", opacity: 0.8, fontSize: "12px" }}>
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO")}
+            </p>
+            <div className="input-row">
+                <div className="field" style={{ flex: 1 }}>
+                    <label>{T.t("SETTINGS_FEATURES_ADD_VCP")}</label>
+                    <input type="text" value={vcpInput} onChange={handleVCPChange} placeholder="0x10" style={{ maxWidth: "120px" }} />
+                </div>
+            </div>
+            <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>
+                {T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC")}
+            </p>
         </div>
     )
 }

@@ -25,7 +25,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if (state.monitors[key].type != "none" && !(window.settings?.hideDisplays?.[key] === true)) localNumMonitors++;
+      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(window.settings?.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
   }, [state.monitors])
@@ -217,10 +217,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       if (state.linkedLevelsActive) {
         // Combine all monitors
         let lastValidMonitor
-        for (const key in state.monitors) {
+        for(const key in state.monitors) {
           const monitor = state.monitors[key]
-          if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
-            lastValidMonitor = monitor
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+           lastValidMonitor = monitor 
           }
         }
         if (lastValidMonitor) {
@@ -258,11 +258,12 @@ const BrightnessPanel = memo(function BrightnessPanel() {
           }
         }
 
-        return sorted.map(monitor => {
-          if (monitor.type == "none" || window.settings?.hideDisplays?.[monitor.key] === true) {
+        return sorted.map((monitor) => {
+          if ((monitor.type == "none" && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+
               let hasFeatures = true
               let featureCount = 0
               const monitorFeatures = window.settings?.monitorFeatures?.[monitor.hwid[1]]
@@ -281,7 +282,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                 })
               }
               let showHDRSliders = false
-              if ((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
+              if((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
                 // Has HDR slider enabled
                 hasFeatures = true
                 useFeatures = true
@@ -297,7 +298,26 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                   return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{(monitor.features?.["0xD6"][0] >= 4 ? T.t("PANEL_LABEL_TURN_ON") : T.t("PANEL_LABEL_TURN_OFF"))}</span></div>)
                 }
               }
+
+              // Check if it's an HDR display and only supports SDR brightness adjustment.
+              const isHDROnlySDR = (monitor.hdr === "active" || monitor.hdr === "supported") && monitor.type === "none";
+              
               if (!useFeatures || !hasFeatures) {
+                // For HDR displays that only support SDR, the HDR slider is displayed directly instead of the regular brightness slider.
+                if (isHDROnlySDR) {
+                  return (
+                    <div className="monitor-sliders extended" key={monitor.key}>
+                      <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
+                        <div className="name-row">
+                          <div className="icon"><span>&#xE7F4;</span></div>
+                          <div className="title">{getMonitorName(monitor, state.names)}</div>
+                          { showPowerButton() }
+                        </div>
+                      </div>
+                      <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                    </div>
+                  )
+                }
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={getMonitorName(monitor, state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
@@ -313,10 +333,13 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                         {showPowerButton()}
                       </div>
                     </div>
-                    <div className="feature-row feature-brightness">
-                      <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
-                      <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                    </div>
+                    {/* For HDR displays that only support SDR, hide the regular brightness slider. */}
+                    { !isHDROnlySDR && (
+                      <div className="feature-row feature-brightness">
+                        <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
+                        <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
+                      </div>
+                    )}
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
                     {showHDRSliders ? <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} /> : null}
                   </div>

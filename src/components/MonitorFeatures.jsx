@@ -330,7 +330,7 @@ function BrightnessFeatureSettings(props) {
             </p>
             <div className="input-row">
                 <div className="field" style={{ flex: 1 }}>
-                    <label>{T.t("SETTINGS_FEATURES_BRIGHTNESS_VCP_TITLE") || "VCP Code"}</label>
+                    <label>{T.t("SETTINGS_FEATURES_ADD_VCP") || "VCP Code"}</label>
                     <input type="text" value={vcpInput} onChange={handleVCPChange} placeholder="0x10" style={{ maxWidth: "120px" }} />
                 </div>
             </div>

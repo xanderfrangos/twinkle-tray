@@ -92,7 +92,7 @@ export default function MonitorFeatures(props) {
                     <SettingsChild description={
                         <>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                                {(Array.isArray(monitor.features["0x60"][1]) ? monitor.features["0x60"][1] : []).map(e =>
+                                {(Array.isArray(monitor.features["0x60"][1]) ? monitor.features["0x60"][1] : [])?.map(e =>
                                     <div key={e + monitor.id} className="button" style={{ color: monitor.features[vcp] === e ? "red" : '' }} disabled={monitor.features[vcp] === e}>{inputsData[e]}</div>
                                 )}
                             </div>

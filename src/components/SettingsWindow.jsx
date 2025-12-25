@@ -1681,39 +1681,43 @@ function AppProfile(props) {
 
     return (
         <SettingsOption title={<input type="text" placeholder={T.t("SETTINGS_PROFILES_NAME")} value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
-            <SettingsChild>
-                <div className="feature-toggle-row">
-                    <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
-                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
-                </div>
-
-                <div className="profile-monitors">
-                    {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
-                </div>
-
-                {(profile.setBrightness ? (
+            <SettingsChild content={
+                <>
                     <div className="feature-toggle-row">
-                        <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
+                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
                     </div>
-                ) : null)}
-            </SettingsChild>
-            <SettingsChild>
-                <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
-                <br />
 
-                <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
-                <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
-                <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
-                <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
-                <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
-                <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-                    <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
-                    <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
-                    <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
-                    <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
-                </select>
-            </SettingsChild>
+                    <div className="profile-monitors">
+                        {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+                    </div>
+
+                    {(profile.setBrightness ? (
+                        <div className="feature-toggle-row">
+                            <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+                            <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        </div>
+                    ) : null)}
+                </>
+            } />
+            <SettingsChild content={
+                <>
+                    <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
+                    <br />
+
+                    <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
+                    <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
+                    <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
+                    <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
+                        <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
+                        <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
+                        <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
+                        <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
+                    </select>
+                </>
+            } />
         </SettingsOption>
     )
 }

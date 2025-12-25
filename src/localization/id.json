@@ -213,5 +213,6 @@
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Ganti jenis overlay",
     "SETTINGS_PROFILES_OVERLAY_DESC": "Mengubah perilaku hotkey overlay saat aplikasi tertentu difokuskan. Fitur ini tidak berfungsi saat profil diaktifkan secara manual.",
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Dipaksa menyala",
-    "SETTINGS_HOTKEY_ACTION_CYCLE": "Siklus daftar nilai"
+    "SETTINGS_HOTKEY_ACTION_CYCLE": "Siklus daftar nilai",
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Kecerahan"
 }

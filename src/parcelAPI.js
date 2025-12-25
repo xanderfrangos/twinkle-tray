@@ -6,7 +6,10 @@ const entryFiles = Path.join(__dirname, './html/*.html')
 
 const optionsDev = {
     outDir: './cache',
-    watch: true
+    watch: true,
+    minify: false,
+    sourceMaps: true,
+    hmr: true
 }
 
 const optionsProd = {
@@ -15,8 +18,9 @@ const optionsProd = {
     watch: true,
     cache: false,
     sourceMaps: false,
-    minify: true,
-    scopeHoist: true
+    minify: false,
+    scopeHoist: false,
+    hmr: false
 }
 
 function clearDirectory(relativePath) {

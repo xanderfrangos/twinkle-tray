@@ -21,7 +21,7 @@
     "GENERIC_NO_DISPLAYS_SHORT": "未偵測到相容的顯示器。",
     "GENERIC_SECONDS": "秒",
     "GENERIC_MINUTES": "分鐘",
-    "GENERIC_DDC_WARNING": "部分DDC/CI功能，例如控制電源狀態，可能導致您的顯示器沒有回應。請自行承擔使用風險。",
+    "GENERIC_DDC_WARNING": "部分DDC/CI功能可能導致您的顯示器沒有回應。請自行承擔使用風險。",
     "GENERIC_SPEED_INSTANT": "即時",
     "GENERIC_SPEED_SLOW": "慢",
     "GENERIC_SPEED_VERY_SLOW": "很慢",
@@ -182,5 +182,10 @@
     "SETTINGS_FEATURES_VCP_LIST_TITLE": "所有由該顯示器回報的 VCP 功能代碼",
     "SETTINGS_FEATURES_VCP_LIST_DESC": "以下列表為由 Windows 提供此螢幕的可用 VCP 功能代碼。 Twinkle Tray並不會驗證這些 VCP 功能代碼的可用性或穩定性。 請自行承擔使用風險。",
     "SETTINGS_TIME_SUN_TITLE": "太陽位置座標",
-    "SETTINGS_TIME_SUN_DESC": "輸入您目前的經緯度，讓「太陽位置」功能使用正確的時間。"
+    "SETTINGS_TIME_SUN_DESC": "輸入您目前的經緯度，讓「太陽位置」功能使用正確的時間。",
+    "GENERIC_NOT_SUPPORTED": "不支持",
+    "GENERIC_SUPPORTED": "支持",
+    "GENERIC_UNSUPPORTED": "不支持",
+    "GENERIC_ACTIVE": "已激活",
+    "PANEL_LABEL_INPUTS": "輸入"
 }

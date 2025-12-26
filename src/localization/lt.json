@@ -230,5 +230,7 @@
     "GENERIC_DETECTING_DISPLAYS": "Aptinkami ekranai…",
     "SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE": "„Windows“ grafinės sąsajos stilius",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Apipavidalinimo naujinimo aptikimas",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Pridėti veiksmą"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Pridėti veiksmą",
+    "GENERIC_ICON": "Mygtukas",
+    "GENERIC_TEXT": "&Tekstas"
 }

@@ -95,6 +95,16 @@ process.on('message', async (data) => {
                 code: data.code,
                 value: vcp
             })
+        } else if (data.type === "setVCP") {
+            getDDCCI()
+            const result = await setVCP(data.monitor, data.code, data.value)
+            process.send({
+                type: `setVCP::${data.monitor}::${data.code}`,
+                monitor: data.monitor,
+                code: data.code,
+                value: data.value,
+                success: result !== false
+            })
         } else if (data.type === "getReport") {
             process.send({
                 type: `getReport`,

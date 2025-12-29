@@ -267,6 +267,26 @@ function getVCP(monitor, code) {
   })
 }
 
+function setVCP(monitor, code, value) {
+  return new Promise((resolve, reject) => {
+    if (!monitor || code === undefined || value === undefined) resolve(false);
+    const vcpParsed = parseInt(`0x${parseInt(code).toString(16).toUpperCase()}`)
+    const hwid = (typeof monitor === "object" ? monitor.hwid.join("#") : monitor)
+    const timeout = setTimeout(() => {
+      resolve(false) // Timed out
+    }, 3000)
+    monitorsThread.once(`setVCP::${hwid}::${vcpParsed}`, data => {
+      clearTimeout(timeout)
+      resolve(data?.success ?? false)
+    })
+    monitorsThread.send({
+      type: "setVCP",
+      code: vcpParsed,
+      value: value,
+      monitor: hwid
+    })
+  })
+}
 
 
 // Test if wmi-bridge works properly on user's system
@@ -2305,10 +2325,11 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
     sleepTimeout = setTimeout(async () => {
       //startIdleCheckShort()
       if (mode === "ddcci" || mode === "ps_ddcci") {
-        for (let monitorID in monitors) {
-          const monitor = monitors[monitorID]
-          await turnOffDisplayDDC(monitor.hwid.join("#"))
-        }
+        // Power off all monitors in parallel
+        const monitorList = Object.values(monitors)
+        await Promise.all(monitorList.map(monitor =>
+          turnOffDisplayDDC(monitor.hwid.join("#"))
+        ))
       }
 
       if (mode === "ps" || mode === "ps_ddcci") {
@@ -2322,6 +2343,7 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
   }
 }
 
+<<<<<<< Updated upstream
 async function powerOffDisplays() {
   try {
     const powerOffPromises = []
@@ -2353,26 +2375,70 @@ async function turnOffDisplayDDC(hwid, toggle = false) {
           value: 1
         })
         return true
+=======
+async function turnOffDisplayDDC(hwid, toggle = false, maxRetries = 3) {
+  const POWER_VCP = 0xD6
+  const POWER_ON = 1
+  const POWER_STANDBY = 4
+  const POWER_OFF = 5
+
+  // Helper to verify power state changed
+  const verifyPowerState = async (targetValue) => {
+    await new Promise(r => setTimeout(r, 100)) // Small delay before verification
+    const currentValue = await getVCP(hwid, POWER_VCP)
+    // Power is "off" if value is >= 4 (standby or off)
+    if (targetValue >= POWER_STANDBY) {
+      return currentValue >= POWER_STANDBY
+    }
+    // Power is "on" if value is 1
+    return currentValue === targetValue
+  }
+
+  // Helper to set power with retry and verification
+  const setPowerWithRetry = async (value) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const success = await setVCP(hwid, POWER_VCP, value)
+      if (success) {
+        const verified = await verifyPowerState(value)
+        if (verified) {
+          return true
+        }
+        console.log(`turnOffDisplayDDC: Verification failed for ${hwid}, attempt ${attempt}/${maxRetries}`)
+      } else {
+        console.log(`turnOffDisplayDDC: setVCP failed for ${hwid}, attempt ${attempt}/${maxRetries}`)
+      }
+      if (attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 200)) // Wait before retry
+>>>>>>> Stashed changes
       }
     }
-    if (offVal === 4 || offVal === 6) {
-      monitorsThread.send({
-        type: "vcp",
-        monitor: hwid,
-        code: 0xD6,
-        value: 4
-      })
+    return false
+  }
+
+  try {
+    const offVal = parseInt(settings.ddcPowerOffValue)
+
+    // Toggle mode: turn on if currently off
+    if (toggle) {
+      const currentValue = await getVCP(hwid, POWER_VCP)
+      if (currentValue > 1) {
+        return await setPowerWithRetry(POWER_ON)
+      }
+      // If already on, fall through to turn off
     }
-    if (offVal === 5 || offVal === 6) {
-      monitorsThread.send({
-        type: "vcp",
-        monitor: hwid,
-        code: 0xD6,
-        value: 5
-      })
+
+    // Turn off the display
+    let success = false
+    if (offVal === POWER_STANDBY || offVal === 6) {
+      success = await setPowerWithRetry(POWER_STANDBY)
     }
+    if (offVal === POWER_OFF || offVal === 6) {
+      success = await setPowerWithRetry(POWER_OFF)
+    }
+    return success
   } catch (e) {
     console.log("turnOffDisplayDDC failed", e)
+    return false
   }
 }
 

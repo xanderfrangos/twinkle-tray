@@ -82,7 +82,7 @@
     "SETTINGS_MONITORS_REORDER_TITLE": "Kolejność monitorów",
     "SETTINGS_MONITORS_REORDER_DESC": "Zmień kolejność wyświetlania monitorów w zasobniku. Kliknij i przeciągnij, aby wprowadzić zmiany.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalizacja jasności",
-    "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitory często mają różne zakresy jasności. Dzięki ograniczeniu minimalnej/maksymalnej jasności dla każdego monitora, poziom jasności pomiędzy monitorami jest znacznie bardziej spójny. Podobne monitory będą używać tych samych ustawień.",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Monitory często mają różne zakresy jasności. Dzięki ograniczeniu minimalnej/maksymalnej jasności dla każdego monitora, poziom jasności pomiędzy monitorami jest znacznie bardziej spójny.",
     "SETTINGS_MONITORS_DETAILS_NAME": "Nazwa",
     "SETTINGS_MONITORS_DETAILS_INTERNAL_NAME": "Nazwa wewnętrzna",
     "SETTINGS_MONITORS_DETAILS_COMMUNICATION": "Metoda komunikacji",
@@ -242,5 +242,9 @@
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Wykrywaj zmianę motywu",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Wykrywa zmiany akcentów/tapet/motywów w systemie Windows w celu aktualizacji ikony w zasobniku systemowym i efektu Mica. Wyłączenie tej funkcji może pomóc, jeśli aplikacja innej firmy często zmienia motyw, zwiększając zużycie procesora.",
     "SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE": "Wykrywanie stanu zasialania monitora",
-    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Wykrywa zmiany stanu zasilania monitorów. Wyłączenie tej opcji może pomóc w przypadku występowania błędów podczas wyłączania/włączania monitorów lub gdy są one w stanie bezczynności. Aby zmiany zaczęły obowiązywać, konieczne jest ponowne uruchomienie."
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Wykrywa zmiany stanu zasilania monitorów. Wyłączenie tej opcji może pomóc w przypadku występowania błędów podczas wyłączania/włączania monitorów lub gdy są one w stanie bezczynności. Aby zmiany zaczęły obowiązywać, konieczne jest ponowne uruchomienie.",
+    "GENERIC_CALIBRATION_POINT": "Punkt kalibracji",
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "Każdy monitor może mieć indywidualne punkty kalibracji dodane w celu kompensacji różnic w krzywych jasności. Wartością wejściową jest poziom jasności wskazany na suwaku, natomiast wartością wyjściową jest rzeczywisty poziom jasności zastosowany w monitorze.",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Jeśli monitor używa niestandardowego kodu VCP dla jasności (np. 0x13 lub 0x6B) lub jeśli chcesz zmienić przypisanie suwaka jasności do innego kodu VCP, możesz wprowadzić ten kod poniżej.",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Pozostaw puste, aby zachować wartość domyślną (0x10). Obsługiwane kody można znaleźć na liście poniżej."
 }

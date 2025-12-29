@@ -1211,6 +1211,8 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")} description={T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} input={this.renderToggle("analytics")} />
 
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_TOD_POWER_OFF_TITLE")} description={T.t("SETTINGS_GENERAL_TOD_POWER_OFF_DESC")} input={this.renderToggle("turnOffDisplaysUsesPowerOff")} />
+
                                 </div>
 
                                 <div className="pageSection">

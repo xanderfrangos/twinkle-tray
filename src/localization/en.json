@@ -89,6 +89,8 @@
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "Analytics",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "Send usage data to help improve Twinkle Tray. No personal info is sent. {{1}}",
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Learn more",
+    "SETTINGS_GENERAL_TOD_POWER_OFF_TITLE": "\"Turn off displays\" powers off displays",
+    "SETTINGS_GENERAL_TOD_POWER_OFF_DESC": "Use the per-monitor Power Off function when clicking \"Turn off displays\". Displays without DDC/CI Power Off support will be skipped.",
     "SETTINGS_GENERAL_SCROLL_TITLE": "Tray icon scroll shortcut",
     "SETTINGS_GENERAL_SCROLL_DESC": "Adjust the brightness of all displays at once by scrolling over the system tray icon. This does not work with some trackpads.",
     "SETTINGS_GENERAL_TRAY_ICON_TITLE": "Tray icon",

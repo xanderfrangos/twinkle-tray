@@ -539,6 +539,7 @@ const defaultSettings = {
   lastDetectedDDCCIMethod: "none",
   forceLowPowerGPU: false,
   ddcPowerOffValue: 5,
+  turnOffDisplaysUsesPowerOff: false,
   disableAutoRefresh: false,
   disableAutoApply: false,
   disableOnLockScreen: false,
@@ -2321,6 +2322,24 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
   }
 }
 
+async function powerOffDisplays() {
+  try {
+    const powerOffPromises = []
+    for (let monitorID in monitors) {
+      const monitor = monitors[monitorID]
+      // Check if monitor supports power off (VCP 0xD6)
+      const customFeatureEnabled = settings.monitorFeaturesSettings?.[monitor?.hwid?.[1]]?.["0xD6"]
+      const hasFeature = monitor.features?.["0xD6"] || customFeatureEnabled
+      if (hasFeature) {
+        powerOffPromises.push(turnOffDisplayDDC(monitor.hwid.join("#"), true))
+      }
+    }
+    await Promise.all(powerOffPromises)
+  } catch (e) {
+    console.log("powerOffDisplays failed", e)
+  }
+}
+
 async function turnOffDisplayDDC(hwid, toggle = false) {
   try {
     const offVal = parseInt(settings.ddcPowerOffValue)
@@ -2465,7 +2484,14 @@ ipcMain.on('show-acrylic', () => {
 
 ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
-ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
+ipcMain.on('sleep-displays', () => {
+  if (settings.turnOffDisplaysUsesPowerOff) {
+    // Use per-monitor power off function for each monitor that supports it
+    powerOffDisplays()
+  } else {
+    sleepDisplays(settings.sleepAction, 1000)
+  }
+})
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
 ipcMain.on('set-vcp', (e, values) => {
   setRecentlyInteracted(true)

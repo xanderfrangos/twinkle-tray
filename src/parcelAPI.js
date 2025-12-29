@@ -1,27 +1,8 @@
-const Bundler = require('parcel-bundler')
+const { Parcel } = require('@parcel/core')
 const Path = require('path')
 const fs = require("fs")
 
 const entryFiles = Path.join(__dirname, './html/*.html')
-
-const optionsDev = {
-    outDir: './cache',
-    watch: true,
-    minify: false,
-    sourceMaps: true,
-    hmr: true
-}
-
-const optionsProd = {
-    outDir: './build',
-    publicUrl: './',
-    watch: true,
-    cache: false,
-    sourceMaps: false,
-    minify: false,
-    scopeHoist: false,
-    hmr: false
-}
 
 function clearDirectory(relativePath) {
     const dir = Path.join(__dirname, relativePath)
@@ -35,20 +16,63 @@ function clearDirectory(relativePath) {
 
 async function runParcel(mode = "dev", logLevel = null) {
     const parcelMode = mode?.toLocaleLowerCase?.()
+
     if(parcelMode == "dev") {
         clearDirectory('../cache')
-        const bundler = new Bundler(entryFiles, Object.assign(optionsDev, { watch: true, logLevel: (logLevel ?? 3) }))
-        return await bundler.serve(3000)
+        const bundler = new Parcel({
+            entries: entryFiles,
+            defaultConfig: '@parcel/config-default',
+            mode: 'development',
+            defaultTargetOptions: {
+                distDir: Path.join(__dirname, '../cache'),
+                publicUrl: './',
+                sourceMaps: true
+            },
+            shouldDisableCache: false,
+            serveOptions: {
+                port: 3000
+            },
+            hmrOptions: {
+                port: 3000
+            }
+        })
+        return await bundler.watch()
     }
+
     if(parcelMode == "live") {
         clearDirectory('../build')
-        const bundler = new Bundler(entryFiles, Object.assign(optionsProd, { watch: true, logLevel: (logLevel ?? 1) }))
-        return await bundler.bundle()
+        const bundler = new Parcel({
+            entries: entryFiles,
+            defaultConfig: '@parcel/config-default',
+            mode: 'production',
+            defaultTargetOptions: {
+                distDir: Path.join(__dirname, '../build'),
+                publicUrl: './',
+                sourceMaps: false
+            },
+            shouldDisableCache: true,
+            shouldOptimize: false
+        })
+        return await bundler.watch()
     }
+
     if(parcelMode == "build") {
         clearDirectory('../build')
-        const bundler = new Bundler(entryFiles, Object.assign(optionsProd, { watch: false, logLevel: (logLevel ?? 3) }))
-        return await bundler.bundle()
+        const bundler = new Parcel({
+            entries: entryFiles,
+            defaultConfig: '@parcel/config-default',
+            mode: 'production',
+            defaultTargetOptions: {
+                distDir: Path.join(__dirname, '../build'),
+                publicUrl: './',
+                sourceMaps: false
+            },
+            shouldDisableCache: true,
+            shouldOptimize: false
+        })
+        const { bundleGraph, buildTime } = await bundler.run()
+        console.log(`Build completed in ${buildTime}ms with ${bundleGraph.getBundles().length} bundles`)
+        return bundleGraph
     }
 }
 

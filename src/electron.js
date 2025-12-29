@@ -2343,7 +2343,6 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
   }
 }
 
-<<<<<<< Updated upstream
 async function powerOffDisplays() {
   try {
     const powerOffPromises = []
@@ -2375,7 +2374,7 @@ async function turnOffDisplayDDC(hwid, toggle = false) {
           value: 1
         })
         return true
-=======
+
 async function turnOffDisplayDDC(hwid, toggle = false, maxRetries = 3) {
   const POWER_VCP = 0xD6
   const POWER_ON = 1
@@ -2409,7 +2408,6 @@ async function turnOffDisplayDDC(hwid, toggle = false, maxRetries = 3) {
       }
       if (attempt < maxRetries) {
         await new Promise(r => setTimeout(r, 200)) // Wait before retry
->>>>>>> Stashed changes
       }
     }
     return false

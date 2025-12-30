@@ -1,7 +1,8 @@
 require('yoctolib-es2017/yocto_api.js');
 require('yoctolib-es2017/yocto_lightsensor.js');
+const { applyMonitorBRightnessFromLux } = require('../light-sensor.utilts');
 
-class YoctoLight {
+class YoctoLightSensor {
   constructor() {
     this.hubConnected = false
     this.sensorConnected = false
@@ -20,6 +21,20 @@ class YoctoLight {
     this.monitors = monitors
     this.sendToAllWindows = sendToAllWindows
     this.updateBrightnessThrottle = updateBrightnessThrottle
+    this.connect()
+  }
+
+  async changeSettings(settings) {
+    if (newSettings.yoctoEnabled !== undefined || newSettings.yoctoHubUrl !== undefined) {
+      yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
+      if (newSettings.yoctoEnabled) {
+        yoctoLight.connect()
+      } else if (newSettings.yoctoEnabled === false) {
+        yoctoLight.disconnect()
+      } else if (newSettings.yoctoHubUrl !== undefined && settings.yoctoEnabled) {
+        yoctoLight.reconnect()
+      }
+    }
   }
 
   async reconnect() {
@@ -29,18 +44,18 @@ class YoctoLight {
 
   async connect() {
     if (!this.settings?.yoctoEnabled) return;
-    
+
     try {
       await YAPI.LogUnhandledPromiseRejections();
       await YAPI.DisableExceptions();
-      
+
       const url = this.settings.yoctoHubUrl || 'user:password@localhost';
       console.log(`Yoctohub url: ${url}`);
       const res = await YAPI.RegisterHub(url);
       if (res === YAPI.SUCCESS) {
         this.hubConnected = true
         console.log("Yocto VirtualHub connected")
-        
+
         // Setup device callbacks
         YAPI.RegisterDeviceArrivalCallback(() => {
           this.sensorConnected = true
@@ -50,13 +65,13 @@ class YoctoLight {
           this.sensorConnected = false
           this._sendStatus()
         })
-        
+
         // Try to find sensor immediately
         this.sensor = YLightSensor.FirstLightSensor()
         if (this.sensor) {
           this.sensorConnected = true
         }
-        
+
         this._sendStatus()
         this._startPolling()
       } else {
@@ -76,7 +91,7 @@ class YoctoLight {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
     try {
       await YAPI.FreeAPI()
-    } catch(e) {
+    } catch (e) {
       console.log("Error freeing YAPI", e)
     }
     this.hubConnected = false
@@ -87,13 +102,13 @@ class YoctoLight {
 
   _scheduleReconnect() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
-    
+
     this.reconnectTimer = setTimeout(async () => {
       if (!this.settings?.yoctoEnabled) return;
       console.log("Attempting Yocto reconnect...")
       try {
         await YAPI.FreeAPI()
-      } catch(e) {
+      } catch (e) {
         console.log("Error freeing YAPI", e)
       }
       this.connect()
@@ -112,7 +127,7 @@ class YoctoLight {
 
   async _update() {
     if (!this.settings?.yoctoEnabled || !this.hubConnected) return;
-    
+
     try {
       const res = await YAPI.UpdateDeviceList()
       if (res !== YAPI.SUCCESS) {
@@ -123,10 +138,10 @@ class YoctoLight {
         this._scheduleReconnect()
         return
       }
-      
+
       await YAPI.HandleEvents()
       this.hubConnected = true
-      
+
       let sensor = this.sensor || YLightSensor.FirstLightSensor()
       if (sensor && await sensor.isOnline()) {
         this.sensorConnected = true
@@ -136,7 +151,7 @@ class YoctoLight {
       } else {
         this.sensorConnected = false
       }
-      
+
       this._sendStatus()
     } catch (err) {
       console.error("Yocto polling error:", err)
@@ -159,20 +174,22 @@ class YoctoLight {
 
   _applyBrightness() {
     if (this.currentLux === null || !this.sensorConnected || !this.monitors || !this.updateBrightnessThrottle) return;
-    
+
+    applyMonitorBRightnessFromLux(this.currentLux, this.monitors, settings.monitors, this.updateBrightnessThrottle);
+
     for (const key in this.monitors) {
       const monitor = this.monitors[key]
       const monitorSettings = this.settings?.yoctoMonitorSettings?.[monitor.key]
-      
+
       if (!monitorSettings?.enabled) continue
-      
+
       const { minLux = 5, maxLux = 250 } = monitorSettings
       const brightness = Math.round(
-        Math.max(0, Math.min(100, 
+        Math.max(0, Math.min(100,
           ((this.currentLux - minLux) / (maxLux - minLux)) * 100
         ))
       )
-      
+
       this.updateBrightnessThrottle(monitor.id, brightness, true, false)
     }
   }
@@ -186,4 +203,4 @@ class YoctoLight {
   }
 }
 
-module.exports = { YoctoLight };
+module.exports = { YoctoLightSensor };

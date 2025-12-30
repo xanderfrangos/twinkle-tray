@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const path = require('path');
 
-let isDev = app.commandLine.hasSwitch("dev")
+let isDev = app.commandLine.hasSwitch("dev");
 
 let package = fs.readFileSync(isDev ? "package.json" : __dirname + '/../package.json')
 if(package) package = JSON.parse(package)
@@ -88,9 +88,9 @@ let lastKnownDisplays
 
 const SunCalc = require('suncalc')
 
-// Yocto Light Sensor
-const { YoctoLight } = require('./YoctoLight')
-const yoctoLight = new YoctoLight()
+// Light Sensor
+const { LightSensor } = require('./light-sensor/light-sensor');
+const lightSensor = new LightSensor();
 
 app.allowRendererProcessReuse = true
 
@@ -557,7 +557,31 @@ const defaultSettings = {
   branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
   yoctoEnabled: false,
   yoctoHubUrl: 'user:password@localhost',
-  yoctoMonitorSettings: {}
+  yoctoMonitorSettings: {},
+  lightSensor: {
+		enabled: false,
+		active: "fake",
+		sensors: {
+			yocto: {
+				hubUrl: "user:password@localhost"
+			},
+			fake: {
+				overriddenLux: 50
+			}
+		},
+		monitorSettings: {
+			"5&32c97530&0&UID41500": {
+				minLux: 10,
+				maxLux: 230,
+				enabled: true
+			},
+			"5&32c97530&0&UID41501": {
+				minLux: 10,
+				maxLux: 230,
+				enabled: true
+			}
+		}
+	},
 }
 
 const tempSettings = {
@@ -910,16 +934,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       checkForUpdates()
     }
 
-    if (newSettings.yoctoEnabled !== undefined || newSettings.yoctoHubUrl !== undefined) {
-      yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
-      if (newSettings.yoctoEnabled) {
-        yoctoLight.connect()
-      } else if (newSettings.yoctoEnabled === false) {
-        yoctoLight.disconnect()
-      } else if (newSettings.yoctoHubUrl !== undefined && settings.yoctoEnabled) {
-        yoctoLight.reconnect()
-      }
-    }
+    lightSensor.changeSettings(newSettings.lightSensor, settings.lightSensor);
 
     if (settings.analytics) {
       pingAnalytics()
@@ -3862,10 +3877,10 @@ function addEventListeners() {
 
   startFocusTracking()
 
-  if (settings.yoctoEnabled) {
-    yoctoLight.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle)
-    yoctoLight.connect()
+  if (settings.lightSensor.enabled) {
+    lightSensor.start(settings.lightSensor);
   }
+
 }
 
 let handleAccentChangeTimeout = false

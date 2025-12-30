@@ -19,7 +19,7 @@ import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
 import { getMonitorName } from './utilts/monitor.util';
-import { YoctoSettings } from "./YoctoSettings";
+import { LightSensorSettings } from "./light-sensor/LightSensorSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
 import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
@@ -118,7 +118,7 @@ export default class SettingsWindow extends PureComponent {
         super(props)
         this.state = {
             rawSettings: {},
-            activePage: "general",
+            activePage: "light-sensor",
             theme: 'default',
             openAtLogin: false,
             brightnessAtStartup: true,
@@ -364,8 +364,8 @@ export default class SettingsWindow extends PureComponent {
                 icon: "&#xF210;"
             },
             {
-                id: "yocto-light-sensor",
-                label: 'Yocto Light Sensor',
+                id: "light-sensor",
+                label: 'Light Sensor',
                 icon: "&#xE957;"
             },
             {
@@ -1413,8 +1413,8 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </SettingsPage>
 
-                            <SettingsPage current={this.state.activePage} id="yocto-light-sensor">
-                                <YoctoSettings T={T} renderToggle={this.renderToggle.bind(this)} monitors={this.state.monitors}></YoctoSettings>
+                            <SettingsPage current={this.state.activePage} id="light-sensor">
+                                <LightSensorSettings T={T} renderToggle={this.renderToggle.bind(this)} monitors={this.state.monitors}></LightSensorSettings>
                             </SettingsPage>
 
                             <SettingsPage current={this.state.activePage} id="updates">

@@ -23,6 +23,7 @@ async function runParcel(mode = "dev", logLevel = null) {
             entries: entryFiles,
             defaultConfig: '@parcel/config-default',
             mode: 'development',
+            logLevel: logLevel,
             defaultTargetOptions: {
                 distDir: Path.join(__dirname, '../cache'),
                 publicUrl: './',
@@ -36,6 +37,7 @@ async function runParcel(mode = "dev", logLevel = null) {
                 port: 3000
             }
         })
+        console.log("[Parcel] Starting watch mode...")
         return await bundler.watch()
     }
 
@@ -45,6 +47,7 @@ async function runParcel(mode = "dev", logLevel = null) {
             entries: entryFiles,
             defaultConfig: '@parcel/config-default',
             mode: 'production',
+            logLevel: logLevel,
             defaultTargetOptions: {
                 distDir: Path.join(__dirname, '../build'),
                 publicUrl: './',
@@ -53,6 +56,7 @@ async function runParcel(mode = "dev", logLevel = null) {
             shouldDisableCache: true,
             shouldOptimize: false
         })
+        console.log("[Parcel] Starting live mode...")
         return await bundler.watch()
     }
 
@@ -62,6 +66,7 @@ async function runParcel(mode = "dev", logLevel = null) {
             entries: entryFiles,
             defaultConfig: '@parcel/config-default',
             mode: 'production',
+            logLevel: logLevel,
             defaultTargetOptions: {
                 distDir: Path.join(__dirname, '../build'),
                 publicUrl: './',
@@ -70,8 +75,9 @@ async function runParcel(mode = "dev", logLevel = null) {
             shouldDisableCache: true,
             shouldOptimize: false
         })
+        console.log("[Parcel] Starting build...")
         const { bundleGraph, buildTime } = await bundler.run()
-        console.log(`Build completed in ${buildTime}ms with ${bundleGraph.getBundles().length} bundles`)
+        console.log(`[Parcel] Build completed in ${buildTime}ms with ${bundleGraph.getBundles().length} bundles`)
         return bundleGraph
     }
 }

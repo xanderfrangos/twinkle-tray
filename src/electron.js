@@ -3226,7 +3226,7 @@ function doAnimationStep() {
 // Local Parcel server
 if(isDev) {
   console.log("Starting Parcel bundler server...")
-  require("./parcelAPI")("dev", 1)
+  const parcelServer = require('child_process').spawn('node', [path.join(__dirname, 'parcel.js'), "--mode", "dev", "--logLevel", "1"], {});
 }
 
 app.on("ready", async () => {

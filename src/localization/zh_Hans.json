@@ -168,7 +168,7 @@
     "SETTINGS_GENERAL_AUTOBRIGHT_DESC": "如果您的显示器在关闭/打开或断开/连接硬件后响应异常，禁用此功能可能会有所帮助。",
     "SETTINGS_GENERAL_SKIP_APPLY_DESC": "在特定显示器的所有硬件/电源事件发生后禁用自动应用已知亮度。这包括空闲检测功能。",
     "SETTINGS_TIME_SUN_TITLE": "太阳位置坐标",
-    "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "滚动数量",
+    "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "滚轮步长",
     "SETTINGS_HOTKEY_TARGET": "行为目标",
     "SETTINGS_PROFILES_SHOW_MENU": "在右键托盘菜单中显示",
     "SETTINGS_PROFILES_TRIGGER_TITLE": "应用程序触发器设置",

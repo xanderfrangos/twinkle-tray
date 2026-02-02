@@ -57,7 +57,7 @@
     "SETTINGS_MONITORS_REORDER_TITLE": "Riordina gli schermi",
     "SETTINGS_MONITORS_REORDER_DESC": "Cambia l'ordine in cui vengono mostrati gli schermi. Premi e trascina per fare le modifiche.",
     "SETTINGS_MONITORS_NORMALIZE_TITLE": "Normalizza luminosità",
-    "SETTINGS_MONITORS_NORMALIZE_DESC": "Spesso gli schermi hanno un intervallo di luminosità diverso. Limitando la luminosità minima e massima per ciascuno, il livello di luminosità tra diversi schermi sarà più consistente. Schermi simili avranno le stesse impostazioni.",
+    "SETTINGS_MONITORS_NORMALIZE_DESC": "Spesso gli schermi hanno un intervallo di luminosità diverso. Limitando la luminosità minima e massima per ciascuno, il livello di luminosità tra diversi schermi sarà più consistente.",
     "SETTINGS_TIME_TITLE": "Pianificazione oraria",
     "SETTINGS_TIME_DESC": "Cambia automaticamente il livello di luminosità degli schermi ad un orario specifico. Tutti gli schermi verranno impostati allo stesso livello normalizzato.",
     "SETTINGS_TIME_ADD": "Aggiungi un orario",
@@ -235,5 +235,13 @@
     "SETTINGS_TIME_USE_SUN_POSITION": "Utilizza posizione del sole",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Inverti scrorrimento",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_DESC": "Inverti la direzione di scorrimento quando si scorre sull'icona nell'area delle notifiche.",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Aggiungi azione"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Aggiungi azione",
+    "GENERIC_CALIBRATION_POINT": "Punto di calibrazione",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Tipo indicatore slider",
+    "GENERIC_ICON": "Icona",
+    "GENERIC_TEXT": "Testo",
+    "GENERIC_SLIDER_ICON": "Icona slider",
+    "GENERIC_SLIDER_TEXT": "Testo slider",
+    "GENERIC_SLIDER_NAME": "Inserisci un nome per lo slider",
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "Ogni schermo può avere dei punti di calibrazione specifici per compensare le differenze nella curva della luminosità. Il valore in ingresso è la luminosità indicata sullo slider, mentre il valore in uscita è l'effettiva luminosità applicata allo schermo."
 }

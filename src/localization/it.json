@@ -243,5 +243,9 @@
     "GENERIC_SLIDER_ICON": "Icona slider",
     "GENERIC_SLIDER_TEXT": "Testo slider",
     "GENERIC_SLIDER_NAME": "Inserisci un nome per lo slider",
-    "SETTINGS_MONITORS_CALIBRATION_DESC": "Ogni schermo può avere dei punti di calibrazione specifici per compensare le differenze nella curva della luminosità. Il valore in ingresso è la luminosità indicata sullo slider, mentre il valore in uscita è l'effettiva luminosità applicata allo schermo."
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "Ogni schermo può avere dei punti di calibrazione specifici per compensare le differenze nella curva della luminosità. Il valore in ingresso è la luminosità indicata sullo slider, mentre il valore in uscita è l'effettiva luminosità applicata allo schermo.",
+    "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Collegato alla luminosità",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Lascia vuoto per il predefinito (0x10). Puoi trovare i codici supportati nella lista qui sotto.",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Se il tuo schermo usa un codice VCP non standard per la luminosità (come 0x13 o 0x6B), o se vuoi rimappare lo slider della luminosità a un altro codice VCP, puoi inserire quel codice qui sotto.",
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Ferma dopo questo livello di luminosità"
 }

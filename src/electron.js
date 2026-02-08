@@ -3258,6 +3258,13 @@ app.on("ready", async () => {
     }
     restartBackgroundUpdate()
   
+    // Set startup grace period to prevent delayed handlers from overwriting current brightness
+    isStartupGracePeriod = true
+    setTimeout(() => {
+      isStartupGracePeriod = false
+      console.log("Startup grace period ended")
+    }, 30000) // 30 seconds grace period
+  
     setTimeout(addEventListeners, 5000)
   })
 
@@ -3914,6 +3921,7 @@ function handleAccentChange() {
 }
 
 let skipFirstMonChange = false
+let isStartupGracePeriod = false
 let handleChangeTimeout0
 let handleChangeTimeout1
 let handleChangeTimeout2
@@ -3940,7 +3948,15 @@ function handleMonitorChange(t, e, d) {
     // Reset all known displays
     await refreshMonitors(true)
 
-    if (!settings.disableAutoApply) setKnownBrightness();
+    // During startup grace period, use current monitor brightness instead of saved profile
+    // This prevents overwriting brightness that was manually set before shutdown
+    if (!settings.disableAutoApply) {
+      if (isStartupGracePeriod) {
+        setKnownBrightness(true); // useCurrentMonitors = true to preserve current brightness
+      } else {
+        setKnownBrightness();
+      }
+    }
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     // If displays not shown, refresh mainWindow
@@ -4008,7 +4024,15 @@ function handleMetricsChange(type) {
     // Do a quick check to ensure handles are all good
     await refreshMonitors(true)
 
-    if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
+    // During startup grace period, use current monitor brightness instead of saved profile
+    // This prevents overwriting brightness that was manually set before shutdown
+    if (!settings.disableAutoApply && !hasRecentlyInteracted) {
+      if (isStartupGracePeriod) {
+        setKnownBrightness(true); // useCurrentMonitors = true to preserve current brightness
+      } else {
+        setKnownBrightness();
+      }
+    }
     handleBackgroundUpdate(true) // Apply Time Of Day Adjustments
 
     handleChangeTimeout1 = false

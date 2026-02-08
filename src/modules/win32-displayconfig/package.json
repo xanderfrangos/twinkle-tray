@@ -22,7 +22,8 @@
   "homepage": "https://github.com/djsweet/win32-displayconfig#readme",
   "dependencies": {
     "bindings": "1.5.0",
-    "node-addon-api": "^8.2.2"
+    "node-addon-api": "^8.2.2",
+    "node-gyp": "^10.2.0"
   },
   "files": [
     "CONTRIBUTORS",

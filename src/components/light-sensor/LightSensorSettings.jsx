@@ -94,7 +94,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
       </div>
       <div className="pageSection">
         <SettingsChild title={'Enable'} input={renderLightSensorToggle()} />
-        <SettingsOption title={"Select Sensor Type"} input={
+        <SettingsOption title={"Select Sensor Type"} className="light-sensor-select" input={
           <select value={activeSensor} onChange={sensorTypeChanged}>
               <option value="yocto">Yocto</option>
               <option value="fake">Fake</option>

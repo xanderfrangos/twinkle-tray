@@ -10,17 +10,17 @@ class LightSensor {
             windows: new WindowsAmbientLightSensor(),
         };
         this.active = null;
+        this.enabled = null;
     }
 
     /**
      * Handles changes to light sensor settings by comparing new and old configurations.
      *
      * @param {LightSensorSettings} newSettings - The updated settings object.
-     * @param {LightSensorSettings} oldSettings - The previous settings object.
      *
      * @typedef {Object} LightSensorSettings
      * @property {boolean} enabled - Whether the light sensor system is enabled.
-     * @property {'fake' | 'yocto'} active - The active sensor type (e.g., "yocto", "fake").
+     * @property {'fake' | 'yocto' | 'windows'} active - The active sensor type (e.g., "yocto", "fake", "windows").
      * @property {Object} sensors - Configuration for available sensors.
      * @property {Object} sensors.yocto - Configuration for Yocto sensor.
      * @property {string} sensors.yocto.hubUrl - Connection URL for the Yocto hub.
@@ -34,19 +34,61 @@ class LightSensor {
      * @property {boolean} enabled - Whether monitoring is enabled for this monitor.
      *
      */
-    async changeSettings(newSettings, oldSettings) {
-        if (newSettings.active !== oldSettings.active) {
-            sensors[oldSettings.active].disconnect();
-            sensors[newSettings.active].connect();
-            this.active = this.sensors[newSettings.active];
+    async changeSettings(newSettings) {
+        // Handle undefined or empty settings
+        if (!newSettings || !newSettings.active) {
+            console.warn("Light sensor changeSettings called with invalid newSettings");
+            return;
         }
-        this.active.changeSettings(newSettings);
+
+        // Check if sensor type changed
+        if (newSettings.active !== this.active?.name) {
+            // Disconnect old sensor if it exists
+            if (this.active) {
+                try {
+                    console.log(`Light Sensor: disconnecting ${this.active.name}`);
+                    await this.active.disconnect();
+                } catch (e) {
+                    console.error(`Error disconnecting ${this.active.name} sensor:`, e);
+                }
+            }
+
+            // Connect new sensor
+            this.active = this.sensors[newSettings.active];
+            if (this.active && newSettings.enabled) {
+                try {
+                    console.log(`Light Sensor: connecting ${this.active.name}`);
+                    await this.active.connect();
+                } catch (e) {
+                    console.error(`Error connecting ${newSettings.active} sensor:`, e);
+                }
+            }
+        }
+
+        // If active sensor exists, update its settings
+        if (this.active) {
+            try {
+                await this.active.changeSettings(newSettings);
+            } catch (e) {
+                console.error("Error updating sensor settings:", e);
+            }
+        }
     }
 
     async start(settings, monitors, sendToAllWindows, updateBrightnessThrottle) {
-        if (settings.enabled) {
+        for (const sensor of Object.values(this.sensors)) {
+            sensor.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle);
+        }
+        if (settings.active) {
             this.active = this.sensors[settings.active];
-            this.active.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle);
+            if (this.active) {
+                try {
+                    console.log(`Light Sensor: connecting ${this.active.name}`);
+                    await this.active.connect();
+                } catch (e) {
+                    console.error("Error starting light sensor:", e);
+                }
+            }
         }
     }
 }

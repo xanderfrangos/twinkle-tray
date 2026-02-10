@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SettingsChild } from "../SettingsOption";
-import { getMonitorName } from "../utilts/monitor.util";
+import { SettingsChild } from "../../SettingsOption";
 
-export function YoctoSettings({ T, renderToggle, monitors }) {
-  // trigger the monitor state update, as sometimes its not present
+export function YoctoSettings({ T, renderToggle, monitors, lightSensorSettings }) {
 
   const sensorUrl =
     "https://www.yoctopuce.com/EN/products/usb-environmental-sensors/yocto-light-v5";
 
+  const yoctoSensorSettings = lightSensorSettings.sensors?.yocto || { hubUrl: "http://127.0.0.1:4444" };
+
   const [yoctoStatus, setYoctoStatus] = useState({
     hubConnected: false,
     sensorConnected: false,
-    illuminance: null,
+    lux: null,
   });
 
   useEffect(() => {
@@ -19,10 +19,10 @@ export function YoctoSettings({ T, renderToggle, monitors }) {
       setYoctoStatus(status);
     };
 
-    window.ipc.on("yocto-status", handleYoctoStatus);
+    window.ipc.on("light-sensor--yocto", handleYoctoStatus);
 
     return () => {
-      window.ipc.removeListener("yocto-status", handleYoctoStatus);
+      window.ipc.removeListener("light-sensor--yocto", handleYoctoStatus);
     };
   }, []);
 
@@ -54,8 +54,20 @@ export function YoctoSettings({ T, renderToggle, monitors }) {
   }, [yoctoStatus.hubConnected, yoctoStatus.sensorConnected]);
 
   const handleUrlChange = useCallback((newUrl) => {
-    window.sendSettings({ yoctoHubUrl: newUrl });
-  }, []);
+    const updatedSensors = {
+      ...lightSensorSettings.sensors,
+      yocto: {
+        ...yoctoSensorSettings,
+        hubUrl: newUrl
+      }
+    };
+    window.sendSettings({ 
+      lightSensor: { 
+        ...lightSensorSettings, 
+        sensors: updatedSensors 
+      } 
+    });
+  }, [lightSensorSettings, yoctoSensorSettings]);
   return (
     <>
       <SettingsChild>
@@ -64,8 +76,8 @@ export function YoctoSettings({ T, renderToggle, monitors }) {
           Yocto light sensor
         </a>
         {message}{" "}
-        {yoctoStatus.sensorConnected && yoctoStatus.illuminance !== null
-          ? `${yoctoStatus.illuminance} Lux`
+        {yoctoStatus.sensorConnected && yoctoStatus.lux !== null
+          ? `${yoctoStatus.lux} Lux`
           : ""}
       </SettingsChild>
       <SettingsChild>
@@ -96,7 +108,7 @@ export function YoctoSettings({ T, renderToggle, monitors }) {
           <label>VirtualHub URL:</label>
           <input
             type="text"
-            value={window.settings.yoctoHubUrl || "http://127.0.0.1:4444"}
+            value={yoctoSensorSettings.hubUrl || "http://127.0.0.1:4444"}
             onChange={(e) => handleUrlChange(e.target.value)}
             style={{ flex: 1, maxWidth: "300px" }}
             placeholder="http://127.0.0.1:4444"

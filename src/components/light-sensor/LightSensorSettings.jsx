@@ -1,15 +1,53 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { SettingsChild, SettingsOption } from "../SettingsOption";
 import { getMonitorName } from "../utilts/monitor.util";
-import { YoctoSettings } from "./YoctoSettings";
+import { YoctoSettings } from "./sensors/YoctoSettings";
+import { FakeSensorSettings } from "./sensors/FakeSettings";
+import { WindowsSettings } from "./sensors/WindowsSettings";
 
 export function LightSensorSettings({ T, renderToggle, monitors }) {
 
   // trigger the monitor state update, as sometimes its not present
-  useEffect(() => window.reloadReactMonitors(),[])
+  useEffect(() => window.reloadReactMonitors(), []);
+
+  const lightSensorSettings = window.settings.lightSensor ?? {
+    enabled: true,
+    active: "windows",
+    sensors: {
+        yocto: {
+            hubUrl: "user:password@localhost"
+        },
+        fake: {
+            overriddenLux: 2
+        },
+        windows: {}
+    },
+    "monitorSettings": {}
+};
+
+  const activeSensor = lightSensorSettings.active ?? 'windows';
+
+  const renderLightSensorToggle = useCallback(() => {
+    const isActive = lightSensorSettings.enabled || false;
+    return (
+      <div className="inputToggle-generic" data-textside="right">
+        <input 
+          onChange={(e) => { 
+            window.sendSettings({ 
+              lightSensor: { ...lightSensorSettings, enabled: e.target.checked } 
+            }); 
+          }} 
+          checked={isActive} 
+          data-checked={isActive} 
+          type="checkbox" 
+        />
+        <div className="text">{(isActive ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
+      </div>
+    );
+  }, [lightSensorSettings, T]);
 
   const minMaxChange = useCallback((monitor, type, value) => {
-    const currentSettings = window.settings.yoctoMonitorSettings || {};
+    const currentSettings = lightSensorSettings.monitorSettings || {};
     const monitorSettings = currentSettings[monitor.key] || { minLux: 5, maxLux: 250, enabled: true };
     
     if (type === 'min') {
@@ -23,11 +61,11 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
       [monitor.key]: monitorSettings
     };
     
-    window.sendSettings({ yoctoMonitorSettings: newSettings });
-  }, []);
+    window.sendSettings({ lightSensor: { ...lightSensorSettings, monitorSettings: newSettings } });
+  }, [lightSensorSettings]);
 
   const toggleMonitorEnabled = useCallback((monitor, enabled) => {
-    const currentSettings = window.settings.yoctoMonitorSettings || {};
+    const currentSettings = lightSensorSettings.monitorSettings || {};
     const monitorSettings = currentSettings[monitor.key] || { minLux: 5, maxLux: 250, enabled: true };
     
     monitorSettings.enabled = enabled;
@@ -37,13 +75,15 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
       [monitor.key]: monitorSettings
     };
     
-    window.sendSettings({ yoctoMonitorSettings: newSettings });
-  }, []);
+    window.sendSettings({ lightSensor: { ...lightSensorSettings, monitorSettings: newSettings } });
+  }, [lightSensorSettings]);
 
 
-  const dropdownChanged = useCallback((newUrl) => {
-    window.sendSettings({ yoctoHubUrl: newUrl });
-  }, []);
+  const sensorTypeChanged = useCallback((e) => {
+    const newActive = e.target.value;
+    console.log({ lightSensor: { ...lightSensorSettings, active: newActive } });
+    window.sendSettings({ lightSensor: { ...lightSensorSettings, active: newActive } });
+  }, [lightSensorSettings]);
   return (
     <>
       <div className="pageSection">
@@ -53,16 +93,18 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
           </p>
       </div>
       <div className="pageSection">
-        <SettingsChild title={'Enable'} input={renderToggle("yoctoEnabled")} />
+        <SettingsChild title={'Enable'} input={renderLightSensorToggle()} />
         <SettingsOption title={"Select Sensor Type"} input={
-          <select value={"yocto"} onChange={dropdownChanged}>
+          <select value={activeSensor} onChange={sensorTypeChanged}>
               <option value="yocto">Yocto</option>
-              <option value="windows">Windows</option>
               <option value="fake">Fake</option>
+              <option value="windows">Windows Ambient</option>
           </select>
         }></SettingsOption>
 
-        <YoctoSettings T={T} renderToggle={renderToggle} monitors={monitors}></YoctoSettings>
+        {activeSensor === 'yocto' && <YoctoSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
+        {activeSensor === 'fake' && <FakeSensorSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
+        {activeSensor === 'windows' && <WindowsSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
         <SettingsChild>
           <p>This maps each monitor's brightness (0%-100%) to ambient light levels in Lux.</p>
           <p>For example, setting the range to 5 and 250 means:</p>
@@ -73,7 +115,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
           </ul>
         </SettingsChild>
         {Object.values(monitors ?? {}).map((monitor) => {
-          const monitorSettings = window.settings.yoctoMonitorSettings?.[monitor.key] || { minLux: 5, maxLux: 250, enabled: false };
+          const monitorSettings = lightSensorSettings.monitorSettings?.[monitor.key] || { minLux: 5, maxLux: 250, enabled: false };
           return (
             <SettingsChild key={monitor.key}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

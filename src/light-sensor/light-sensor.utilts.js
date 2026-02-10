@@ -1,8 +1,10 @@
-function applyMonitorBRightnessFromLux(lux, monitors, monitorSettings, updateBrightnessThrottle) {
-    for (const [key, monitor] in Object.entries(monitors)) {
+function applyMonitorBrightnessFromLux(lux, monitors, monitorSettings, updateBrightnessThrottle) {
+    for (const [key, monitor] of Object.entries(monitors ?? {})) {
         const monitorSetting = monitorSettings[key];
-
-        if (!monitorSetting?.enabled) continue;
+        
+        if (!monitorSetting?.enabled) {
+            continue;
+        }
 
         const { minLux = 5, maxLux = 250 } = monitorSetting
         const brightness = Math.round(
@@ -15,4 +17,4 @@ function applyMonitorBRightnessFromLux(lux, monitors, monitorSettings, updateBri
     }
 }
 
-module.exports = { applyMonitorBRightnessFromLux };
+module.exports = { applyMonitorBrightnessFromLux };

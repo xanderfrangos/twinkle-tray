@@ -555,9 +555,6 @@ const defaultSettings = {
   profiles: [],
   uuid: uuid(),
   branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
-  yoctoEnabled: false,
-  yoctoHubUrl: 'user:password@localhost',
-  yoctoMonitorSettings: {},
   lightSensor: {
 		enabled: false,
 		active: "fake",
@@ -567,20 +564,10 @@ const defaultSettings = {
 			},
 			fake: {
 				overriddenLux: 50
-			}
-		},
-		monitorSettings: {
-			"5&32c97530&0&UID41500": {
-				minLux: 10,
-				maxLux: 230,
-				enabled: true
 			},
-			"5&32c97530&0&UID41501": {
-				minLux: 10,
-				maxLux: 230,
-				enabled: true
-			}
-		}
+      windows: {}
+		},
+		monitorSettings: {}
 	},
 }
 
@@ -933,8 +920,9 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       settings.dismissedUpdate = false
       checkForUpdates()
     }
-
-    lightSensor.changeSettings(newSettings.lightSensor, settings.lightSensor);
+    if (newSettings.lightSensor) {
+      lightSensor.changeSettings(newSettings.lightSensor);
+    }
 
     if (settings.analytics) {
       pingAnalytics()
@@ -1638,7 +1626,7 @@ function sendToAllWindows(eventName, data) {
 }
 
 ipcMain.on('send-settings', (event, data) => {
-  console.log("Recieved new settings", data.newSettings)
+  console.log("Recieved new settings!", data.newSettings)
   writeSettings(data.newSettings, true, data.sendUpdate)
 })
 
@@ -3877,10 +3865,7 @@ function addEventListeners() {
 
   startFocusTracking()
 
-  if (settings.lightSensor.enabled) {
-    lightSensor.start(settings.lightSensor);
-  }
-
+  lightSensor.start(settings.lightSensor, monitors, sendToAllWindows, updateBrightnessThrottle);
 }
 
 let handleAccentChangeTimeout = false

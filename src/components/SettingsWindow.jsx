@@ -19,9 +19,9 @@ import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
 
-import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
-import MDL2Icon from "../assets/tray-icons/dark/mdl2@4x.png"
-import FluentIcon from "../assets/tray-icons/dark/fluent@4x.png"
+const DefaultIcon = new URL("../assets/tray-icons/dark/icon@4x.png", import.meta.url).href
+const MDL2Icon = new URL("../assets/tray-icons/dark/mdl2@4x.png", import.meta.url).href
+const FluentIcon = new URL("../assets/tray-icons/dark/fluent@4x.png", import.meta.url).href
 
 function vcpStr(code) {
     return `0x${parseInt(code).toString(16).toUpperCase()}`

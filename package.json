@@ -17,7 +17,7 @@
     "arm64": "npm run parcel-build && electron-builder --arm64 -c.extraMetadata.name=twinkle-tray-arm64 -c.win.artifactName=\"${productName} v${version}-arm64.${ext}\" -c.win.compression=normal",
     "rebuild-ddcci-dev": "npm rebuild @hensm/ddcci",
     "appx-arm64": "npm run parcel-build && electron-builder --arm64 -w appx -c.extraMetadata.name=twinkle-tray-appx -c.win.artifactName=\"${productName} v${version}-store-arm64.${ext}\"",
-    "build": "npm ci & npm run parcel-build && npm run electron-build",
+    "build": "npm run parcel-build && npm run electron-build",
     "build-all": "npm run build && npm run appx && npm run appx-arm64",
     "test-wmibridge": "node src/modules/wmi-bridge/example.js"
   },
@@ -30,6 +30,9 @@
   ],
   "author": "Xander Frangos",
   "license": "MIT",
+  "targets": {
+    "main": false
+  },
   "dependencies": {
     "@hensm/ddcci": "file:src/modules/node-ddcci",
     "@paymoapp/active-window": "file:src/modules/node-active-window",
@@ -38,6 +41,10 @@
     "ga4-mp": "^1.0.3",
     "global-mouse-events": "^1.2.0",
     "markdown-to-jsx": "^7.5.0",
+    "prop-types": "^15.8.1",
+    "react": "18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "18.3.1",
     "stackblur-canvas": "^2.7.0",
     "studio-display-control": "^0.2.0",
     "suncalc": "^1.9.0",
@@ -55,7 +62,9 @@
     "productName": "Twinkle Tray",
     "appId": "com.xanderfrangos.twinkle-tray",
     "compression": "normal",
-    "electronLanguages": ["en-US"],
+    "electronLanguages": [
+      "en-US"
+    ],
     "directories": {
       "buildResources": "resources"
     },
@@ -177,24 +186,25 @@
     "@babel/preset-env": "^7.23.6",
     "@babel/preset-react": "^7.23.3",
     "@babel/runtime": "^7.23.6",
+    "@parcel/config-default": "^2.13.3",
+    "@parcel/core": "^2.13.3",
+    "@parcel/transformer-sass": "^2.16.3",
     "bindings": "1.5.0",
     "cross-env": "^7.0.3",
     "electron": "^39.2.6",
     "electron-builder": "26.3.2",
     "node-addon-api": "^8.2.2",
     "node-gyp": "^12.1.0",
-    "parcel-bundler": "^1.12.5",
-    "react": "18.3.1",
-    "react-beautiful-dnd": "^13.1.1",
-    "react-dom": "18.3.1",
+    "parcel": "^2.13.3",
     "sass": "^1.54.0"
   },
   "overrides": {
-    "node-gyp": "$node-gyp",
+    "node-gyp": "^12.1.0",
     "bindings@<1.5.0": "1.5.0",
     "node-addon-api@<8.2.2": "8.2.2",
+    "axios": "^1.7.9",
     "node-active-window": {
-      "node-gyp": "$node-gyp",
+      "node-gyp": "^12.1.0",
       "bindings": "$bindings",
       "node-addon-api": "$node-addon-api"
     }

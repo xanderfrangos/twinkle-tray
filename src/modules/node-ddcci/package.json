@@ -10,11 +10,8 @@
   },
   "repository": "github:hensm/node-ddcci",
   "dependencies": {
-    "bindings": "^1.5.0",
-    "node-addon-api": "^2.0.0"
+    "bindings": "1.5.0",
+    "node-addon-api": "^8.2.2"
   },
-  "types": "index.d.ts",
-  "devDependencies": {
-    "@babel/core": "^7.28.5"
-  }
+  "types": "index.d.ts"
 }

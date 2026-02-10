@@ -1,0 +1,10 @@
+<!-- build/appx/extensions.xml -->
+<uap5:Extension
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  Category="windows.appExecutionAlias"
+  Executable="app\Twinkle Tray.exe"
+  EntryPoint="Windows.FullTrustApplication">
+  <uap5:AppExecutionAlias>
+    <uap5:ExecutionAlias Alias="Twinkle-Tray.exe" />
+  </uap5:AppExecutionAlias>
+</uap5:Extension>

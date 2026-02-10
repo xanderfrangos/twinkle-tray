@@ -52,6 +52,29 @@ process.on('message', async (data) => {
 
         } else if (data.type === "ddcBrightnessVCPs") {
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
+            // Update brightnessType for all monitors when user changes VCP settings
+            if (monitors) {
+                for (const hwid2 in monitors) {
+                    if (monitors[hwid2].type === "ddcci") {
+                        const hwid = monitors[hwid2].hwid
+                        if (hwid) {
+                            if (ddcBrightnessVCPs[hwid[1]]) {
+                                // Custom VCP code set - use it (already parsed as int in electron.js)
+                                const vcpCode = ddcBrightnessVCPs[hwid[1]]
+                                if (!isNaN(vcpCode) && vcpCode >= 0 && vcpCode <= 0xFF) {
+                                    monitors[hwid2].brightnessType = vcpCode
+                                } else {
+                                    // Invalid VCP code, fall back to default
+                                    monitors[hwid2].brightnessType = 0x10
+                                }
+                            } else {
+                                // No custom VCP - reset to default (0x10 = 16)
+                                monitors[hwid2].brightnessType = 0x10
+                            }
+                        }
+                    }
+                }
+            }
         } else if (data.type === "localization") {
             localization = data.localization
         } else if (data.type === "vcp") {
@@ -726,6 +749,7 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
                 features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
                 features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
                 features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
+                features["0x60"] = await checkVCPIfEnabled(monitor, 0x60, "inputControls", skipCache)
                 features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
             }
 
@@ -905,9 +929,11 @@ function setBrightness(brightness, id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             if(monitor) {
                 monitor.brightness = brightness
+                // Check if user has set a custom brightness VCP code for this monitor
+                const hasCustomBrightnessVCP = monitor.hwid && ddcBrightnessVCPs[monitor.hwid[1]]
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
-                } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness) {
+                } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !hasCustomBrightnessVCP) {
                     setHighLevelBrightness(monitor.hwid.join("#"), brightness)
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
@@ -992,6 +1018,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
     if(!code || code == "0x0") return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
+        if (code === 96) return ddcci.getMonitorInputs(monitor)
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
@@ -1129,7 +1156,7 @@ function getDDCCI() {
     }
 }
 
-let wmicUnavailable = false
+let wmicUnavailable = false 
 let wmi = false
 // WMIC
 function getWMIC() {

@@ -108,7 +108,7 @@ For example: `"%LocalAppData%\Programs\twinkle-tray\Twinkle Tray.exe" --MonitorN
 - `--Overlay` Flag to show new brightness levels in the overlay *Example: `--Overlay`*
 - `--Panel` Flag to show new brightness levels in the panel *Example: `--Panel`*
 
-*This feature is not available on the Windows Store version of Twinkle Tray.*
+*If you are using the Microsoft Store version of Twinkle Tray, you can access Twinkle Tray using the alias `Twinkle-Tray.exe` (v1.17.1+).*
 
 ## Localization
 Thanks to [several contributors](https://github.com/xanderfrangos/twinkle-tray/graphs/contributors), Twinkle Tray is localized for multiple languages. If you'd like to create or update a localization, see [this page](https://github.com/xanderfrangos/twinkle-tray/wiki/Localization-files) for details. Special thanks to [Weblate](https://weblate.org/) for allowing free use of their service.

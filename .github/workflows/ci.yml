@@ -8,16 +8,16 @@ env:
 jobs:
   build:
     name: Build all
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     steps:
       - uses: actions/checkout@v4
         name: Read repository
       
-      - name: Set up Node.js 18
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           
       - name: Get package.json info
@@ -64,9 +64,13 @@ jobs:
           name: twinkle-tray-appx-x64-${{ steps.info.outputs.version }}-${{ github.sha }}
           path: dist/*-store.appx
           
+      - name: Build ARM64 Modules
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
+        run: npx electron-rebuild --arch arm64 --types "prod"
+          
       - name: Build ARM64 AppX
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'ci-test' }}
-        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --publish="never"
+        run: npm exec electron-builder -- --arm64 --win appx --config.extraMetadata.versionBuild="${{ steps.info.outputs.version }}+${{ github.sha }}" --config.extraMetadata.version=${{ steps.date.outputs.time }} --config.extraMetadata.name=twinkle-tray-appx --config.win.artifactName="Twinkle.Tray.v${{ steps.info.outputs.version }}-store-arm64.appx" --config.npmRebuild=false --publish="never"
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             

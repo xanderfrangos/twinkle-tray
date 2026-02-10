@@ -245,7 +245,8 @@ export default class SettingsWindow extends PureComponent {
             return {
                 isFallback: true,
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
         return this.state.remaps[name]
@@ -260,7 +261,8 @@ export default class SettingsWindow extends PureComponent {
         if (remaps[name] === undefined) {
             remaps[name] = {
                 min: 0,
-                max: 100
+                max: 100,
+                calibration: []
             }
         }
 
@@ -468,11 +470,82 @@ export default class SettingsWindow extends PureComponent {
                                     </div>
                                 </div>
                             } />
+                            <SettingsChild content={
+                                <div className="calibration-points-menu">
+                                    { this.getMonitorCalibration(monitor.id) }
+                                    <div className="input-row">
+                                        <div className="button" onClick={() => this.addCalibrationPoint(monitor.id)}>+ {T.t("GENERIC_CALIBRATION_POINT")}</div>
+                                    </div>
+                                </div>
+                            } />
                         </SettingsOption>
 
                     )
                 }
             })
+        }
+    }
+
+    getMonitorCalibration = (monitorID) => {
+        const pointsElems = []
+
+        const remap = this.getRemap(monitorID)
+
+        if(remap) for(const pointIdx in remap.calibration) {
+            const point = remap.calibration[pointIdx]
+
+            pointsElems.push(
+                <div className="input-row" key={pointIdx}>
+                    <div className="monitor-item">
+                        <label>Input</label>
+                        <Slider level={point.input} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "input", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div className="monitor-item">
+                        <label>Output</label>
+                        <Slider level={point.output} onChange={(value) => this.updateCalibrationPoint(monitorID, pointIdx, "output", value)} scrolling={false} height={"short"} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-end" }}>
+                        <a className="add-new button button-primary block" onClick={() => this.deleteCalibrationPoint(monitorID, pointIdx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
+                    </div>
+                </div>
+            )
+        }
+        return pointsElems
+    }
+
+    addCalibrationPoint = (monitorID) => {
+        if (this.state.remaps[monitorID] === undefined) {
+            this.state.remaps[monitorID] = {
+                min: 0,
+                max: 100,
+                calibration: []
+            }
+        }
+
+        const remap = this.getRemap(monitorID)
+        if(remap) {
+            if(!remap.calibration) remap.calibration = [];
+            remap.calibration.push({ input: 0, output: 100 })
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    updateCalibrationPoint = (monitorID, pointIdx, field, value) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration[pointIdx][field] = value
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
+        }
+    }
+
+    deleteCalibrationPoint = (monitorID, pointIdx) => {
+        const remap = this.getRemap(monitorID)
+        if(remap && remap.calibration[pointIdx]) {
+            remap.calibration.splice(pointIdx, 1)
+            this.setState({ remaps: { ...this.state.remaps } })
+            window.sendSettings({ remaps: this.state.remaps })
         }
     }
 
@@ -595,7 +668,7 @@ export default class SettingsWindow extends PureComponent {
                                 time.useSunCalc = e.target.checked
                                 this.updateAdjustmentTime(time, index)
                             }} checked={time.useSunCalc ?? false} data-checked={time.useSunCalc ?? false} type="checkbox" />
-                            <div className="text">Use sun position</div>
+                            <div className="text">{T.t("SETTINGS_TIME_USE_SUN_POSITION")}</div>
                         </div>
                     }>
                         <SettingsChild>
@@ -686,7 +759,7 @@ export default class SettingsWindow extends PureComponent {
                         {this.getHotkeyStatusIcon(hotkey)}
                     </div>
                 } expandable={true} input={
-                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>Delete</span></a>
+                    <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
                 }>
                     { hotkey.actions?.map((action, actionIdx) => {
                         return (
@@ -702,7 +775,7 @@ export default class SettingsWindow extends PureComponent {
                             }
                             hotkey.actions.push(Object.assign({}, defaultAction))
                             this.updateHotkey(hotkey, idx)
-                        }}>+ Add Action</a>
+                        }}>+ {T.t("SETTINGS_HOTKEY_ADD_ACTION")}</a>
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -754,17 +827,16 @@ export default class SettingsWindow extends PureComponent {
                     <div key={monitor.key} className="monitorItem">
                         <br />
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-                        <p>Name: <b>{getMonitorName(monitor, this.state.names)}</b>
-                            <br />Internal name: <b>{monitor.hwid[1]}</b>
-                            <br />Communication Method: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
-                            <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : brightness)}</b>
-                            <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : brightnessMax)}</b>
-                            <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
-                            <br />HDR: <b>{(monitor.hdr == "active" ? "Active" : monitor.hdr == "supported" ? "Supported" : "Unsupported")}</b>
+                        <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
                         </p>
                     </div>
                 )
-
             })
         }
     }
@@ -1114,7 +1186,7 @@ export default class SettingsWindow extends PureComponent {
                                         </select>
                                     )} />
 
-                                    <SettingsOption title={"Windows UI Style"} input={(
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_WINDOWS_UI_STYLE_TITLE")} input={(
                                         <select value={window.settings.windowsStyle} onChange={(e) => this.setSetting("windowsStyle", e.target.value)}>
                                             <option value="system">{T.t("SETTINGS_GENERAL_THEME_SYSTEM")}</option>
                                             <option value="win10">Windows 10</option>
@@ -1188,6 +1260,10 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_APPLY_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_APPLY_DESC")} expandable={true}>
                                         {this.getSkipRestoreMonitors()}
                                     </SettingsOption>
+
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC")} input={this.renderToggle("disableThemeChanges", undefined, undefined, true)} />
+
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_TITLE")} description={T.t("SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC")} input={this.renderToggle("disablePowerNotifications", undefined, undefined, true)} />
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_REPORT_TITLE")} description={T.t("SETTINGS_GENERAL_REPORT_DESC")} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>{T.t("SETTINGS_GENERAL_REPORT_TITLE")}</a></>} />
 
@@ -1299,6 +1375,7 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_MONITORS_NORMALIZE_TITLE")}</div>
                                     <p>{T.t("SETTINGS_MONITORS_NORMALIZE_DESC")}</p>
+                                    <p>{T.t("SETTINGS_MONITORS_CALIBRATION_DESC")}</p>
                                     {this.getMinMaxMonitors()}
                                 </div>
 
@@ -1439,9 +1516,7 @@ export default class SettingsWindow extends PureComponent {
 
                                 <div className="pageSection debug">
                                     <SettingsOption title="All Displays" expandable={true} forceExpandable={true} input={<><a className="button" onClick={() => { window.requestMonitors(true) }}>Refresh Monitors</a> <a className="button" onClick={() => window.ipc.send('flush-vcp-cache')}>Clear Cache</a></>}>
-                                        <SettingsChild>
-                                            {this.getDebugMonitors()}
-                                        </SettingsChild>
+                                        <SettingsChild description={this.getDebugMonitors()} />
                                     </SettingsOption>
                                     
                                     <SettingsOption title="Save Report" description={"Save a text file with information about your monitors and settings for debugging."} input={<><a className="button" onClick={() => window.ipc.send('save-report')}>Generate Report</a></>} />
@@ -1497,6 +1572,7 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title="Flyout scroll amount" description="How large of steps to take when scrolling over a slider." input={<input type="number" min="1" max="10" value={this.state.rawSettings.scrollFlyoutAmount * 1} onChange={(e) => this.setSetting("scrollFlyoutAmount", e.target.value)} /> } />
                                     
+                                    <SettingsOption title="Disable theme update detection" description="Prevent the app from detecting theme/wallpaper changes from Windows. This may help if a 3rd party app is frequently changing the theme, increasing CPU usage." input={this.renderToggle("disableThemeChanges")} />
                                     <SettingsOption title="Restart app on wake" input={this.renderToggle("restartOnWake")} />
                                     <SettingsOption title="Disable Auto Refresh" description="Prevent last known brightness from read after certain hardware/user events." input={this.renderToggle("disableAutoRefresh")} />
                                     <SettingsOption title="Use Win32 hardware events" input={this.renderToggle("useWin32Event")} />
@@ -1602,39 +1678,43 @@ function AppProfile(props) {
 
     return (
         <SettingsOption title={<input type="text" placeholder={T.t("SETTINGS_PROFILES_NAME")} value={profile.name} onChange={e => updateValue("name", e.target.value)} style={{width:"100%"}}></input>} expandable={true} input={<a className="add-new button button-primary block" onClick={onDelete}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>} className="appProfileItem win10-has-background" key={profile.id}>
-            <SettingsChild>
-                <div className="feature-toggle-row">
-                    <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
-                    <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
-                </div>
-
-                <div className="profile-monitors">
-                    {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
-                </div>
-
-                {(profile.setBrightness ? (
+            <SettingsChild content={
+                <>
                     <div className="feature-toggle-row">
-                        <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
-                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        <input onChange={(e) => { updateValue("setBrightness", e.target.checked) }} checked={profile.setBrightness} data-checked={profile.setBrightness} type="checkbox" />
+                        <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_BRIGHTNESS_TOGGLE")}</span></div>
                     </div>
-                ) : null)}
-            </SettingsChild>
-            <SettingsChild>
-                <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
-                <br />
 
-                <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
-                <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
-                <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
-                <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
-                <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
-                <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
-                    <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
-                    <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
-                    <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
-                    <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
-                </select>
-            </SettingsChild>
+                    <div className="profile-monitors">
+                        {(profile.setBrightness ? getProfileMonitors(monitors, profile, profile => updateValue("monitors", profile.monitors)) : null)}
+                    </div>
+
+                    {(profile.setBrightness ? (
+                        <div className="feature-toggle-row">
+                            <input onChange={(e) => { updateValue("showInMenu", e.target.checked) }} checked={profile.showInMenu} data-checked={profile.showInMenu} type="checkbox" />
+                            <div className="feature-toggle-label"><span>{T.t("SETTINGS_PROFILES_SHOW_MENU")}</span></div>
+                        </div>
+                    ) : null)}
+                </>
+            } />
+            <SettingsChild content={
+                <>
+                    <div className="option-title">{T.t("SETTINGS_PROFILES_TRIGGER_TITLE")} ({T.t("GENERIC_OPTIONAL")})</div>
+                    <br />
+
+                    <label>{T.t("SETTINGS_PROFILES_APP_PATH")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_APP_DESC")}</p>
+                    <input type="text" placeholder={T.t("SETTINGS_PROFILES_APP_PATH")} value={profile.path} onChange={e => updateValue("path", e.target.value)} style={{width:"100%"}}></input>
+                    <label>{T.t("SETTINGS_PROFILES_OVERLAY_TITLE")}</label>
+                    <p>{T.t("SETTINGS_PROFILES_OVERLAY_DESC")}</p>
+                    <select value={profile.overlayType} onChange={e => updateValue("overlayType", e.target.value)}>
+                        <option value="normal">{T.t("GENERIC_DEFAULT")}</option>
+                        <option value="safe">{T.t("SETTINGS_GENERAL_DIS_OVERLAY_TITLE")}</option>
+                        <option value="disabled">{T.t("SETTINGS_GENERAL_ON_OVERLAY_TITLE")}</option>
+                        <option value="aggressive">{T.t("SETTINGS_GENERAL_FORCE_OVERLAY_TITLE")}</option>
+                    </select>
+                </>
+            } />
         </SettingsOption>
     )
 }

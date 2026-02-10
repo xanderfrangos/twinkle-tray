@@ -1,5 +1,6 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Slider from "./Slider"
+import TranslateReact from "../TranslateReact"
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
@@ -10,8 +11,15 @@ export default function MonitorInfo(props) {
     const [sdr, setSDR] = useState(monitor.sdrLevel >= 0 ? monitor.sdrLevel : 50)
     const [manualVCP, setManualVCP] = useState("")
     const [manualValue, setManualValue] = useState("")
+    const [T] = useState(new TranslateReact({}, {}))
 
     let extraHTML = []
+
+    useEffect(() => {
+        window.addEventListener("localizationUpdated", (e) => T.setLocalizationData(e.detail.desired, e.detail.default))
+        window.ipc.send('request-localization')
+        return () => { }
+    }, [])
 
     if (props.debug === true) {
         extraHTML.push(
@@ -88,13 +96,13 @@ export default function MonitorInfo(props) {
         <div key={monitor.key}>
             <br />
             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
-            <p>Name: <b>{name}</b>
-                <br />Internal name: <b>{monitor.hwid[1]}</b>
-                <br />Communication Method: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
-                <br />Current Brightness: <b>{(monitor.type == "none" ? "Not supported" : monitor.brightness)}</b>
-                <br />Max Brightness: <b>{(monitor.type !== "ddcci" ? "Not supported" : monitor.brightnessMax)}</b>
-                <br />Brightness Normalization: <b>{(monitor.type == "none" ? "Not supported" : monitor.min + " - " + monitor.max)}</b>
-                <br />HDR: <b>{(monitor.hdr == "active" ? "Active" : monitor.hdr == "supported" ? "Supported" : "Unsupported")}</b>
+            <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{name}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightness)}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
             </p>
             {extraHTML}
         </div>

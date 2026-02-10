@@ -1626,7 +1626,7 @@ function sendToAllWindows(eventName, data) {
 }
 
 ipcMain.on('send-settings', (event, data) => {
-  console.log("Recieved new settings!", data.newSettings)
+  console.log("Recieved new settings", data.newSettings)
   writeSettings(data.newSettings, true, data.sendUpdate)
 })
 

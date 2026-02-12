@@ -1,12 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { SettingsChild } from "../../SettingsOption";
 
-export function WindowsSettings({
-  T,
-  renderToggle,
-  monitors,
-  lightSensorSettings,
-}) {
+export function WindowsSettings({ T }) {
   const [windowsStatus, setWindowsStatus] = useState({
     sensorsAvailable: [],
     sensorCount: 0,
@@ -14,9 +9,7 @@ export function WindowsSettings({
   });
 
   useEffect(() => {
-    console.log('useEffect');
     const handleWindowsStatus = (e, status) => {
-      console.log(status);
       setWindowsStatus(status);
     };
 

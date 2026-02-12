@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SettingsChild } from "../../SettingsOption";
 
-export function YoctoSettings({ T, renderToggle, monitors, lightSensorSettings }) {
+export function YoctoSettings({ T, lightSensorSettings }) {
 
   const sensorUrl =
     "https://www.yoctopuce.com/EN/products/usb-environmental-sensors/yocto-light-v5";
 
-  const yoctoSensorSettings = lightSensorSettings.sensors?.yocto || { hubUrl: "http://127.0.0.1:4444" };
+  const yoctoSensorSettings = lightSensorSettings.sensors?.yocto ?? { hubUrl: "http://127.0.0.1:4444" };
 
   const [yoctoStatus, setYoctoStatus] = useState({
     hubConnected: false,

@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { SettingsChild } from "../../SettingsOption";
 
-export function FakeSensorSettings({ T, renderToggle, monitors, lightSensorSettings }) {
+export function FakeSensorSettings({ T, lightSensorSettings }) {
 
   const fakeSensorSettings = lightSensorSettings.sensors?.fake || { overriddenLux: 100 };
 

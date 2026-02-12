@@ -127,7 +127,7 @@ class YoctoLightSensor {
   }
 
   async _update() {
-    if (!this.settings?.yoctoEnabled || !this.hubConnected) return;
+    if (!this.settings?.enabled || !this.hubConnected) return;
 
     try {
       const res = await YAPI.UpdateDeviceList();
@@ -177,7 +177,7 @@ class YoctoLightSensor {
       return;
     }
 
-    applyMonitorBrightnessFromLux(this.currentLux, this.monitors, settings.monitors, this.updateBrightnessThrottle);
+    applyMonitorBrightnessFromLux(this.currentLux, this.monitors, this.settings.monitorSettings, this.updateBrightnessThrottle);
   }
 
   _getStatus() {

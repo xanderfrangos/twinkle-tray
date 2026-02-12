@@ -79,7 +79,7 @@ class LightSensor {
 
             // Connect new sensor
             this.active = this.sensors[newSettings.active];
-            if (this.active && newSettings.enabled) {
+            if (this.active) {
                 try {
                     console.log(`Light Sensor: connecting ${this.active.name}`);
                     await this.active.connect();

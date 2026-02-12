@@ -101,7 +101,6 @@ class YoctoLightSensor {
     }
 
     this.reconnectTimer = setTimeout(async () => {
-      if (!this.settings?.enabled) return;
       console.log("Attempting Yocto reconnect...");
       try {
         await YAPI.FreeAPI();
@@ -127,7 +126,7 @@ class YoctoLightSensor {
   }
 
   async _update() {
-    if (!this.settings?.enabled || !this.hubConnected) return;
+    if (!this.hubConnected) return;
 
     try {
       const res = await YAPI.UpdateDeviceList();

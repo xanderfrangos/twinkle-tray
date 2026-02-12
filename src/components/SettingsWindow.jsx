@@ -118,7 +118,7 @@ export default class SettingsWindow extends PureComponent {
         super(props)
         this.state = {
             rawSettings: {},
-            activePage: "light-sensor",
+            activePage: "general",
             theme: 'default',
             openAtLogin: false,
             brightnessAtStartup: true,

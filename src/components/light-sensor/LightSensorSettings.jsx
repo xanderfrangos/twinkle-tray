@@ -105,6 +105,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
         {activeSensor === 'yocto' && <YoctoSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
         {activeSensor === 'fake' && <FakeSensorSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
         {activeSensor === 'windows' && <WindowsSettings T={T} renderToggle={renderToggle} monitors={monitors} lightSensorSettings={lightSensorSettings} />}
+        <hr></hr>
         <SettingsChild>
           <p>This maps each monitor's brightness (0%-100%) to ambient light levels in Lux.</p>
           <p>For example, setting the range to 5 and 250 means:</p>

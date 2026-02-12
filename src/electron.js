@@ -89,7 +89,7 @@ let lastKnownDisplays
 const SunCalc = require('suncalc')
 
 // Light Sensor
-const { LightSensor } = require('./light-sensor/light-sensor');
+const { LightSensor, defaultLightSensorSettings } = require('./light-sensor/light-sensor');
 const lightSensor = new LightSensor();
 
 app.allowRendererProcessReuse = true
@@ -555,20 +555,7 @@ const defaultSettings = {
   profiles: [],
   uuid: uuid(),
   branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
-  lightSensor: {
-		enabled: false,
-		active: "fake",
-		sensors: {
-			yocto: {
-				hubUrl: "user:password@localhost"
-			},
-			fake: {
-				overriddenLux: 50
-			},
-      windows: {}
-		},
-		monitorSettings: {}
-	},
+  lightSensor: defaultLightSensorSettings,
 }
 
 const tempSettings = {
@@ -3927,7 +3914,7 @@ function addEventListeners() {
   // Disable mouse events at startup
   pauseMouseEvents(true)
 
-  lightSensor.start(settings.lightSensor, monitors, sendToAllWindows, updateBrightnessThrottle);
+  lightSensor.start(settings.lightSensor, monitors, sendToAllWindows, updateBrightnessThrottle, writeSettings);
 }
 
 let handleAccentChangeTimeout = false

@@ -50,7 +50,6 @@ class WindowsAmbientLightSensor {
   }
 
   _sendStatus() {
-    console.log('light-sensor--windows');
     if (this.sendToAllWindows) {
       this.sendToAllWindows('light-sensor--windows', {
         sensorsAvailable: this.sensorsAvailable,

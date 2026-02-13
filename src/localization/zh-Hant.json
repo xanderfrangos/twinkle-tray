@@ -45,7 +45,6 @@
     "PANEL_LABEL_BRIGHTNESS": "亮度",
     "PANEL_LABEL_CONTRAST": "對比度",
     "PANEL_LABEL_INPUTS": "輸入",
-
     "PANEL_LABEL_OFF_ON": "電源狀態",
     "PANEL_LABEL_COLOR_TEMPERATURE": "色溫",
     "PANEL_LABEL_VOLUME": "音量",
@@ -169,8 +168,8 @@
     "SETTINGS_TIME_STARTUP_DESC": "在 Twinkle Tray 啟動時將亮度調整至最相近的時間設定。",
     "SETTINGS_TIME_IDLE_TITLE": "閒置感應",
     "SETTINGS_TIME_IDLE_DESC": "若電腦有一段時間是沒有活動的狀態，則所有顯示器的亮度將會被降低。",
-    "SETTINGS_TIME_ANIMATE_TITLE": "时间之间的动画",
-    "SETTINGS_TIME_ANIMATE_DESC": "亮度值将在当前和下一个预定事件之间进行动画处理。可能会增加CPU的使用率。当此功能激活时，手动亮度调整将很快被覆盖。",
+    "SETTINGS_TIME_ANIMATE_TITLE": "時間之間的動畫",
+    "SETTINGS_TIME_ANIMATE_DESC": "亮度值將在目前和下一個預定事件之間進行動畫處理。可能會增加CPU的使用率。當此功能啟動時，手動亮度調整將很快被覆蓋。",
     "SETTINGS_TIME_SUN_TITLE": "太陽位置座標",
     "SETTINGS_TIME_SUN_DESC": "輸入您目前的經緯度，讓「太陽位置」功能使用正確的時間。",
     "SETTINGS_TIME_USE_SUN_POSITION": "使用太陽位置",

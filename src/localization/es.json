@@ -236,5 +236,17 @@
     "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Detecta cambios al estado de poder de monitores. Inutilizando esto puede ayudar si  experimentas errores cuándo los monitores están girados fuera/encima o es idle. Requiere un retomar para tomar efecto.",
     "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
     "SETTINGS_TIME_USE_SUN_POSITION": "#Puesto de sol del uso",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Añade Acción"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Añade Acción",
+    "GENERIC_CALIBRATION_POINT": "Punto de calibración",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Slider Tipo de indicador",
+    "GENERIC_ICON": "Icono",
+    "GENERIC_TEXT": "Texto",
+    "GENERIC_SLIDER_ICON": "Slider Icono",
+    "GENERIC_SLIDER_TEXT": "Slider Texto",
+    "GENERIC_SLIDER_NAME": "Introduce nombre para slider",
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "Cada monitor puede tener puntos de calibración individual añadieron para compensar para diferencias en curvas de brillo. El valor de entrada es el nivel de brillo  indicado en el slider, mientras el valor de salida es el nivel de brillo real  aplicó al monitor.",
+    "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Enlazado a brillo",
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Parón después de este nivel de brillo",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Si vuestro monitor utiliza un no-estándar VCP código para brillo (como 0x13 o 0x6B), o si te gustaría a remap el brillo slider a un diferente VCP código,  puedes introducir aquel código abajo.",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Deja vacío para default (0x10). Encuentra códigos soportados en la lista abajo."
 }

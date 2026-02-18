@@ -1343,8 +1343,13 @@ async function hotkeyOverlayShow() {
     const panelWidth = 216
     const primaryDisplay = screen.getPrimaryDisplay()
 
+    // Only add gap if the taskbar is actually hidden (not taking up space).
+    // This handles per-monitor auto-hide mods (e.g., Windhawk) where the global
+    // auto-hide registry setting doesn't reflect the actual state on each monitor.
+    const taskbarActuallyHidden = primaryDisplay.bounds.height === primaryDisplay.workArea.height
+
     let gap = 0
-    if(detectedTaskbarHide) {
+    if(taskbarActuallyHidden && detectedTaskbarHide) {
       gap = detectedTaskbarHeight
     }
     if (typeof settings.overrideTaskbarGap === "number") {
@@ -2849,6 +2854,13 @@ function repositionPanel() {
     sendToAllWindows('taskbar', taskbar)
 
     if (mainWindow && !isAnimatingPanel) {
+      // Check if taskbar is actually taking up space on the primary display.
+      // This handles per-monitor auto-hide mods (e.g., Windhawk) where the global
+      // auto-hide registry setting doesn't reflect the actual state on each monitor.
+      const taskbarActuallyHidden = (taskbar.position === "BOTTOM" || taskbar.position === "TOP")
+        ? primaryDisplay.bounds.height === primaryDisplay.workArea.height
+        : primaryDisplay.bounds.width === primaryDisplay.workArea.width
+
       if (taskbar.position == "LEFT") {
         mainWindow.setBounds({
           width: panelSize.width,
@@ -2863,8 +2875,8 @@ function repositionPanel() {
           x: primaryDisplay.bounds.x + primaryDisplay.workArea.width - panelSize.width,
           y: primaryDisplay.bounds.y + taskbar.gap
         })
-      } else if (detectedTaskbarHide && taskbar.position == "BOTTOM") {
-        // Edge case for auto-hide taskbar
+      } else if (taskbarActuallyHidden && taskbar.position == "BOTTOM") {
+        // Edge case for auto-hide taskbar (taskbar is truly hidden, not taking up space)
         mainWindow.setBounds({
           width: panelSize.width,
           height: panelSize.height,

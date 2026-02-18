@@ -4,16 +4,9 @@
   "description": "NodeJS library using native modules to get the active window and some metadata (including the application icon) on Windows, MacOS and Linux.",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "npm run build",
     "build": "npm run build:gyp",
-    "build:ts": "tsc --project tsconfig.build.json",
-    "build:gyp": "node-gyp rebuild",
-    "clean": "node-gyp clean && rimraf dist",
-    "typecheck": "tsc --noEmit",
-    "release": "standard-version",
-    "release:pre": "standard-version --prerelease",
-    "generate:readme-toc": "markdown-toc -i --bullets=\"-\" --maxdepth=4 README.md"
+    "build:gyp": "node-gyp rebuild"
   },
   "binary": {
     "napi_versions": [
@@ -37,64 +30,7 @@
   ],
   "author": "Paymo SRL",
   "license": "GPL-3.0",
-  "devDependencies": {
-    "@types/node": "^17.0.35",
-    "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
-    "eslint": "^8.16.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-watch": "^8.0.0",
-    "markdown-toc": "^1.2.0",
-    "prettier": "^2.6.2",
-    "rimraf": "^3.0.2",
-    "standard-version": "^9.5.0",
-    "ts-node": "^10.8.1",
-    "typescript": "^4.6.4",
-    "ws": "^8.7.0"
-  },
   "dependencies": {
-    "node-addon-api": "^5.0.0"
-  },
-  "standard-version": {
-    "scripts": {
-      "prerelease": "git fetch --all --tags"
-    },
-    "types": [
-      {
-        "type": "feat",
-        "section": "Features"
-      },
-      {
-        "type": "fix",
-        "section": "Bug Fixes"
-      },
-      {
-        "type": "imp",
-        "section": "Improvements"
-      },
-      {
-        "type": "ci",
-        "section": "Build/CI"
-      },
-      {
-        "type": "chore",
-        "hidden": true
-      },
-      {
-        "type": "docs",
-        "section": "Documentation"
-      },
-      {
-        "type": "refactor",
-        "section": "Refactor"
-      },
-      {
-        "type": "test",
-        "section": "Testing"
-      }
-    ]
+    "node-addon-api": "^8.2.2"
   }
 }

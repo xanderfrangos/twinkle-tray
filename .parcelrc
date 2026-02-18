@@ -1,0 +1,7 @@
+{
+  "extends": "@parcel/config-default",
+  "transformers": {
+    "*.mp4": ["@parcel/transformer-raw"],
+    "*.ico": ["@parcel/transformer-raw"]
+  }
+}

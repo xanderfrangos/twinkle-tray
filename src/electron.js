@@ -1,9 +1,9 @@
-const { app } = require('electron')
+const { app, shell } = require('electron');
 const fs = require('fs')
 
 const path = require('path');
 
-let isDev = app.commandLine.hasSwitch("dev")
+let isDev = app.commandLine.hasSwitch("dev");
 
 let package = fs.readFileSync(isDev ? "package.json" : __dirname + '/../package.json')
 if(package) package = JSON.parse(package)
@@ -87,6 +87,10 @@ let ddcciModeTestResult = "auto"
 let lastKnownDisplays
 
 const SunCalc = require('suncalc')
+
+// Light Sensor
+const { LightSensor, defaultLightSensorSettings } = require('./light-sensor/light-sensor');
+const lightSensor = new LightSensor();
 
 app.allowRendererProcessReuse = true
 
@@ -550,7 +554,8 @@ const defaultSettings = {
   showConsole: false,
   profiles: [],
   uuid: uuid(),
-  branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master")
+  branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
+  lightSensor: defaultLightSensorSettings,
 }
 
 const tempSettings = {
@@ -908,6 +913,9 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       lastCheck = false
       settings.dismissedUpdate = false
       checkForUpdates()
+    }
+    if (newSettings.lightSensor) {
+      lightSensor.changeSettings(newSettings.lightSensor);
     }
 
     if (settings.analytics) {
@@ -3646,6 +3654,10 @@ function createSettings() {
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.setMenu(windowMenu)
 
+    settingsWindow.webContents.setWindowOpenHandler((edata) => {
+      shell.openExternal(edata.url);
+      return { action: "deny" };
+    });
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       sendMicaWallpaper()
@@ -3913,6 +3925,8 @@ function addEventListeners() {
 
   // Disable mouse events at startup
   pauseMouseEvents(true)
+
+  lightSensor.start(settings.lightSensor, monitors, sendToAllWindows, updateBrightnessThrottle, writeSettings);
 }
 
 let handleAccentChangeTimeout = false

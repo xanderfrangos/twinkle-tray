@@ -43,10 +43,12 @@
     "suncalc": "^1.9.0",
     "tt-windows-utils": "file:src/modules/tt-windows-utils",
     "win32-displayconfig": "file:src/modules/win32-displayconfig",
+    "windows-ambient-sensor": "file:src/modules/windows-ambient-sensor",
     "windows-accent-colors": "^1.0.1",
     "windows-hdr": "file:src/modules/windows-hdr",
     "wmi-bridge": "file:src/modules/wmi-bridge",
-    "wmi-client": "^0.5.0"
+    "wmi-client": "^0.5.0",
+    "yoctolib-es2017": "^1.11.6320"
   },
   "optionalDependencies": {
     "native-reg": "^1.1.1"
@@ -84,6 +86,7 @@
       "!node_modules/global-mouse-events/node_modules",
       "!node_modules/electron-acrylic-window/node_modules",
       "!node_modules/tt-windows-utils/node_modules",
+      "!node_modules/windows-ambient-sensor/node_modules",
       "!node_modules/windows-accent-colors/node_modules",
       "!node_modules/**/node-gyp/*",
       "!node_modules/**/*.ipdb",
@@ -108,6 +111,7 @@
       "!node_modules/native-reg/src/*",
       "!node_modules/acrylic/bin/**/*.node",
       "!node_modules/tt-windows-utils/bin/**/*.node",
+      "!node_modules/windows-ambient-sensor/bin/**/*.node",
       "!node_modules/win32-displayconfig/bin/**/*.node",
       "!node_modules/@paymoapp/active-window/module/*",
       "!node_modules/@paymoapp/active-window/src/*",

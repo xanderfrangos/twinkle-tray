@@ -241,5 +241,12 @@
     "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Остановить после этого уровня яркости",
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Привязать к яркости",
     "SETTINGS_MONITORS_CALIBRATION_DESC": "Для каждого монитора можно добавить индивидуальные точки калибровки, чтобы компенсировать различия в кривых яркости. Входное значение — это уровень яркости, установленный на ползунке, а выходное значение — фактический уровень яркости, применяемый к монитору.",
-    "GENERIC_CALIBRATION_POINT": "Точка калибровки"
+    "GENERIC_CALIBRATION_POINT": "Точка калибровки",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Тип индикатора ползунка",
+    "GENERIC_ICON": "Значок",
+    "GENERIC_TEXT": "Текст",
+    "GENERIC_SLIDER_ICON": "Значок ползунка",
+    "GENERIC_SLIDER_TEXT": "Текст ползунка",
+    "GENERIC_SLIDER_NAME": "Введите имя ползунка",
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Обнаружение обновления темы"
 }

@@ -234,5 +234,17 @@
     "SETTINGS_UPDATES_DOWNLOAD": "下載並安裝 {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "更新渠道",
     "SETTINGS_UPDATES_BRANCH_STABLE": "稳定（默认）",
-    "SETTINGS_UPDATES_BRANCH_BETA": "β"
+    "SETTINGS_UPDATES_BRANCH_BETA": "β",
+    "GENERIC_CALIBRATION_POINT": "校準點",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "滑桿指示器類型",
+    "GENERIC_ICON": "圖示",
+    "GENERIC_TEXT": "文字",
+    "GENERIC_SLIDER_ICON": "滑桿圖示",
+    "GENERIC_SLIDER_TEXT": "滑桿文字",
+    "GENERIC_SLIDER_NAME": "輸入滑桿名稱",
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "每台顯示器可以新增個別的校準點，以補償亮度曲線的差異。輸入值是滑桿上指示的亮度級別，輸出值是實際應用於顯示器的亮度級別。",
+    "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "與亮度榜定",
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "此亮度層級後停止",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "如果您的顯示器使用非標準的 VCP 亮度代碼（例如 0x13 或 0x6B），或者您想要將亮度滑桿重新對應至不同的 VCP 代碼，您可以在下方輸入該代碼。",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "留空以使用預設值 (0x10)。在下方清單中找到支援的代碼。"
 }

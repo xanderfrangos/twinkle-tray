@@ -1,5 +1,5 @@
 const { applyMonitorBrightnessFromLux } = require('../light-sensor.utilts');
-const { getAmbientLightSensors, getLuxValue } = require("../../modules/windows-ambient-sensor");
+const { getAmbientLightSensors, getLuxValue } = require("windows-ambient-sensor");
 
 class WindowsAmbientLightSensor {
   constructor() {

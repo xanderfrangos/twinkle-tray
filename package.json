@@ -76,6 +76,8 @@
       "src/vcp-codes.js",
       "src/assets/tray-icons/dark/*.ico",
       "src/assets/tray-icons/light/*.ico",
+      "src/light-sensor/*",
+      "src/light-sensor/sensors/*",
       "build/*",
       "!node_modules/@hensm/ddcci/build",
       "node_modules/@hensm/ddcci/build/Release/ddcci.node",

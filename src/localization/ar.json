@@ -153,5 +153,6 @@
     "GENERIC_DELETE": "حذف",
     "GENERIC_DEFAULT": "الإفتراضي",
     "GENERIC_OPTIONAL": "اختياري",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "السطوع"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "السطوع",
+    "PANEL_LABEL_TURN_ON": "ايقاف الطاقة"
 }

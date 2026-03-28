@@ -39,7 +39,7 @@
     "global-mouse-events": "^1.2.0",
     "markdown-to-jsx": "^7.5.0",
     "stackblur-canvas": "^2.7.0",
-    "studio-display-control": "^0.2.0",
+    "studio-display-control": "^0.2.1",
     "suncalc": "^1.9.0",
     "tt-windows-utils": "file:src/modules/tt-windows-utils",
     "win32-displayconfig": "file:src/modules/win32-displayconfig",

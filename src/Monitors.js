@@ -470,8 +470,9 @@ getStudioDisplay = async (monitors) => {
                 "APPAE3A",
                 `APLSTD-${serial}-NUM${count}`
             ]
+            const modelName = display.getModelName()
             updateDisplay(monitors, hwid[2], {
-                name: "Apple Studio Display",
+                name: modelName,
                 type: "studio-display",
                 key: hwid[2],
                 id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,

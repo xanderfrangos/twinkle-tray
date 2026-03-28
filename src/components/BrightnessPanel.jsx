@@ -42,6 +42,13 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     })
   }
 
+  const handleActionKeyDown = (event, action) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault()
+      action()
+    }
+  }
+
   // Handle <Slider> changes
   const handleChange = (level, slider) => {
     const monitors = { ...state.monitors }
@@ -295,7 +302,17 @@ const BrightnessPanel = memo(function BrightnessPanel() {
               const showPowerButton = () => {
                 const customFeatureEnabled = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]?.["0xD6"]
                 if (monitorFeatures?.["0xD6"] && (monitor.features?.["0xD6"] || customFeatureEnabled)) {
-                  return (<div className="feature-power-icon simple" onClick={powerOff}><span className="icon vfix">&#xE7E8;</span><span>{(monitor.features?.["0xD6"][0] >= 4 ? T.t("PANEL_LABEL_TURN_ON") : T.t("PANEL_LABEL_TURN_OFF"))}</span></div>)
+                  return (
+                    <div
+                      className="feature-power-icon simple"
+                      role="button"
+                      tabIndex={0}
+                      onClick={powerOff}
+                      onKeyDown={(event) => handleActionKeyDown(event, powerOff)}>
+                      <span className="icon vfix">&#xE7E8;</span>
+                      <span>{(monitor.features?.["0xD6"][0] >= 4 ? T.t("PANEL_LABEL_TURN_ON") : T.t("PANEL_LABEL_TURN_OFF"))}</span>
+                    </div>
+                  )
                 }
               }
 
@@ -363,6 +380,9 @@ const BrightnessPanel = memo(function BrightnessPanel() {
               title={T.t("PANEL_BUTTON_LINK_LEVELS")}
               data-active={state.linkedLevelsActive}
               onClick={toggleLinkedLevels}
+              onKeyDown={(event) => handleActionKeyDown(event, toggleLinkedLevels)}
+              role="button"
+              tabIndex={0}
               className="link">
               &#xE71B;
             </div>
@@ -372,11 +392,22 @@ const BrightnessPanel = memo(function BrightnessPanel() {
             <div
               title={T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}
               className="off"
-              onClick={window.turnOffDisplays}>
+              onClick={window.turnOffDisplays}
+              onKeyDown={(event) => handleActionKeyDown(event, window.turnOffDisplays)}
+              role="button"
+              tabIndex={0}>
               &#xF71D;
             </div>
           }
-          <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
+          <div
+            title={T.t("GENERIC_SETTINGS")}
+            className="settings"
+            onClick={window.openSettings}
+            onKeyDown={(event) => handleActionKeyDown(event, window.openSettings)}
+            role="button"
+            tabIndex={0}>
+            &#xE713;
+          </div>
         </div>
       </div>
       {state.sleeping ? (<div></div>) : getMonitors()}
@@ -389,10 +420,20 @@ const BrightnessPanel = memo(function BrightnessPanel() {
               ({state.update.version})
             </div>
             <div className="right">
-              <a onClick={window.installUpdate}>
+              <a
+                role="button"
+                tabIndex={0}
+                onClick={window.installUpdate}
+                onKeyDown={(event) => handleActionKeyDown(event, window.installUpdate)}>
                 {T.t("GENERIC_INSTALL")}
               </a>
-              <a className="icon" title={T.t("GENERIC_DISMISS")} onClick={window.dismissUpdate}>
+              <a
+                className="icon"
+                title={T.t("GENERIC_DISMISS")}
+                role="button"
+                tabIndex={0}
+                onClick={window.dismissUpdate}
+                onKeyDown={(event) => handleActionKeyDown(event, window.dismissUpdate)}>
                 &#xEF2C;
               </a>
             </div>

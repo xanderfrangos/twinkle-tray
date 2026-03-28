@@ -6,6 +6,7 @@ const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const hdr = require("windows-hdr");
 const { exec } = require('child_process');
+const appleStudioDisplay = require("./modules/apple-studio-display");
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 let lastDDCCIList = []
@@ -460,18 +461,18 @@ function determineDDCCIMethod() {
 let appleStudioUnavailable = false
 getStudioDisplay = async (monitors) => {
     try {
-        const sdctl = require("studio-display-control")
         const displays = {}
         let count = 0
-        for (const display of sdctl.getDisplays()) {
+        for (const display of appleStudioDisplay.getDisplays()) {
             const serial = await display.getSerialNumber();
             const hwid = [
                 "\\\\?\\DISPLAY",
                 "APPAE3A",
                 `APLSTD-${serial}-NUM${count}`
             ]
+            const modelName = display.getModelName()
             updateDisplay(monitors, hwid[2], {
-                name: "Apple Studio Display",
+                name: modelName,
                 type: "studio-display",
                 key: hwid[2],
                 id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
@@ -491,8 +492,7 @@ getStudioDisplay = async (monitors) => {
 
 setStudioDisplayBrightness = async (serial, brightness) => {
     try {
-        const sdctl = require("studio-display-control")
-        for (const monitor of sdctl.getDisplays()) {
+        for (const monitor of appleStudioDisplay.getDisplays()) {
             const s = await monitor.getSerialNumber();
             if (s === serial) {
                 await monitor.setBrightness(brightness);

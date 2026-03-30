@@ -46,7 +46,7 @@
     "SETTINGS_GENERAL_ANALYTICS_LINK": "Más información",
     "SETTINGS_MONITORS_RATE_TITLE": "Tasa de actualización del brillo",
     "SETTINGS_MONITORS_RATE_DESC": "La frecuencia con la que se actualiza el brillo del monitor. Si la pantalla parpadea, aumente la frecuencia de actualización del brillo.",
-    "SETTINGS_MONITORS_RATE_0": "Muy rápido",
+    "SETTINGS_MONITORS_RATE_0": "Extremadamente rápido",
     "SETTINGS_MONITORS_RATE_1": "Rápido (250 ms)",
     "SETTINGS_MONITORS_RATE_2": "Normal (500 ms)",
     "SETTINGS_MONITORS_RATE_3": "Lento (1 segundos)",

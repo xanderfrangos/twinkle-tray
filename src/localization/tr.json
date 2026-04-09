@@ -177,5 +177,7 @@
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Baskılama türünü geçersiz kıl",
     "SETTINGS_PROFILES_OVERLAY_DESC": "Belirtilen uygulama odaklandığında kısayol tuşu baskılama davranışını değiştirir. Profil manuel olarak etkinleştirildiğinde bu özellik çalışmaz.",
     "SETTINGS_FEATURES_POWER_COMPAT": "En Uygun",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Parlaklık"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Parlaklık",
+    "SETTINGS_FEATURES_POWER_OFF": "Aç",
+    "GENERIC_SUPPORTED": "Destek"
 }

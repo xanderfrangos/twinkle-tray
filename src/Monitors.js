@@ -319,6 +319,12 @@ getAllMonitors = async (ddcciMethod = "default") => {
             const { features, id, hwid, vcpCodes, path, ddcciSupported, highLevelSupported } = monitor
             const brightnessType = await determineBrightnessVCPCode(id)
 
+            let isSupported = (ddcciSupported || highLevelSupported?.brightness)
+            if (!isSupported && brightnessType) {
+                console.log(`[DIAG] Monitor ${id} marked unsupported by driver, but brightness VCP ${vcpStr(brightnessType)} found. Enabling anyway.`)
+                isSupported = true
+            }
+
             let ddcciInfo = {
                 id: id,
                 key: hwid2,
@@ -328,7 +334,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
                 highLevelSupported,
                 features: features,
                 vcpCodes: vcpCodes,
-                type: ((ddcciSupported || highLevelSupported?.brightness) && brightnessType ? "ddcci" : "none"),
+                type: (isSupported && brightnessType ? "ddcci" : "none"),
                 min: 0,
                 max: 100,
                 brightnessType: brightnessType,
@@ -632,40 +638,37 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 80000)
+            const timeout = setTimeout(() => { reject({}) }, 80000)
             
             getDDCCI()
-            await wait(10)
+            await wait(100)
 
             // Sometimes the handles returned are NULL, so we should try again.
             let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+
             if(tmpDdcciMonitors) {
                 let doRetry = false
                 for(const monitor of tmpDdcciMonitors) {
+                    if (!monitor) continue;
                     if(monitor.handleIsValid === false) {
                         doRetry = monitor
                         break
                     }
                 }
                 if(doRetry) {
-                    console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
-                    await wait(200)
+                    await wait(1000)
                     tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
-                    for(const monitor of tmpDdcciMonitors) {
-                        if(monitor.handleIsValid === false) {
-                            console.log(`DDC/CI results still contain a null handle (${doRetry?.deviceKey}). Continuing anyway.`)
-                            break
-                        }
-                    }
                 }
             }
 
-            const ddcciMonitors = tmpDdcciMonitors
+            const ddcciMonitors = tmpDdcciMonitors || []
             lastDDCCIList = ddcciMonitors
 
             for (let monitor of ddcciMonitors) {
-                const id = monitor.deviceKey
-                const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", id); reject({}) }, 15000)
+                if (!monitor) continue;
+                const id = monitor.deviceKey || monitor.id
+                if (!id) continue;
+                const featureTimeout = setTimeout(() => { reject({}) }, 30000)
                 const hwid = id.split("#")
                 let features = {}
 
@@ -674,8 +677,11 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                     monitorReports[id] = monitor.capabilities
                 }
 
-                if(monitor.ddcciSupported) {
-                    await wait(10)
+                const brightnessType = await determineBrightnessVCPCode(id)
+                const forceDDC = (settings?.forceDDC && settings.forceDDC[hwid[1]])
+
+                if(monitor.ddcciSupported || forceDDC || brightnessType) {
+                    await wait(100)
                     features = await checkMonitorFeatures(id, false, ddcciMethod)
                 }
 
@@ -683,7 +689,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                     id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
                     hwid,
                     features,
-                    ddcciSupported: monitor.ddcciSupported,
+                    ddcciSupported: monitor.ddcciSupported || forceDDC || (brightnessType ? true : false),
                     highLevelSupported: {
                         brightness: monitor.hlBrightnessSupported,
                         contrast: monitor.hlContrastSupported
@@ -695,8 +701,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             }
             clearTimeout(timeout)
         } catch (e) {
-            console.log(`getFeaturesDDC: Failed to get features.`)
-            console.log(e)
+            console.log(`getFeaturesDDC: Failed to get features.`, e)
         }
 
         resolve(monitorFeatures)

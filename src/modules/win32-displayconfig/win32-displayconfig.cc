@@ -1008,7 +1008,8 @@ Napi::Value Win32ListenForDisplayChanges(const Napi::CallbackInfo &info) {
         return Napi::Boolean::New(info.Env(), true);
     }
 
-    displayEventContext = new Win32DisplayChangeContext(info.Env(), info[0].As<Napi::Function>());
+    auto callback = info[0].As<Napi::Function>();
+    displayEventContext = new Win32DisplayChangeContext(info.Env(), callback);
     auto error = displayEventContext->Start();
     if (error != ERROR_SUCCESS) {
         delete displayEventContext;

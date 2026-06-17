@@ -9,7 +9,7 @@
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
       'msvs_settings': {
-        'VCCLCompilerTool': { "ExceptionHandling": 1, 'AdditionalOptions': [ '-std:c++17' ] }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
     },
@@ -22,7 +22,7 @@
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
       'msvs_settings': {
-        'VCCLCompilerTool': { "ExceptionHandling": 1, 'AdditionalOptions': [ '-std:c++17' ] }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
     },
@@ -40,14 +40,13 @@
       "target_name": "windows_media_status",
       "cflags!": [ ],
       "cflags_cc!": [ ],
-      "cflags_cc": [ "-std=c++17" ],
       "conditions": [
         ["OS=='win'", {
-      	  "sources": [ "windows_media_status.cc" ]
-      	}],
+          "sources": [ "windows_media_status.cc" ]
+        }],
       ],
       'msvs_settings': {
-        'VCCLCompilerTool': { "ExceptionHandling": 1, 'AdditionalOptions': [ '-std:c++17' ] }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
@@ -58,14 +57,13 @@
       "target_name": "windows_app_startup",
       "cflags!": [ ],
       "cflags_cc!": [ ],
-      "cflags_cc": [ "-std=c++17" ],
       "conditions": [
         ["OS=='win'", {
-      	  "sources": [ "windows_app_startup.cc" ]
-      	}],
+          "sources": [ "windows_app_startup.cc" ]
+        }],
       ],
       'msvs_settings': {
-        'VCCLCompilerTool': { "ExceptionHandling": 1, 'AdditionalOptions': [ '-std:c++17' ] }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"

@@ -903,7 +903,8 @@ Napi::Value Win32ToggleEnabledDisplays(const Napi::CallbackInfo &info) {
     }
 
     auto args = ExtractToggleEnabledDisplayArguments(info[0].As<Napi::Object>());
-    auto worker = new Win32ToggleEnabledWorker(info[1].As<Napi::Function>(), args);
+    auto callback = info[1].As<Napi::Function>();
+    auto worker = new Win32ToggleEnabledWorker(callback, args);
     worker->Queue();
     return Napi::Boolean::New(info.Env(), true);
 }
@@ -991,7 +992,8 @@ Napi::Value Win32RestoreDisplayConfig(const Napi::CallbackInfo &info) {
         }
     }
 
-    auto worker = new Win32RestoreDisplayConfigWorker(info[1].As<Napi::Function>(), configs, persistent);
+    auto callback = info[1].As<Napi::Function>();
+    auto worker = new Win32RestoreDisplayConfigWorker(callback, configs, persistent);
     worker->Queue();
     return Napi::Boolean::New(info.Env(), true);
 }

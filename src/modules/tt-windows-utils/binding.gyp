@@ -41,12 +41,12 @@
       "cflags!": [ ],
       "cflags_cc!": [ ],
       "conditions": [
-      	["OS=='win'", {
-      	  "sources": [ "windows_media_status.cc" ]
-      	}],
+        ["OS=='win'", {
+          "sources": [ "windows_media_status.cc" ]
+        }],
       ],
       'msvs_settings': {
-      	'VCCLCompilerTool': { "ExceptionHandling": 1 }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
@@ -58,12 +58,12 @@
       "cflags!": [ ],
       "cflags_cc!": [ ],
       "conditions": [
-      	["OS=='win'", {
-      	  "sources": [ "windows_app_startup.cc" ]
-      	}],
+        ["OS=='win'", {
+          "sources": [ "windows_app_startup.cc" ]
+        }],
       ],
       'msvs_settings': {
-      	'VCCLCompilerTool': { "ExceptionHandling": 1 }
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
       },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"

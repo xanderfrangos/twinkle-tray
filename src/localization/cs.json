@@ -187,5 +187,13 @@
     "SETTINGS_GENERAL_ON_OVERLAY_DESC": "Překrytí se zobrazí nad většinou oken, ale nebude se vynucovat nad aplikacemi, které jsou označeny jako „vždy nahoře“.",
     "GENERIC_DETECTING_DISPLAYS": "Detekce displejů…",
     "GENERIC_ICON": "Ikona",
-    "GENERIC_TEXT": "Text"
+    "GENERIC_TEXT": "Text",
+    "GENERIC_NOT_SUPPORTED": "Není podporováno",
+    "GENERIC_UNSUPPORTED": "Nepodporováno",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Typ indikátoru posuvníku",
+    "GENERIC_SLIDER_ICON": "Ikona Posuvníku",
+    "GENERIC_SLIDER_TEXT": "Text posuvníku",
+    "GENERIC_SLIDER_NAME": "Zadejte název posuvníku",
+    "PANEL_LABEL_INPUTS": "Vstupy",
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Zakázat na uzamčené obrazovce"
 }

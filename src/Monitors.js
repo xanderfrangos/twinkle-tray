@@ -592,9 +592,10 @@ getStudioDisplay = async (monitors) => {
             const monitorKey = existingKey || hwid[2]
             const existingMonitor = monitors[monitorKey] || {}
             const monitorHwid = existingMonitor.hwid?.length ? existingMonitor.hwid : hwid
+            const modelName = display.getModelName()
             usedKeys.push(monitorKey)
             updateDisplay(monitors, monitorKey, {
-                name: existingMonitor.name || "Apple Studio Display",
+                name: existingMonitor.name || modelName || "Apple Studio Display",
                 type: "studio-display",
                 key: monitorKey,
                 id: existingMonitor.id || `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,

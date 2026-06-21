@@ -6,7 +6,6 @@ const w32disp = require("win32-displayconfig");
 const wmibridge = require("wmi-bridge");
 const hdr = require("windows-hdr");
 const { exec } = require('child_process');
-const appleStudioDisplay = require("./modules/apple-studio-display");
 require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 
 let lastDDCCIList = []
@@ -569,6 +568,7 @@ function getStudioDisplayAliasKey(monitors, usedKeys = [], serial = "") {
 
 getStudioDisplay = async (monitors) => {
     try {
+        const sdctl = require("studio-display-control")
         const displays = {}
         let count = 0
         const usedKeys = []
@@ -592,9 +592,10 @@ getStudioDisplay = async (monitors) => {
             const monitorKey = existingKey || hwid[2]
             const existingMonitor = monitors[monitorKey] || {}
             const monitorHwid = existingMonitor.hwid?.length ? existingMonitor.hwid : hwid
+            const modelName = display.getModelName()
             usedKeys.push(monitorKey)
             updateDisplay(monitors, monitorKey, {
-                name: existingMonitor.name || "Apple Studio Display",
+                name: existingMonitor.name || modelName || "Apple Studio Display",
                 type: "studio-display",
                 key: monitorKey,
                 id: existingMonitor.id || `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,

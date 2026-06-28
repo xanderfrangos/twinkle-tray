@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SettingsChild } from "../../SettingsOption";
+import { SettingsOption, SettingsChild } from "../../SettingsOption";
 
 export function YoctoSettings({ T, lightSensorSettings }) {
 
@@ -70,61 +70,64 @@ export function YoctoSettings({ T, lightSensorSettings }) {
   }, [lightSensorSettings, yoctoSensorSettings]);
   return (
     <>
-      <SettingsChild>
-        Get environment light from a{" "}
-        <a href={sensorUrl} target="_blank" rel="noreferrer">
-          Yocto light sensor
-        </a>
-        {message}{" "}
-        {yoctoStatus.sensorConnected && yoctoStatus.lux !== null
-          ? `${yoctoStatus.lux} Lux`
-          : ""}
-      </SettingsChild>
-      <SettingsChild>
-        <p>
-          To communicate to the sensor, you need to install the "Yocto Virtual
-          Hub" this allows this program to talk to connected sensors on your pc
-        </p>
-        <p>
-          <strong>Important:</strong> The virtual hub can be configured to auto
-          start by running it on the command line with '-i'
-          <br />
-          See
-          <i>
-            "-i : Installation as a service"{" "}
-            <a
-              href={
-                "https://www.yoctopuce.com/EN/products/yocto-light-v5/doc/LIGHTMK5.usermanual.html"
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
-              Here
-            </a>
-          </i>
-        </p>
+      <SettingsOption title={"Yocto Light Sensor"} description={"Get environment light from a Yocto light sensor."}>
+        <SettingsChild>
+          <>
+            {message}{" "}
+            {yoctoStatus.sensorConnected && yoctoStatus.lux !== null
+              ? `${yoctoStatus.lux} Lux`
+              : ""}
+          </>
+        </SettingsChild>
+        <SettingsChild>
+          <>
+            <p>
+              To communicate to the sensor, you need to install the "Yocto Virtual
+              Hub" this allows this program to talk to connected sensors on your pc
+            </p>
+            <p>
+              <strong>Important:</strong> The virtual hub can be configured to auto
+              start by running it on the command line with '-i'
+              <br />
+              See
+              <i>
+                "-i : Installation as a service"{" "}
+                <a
+                  href={
+                    "https://www.yoctopuce.com/EN/products/yocto-light-v5/doc/LIGHTMK5.usermanual.html"
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Here
+                </a>
+              </i>
+            </p>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <label>VirtualHub URL:</label>
-          <input
-            type="text"
-            value={yoctoSensorSettings.hubUrl || "http://127.0.0.1:4444"}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            style={{ flex: 1, maxWidth: "300px" }}
-            placeholder="http://127.0.0.1:4444"
-          />
-          {yoctoStatus.hubConnected ? (
-            <div className="icon">&#xE73E;</div>
-          ) : (
-            <>
-              <div className="icon" style={{ color: "red" }}>
-                &#xE783;
-              </div>{" "}
-              <span>Disconnected</span>
-            </>
-          )}
-        </div>
-      </SettingsChild>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <label>VirtualHub URL:</label>
+              <input
+                type="text"
+                value={yoctoSensorSettings.hubUrl || "http://127.0.0.1:4444"}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                style={{ flex: 1, maxWidth: "300px" }}
+                placeholder="http://127.0.0.1:4444"
+              />
+              {yoctoStatus.hubConnected ? (
+                <div className="icon">&#xE73E;</div>
+              ) : (
+                <>
+                  <div className="icon" style={{ color: "red" }}>
+                    &#xE783;
+                  </div>{" "}
+                  <span>Disconnected</span>
+                </>
+              )}
+            </div>
+          </>
+        </SettingsChild>
+        
+      </SettingsOption>
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { SettingsChild } from "../../SettingsOption";
+import { SettingsOption, SettingsChild } from "../../SettingsOption";
 
 export function WindowsSettings({ T }) {
   const [windowsStatus, setWindowsStatus] = useState({
@@ -66,19 +66,19 @@ export function WindowsSettings({ T }) {
 
   return (
     <>
-      <SettingsChild>
-        <p>
-          Uses the Windows built-in ambient light sensor to automatically adjust
-          brightness.
-        </p>
-        {sensorMessage}
-        {windowsStatus.currentLux !== null && windowsStatus.sensorCount > 0 ? (
-          <p>
-            <strong>Current Reading:</strong> {windowsStatus.currentLux.toFixed(1)} Lux
-          </p>
-        ) : null}
-      </SettingsChild>
-      {sensorList && <SettingsChild>{sensorList}</SettingsChild>}
+      <SettingsOption title={"Windows Ambient Light Sensor"} description={"Uses the Windows built-in ambient light sensor to automatically adjust brightness."}>
+        <SettingsChild>
+          <div>
+            {sensorMessage}
+            {windowsStatus.currentLux !== null && windowsStatus.sensorCount > 0 ? (
+              <p>
+                <strong>Current Reading:</strong> {windowsStatus.currentLux.toFixed(1)} Lux
+              </p>
+            ) : null}
+          </div>
+        </SettingsChild>
+        {sensorList && <SettingsChild>{sensorList}</SettingsChild>}
+      </SettingsOption>
     </>
   );
 }

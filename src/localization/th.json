@@ -168,5 +168,6 @@
     "SETTINGS_UPDATES_CHANNEL": "ช่องทางการอัปเดต",
     "SETTINGS_UPDATES_BRANCH_BETA": "เบต้า",
     "SETTINGS_FEATURES_POWER_COMPAT": "เข้ากันได้ดีที่สุด",
-    "SETTINGS_FEATURES_POWER_OFF": "ปิด"
+    "SETTINGS_FEATURES_POWER_OFF": "ปิด",
+    "GENERIC_SUPPORTED": "บริการช่วยเหลือ"
 }

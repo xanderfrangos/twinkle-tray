@@ -236,5 +236,17 @@
     "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Findet heraus Änderungen zu den Kraft Staat von Monitore. #Ausschalten dies darf helfen ob du erfährst #wann Fehler Monitore sind abgestellt/weiter oder sind #leerlaufen. Bedürft einen #Neuanfang zu wirken.",
     "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
     "SETTINGS_TIME_USE_SUN_POSITION": "Nutzung Sonne Stelle",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Füg zu Aktion"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Füg zu Aktion",
+    "GENERIC_CALIBRATION_POINT": "Justierung Punkt",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Schieber Anzeiger Typ",
+    "GENERIC_ICON": "Ikone",
+    "GENERIC_TEXT": "Text",
+    "GENERIC_SLIDER_ICON": "Schieber Ikone",
+    "GENERIC_SLIDER_TEXT": "Schieber Text",
+    "GENERIC_SLIDER_NAME": "Betritt Namen für Schieber",
+    "SETTINGS_MONITORS_CALIBRATION_DESC": "Jeder Monitor kann individuelle Justierung Punkte haben fügten zu zu kompensieren für Unterschiede in Helligkeit Kurven. Der Input Wert #hindeuten der Helligkeit Level auf dem Schieber, während ist der Ausgabe Wert die effektive Helligkeit Level beworben zu dem Monitor.",
+    "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Verbunden zu Helligkeit",
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Stopp nach diesen Helligkeit Level",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Ob eure Monitor Nutzungen ein #atypisch VCP Code für Helligkeit (wie 0x13 oder 0x6B), oder ob du wolltest mögen zu remap der Helligkeit Schieber zu ein verschiedenes VCP Code, du kannst jenen Code betreten unten.",
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "#Verlassen #ausleeren für #voreingestellt (0x10). Finde #abgestützt Codes in der Liste unten."
 }

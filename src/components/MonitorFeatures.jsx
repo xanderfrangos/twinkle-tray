@@ -182,6 +182,8 @@ export default function MonitorFeatures(props) {
             </div>
         )
 
+    } else if (monitor.type === "studio-display") {
+        extraHTML.push(<p key="studio-display">Brightness is available for this Studio Display from the brightness panel. DDC/CI features are not supported.</p>)
     } else {
         extraHTML.push(<p key="none">{T.t("SETTINGS_FEATURES_UNSUPPORTED")}</p>)
     }

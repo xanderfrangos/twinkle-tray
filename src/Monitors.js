@@ -367,6 +367,17 @@ getAllMonitors = async (ddcciMethod = "default") => {
         console.log("\x1b[41m" + "getFeaturesDDC() failed!" + "\x1b[0m", e)
     }
 
+    // Re-apply Studio Display control after DDC/CI, which may mark Apple displays as unsupported.
+    if (!appleStudioUnavailable) {
+        try {
+            startTime = process.hrtime.bigint()
+            monitorsAppleStudio = await getStudioDisplay(foundMonitors);
+            console.log(`getStudioDisplay() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+        } catch (e) {
+            console.log("\x1b[41m" + "getStudioDisplay() failed!" + "\x1b[0m", e)
+        }
+    }
+
     if (!wmicUnavailable) {
         try {
             startTime = process.hrtime.bigint()
@@ -458,28 +469,146 @@ function determineDDCCIMethod() {
 }
 
 let appleStudioUnavailable = false
+const STUDIO_DISPLAY_VENDOR_ID = 0x05ac
+const STUDIO_DISPLAY_PRODUCT_IDS = [0x1118]
+const STUDIO_DISPLAY_BRIGHTNESS_INTERFACE = 0x7
+const STUDIO_DISPLAY_REPORT_ID = 0x01
+const STUDIO_DISPLAY_BRIGHTNESS_MIN = 400
+const STUDIO_DISPLAY_BRIGHTNESS_MAX = 60000
+
+function percentToStudioDisplayNits(percent) {
+    return STUDIO_DISPLAY_BRIGHTNESS_MIN + ((STUDIO_DISPLAY_BRIGHTNESS_MAX - STUDIO_DISPLAY_BRIGHTNESS_MIN) * (percent / 100))
+}
+
+function studioDisplayNitsToPercent(nits) {
+    return ((nits - STUDIO_DISPLAY_BRIGHTNESS_MIN) / (STUDIO_DISPLAY_BRIGHTNESS_MAX - STUDIO_DISPLAY_BRIGHTNESS_MIN)) * 100
+}
+
+function makeStudioDisplayRequestData(percent) {
+    const bytes = Buffer.alloc(7)
+    bytes[0] = STUDIO_DISPLAY_REPORT_ID
+    bytes.writeUInt16LE(Math.round(percentToStudioDisplayNits(percent)), 1)
+    return bytes
+}
+
+function getFallbackStudioDisplays(existingSerials = []) {
+    try {
+        const usb = require("usb")
+        const { promisify } = require("util")
+        const controlTransfer = promisify(usb.Device.prototype.controlTransfer)
+        const getStringDescriptor = promisify(usb.Device.prototype.getStringDescriptor)
+        const releaseInterface = promisify(usb.Interface.prototype.release)
+        const requestType = 0x20 | 0x01
+        const reportValue = 0x0300 | STUDIO_DISPLAY_REPORT_ID
+
+        return usb.getDeviceList()
+            .filter(dev => {
+                const desc = dev.deviceDescriptor
+                return desc.idVendor === STUDIO_DISPLAY_VENDOR_ID && STUDIO_DISPLAY_PRODUCT_IDS.indexOf(desc.idProduct) >= 0
+            })
+            .map(dev => ({
+                async withBrightnessInterface(callback) {
+                    let iface
+                    try {
+                        dev.open()
+                        iface = dev.interface(STUDIO_DISPLAY_BRIGHTNESS_INTERFACE)
+                        iface.claim()
+                        return await callback(dev)
+                    } finally {
+                        try {
+                            if (iface) await releaseInterface.call(iface)
+                        } catch (e) {
+                            console.log("Fallback Studio Display release failed", e)
+                        }
+                        try {
+                            dev.close()
+                        } catch (e) {}
+                    }
+                },
+                async getSerialNumber() {
+                    const serial = await this.withBrightnessInterface(display => {
+                        return getStringDescriptor.call(display, display.deviceDescriptor.iSerialNumber)
+                    })
+                    return existingSerials.indexOf(serial) >= 0 ? undefined : serial
+                },
+                async getBrightness() {
+                    const response = await this.withBrightnessInterface(display => {
+                        return controlTransfer.call(display, 0x80 | requestType, 1, reportValue, STUDIO_DISPLAY_BRIGHTNESS_INTERFACE, 7)
+                    })
+                    return studioDisplayNitsToPercent(response.readUInt16LE(1))
+                },
+                async setBrightness(percent) {
+                    await this.withBrightnessInterface(display => {
+                        return controlTransfer.call(display, requestType, 9, reportValue, STUDIO_DISPLAY_BRIGHTNESS_INTERFACE, makeStudioDisplayRequestData(percent))
+                    })
+                }
+            }))
+    } catch(e) {
+        console.log("Fallback Studio Display detection failed", e)
+    }
+    return []
+}
+
+function isStudioDisplayAlias(monitor) {
+    return monitor?.hwid?.[1]?.startsWith("APPAE") || monitor?.name?.replace(/\s/g, "").toLowerCase().includes("studiodisplay")
+}
+
+function getStudioDisplayAliasKey(monitors, usedKeys = [], serial = "") {
+    const existingStudioKey = Object.keys(monitors).find(key => {
+        const monitor = monitors[key]
+        return usedKeys.indexOf(key) === -1 && monitor.type === "studio-display" && monitor.serial === serial
+    })
+    if (existingStudioKey) return existingStudioKey
+
+    return Object.keys(monitors).find(key => {
+        const monitor = monitors[key]
+        return usedKeys.indexOf(key) === -1 && isStudioDisplayAlias(monitor) && monitor.type !== "studio-display"
+    })
+}
+
 getStudioDisplay = async (monitors) => {
     try {
         const sdctl = require("studio-display-control")
         const displays = {}
         let count = 0
-        for (const display of sdctl.getDisplays()) {
+        const usedKeys = []
+        const studioDisplays = sdctl.getDisplays()
+        const existingSerials = []
+        for (const display of studioDisplays) {
+            existingSerials.push(await display.getSerialNumber())
+        }
+        studioDisplays.push(...getFallbackStudioDisplays(existingSerials))
+
+        for (const display of studioDisplays) {
             const serial = await display.getSerialNumber();
+            if (!serial) continue;
+            const brightness = await display.getBrightness()
             const hwid = [
                 "\\\\?\\DISPLAY",
                 "APPAE3A",
                 `APLSTD-${serial}-NUM${count}`
             ]
-            updateDisplay(monitors, hwid[2], {
-                name: "Apple Studio Display",
+            const existingKey = getStudioDisplayAliasKey(monitors, usedKeys, serial)
+            const monitorKey = existingKey || hwid[2]
+            const existingMonitor = monitors[monitorKey] || {}
+            const monitorHwid = existingMonitor.hwid?.length ? existingMonitor.hwid : hwid
+            const modelName = display.getModelName()
+            usedKeys.push(monitorKey)
+            updateDisplay(monitors, monitorKey, {
+                name: existingMonitor.name || modelName || "Apple Studio Display",
                 type: "studio-display",
-                key: hwid[2],
-                id: `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
-                hwid,
+                key: monitorKey,
+                id: existingMonitor.id || `\\\\?\\${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                hwid: monitorHwid,
                 serial,
-                brightness: await display.getBrightness()
+                brightness,
+                brightnessRaw: brightness,
+                brightnessMax: 100,
+                brightnessValues: [brightness, 100],
+                min: 0,
+                max: 100
             });
-            displays[hwid[2]] = display
+            displays[monitorKey] = display
             count++
         }
         return displays
@@ -491,16 +620,31 @@ getStudioDisplay = async (monitors) => {
 
 setStudioDisplayBrightness = async (serial, brightness) => {
     try {
+        const monitorKey = Object.keys(monitors).find(key => monitors[key]?.serial === serial)
+        if (monitorKey && monitorsAppleStudio[monitorKey]) {
+            await monitorsAppleStudio[monitorKey].setBrightness(brightness)
+            return true
+        }
+
         const sdctl = require("studio-display-control")
-        for (const monitor of sdctl.getDisplays()) {
+        const studioDisplays = sdctl.getDisplays()
+        const existingSerials = []
+        for (const display of studioDisplays) {
+            existingSerials.push(await display.getSerialNumber())
+        }
+        studioDisplays.push(...getFallbackStudioDisplays(existingSerials))
+
+        for (const monitor of studioDisplays) {
             const s = await monitor.getSerialNumber();
             if (s === serial) {
                 await monitor.setBrightness(brightness);
+                return true
             }
         }
     } catch (e) {
         console.log("\x1b[41m" + "setStudioDisplayBrightness(): failed to set brightness" + "\x1b[0m", e)
     }
+    return false
 }
 
 getHDRDisplays = async (monitors) => {

@@ -5,6 +5,7 @@ const { WindowsAmbientLightSensor } = require('./sensors/windows-ambient-light-s
 const defaultSettings = {
     enabled: false,
     active: "fake",
+    sensorPollingInterval: 10,
     sensors: {
         yocto: {
             hubUrl: "user:password@localhost"

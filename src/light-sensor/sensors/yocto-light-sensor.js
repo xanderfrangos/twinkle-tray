@@ -28,6 +28,7 @@ class YoctoLightSensor {
 
     const connectionUrlChanged = this.settings.sensors.yocto.hubUrl !== settings.sensors.yocto.hubUrl;
     this.settings = settings;
+    this._startPolling();
     if (connectionUrlChanged) {
       this.reconnect();
     }
@@ -115,7 +116,7 @@ class YoctoLightSensor {
     if (this.updateInterval) { 
       clearInterval(this.updateInterval);
     }
-    this.updateInterval = setInterval(() => this._update(), 1000)
+    this.updateInterval = setInterval(() => this._update(), 1000 * (this.settings?.sensorPollingInterval || 5))
   }
 
   _stopPolling() {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SettingsChild, SettingsOption } from "../SettingsOption";
 import { getMonitorName } from "../utilts/monitor.util";
 import { YoctoSettings } from "./sensors/YoctoSettings";
@@ -84,6 +84,22 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
     console.log({ lightSensor: { ...lightSensorSettings, active: newActive } });
     window.sendSettings({ lightSensor: { ...lightSensorSettings, active: newActive } });
   }, [lightSensorSettings]);
+
+  const [sensorInterval, setSensorInterval] = useState(lightSensorSettings.sensorPollingInterval || 5);
+  const sensorIntervalTimer = useRef(null);
+
+  useEffect(() => {
+    setSensorInterval(lightSensorSettings.sensorPollingInterval || 5);
+  }, [lightSensorSettings.sensorPollingInterval]);
+
+  const sensorIntervalChanged = useCallback((e) => {
+    const newInterval = Number(e.target.value);
+    setSensorInterval(newInterval);
+    clearTimeout(sensorIntervalTimer.current);
+    sensorIntervalTimer.current = setTimeout(() => {
+      window.sendSettings({ lightSensor: { ...lightSensorSettings, sensorPollingInterval: newInterval } });
+    }, 1000);
+  }, [lightSensorSettings]);
   return (
     <>
       <div className="pageSection">
@@ -101,6 +117,15 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
               <option value="windows">Windows Ambient</option>
           </select>
         }></SettingsOption>
+        <SettingsOption title={"Sensor Polling Interval (seconds)"} className="light-sensor-select" input={
+          <input 
+            type="number"
+            min="1"
+            max="3600"
+            value={sensorInterval}
+            onChange={sensorIntervalChanged}
+          />
+        } />
 
         {activeSensor === 'yocto' && <YoctoSettings T={T} lightSensorSettings={lightSensorSettings} />}
         {activeSensor === 'fake' && <FakeSensorSettings T={T} lightSensorSettings={lightSensorSettings} />}

@@ -27,7 +27,8 @@ class WindowsAmbientLightSensor {
 
   async changeSettings(settings) {
     this.settings = settings;
-    this._pollSensors();
+    await this.disconnect();
+    await this.connect();
   }
 
   async connect() {
@@ -35,7 +36,7 @@ class WindowsAmbientLightSensor {
     this._pollSensors();
     this.interval = setInterval(() => {
       this._pollSensors();
-    }, 1000);
+    }, 1000 * (this.settings?.sensorPollingInterval || 5));
   }
 
   async disconnect() {

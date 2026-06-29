@@ -103,12 +103,11 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
   return (
     <>
       <div className="pageSection">
-          <div className="sectionTitle">Light Sensor</div>
-          <p>
-            Set the brightness based on environment light from a light sensor
-          </p>
-      </div>
-      <div className="pageSection">
+        <div className="sectionTitle">Light Sensor</div>
+        <p>
+          Automatically update the brightness based on environment light from a light sensor.
+        </p>
+        <br />
         <SettingsOption title={'Enable feature'} input={renderLightSensorToggle()}>
           <SettingsChild title={"Sensor type"} description={"Choose the type of light sensor to use."} input={
             <select value={activeSensor} onChange={sensorTypeChanged}>

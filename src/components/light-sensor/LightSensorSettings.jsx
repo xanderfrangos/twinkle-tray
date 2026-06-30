@@ -127,61 +127,66 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
           } />
         </SettingsOption>
 
-        {activeSensor === 'yocto' && <YoctoSettings T={T} lightSensorSettings={lightSensorSettings} />}
-        {activeSensor === 'fake' && <FakeSensorSettings T={T} lightSensorSettings={lightSensorSettings} />}
-        {activeSensor === 'windows' && <WindowsSettings T={T} />}
+        {!(lightSensorSettings.enabled) ? <></> : <>
+        
+          {activeSensor === 'yocto' && <YoctoSettings T={T} lightSensorSettings={lightSensorSettings} />}
+          {activeSensor === 'fake' && <FakeSensorSettings T={T} lightSensorSettings={lightSensorSettings} />}
+          {activeSensor === 'windows' && <WindowsSettings T={T} />}
 
-        <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_MONITORS_TITLE")} description={
-          <>
-            <div>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC")}</div>
-            <ul>
-              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MIN")}</li>
-              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MAX")}</li>
-              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_INTERPOLATE")}</li>
-            </ul>
-          </>
-        } input={<></>}>
-          {Object.values(monitors ?? {}).map((monitor) => {
-            const monitorSettings = lightSensorSettings.monitorSettings?.[monitor.key] || { minLux: 5, maxLux: 250, enabled: false };
-            return (
-              <SettingsChild key={monitor.key}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input 
-                    style={{ marginTop: '17px'}}
-                    type="checkbox" 
-                    checked={monitorSettings.enabled}
-                    data-checked={monitorSettings.enabled}
-                    onChange={(e) => toggleMonitorEnabled(monitor, e.target.checked)} 
-                  />
-                  <strong>{getMonitorName(monitor, {})}</strong>
-                  <div style={{ margin: '0 0 0 auto'}}>
-                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MIN_LABEL")}</label>
-                      <input 
-                        style={{ marginTop: '5px '}}
-                        type="number" 
-                        min="0" 
-                        max="600" 
-                        value={monitorSettings.minLux} 
-                        onChange={(e) => minMaxChange(monitor, 'min', Number(e.target.value))} 
+          <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_MONITORS_TITLE")} description={
+            <>
+              <div>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC")}</div>
+              <ul>
+                <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MIN")}</li>
+                <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MAX")}</li>
+                <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_INTERPOLATE")}</li>
+              </ul>
+            </>
+          } input={<></>}>
+            {Object.values(monitors ?? {}).map((monitor) => {
+              const monitorSettings = lightSensorSettings.monitorSettings?.[monitor.key] || { minLux: 5, maxLux: 250, enabled: false };
+              return (
+                <SettingsChild key={monitor.key}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      style={{ marginTop: '17px'}}
+                      type="checkbox" 
+                      checked={monitorSettings.enabled}
+                      data-checked={monitorSettings.enabled}
+                      onChange={(e) => toggleMonitorEnabled(monitor, e.target.checked)} 
+                    />
+                    <strong>{getMonitorName(monitor, {})}</strong>
+                    <div style={{ margin: '0 0 0 auto'}}>
+                        <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MIN_LABEL")}</label>
+                        <input 
+                          style={{ marginTop: '5px '}}
+                          type="number" 
+                          min="0" 
+                          max="600" 
+                          value={monitorSettings.minLux} 
+                          onChange={(e) => minMaxChange(monitor, 'min', Number(e.target.value))} 
+                          />
+                    </div>
+                    <div>
+                        <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MAX_LABEL")}</label>
+                        <input 
+                          style={{ marginTop: '5px '}}
+                          type="number" 
+                          min="0" 
+                          max="600" 
+                          value={monitorSettings.maxLux} 
+                          onChange={(e) => minMaxChange(monitor, 'max', Number(e.target.value))} 
                         />
+                    </div>
+                    <span>{T.t("GENERIC_LUX")}</span>
                   </div>
-                  <div>
-                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MAX_LABEL")}</label>
-                      <input 
-                        style={{ marginTop: '5px '}}
-                        type="number" 
-                        min="0" 
-                        max="600" 
-                        value={monitorSettings.maxLux} 
-                        onChange={(e) => minMaxChange(monitor, 'max', Number(e.target.value))} 
-                      />
-                  </div>
-                  <span>{T.t("GENERIC_LUX")}</span>
-                </div>
-              </SettingsChild>
-            );
-          })}
-        </SettingsOption>
+                </SettingsChild>
+              );
+            })}
+          </SettingsOption>
+        
+        </>}
+
       </div>
     </>
   );

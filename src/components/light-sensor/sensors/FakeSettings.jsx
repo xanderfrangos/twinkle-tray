@@ -23,11 +23,11 @@ export function FakeSensorSettings({ T, lightSensorSettings }) {
 
   return (
     <>
-      <SettingsOption title={"Fake Sensor"} description={"A fake sensor for testing purposes. Set the simulated light level below."}>
-        <SettingsChild title={"Overridden Lux"} description={"Set the simulated light level in Lux."}>
+      <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_FAKE_TITLE")} description={T.t("SETTINGS_LIGHT_SENSOR_FAKE_DESC")}>
+        <SettingsChild title={T.t("SETTINGS_LIGHT_SENSOR_FAKE_LUX_TITLE")} description={T.t("SETTINGS_LIGHT_SENSOR_FAKE_LUX_DESC")}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <label style={{ textTransform: "capitalize" }}>
-              Simulated Light Level:
+              {T.t("SETTINGS_LIGHT_SENSOR_FAKE_LUX_LABEL")}
             </label>
             <input
               type="number"
@@ -37,7 +37,7 @@ export function FakeSensorSettings({ T, lightSensorSettings }) {
               onChange={(e) => handleLuxChange(Number(e.target.value))}
               style={{ maxWidth: "100px" }}
             />
-            <span>Lux</span>
+            <span>{T.t("GENERIC_LUX")}</span>
           </div>
         </SettingsChild>
       </SettingsOption>

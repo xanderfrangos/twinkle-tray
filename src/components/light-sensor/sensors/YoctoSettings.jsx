@@ -33,9 +33,9 @@ export function YoctoSettings({ T, lightSensorSettings }) {
     if (!yoctoStatus.hubConnected) {
       return (
         <p>
-          Yocto Virtual Hub not found see{" "}
+          {T.t("SETTINGS_LIGHT_SENSOR_YOCTO_HUB_NOT_FOUND")}:{" "}
           <a href={virtualhubUrl} target="_blank" rel="noreferrer">
-            here
+            {virtualhubUrl}
           </a>
         </p>
       );
@@ -43,15 +43,15 @@ export function YoctoSettings({ T, lightSensorSettings }) {
     if (!yoctoStatus.sensorConnected) {
       return (
         <p>
-          Yocto Light Sensor not found{" "}
+          {T.t("SETTINGS_LIGHT_SENSOR_YOCTO_NOT_FOUND")}{" "}
           <span className="icon" style={{ color: "red" }}>
             &#xE783;
           </span>
         </p>
       );
     }
-    return <p>Yocto Light Sensor Found</p>;
-  }, [yoctoStatus.hubConnected, yoctoStatus.sensorConnected]);
+    return <p>{T.t("SETTINGS_LIGHT_SENSOR_YOCTO_FOUND")}</p>;
+  }, [yoctoStatus.hubConnected, yoctoStatus.sensorConnected, T]);
 
   const handleUrlChange = useCallback((newUrl) => {
     const updatedSensors = {
@@ -70,42 +70,39 @@ export function YoctoSettings({ T, lightSensorSettings }) {
   }, [lightSensorSettings, yoctoSensorSettings]);
   return (
     <>
-      <SettingsOption title={"Yocto Light Sensor"} description={"Get environment light from a Yocto light sensor."}>
+      <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_YOCTO_TITLE")} description={T.t("SETTINGS_LIGHT_SENSOR_YOCTO_DESC")}>
         <SettingsChild>
           <>
             {message}{" "}
             {yoctoStatus.sensorConnected && yoctoStatus.lux !== null
-              ? `${yoctoStatus.lux} Lux`
+              ? `${yoctoStatus.lux} ${T.t("GENERIC_LUX")}`
               : ""}
           </>
         </SettingsChild>
         <SettingsChild>
           <>
             <p>
-              To communicate to the sensor, you need to install the "Yocto Virtual
-              Hub" this allows this program to talk to connected sensors on your pc
+              {T.t("SETTINGS_LIGHT_SENSOR_YOCTO_INSTALL_DESC")}
             </p>
             <p>
-              <strong>Important:</strong> The virtual hub can be configured to auto
-              start by running it on the command line with '-i'
+              <strong>{T.t("SETTINGS_LIGHT_SENSOR_YOCTO_IMPORTANT")}</strong> {T.t("SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART")}
               <br />
-              See
               <i>
-                "-i : Installation as a service"{" "}
-                <a
+                {T.t("SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE")}:{" "}
+              </i>
+              <a
                   href={
                     "https://www.yoctopuce.com/EN/products/yocto-light-v5/doc/LIGHTMK5.usermanual.html"
                   }
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Here
+                  https://www.yoctopuce.com/EN/products/yocto-light-v5/doc/LIGHTMK5.usermanual.html
                 </a>
-              </i>
             </p>
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <label>VirtualHub URL:</label>
+              <label>{T.t("SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL")}</label>
               <input
                 type="text"
                 value={yoctoSensorSettings.hubUrl || "http://127.0.0.1:4444"}
@@ -120,7 +117,7 @@ export function YoctoSettings({ T, lightSensorSettings }) {
                   <div className="icon" style={{ color: "red" }}>
                     &#xE783;
                   </div>{" "}
-                  <span>Disconnected</span>
+                  <span>{T.t("SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED")}</span>
                 </>
               )}
             </div>

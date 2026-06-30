@@ -103,20 +103,20 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
   return (
     <>
       <div className="pageSection">
-        <div className="sectionTitle">Light Sensor</div>
+        <div className="sectionTitle">{T.t("SETTINGS_LIGHT_SENSOR_TITLE")}</div>
         <p>
-          Automatically update the brightness based on environment light from a light sensor.
+          {T.t("SETTINGS_LIGHT_SENSOR_DESC")}
         </p>
         <br />
-        <SettingsOption title={'Enable feature'} input={renderLightSensorToggle()}>
-          <SettingsChild title={"Sensor type"} description={"Choose the type of light sensor to use."} input={
+        <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_ENABLE")} input={renderLightSensorToggle()}>
+          <SettingsChild title={T.t("SETTINGS_LIGHT_SENSOR_TYPE_TITLE")} description={T.t("SETTINGS_LIGHT_SENSOR_TYPE_DESC")} input={
             <select value={activeSensor} onChange={sensorTypeChanged}>
-                <option value="yocto">Yocto</option>
-                <option value="fake">Fake</option>
-                <option value="windows">Windows Ambient</option>
+                <option value="yocto">{T.t("SETTINGS_LIGHT_SENSOR_TYPE_YOCTO")}</option>
+                <option value="fake">{T.t("SETTINGS_LIGHT_SENSOR_TYPE_FAKE")}</option>
+                <option value="windows">{T.t("SETTINGS_LIGHT_SENSOR_TYPE_WINDOWS")}</option>
             </select>
           }></SettingsChild>
-          <SettingsChild title={"Sensor polling interval (seconds)"} description={"Set the interval at which the sensor polls for light data."} input={
+          <SettingsChild title={T.t("SETTINGS_LIGHT_SENSOR_POLLING_TITLE")} description={T.t("SETTINGS_LIGHT_SENSOR_POLLING_DESC")} input={
             <input 
               type="number"
               min="1"
@@ -131,13 +131,13 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
         {activeSensor === 'fake' && <FakeSensorSettings T={T} lightSensorSettings={lightSensorSettings} />}
         {activeSensor === 'windows' && <WindowsSettings T={T} />}
 
-        <SettingsOption title={"Monitor settings"} description={
+        <SettingsOption title={T.t("SETTINGS_LIGHT_SENSOR_MONITORS_TITLE")} description={
           <>
-            <div>This maps each monitor's brightness (0%-100%) to ambient light levels in Lux. For example, setting the range to 5 and 250 means:</div>
+            <div>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC")}</div>
             <ul>
-              <li>When the sensor reads 5 Lux or less, brightness is set to 0%.</li>
-              <li>When the sensor reads 250 Lux or more, brightness is set to 100%.</li>
-              <li>Values between 5 and 250 Lux are linearly interpolated.</li>
+              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MIN")}</li>
+              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MAX")}</li>
+              <li>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_DESC_INTERPOLATE")}</li>
             </ul>
           </>
         } input={<></>}>
@@ -155,7 +155,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
                   />
                   <strong>{getMonitorName(monitor, {})}</strong>
                   <div style={{ margin: '0 0 0 auto'}}>
-                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>0% at</label>
+                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MIN_LABEL")}</label>
                       <input 
                         style={{ marginTop: '5px '}}
                         type="number" 
@@ -166,7 +166,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
                         />
                   </div>
                   <div>
-                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>100% at</label>
+                      <label style={{ textTransform: "capitalize", fontSize: 'smaller' }}>{T.t("SETTINGS_LIGHT_SENSOR_MONITORS_MAX_LABEL")}</label>
                       <input 
                         style={{ marginTop: '5px '}}
                         type="number" 
@@ -176,7 +176,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
                         onChange={(e) => minMaxChange(monitor, 'max', Number(e.target.value))} 
                       />
                   </div>
-                  <span>Lux</span>
+                  <span>{T.t("GENERIC_LUX")}</span>
                 </div>
               </SettingsChild>
             );

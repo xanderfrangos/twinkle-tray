@@ -367,7 +367,7 @@ export default class SettingsWindow extends PureComponent {
             },
             {
                 id: "light-sensor",
-                label: 'Light Sensor',
+                label: T.t("SETTINGS_SIDEBAR_LIGHT_SENSOR"),
                 icon: "&#xE957;"
             },
             {

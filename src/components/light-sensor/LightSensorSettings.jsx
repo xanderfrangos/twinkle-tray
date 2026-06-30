@@ -25,7 +25,7 @@ export function LightSensorSettings({ T, renderToggle, monitors }) {
     "monitorSettings": {}
 };
 
-  const activeSensor = lightSensorSettings.active ?? 'windows';
+  const activeSensor = lightSensorSettings.active ?? 'fake';
 
   const renderLightSensorToggle = useCallback(() => {
     const isActive = lightSensorSettings.enabled || false;

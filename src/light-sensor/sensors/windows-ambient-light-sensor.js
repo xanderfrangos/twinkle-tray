@@ -1,4 +1,4 @@
-const { applyMonitorBrightnessFromLux } = require('../light-sensor.utilts');
+const { applyMonitorBrightnessFromLux, getBrightnessFromLux } = require('../light-sensor.utilts');
 const { getAmbientLightSensors, getLuxValue } = require("windows-ambient-sensor");
 
 class WindowsAmbientLightSensor {
@@ -11,6 +11,7 @@ class WindowsAmbientLightSensor {
     this.interval = null;
     this.sensorsAvailable = [];
     this.currentLux = null;
+    this.lastAppliedBrightness = null;
   }
 
   initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle) {
@@ -46,6 +47,7 @@ class WindowsAmbientLightSensor {
     }
     this.sensorsAvailable = [];
     this.currentLux = null;
+    this.lastAppliedBrightness = null;
     this._sendStatus();
     console.log("Windows Ambient Light Sensor: Stopped");
   }
@@ -93,6 +95,12 @@ class WindowsAmbientLightSensor {
     if (this.currentLux === null || !this.monitors || !this.updateBrightnessThrottle || !this.settings || !this.settings.enabled) {
       return;
     }
+
+    const brightness = getBrightnessFromLux(this.currentLux);
+    if (brightness === this.lastAppliedBrightness) {
+      return;
+    }
+    this.lastAppliedBrightness = brightness;
 
     applyMonitorBrightnessFromLux(
       this.currentLux,

@@ -1,6 +1,6 @@
 require('yoctolib-es2017/yocto_api.js');
 require('yoctolib-es2017/yocto_lightsensor.js');
-const { applyMonitorBrightnessFromLux } = require('../light-sensor.utilts');
+const { applyMonitorBrightnessFromLux, getBrightnessFromLux } = require('../light-sensor.utilts');
 
 class YoctoLightSensor {
   constructor() {
@@ -15,6 +15,7 @@ class YoctoLightSensor {
     this.monitors = null;
     this.sendToAllWindows = null;
     this.updateBrightnessThrottle = null;
+    this.lastAppliedBrightness = null;
   }
 
   initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle) {
@@ -93,6 +94,7 @@ class YoctoLightSensor {
     this.hubConnected = false;
     this.sensorConnected = false;
     this.currentLux = null;
+    this.lastAppliedBrightness = null;
     this._sendStatus();
   }
 
@@ -176,6 +178,12 @@ class YoctoLightSensor {
     if (this.currentLux === null || !this.sensorConnected || !this.monitors || !this.updateBrightnessThrottle || !this.settings.enabled) {
       return;
     }
+
+    const brightness = getBrightnessFromLux(this.currentLux);
+    if (brightness === this.lastAppliedBrightness) {
+      return;
+    }
+    this.lastAppliedBrightness = brightness;
 
     applyMonitorBrightnessFromLux(this.currentLux, this.monitors, this.settings.monitorSettings, this.updateBrightnessThrottle);
   }

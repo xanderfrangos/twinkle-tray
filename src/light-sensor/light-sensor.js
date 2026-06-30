@@ -66,8 +66,12 @@ class LightSensor {
             return;
         }
 
-        // Check if sensor type changed
-        if (newSettings.active !== this.active?.name) {
+        // Desired sensor: none when the feature is disabled, so disabling
+        // actually disconnects the hardware instead of polling forever.
+        const desired = newSettings.enabled ? this.sensors[newSettings.active] : null;
+
+        // Switch sensors (or disconnect) when the active sensor changes
+        if (desired !== this.active) {
             // Disconnect old sensor if it exists
             if (this.active) {
                 try {
@@ -79,7 +83,7 @@ class LightSensor {
             }
 
             // Connect new sensor
-            this.active = this.sensors[newSettings.active];
+            this.active = desired;
             if (this.active) {
                 try {
                     console.log(`Light Sensor: connecting ${this.active.name}`);
@@ -112,7 +116,7 @@ class LightSensor {
         for (const sensor of Object.values(this.sensors)) {
             sensor.initialize(settings, monitors, sendToAllWindows, updateBrightnessThrottle);
         }
-        if (settings.active) {
+        if (settings.enabled && settings.active) {
             this.active = this.sensors[settings.active];
             if (this.active) {
                 try {

@@ -7,9 +7,13 @@ function applyMonitorBrightnessFromLux(lux, monitors, monitorSettings, updateBri
         }
 
         const { minLux = 5, maxLux = 250 } = monitorSetting
+        const span = maxLux - minLux;
+        if (span <= 0) {
+            continue;
+        }
         const brightness = Math.round(
             Math.max(0, Math.min(100,
-                ((lux - minLux) / (maxLux - minLux)) * 100
+                ((lux - minLux) / span) * 100
             ))
         );
 

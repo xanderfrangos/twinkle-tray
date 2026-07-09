@@ -10,6 +10,10 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <set>
+#include <list>
+#include <thread>
+#include <chrono>
 #include <iomanip>
 #include <algorithm>
 #include <cstdint>
@@ -65,6 +69,21 @@ std::map<std::string, std::string> capabilities;
 
 int logLevel = 0;
 
+// `handles` owns every physical-monitor handle. `physicalMonitorHandles`
+// stores metadata only and must never destroy its copy of a handle.
+void
+destroyPhysicalMonitorHandles(std::vector<struct Monitor>& monitors)
+{
+    for (auto& monitor : monitors) {
+        for (auto& handle : monitor.physicalHandles) {
+            if (handle != NULL) {
+                DestroyPhysicalMonitor(handle);
+                handle = NULL;
+            }
+        }
+    }
+}
+
 // Info
 void
 p(std::string s)
@@ -93,9 +112,6 @@ clearMonitorData()
         handles.clear();
     }
     if (!physicalMonitorHandles.empty()) {
-        for (auto const& physicalMonitor : physicalMonitorHandles) {
-            DestroyPhysicalMonitor(physicalMonitor.second.handle);
-        }
         physicalMonitorHandles.clear();
     }
     if (!capabilities.empty()) {
@@ -106,22 +122,19 @@ clearMonitorData()
 void
 cleanMonitorHandles(std::map<std::string, HANDLE> newHandles)
 {
-    if (!handles.empty()) {
-        for (auto const& handle : handles) {
-            bool found = false;
-            for (auto const& newHandle : newHandles) {
-                if (handle.second == newHandle.second) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                DestroyPhysicalMonitor(handle.second);
-                handles.erase(handle.first);
+    for (auto const& handle : handles) {
+        bool found = false;
+        for (auto const& newHandle : newHandles) {
+            if (handle.second == newHandle.second) {
+                found = true;
+                break;
             }
         }
-        handles.clear();
+        if (!found) {
+            DestroyPhysicalMonitor(handle.second);
+        }
     }
+    handles.clear();
 }
 
 std::string
@@ -225,6 +238,7 @@ getAllHandles() {
       NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
 
     // Get physical monitor handles
+    try {
     for (auto& monitor : monitors) {
         DWORD numPhysicalMonitors;
         LPPHYSICAL_MONITOR physicalMonitors = NULL;
@@ -245,13 +259,17 @@ getAllHandles() {
             throw std::runtime_error("Failed to get physical monitors.");
         }
 
-        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
+        for (DWORD i = 0; i < numPhysicalMonitors; i++) {
             monitor.physicalHandles.push_back(
               physicalMonitors[i].hPhysicalMonitor);
         }
 
         monitor.monitorName = getPhysicalMonitorName(monitor.handle);
         delete[] physicalMonitors;
+    }
+    } catch (...) {
+        destroyPhysicalMonitorHandles(monitors);
+        throw;
     }
 
     return monitors;
@@ -422,48 +440,7 @@ populateHandlesMapLegacy()
 {
     clearMonitorData();
 
-    auto monitorEnumProc = [](HMONITOR hMonitor,
-                              HDC hdcMonitor,
-                              LPRECT lprcMonitor,
-                              LPARAM dwData) -> BOOL {
-        auto monitors = reinterpret_cast<std::vector<struct Monitor>*>(dwData);
-        monitors->push_back({ hMonitor, {} });
-        return TRUE;
-    };
-
-    std::vector<struct Monitor> monitors;
-    EnumDisplayMonitors(
-      NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
-
-    // Get physical monitor handles
-    for (auto& monitor : monitors) {
-        DWORD numPhysicalMonitors;
-        LPPHYSICAL_MONITOR physicalMonitors = NULL;
-        if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
-                                                     &numPhysicalMonitors)) {
-            throw std::runtime_error("Failed to get physical monitor count.");
-            exit(EXIT_FAILURE);
-        }
-
-        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
-        if (physicalMonitors == NULL) {
-            throw std::runtime_error(
-              "Failed to allocate physical monitor array");
-        }
-
-        if (!GetPhysicalMonitorsFromHMONITOR(
-              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
-            throw std::runtime_error("Failed to get physical monitors.");
-        }
-
-        for (DWORD i = 0; i <= numPhysicalMonitors; i++) {
-            monitor.physicalHandles.push_back(
-              physicalMonitors[(numPhysicalMonitors == 1 ? 0 : i)]
-                .hPhysicalMonitor);
-        }
-
-        delete[] physicalMonitors;
-    }
+    std::vector<struct Monitor> monitors = getAllHandles();
 
 
     DISPLAY_DEVICE adapterDev;
@@ -488,7 +465,7 @@ populateHandlesMapLegacy()
                 continue;
             }
 
-            for (auto const& monitor : monitors) {
+            for (auto& monitor : monitors) {
                 MONITORINFOEX monitorInfo;
                 monitorInfo.cbSize = sizeof(MONITORINFOEX);
                 GetMonitorInfo(monitor.handle, &monitorInfo);
@@ -512,8 +489,13 @@ populateHandlesMapLegacy()
 
                     // Match and store against device ID
                     if (monitorName == deviceName) {
-                        handles.insert({ static_cast<std::string>(deviceKey),
-                                         monitor.physicalHandles[i] });
+                        auto inserted = handles.insert(
+                          { static_cast<std::string>(deviceKey),
+                            monitor.physicalHandles[i] });
+                        if (inserted.second) {
+                            // Ownership moves to `handles`.
+                            monitor.physicalHandles[i] = NULL;
+                        }
 
                         break;
                     }
@@ -521,6 +503,9 @@ populateHandlesMapLegacy()
             }
         }
     }
+
+    // Destroy handles which could not be matched to a DISPLAY_DEVICE.
+    destroyPhysicalMonitorHandles(monitors);
 
     // Also update physicalMonitorHandles for use with getAllDisplays
     std::map<std::string, DisplayDevice> displays = getAllDisplays("key");
@@ -548,6 +533,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 {
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
+    std::set<HANDLE> newlyAcquiredHandles;
 
     d("Getting all display devices...");
 
@@ -563,8 +549,9 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 
     // Get physical monitor handles
     std::vector<struct Monitor> monitors = getAllHandles();
+    try {
     for (auto& monitor : monitors) {
-        for (DWORD i = 0; i <= monitor.physicalHandles.size(); i++) {
+        for (size_t i = 0; i < monitor.physicalHandles.size(); i++) {
 
             /**
              * Loop through physical monitors, check capabilities,
@@ -577,7 +564,8 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
             p("-- " + fullMonitorName);
 
             PhysicalMonitor newMonitor;
-            newMonitor.handle = monitor.physicalHandles[i];
+            HANDLE acquiredHandle = monitor.physicalHandles[i];
+            newMonitor.handle = acquiredHandle;
             newMonitor.handleIsValid = (newMonitor.handle != NULL);
             newMonitor.name = monitor.monitorName;
             newMonitor.physicalName = fullMonitorName;
@@ -627,9 +615,11 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                         // Test old handle if it's valid
                         if(previousDisplay.second.handle != NULL && previousDisplay.second.handleIsValid) {
                             p("-- -- Testing old handle.");
-                            if("ok" == getPhysicalHandleResults(previousDisplay.second.handle, "fast")) {
-                                p("-- -- Using old handle.");
-                                newMonitor.handle = previousDisplay.second.handle;
+                             if("ok" == getPhysicalHandleResults(previousDisplay.second.handle, "fast")) {
+                                 p("-- -- Using old handle.");
+                                DestroyPhysicalMonitor(acquiredHandle);
+                                monitor.physicalHandles[i] = NULL;
+                                 newMonitor.handle = previousDisplay.second.handle;
                                 newMonitor.handleIsValid = previousDisplay.second.handleIsValid;
                                 newMonitor.hlCapabilities = previousDisplay.second.hlCapabilities;
                             }
@@ -690,9 +680,23 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                 p("-- -- DDC/CI: previously OK");
             }
 
-            // Add to monitor list
+            // Add to monitor list. The physical handle is either transferred
+            // to `handles`, or the newly acquired handle was destroyed above
+            // when an existing handle was reused.
+            auto inserted = newHandles.insert(
+              { newMonitor.deviceKey, newMonitor.handle });
+            if (!inserted.second) {
+                if (newMonitor.handle == acquiredHandle) {
+                    DestroyPhysicalMonitor(acquiredHandle);
+                    monitor.physicalHandles[i] = NULL;
+                }
+                continue;
+            }
+            if (newMonitor.handle == acquiredHandle) {
+                newlyAcquiredHandles.insert(acquiredHandle);
+                monitor.physicalHandles[i] = NULL;
+            }
             newPhysicalHandles.insert({ newMonitor.fullName, newMonitor });
-            newHandles.insert({ newMonitor.deviceKey, newMonitor.handle });
 
             // Add to capabilities list
             if (saveCapabilities && validationMethod == "accurate" && newMonitor.result != "ok"
@@ -703,9 +707,21 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
         }
     }
 
+    // All remaining entries were not transferred to `handles`.
+    destroyPhysicalMonitorHandles(monitors);
+
     cleanMonitorHandles(newHandles);
     handles = newHandles;
     physicalMonitorHandles = newPhysicalHandles;
+    } catch (...) {
+        // Keep the old global maps intact when refresh fails, and release any
+        // new handles whose ownership had been transferred to local state.
+        for (auto const& handle : newlyAcquiredHandles) {
+            DestroyPhysicalMonitor(handle);
+        }
+        destroyPhysicalMonitorHandles(monitors);
+        throw;
+    }
 }
 
 void
@@ -1233,7 +1249,9 @@ Init(Napi::Env env, Napi::Object exports)
     exports.Set("setLogLevel", Napi::Function::New(env, setLogLevel, "setLogLevel"));
     exports.Set("getMonitorInputs", Napi::Function::New(env, getMonitorInputs, "getMonitorInputs"));
 
-    getAllHandles(); // Returns bad handles the first time??
+    // Preserve the original warm-up behavior without leaking its handles.
+    std::vector<struct Monitor> initialHandles = getAllHandles();
+    destroyPhysicalMonitorHandles(initialHandles);
 
     return exports;
 }

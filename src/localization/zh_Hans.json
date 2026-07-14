@@ -62,7 +62,7 @@
     "SETTINGS_GENERAL_RESET_BUTTON": "重置设置",
     "SETTINGS_GENERAL_ACRYLIC_TITLE": "亚克力（Acrylic）模糊",
     "SETTINGS_GENERAL_ACRYLIC_DESC": "在 Twinkle Tray 中启用或禁用透明背景模糊效果。",
-    "SETTINGS_GENERAL_MICA_TITLE": "云母模糊",
+    "SETTINGS_GENERAL_MICA_TITLE": "云母（Mica）模糊",
     "SETTINGS_GENERAL_MICA_DESC": "在 Twinkle Tray 中打开或关闭背景后方的模糊效果。",
     "SETTINGS_GENERAL_ANALYTICS_TITLE": "分析",
     "SETTINGS_GENERAL_ANALYTICS_DESC": "发送使用数据以帮助改进 Twinkle Tray 。不会发送个人信息。{{1}}",

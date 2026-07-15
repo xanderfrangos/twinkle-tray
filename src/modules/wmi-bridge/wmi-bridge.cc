@@ -49,19 +49,13 @@ class ComScope {
 };
 
 std::mutex securityInitializationMutex;
-bool securityInitialized = false;
 
 bool initializeWmiSecurity()
 {
-    // CoInitializeSecurity only needs to succeed once per process, but a
-    // transient failure (e.g. a startup race with another COM initializer)
-    // shouldn't permanently disable WMI for the rest of the session, so
-    // retry on every call until it succeeds.
+    // ComScope can tear down and later reinitialize COM between calls. COM
+    // security must therefore be initialized for the current COM lifetime,
+    // rather than cached for the lifetime of the addon.
     std::lock_guard<std::mutex> lock(securityInitializationMutex);
-    if (securityInitialized) {
-        return true;
-    }
-
     HRESULT securityResult = CoInitializeSecurity(NULL,
                                                    -1,
                                                    NULL,
@@ -78,8 +72,7 @@ bool initializeWmiSecurity()
         securityResult = S_OK;
     }
 
-    securityInitialized = SUCCEEDED(securityResult);
-    return securityInitialized;
+    return SUCCEEDED(securityResult);
 }
 
 Napi::Object makeFailure(const Napi::Env& env)

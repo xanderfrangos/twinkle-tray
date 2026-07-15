@@ -3,564 +3,442 @@
 #include <napi.h>
 #include <windows.h>
 #include <string>
-#include <iostream>
+#include <mutex>
+#include <cmath>
 #include <WbemCli.h>
 #include <comdef.h>
+#include <wrl/client.h>
 #include "oaidl.h"
 #include "oleauto.h"
+
+using Microsoft::WRL::ComPtr;
 using namespace std;
 
 #pragma comment(lib, "wbemuuid.lib")
-
-HRESULT hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-IWbemServices *pService = NULL;
-bool wmiConnected = false;
-Napi::Object failedObj;
 
 void p(string str)
 {
     //cout << "Line: " << str << endl;
 }
 
-// Set up COM stuff once
-bool wmiConnect()
-{
-    try {
-        p("wmiConnect 1");
-        if (wmiConnected == true)
-            return true;
-        p("wmiConnect 2");
-        hRes = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-        if (FAILED(hRes))
-        {
-            cout << "Unable to launch COM: 0x" << std::hex << hRes << endl;
-            return false;
-        }
-        p("wmiConnect 3");
-
-        if ((FAILED(hRes = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_CONNECT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, 0))))
-        {
-            cout << "Unable to initialize security: 0x" << std::hex << hRes << endl;
-            return false;
-        }
-        p("wmiConnect 4 END");
-        wmiConnected = true;
-        return true;
-    } catch (...) {
-        return false;
+class ComScope {
+  public:
+    ComScope()
+      : result(CoInitializeEx(NULL, COINIT_MULTITHREADED))
+      , shouldUninitialize(SUCCEEDED(result))
+    {
     }
+
+    ~ComScope()
+    {
+        if (shouldUninitialize) {
+            CoUninitialize();
+        }
+    }
+
+    bool isUsable() const
+    {
+        // A host may have initialized this thread as STA already. COM remains
+        // usable in that case, but this scope must not uninitialize it.
+        return SUCCEEDED(result) || result == RPC_E_CHANGED_MODE;
+    }
+
+  private:
+    HRESULT result;
+    bool shouldUninitialize;
+};
+
+std::once_flag securityInitialization;
+HRESULT securityResult = E_UNEXPECTED;
+
+bool initializeWmiSecurity()
+{
+    std::call_once(securityInitialization, []() {
+        securityResult = CoInitializeSecurity(NULL,
+                                              -1,
+                                              NULL,
+                                              NULL,
+                                              RPC_C_AUTHN_LEVEL_CONNECT,
+                                              RPC_C_IMP_LEVEL_IMPERSONATE,
+                                              NULL,
+                                              EOAC_NONE,
+                                              0);
+
+        // Another component may have configured process-wide COM security
+        // before the addon is loaded. That configuration is usable here.
+        if (securityResult == RPC_E_TOO_LATE) {
+            securityResult = S_OK;
+        }
+    });
+
+    return SUCCEEDED(securityResult);
 }
 
-// https://stackoverflow.com/questions/6284524/bstr-to-stdstring-stdwstring-and-vice-versa
+Napi::Object makeFailure(const Napi::Env& env)
+{
+    Napi::Object failed = Napi::Object::New(env);
+    failed.Set("failed", Napi::Boolean::New(env, true));
+    return failed;
+}
+
 std::string bstr_to_str(BSTR bstr)
 {
+    if (bstr == NULL) {
+        return "";
+    }
+
     int wslen = ::SysStringLen(bstr);
-    const wchar_t* pstr = (wchar_t*)bstr;
-    int len = ::WideCharToMultiByte(CP_ACP, 0, pstr, wslen, NULL, 0, NULL, NULL);
+    if (wslen == 0) {
+        return "";
+    }
 
-    std::string dblstr(len, '\0');
-    len = ::WideCharToMultiByte(CP_ACP, 0 /* no flags */,
-                                pstr, wslen /* not necessary NULL-terminated */,
-                                &dblstr[0], len,
-                                NULL, NULL /* no default char */);
-    return dblstr;
+    int len = ::WideCharToMultiByte(CP_ACP, 0, bstr, wslen, NULL, 0, NULL, NULL);
+    if (len <= 0) {
+        return "";
+    }
+
+    std::string result(len, '\0');
+    if (::WideCharToMultiByte(CP_ACP, 0, bstr, wslen, &result[0], len, NULL, NULL) == 0) {
+        return "";
+    }
+    return result;
 }
 
-// Used to read weird WMIMonitorID strings
-string getWMIClassUINTString(HRESULT &hr, VARIANT &vtProp)
+// Used to read WMIMonitorID's UINT16 string properties.
+std::string getWMIClassUINTString(HRESULT hr, VARIANT& value)
 {
-    p("getWMIClassUINTString 1");
-    string out = "";
-    if (!FAILED(hr))
-    {
-        p("getWMIClassUINTString 2");
-        if ((vtProp.vt == VT_NULL) || (vtProp.vt == VT_EMPTY))
-        {
-            p("getWMIClassUINTString 3a");
-        }
-        else if ((vtProp.vt & VT_ARRAY))
-        {
-            p("getWMIClassUINTString 3b");
-            long lLower, lUpper;
-            UINT32 Element = NULL;
-            SAFEARRAY *pSafeArray = vtProp.parray;
-            p("getWMIClassUINTString 4");
-            SafeArrayGetLBound(pSafeArray, 1, &lLower);
-            SafeArrayGetUBound(pSafeArray, 1, &lUpper);
-            p("getWMIClassUINTString 5");
+    std::string output;
 
-            for (long i = lLower; i <= lUpper; i++)
-            {
-                hr = SafeArrayGetElement(pSafeArray, &i, &Element);
-                if (Element != 0)
-                {
-                    out.push_back(char(Element));
+    if (SUCCEEDED(hr) && (value.vt & VT_ARRAY) && value.parray != NULL) {
+        long lower = 0;
+        long upper = -1;
+        if (SUCCEEDED(SafeArrayGetLBound(value.parray, 1, &lower))
+            && SUCCEEDED(SafeArrayGetUBound(value.parray, 1, &upper))) {
+            for (long i = lower; i <= upper; i++) {
+                USHORT element = 0;
+                if (SUCCEEDED(SafeArrayGetElement(value.parray, &i, &element))
+                    && element != 0) {
+                    output.push_back(static_cast<char>(element));
                 }
             }
-            p("getWMIClassUINTString 6");
-            //SafeArrayDestroy(pSafeArray);
         }
     }
-    p("getWMIClassUINTString 7");
-    VariantClear(&vtProp);
-    p("getWMIClassUINTString 8 END");
-    return out;
+
+    VariantClear(&value);
+    return output;
 }
 
-Napi::Object getWMIBrightness(const Napi::CallbackInfo &info)
+bool connectToWmi(ComPtr<IWbemLocator>& locator, ComPtr<IWbemServices>& service)
 {
-    using std::cin;
-    using std::cout;
-    using std::endl;
-    p("getWMIBrightness 1");
-
-    // Monitors info
-    Napi::Object monitor = Napi::Object::New(info.Env());
-
-    // Failure/Error response
-    Napi::Object failed = Napi::Object::New(info.Env());
-    failed.Set("failed", Napi::Boolean::New(info.Env(), true));
-
-    try
-    {
-        int brightness = -1;
-
-        bool connected = wmiConnect();
-        p("getWMIBrightness 2");
-
-        IWbemLocator *pLocator = NULL;
-        if (FAILED(hRes = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pLocator))))
-        {
-            cout << "Unable to create a WbemLocator: " << std::hex << hRes << endl;
-            return failed;
-        }
-        p("getWMIBrightness 3");
-
-        if (FAILED(hRes = pLocator->ConnectServer(L"root\\WMI", NULL, NULL, NULL, WBEM_FLAG_CONNECT_USE_MAX_WAIT, NULL, NULL, &pService)))
-        {
-            pLocator->Release();
-            cout << "Unable to connect to \"WMI\": " << std::hex << hRes << endl;
-            return failed;
-        }
-        p("getWMIBrightness 4");
-
-        IEnumWbemClassObject *pEnumerator = NULL;
-        if (FAILED(hRes = pService->ExecQuery(L"WQL", L"SELECT * FROM WmiMonitorBrightness", WBEM_FLAG_FORWARD_ONLY, NULL, &pEnumerator)))
-        {
-            // Likely due to not being a laptop
-            pLocator->Release();
-            pService->Release();
-            return failed;
-        }
-        p("getWMIBrightness 5");
-
-        IWbemClassObject *clsObj = NULL;
-        int numElems;
-        while ((hRes = pEnumerator->Next(500, 1, &clsObj, (ULONG *)&numElems)) != WBEM_S_FALSE)
-        {
-            if (FAILED(hRes))
-                break;
-
-            VARIANT vRet;
-            VariantInit(&vRet);
-            p("getWMIBrightness 6a");
-            if (SUCCEEDED(clsObj->Get(L"InstanceName", 0, &vRet, NULL, NULL)))
-            {
-                string InstanceName = bstr_to_str(vRet.bstrVal);
-                monitor.Set("InstanceName", Napi::String::New(info.Env(), InstanceName));
-                VariantClear(&vRet);
-            }
-
-            VariantInit(&vRet);
-            p("getWMIBrightness 6b");
-            if (SUCCEEDED(clsObj->Get(L"CurrentBrightness", 0, &vRet, NULL, NULL)))
-            {
-                brightness = vRet.intVal;
-                monitor.Set("Brightness", Napi::Number::New(info.Env(), brightness));
-                VariantClear(&vRet);
-            }
-
-            clsObj->Release();
-        }
-        p("getWMIBrightness 7");
-
-        pEnumerator->Release();
-        pService->Release();
-        pLocator->Release();
-        p("getWMIBrightness 8 END");
+    HRESULT hr = CoCreateInstance(CLSID_WbemLocator,
+                                  NULL,
+                                  CLSCTX_ALL,
+                                  IID_PPV_ARGS(locator.GetAddressOf()));
+    if (FAILED(hr)) {
+        return false;
     }
-    catch (...)
-    {
-        p("getWMIBrightness FAILED");
-        return failed;
-    }
-    return monitor;
+
+    _bstr_t namespacePath(L"ROOT\\WMI");
+    hr = locator->ConnectServer(namespacePath,
+                                NULL,
+                                NULL,
+                                NULL,
+                                WBEM_FLAG_CONNECT_USE_MAX_WAIT,
+                                NULL,
+                                NULL,
+                                service.GetAddressOf());
+    return SUCCEEDED(hr);
 }
 
-Napi::Object getWMIMonitors(const Napi::CallbackInfo &info)
+Napi::Object getWMIBrightness(const Napi::CallbackInfo& info)
 {
-    using std::cin;
-    using std::cout;
-    using std::endl;
-    p("getWMIMonitors 1");
-
-    // Monitors info
-    Napi::Object monitors = Napi::Object::New(info.Env());
-
-    // Failure/Error response
-    Napi::Object failed = Napi::Object::New(info.Env());
-    failed.Set("failed", Napi::Boolean::New(info.Env(), true));
-
-    bool connected = wmiConnect();
-    p("getWMIMonitors 2");
-
-    try
-    {
-        IWbemLocator *pLocator = NULL;
-        if (FAILED(hRes = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pLocator))))
-        {
-            cout << "Unable to create a WbemLocator: " << std::hex << hRes << endl;
-            return failed;
-        }
-        p("getWMIMonitors 3");
-
-        if (FAILED(hRes = pLocator->ConnectServer(L"root\\WMI", NULL, NULL, NULL, WBEM_FLAG_CONNECT_USE_MAX_WAIT, NULL, NULL, &pService)))
-        {
-            pLocator->Release();
-            cout << "Unable to connect to \"WMI\": " << std::hex << hRes << endl;
-            return failed;
-        }
-        p("getWMIMonitors 4");
-
-        IEnumWbemClassObject *pEnumerator = NULL;
-        if (FAILED(hRes = pService->ExecQuery(L"WQL", L"SELECT * FROM WmiMonitorID", WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator)))
-        {
-            pLocator->Release();
-            pService->Release();
-            cout << "Unable to retrive desktop monitors: " << std::hex << hRes << endl;
-            return failed;
-        }
-        p("getWMIMonitors 5");
-
-        IWbemClassObject *clsObj = NULL;
-        int numElems;
-        while ((hRes = pEnumerator->Next(500, 1, &clsObj, (ULONG *)&numElems)) != WBEM_S_FALSE)
-        {
-            try
-            {
-                if (FAILED(hRes))
-                    break;
-
-                Napi::Object monitor = Napi::Object::New(info.Env());
-                string InstanceName;
-
-                VARIANT vRet;
-                VariantInit(&vRet);
-                p("getWMIMonitors 6");
-                HRESULT hr = clsObj->Get(L"InstanceName", 0, &vRet, NULL, NULL);
-                if (SUCCEEDED(hr) && vRet.vt == VT_BSTR)
-                {
-                    InstanceName = bstr_to_str(vRet.bstrVal);
-                    monitor.Set("InstanceName", Napi::String::New(info.Env(), InstanceName));
-                    VariantClear(&vRet);
-                }
-                p("getWMIMonitors 7");
-
-                try
-                {
-                    VARIANT vtProp;
-                    VariantInit(&vtProp);
-                    HRESULT hr = clsObj->Get(L"UserFriendlyName", 0, &vtProp, 0, 0);
-                    if (SUCCEEDED(hr))
-                    {
-                        string UserFriendlyName = getWMIClassUINTString(hr, vtProp);
-                        monitor.Set("UserFriendlyName", Napi::String::New(info.Env(), UserFriendlyName));
-                        p("getWMIMonitors 8");
-                    }
-                }
-                catch (...)
-                {
-                    p("getWMIMonitors Loop failed to get optional values");
-                }
-
-                monitors.Set(InstanceName, monitor);
-                p("getWMIMonitors 12");
-            }
-            catch (...)
-            {
-                p("getWMIMonitors loop failed");
-            }
-
-            clsObj->Release();
-        }
-        p("getWMIMonitors 13");
-        pEnumerator->Release();
-        pService->Release();
-        pLocator->Release();
-    }
-    catch (...)
-    {
-        p("getWMIMonitors FAILED");
+    Napi::Env env = info.Env();
+    Napi::Object failed = makeFailure(env);
+    ComScope com;
+    if (!com.isUsable() || !initializeWmiSecurity()) {
         return failed;
     }
 
-    p("getWMIMonitors 14 END");
+    ComPtr<IWbemLocator> locator;
+    ComPtr<IWbemServices> service;
+    if (!connectToWmi(locator, service)) {
+        return failed;
+    }
+
+    ComPtr<IEnumWbemClassObject> enumerator;
+    HRESULT hr = service->ExecQuery(L"WQL",
+                                    L"SELECT * FROM WmiMonitorBrightness",
+                                    WBEM_FLAG_FORWARD_ONLY,
+                                    NULL,
+                                    enumerator.GetAddressOf());
+    if (FAILED(hr)) {
+        return failed;
+    }
+
+    while (true) {
+        ComPtr<IWbemClassObject> clsObj;
+        ULONG returned = 0;
+        hr = enumerator->Next(500, 1, clsObj.GetAddressOf(), &returned);
+        if (FAILED(hr) || returned == 0 || !clsObj) {
+            break;
+        }
+
+        VARIANT instanceName;
+        VariantInit(&instanceName);
+        HRESULT instanceResult = clsObj->Get(L"InstanceName", 0, &instanceName, NULL, NULL);
+        if (FAILED(instanceResult) || instanceName.vt != VT_BSTR) {
+            VariantClear(&instanceName);
+            continue;
+        }
+
+        std::string instance = bstr_to_str(instanceName.bstrVal);
+        VariantClear(&instanceName);
+
+        VARIANT brightnessValue;
+        VariantInit(&brightnessValue);
+        HRESULT brightnessResult = clsObj->Get(
+          L"CurrentBrightness", 0, &brightnessValue, NULL, NULL);
+        if (FAILED(brightnessResult)) {
+            VariantClear(&brightnessValue);
+            continue;
+        }
+
+        VARIANT brightnessAsInt;
+        VariantInit(&brightnessAsInt);
+        HRESULT conversionResult = VariantChangeType(
+          &brightnessAsInt, &brightnessValue, 0, VT_I4);
+        VariantClear(&brightnessValue);
+        if (FAILED(conversionResult)) {
+            VariantClear(&brightnessAsInt);
+            continue;
+        }
+
+        Napi::Object monitor = Napi::Object::New(env);
+        monitor.Set("InstanceName", Napi::String::New(env, instance));
+        monitor.Set("Brightness", Napi::Number::New(env, brightnessAsInt.lVal));
+        VariantClear(&brightnessAsInt);
+
+        // The public API returns one brightness value. Return the first valid
+        // WMI brightness device instead of silently overwriting it with the
+        // final enumerated row.
+        return monitor;
+    }
+
+    return failed;
+}
+
+Napi::Object getWMIMonitors(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    Napi::Object failed = makeFailure(env);
+    ComScope com;
+    if (!com.isUsable() || !initializeWmiSecurity()) {
+        return failed;
+    }
+
+    ComPtr<IWbemLocator> locator;
+    ComPtr<IWbemServices> service;
+    if (!connectToWmi(locator, service)) {
+        return failed;
+    }
+
+    ComPtr<IEnumWbemClassObject> enumerator;
+    HRESULT hr = service->ExecQuery(L"WQL",
+                                    L"SELECT * FROM WmiMonitorID",
+                                    WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                                    NULL,
+                                    enumerator.GetAddressOf());
+    if (FAILED(hr)) {
+        return failed;
+    }
+
+    Napi::Object monitors = Napi::Object::New(env);
+    while (true) {
+        ComPtr<IWbemClassObject> clsObj;
+        ULONG returned = 0;
+        hr = enumerator->Next(500, 1, clsObj.GetAddressOf(), &returned);
+        if (FAILED(hr) || returned == 0 || !clsObj) {
+            break;
+        }
+
+        VARIANT instanceName;
+        VariantInit(&instanceName);
+        HRESULT instanceResult = clsObj->Get(L"InstanceName", 0, &instanceName, NULL, NULL);
+        if (FAILED(instanceResult) || instanceName.vt != VT_BSTR) {
+            VariantClear(&instanceName);
+            continue;
+        }
+
+        std::string instance = bstr_to_str(instanceName.bstrVal);
+        VariantClear(&instanceName);
+        if (instance.empty()) {
+            continue;
+        }
+
+        Napi::Object monitor = Napi::Object::New(env);
+        monitor.Set("InstanceName", Napi::String::New(env, instance));
+
+        VARIANT friendlyName;
+        VariantInit(&friendlyName);
+        HRESULT friendlyNameResult = clsObj->Get(
+          L"UserFriendlyName", 0, &friendlyName, NULL, NULL);
+        if (SUCCEEDED(friendlyNameResult)) {
+            monitor.Set("UserFriendlyName",
+                        Napi::String::New(env,
+                                          getWMIClassUINTString(
+                                            friendlyNameResult, friendlyName)));
+        } else {
+            VariantClear(&friendlyName);
+        }
+
+        monitors.Set(instance, monitor);
+    }
+
     return monitors;
 }
 
 bool setWMIBrightness(int brightness)
 {
-    p("setWMIBrightness 1");
-    //HRESULT hRes;
-
-    bool connected = wmiConnect();
-
-    try
-    {
-        IWbemLocator *pLocator = NULL;
-        if (FAILED(hRes = CoCreateInstance(CLSID_WbemLocator, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pLocator))))
-        {
-            cout << "Unable to create a WbemLocator: " << std::hex << hRes << endl;
-            return false;
-        }
-        p("setWMIBrightness 2");
-
-        IWbemServices *pSvc = NULL;
-
-        // Connect to the local root\wminamespace
-        // and obtain pointer pSvc to make IWbemServices calls.
-        hRes = pLocator->ConnectServer(
-            _bstr_t(L"ROOT\\WMI"),
-            NULL,
-            NULL,
-            0,
-            NULL,
-            0,
-            0,
-            &pSvc);
-        p("setWMIBrightness 3");
-
-        if (FAILED(hRes))
-        {
-            cout << "Could not connect. Error code = 0x"
-                 << hex << hRes << endl;
-            pLocator->Release();
-            CoUninitialize();
-            return false;
-        }
-        p("setWMIBrightness 4");
-
-        // Step 5: --------------------------------------------------
-        // Set security levels for the proxy ------------------------
-
-        hRes = CoSetProxyBlanket(
-            pSvc,                        // Indicates the proxy to set
-            RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
-            RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-            NULL,                        // Server principal name
-            RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
-            RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
-            NULL,                        // client identity
-            EOAC_NONE                    // proxy capabilities
-        );
-        p("setWMIBrightness 5");
-
-        if (FAILED(hRes))
-        {
-            cout << "Could not set proxy blanket. Error code = 0x"
-                 << hex << hRes << endl;
-            pSvc->Release();
-            pLocator->Release();
-            CoUninitialize();
-            return false;
-        }
-        p("setWMIBrightness 6");
-
-        // Step 6: --------------------------------------------------
-        // Call WmiSetBrightness method -----------------------------
-
-        // set up to call the Win32_Process::Create method
-        BSTR ClassName = SysAllocString(L"WmiMonitorBrightnessMethods");
-        BSTR MethodName = SysAllocString(L"WmiSetBrightness");
-        BSTR bstrQuery = SysAllocString(L"Select * from WmiMonitorBrightnessMethods");
-        IEnumWbemClassObject *pEnum = NULL;
-        p("setWMIBrightness 7");
-
-        hRes = pSvc->ExecQuery(_bstr_t(L"WQL"),                                       //Query Language
-                               bstrQuery,                                             //Query to Execute
-                               WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, //Make a semi-synchronous call
-                               NULL,                                                  //Context
-                               &pEnum /*Enumeration Interface*/);
-        p("setWMIBrightness 8");
-
-        hRes = WBEM_S_NO_ERROR;
-        p("setWMIBrightness 9");
-
-        ULONG ulReturned;
-        IWbemClassObject *pObj;
-        DWORD retVal = 0;
-
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 10");
-
-        //Get the Next Object from the collection
-        hRes = pEnum->Next(500, //Timeout
-                           1,             //No of objects requested
-                           &pObj,         //Returned Object
-                           &ulReturned /*No of object returned*/);
-        p("setWMIBrightness 11");
-
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 12");
-
-        IWbemClassObject *pClass = NULL;
-        hRes = pSvc->GetObject(ClassName, 0, NULL, &pClass, NULL);
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 13");
-
-        IWbemClassObject *pInParamsDefinition = NULL;
-        hRes = pClass->GetMethod(MethodName, 0, &pInParamsDefinition, NULL);
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 14");
-
-        IWbemClassObject *pClassInstance = NULL;
-        hRes = pInParamsDefinition->SpawnInstance(0, &pClassInstance);
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 15");
-
-        VARIANT var1;
-        VariantInit(&var1);
-        BSTR ArgName0 = SysAllocString(L"Timeout");
-        p("setWMIBrightness 16");
-
-        V_VT(&var1) = VT_UI1;
-        V_UI1(&var1) = 0;
-        hRes = pClassInstance->Put(ArgName0,
-                                   0,
-                                   &var1,
-                                   CIM_UINT32); //CIM_UINT64
-        p("setWMIBrightness 17");
-        if (FAILED(hRes))
-            return false;
-
-        VARIANT var2;
-        VariantInit(&var2);
-        BSTR ArgName1 = SysAllocString(L"Brightness");
-        p("setWMIBrightness 18");
-
-        V_VT(&var2) = VT_UI1;
-        V_UI1(&var2) = brightness; //Brightness value
-        hRes = pClassInstance->Put(ArgName1,
-                                   0,
-                                   &var2,
-                                   CIM_UINT8);
-        p("setWMIBrightness 19");
-        if (FAILED(hRes))
-            return false;
-
-        // Call the method
-        VARIANT pathVariable;
-        VariantInit(&pathVariable);
-        p("setWMIBrightness 20");
-
-        hRes = pObj->Get(_bstr_t(L"__PATH"),
-                         0,
-                         &pathVariable,
-                         NULL,
-                         NULL);
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 21");
-
-        hRes = pSvc->ExecMethod(pathVariable.bstrVal,
-                                MethodName,
-                                0,
-                                NULL,
-                                pClassInstance,
-                                NULL,
-                                NULL);
-        p("setWMIBrightness 22");
-        if (FAILED(hRes))
-            return false;
-        p("setWMIBrightness 23");
-        VariantClear(&var1);
-        VariantClear(&var2);
-        p("setWMIBrightness 24");
-
-        VariantClear(&pathVariable);
-        p("setWMIBrightness 25 END");
-    }
-    catch (...)
-    {
-        p("setWMIBrightness FAILED");
+    if (brightness < 0 || brightness > 100) {
         return false;
     }
 
-    return !FAILED(hRes);
+    ComScope com;
+    if (!com.isUsable() || !initializeWmiSecurity()) {
+        return false;
+    }
+
+    ComPtr<IWbemLocator> locator;
+    ComPtr<IWbemServices> service;
+    if (!connectToWmi(locator, service)) {
+        return false;
+    }
+
+    HRESULT hr = CoSetProxyBlanket(service.Get(),
+                                   RPC_C_AUTHN_WINNT,
+                                   RPC_C_AUTHZ_NONE,
+                                   NULL,
+                                   RPC_C_AUTHN_LEVEL_CALL,
+                                   RPC_C_IMP_LEVEL_IMPERSONATE,
+                                   NULL,
+                                   EOAC_NONE);
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    ComPtr<IEnumWbemClassObject> enumerator;
+    hr = service->ExecQuery(L"WQL",
+                            L"SELECT * FROM WmiMonitorBrightnessMethods",
+                            WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                            NULL,
+                            enumerator.GetAddressOf());
+    if (FAILED(hr) || !enumerator) {
+        return false;
+    }
+
+    ComPtr<IWbemClassObject> methodObject;
+    ULONG returned = 0;
+    hr = enumerator->Next(500, 1, methodObject.GetAddressOf(), &returned);
+    if (FAILED(hr) || returned == 0 || !methodObject) {
+        return false;
+    }
+
+    ComPtr<IWbemClassObject> methodClass;
+    hr = service->GetObject(L"WmiMonitorBrightnessMethods",
+                            0,
+                            NULL,
+                            methodClass.GetAddressOf(),
+                            NULL);
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    ComPtr<IWbemClassObject> inputDefinition;
+    hr = methodClass->GetMethod(L"WmiSetBrightness",
+                                0,
+                                inputDefinition.GetAddressOf(),
+                                NULL);
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    ComPtr<IWbemClassObject> inputParameters;
+    hr = inputDefinition->SpawnInstance(0, inputParameters.GetAddressOf());
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    _variant_t timeout;
+    timeout.vt = VT_UI1;
+    timeout.bVal = 0;
+    hr = inputParameters->Put(L"Timeout", 0, &timeout, CIM_UINT32);
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    _variant_t brightnessValue;
+    brightnessValue.vt = VT_UI1;
+    brightnessValue.bVal = static_cast<BYTE>(brightness);
+    hr = inputParameters->Put(L"Brightness", 0, &brightnessValue, CIM_UINT8);
+    if (FAILED(hr)) {
+        return false;
+    }
+
+    _variant_t objectPath;
+    hr = methodObject->Get(L"__PATH", 0, &objectPath, NULL, NULL);
+    if (FAILED(hr) || objectPath.vt != VT_BSTR) {
+        return false;
+    }
+
+    _bstr_t methodName(L"WmiSetBrightness");
+    hr = service->ExecMethod(objectPath.bstrVal,
+                             methodName,
+                             0,
+                             NULL,
+                             inputParameters.Get(),
+                             NULL,
+                             NULL);
+    return SUCCEEDED(hr);
 }
 
-// Set WMI brightness (laptops/tablets)
-Napi::Boolean setBrightness(const Napi::CallbackInfo &info)
+Napi::Boolean setBrightness(const Napi::CallbackInfo& info)
 {
-    try
-    {
-        int level = info[0].ToNumber().Int32Value();
-        bool ok = false;
-        try
-        {
-            ok = setWMIBrightness(level);
-        }
-        catch (...)
-        {
-
-            p("setBrightness failed");
-        }
-        return Napi::Boolean::New(info.Env(), ok);
+    Napi::Env env = info.Env();
+    if (info.Length() < 1 || !info[0].IsNumber()) {
+        return Napi::Boolean::New(env, false);
     }
-    catch (...)
-    {
-        return Napi::Boolean::New(info.Env(), false);
+
+    double requestedLevel = info[0].As<Napi::Number>().DoubleValue();
+    if (!std::isfinite(requestedLevel)
+        || requestedLevel < 0
+        || requestedLevel > 100
+        || std::floor(requestedLevel) != requestedLevel) {
+        return Napi::Boolean::New(env, false);
+    }
+
+    return Napi::Boolean::New(env, setWMIBrightness(static_cast<int>(requestedLevel)));
+}
+
+Napi::Object getBrightness(const Napi::CallbackInfo& info)
+{
+    try {
+        return getWMIBrightness(info);
+    } catch (...) {
+        return makeFailure(info.Env());
     }
 }
 
-// Get WMI brightness (laptops/tablets)
-Napi::Object getBrightness(const Napi::CallbackInfo &info)
+Napi::Object getMonitors(const Napi::CallbackInfo& info)
 {
-    try
-    {
-        Napi::Object monInfo = getWMIBrightness(info);
-        return monInfo;
-    }
-    catch (...)
-    {
-        return failedObj;
-    }
-}
-
-// Get known monitor info from WMI
-Napi::Object getMonitors(const Napi::CallbackInfo &info)
-{
-    try
-    {
-        Napi::Object monInfo = getWMIMonitors(info);
-        return monInfo;
-    }
-    catch (...)
-    {
-        return failedObj;
+    try {
+        return getWMIMonitors(info);
+    } catch (...) {
+        return makeFailure(info.Env());
     }
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-    failedObj = Napi::Object::New(env);
-    failedObj.Set("failed", Napi::Boolean::New(env, true));
-
     exports.Set(Napi::String::New(env, "setBrightness"),
                 Napi::Function::New(env, setBrightness));
     exports.Set(Napi::String::New(env, "getBrightness"),

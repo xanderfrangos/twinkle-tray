@@ -10,7 +10,7 @@
       	}],
       ],
       "msvs_settings": {
-        "VCCLCompilerTool": { 'AdditionalOptions': ['/permissive'], },
+        "VCCLCompilerTool": { 'AdditionalOptions': ['/permissive', '/EHsc'], },
       },
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"

@@ -246,5 +246,6 @@
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "與亮度榜定",
     "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "此亮度層級後停止",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "如果您的顯示器使用非標準的 VCP 亮度代碼（例如 0x13 或 0x6B），或者您想要將亮度滑桿重新對應至不同的 VCP 代碼，您可以在下方輸入該代碼。",
-    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "留空以使用預設值 (0x10)。在下方清單中找到支援的代碼。"
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "留空以使用預設值 (0x10)。在下方清單中找到支援的代碼。",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "顯示器設定"
 }

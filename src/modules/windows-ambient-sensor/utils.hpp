@@ -52,11 +52,8 @@ class ComInit
 public:
     explicit ComInit(DWORD coinit = COINIT_APARTMENTTHREADED) {
         const HRESULT hr = CoInitializeEx(nullptr, coinit);
-        if (hr == S_OK) {
+        if (SUCCEEDED(hr)) {
             owns = true;
-        } else if (hr == S_FALSE) {
-            // COM already initialized on this thread — do NOT uninitialize
-            owns = false;
         } else {
             throw std::runtime_error("CoInitializeEx failed with HRESULT " + toHex(hr));
         }
@@ -83,7 +80,7 @@ struct SensorInfo {
     std::string id;
     std::string name;
     std::string state;
-    double currentLux = 1.0;
+    double currentLux = -1.0;
 
     SensorInfo(const ComPtr<ISensor>& sensor)
     {

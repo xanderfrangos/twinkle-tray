@@ -74,7 +74,7 @@ class WindowsAmbientLightSensor {
       }
 
       const lux = getLuxValue();
-      if (lux >= 0) {
+      if (typeof lux === 'number' && Number.isFinite(lux) && lux >= 0) {
         this.currentLux = lux;
         console.log('Windows sensor - Current Lux:', lux);
         this._applyBrightness();

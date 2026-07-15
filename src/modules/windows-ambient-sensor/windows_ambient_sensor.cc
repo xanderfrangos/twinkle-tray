@@ -95,12 +95,17 @@ Napi::Value NodeGetLuxValue(const Napi::CallbackInfo& info) {
             // Get lux from first available sensor
             std::vector<SensorInfo> sensors = GetAllLightSensors();
 
-            if (!sensors.empty()) {
-                luxValue = sensors[0].currentLux;
-                
-                // If first sensor didn't have data, try getting it fresh
-                if (luxValue < 0.0) {
-                    luxValue = GetLuxValueById(sensors[0].id);
+            for (const auto& sensor : sensors) {
+                luxValue = sensor.currentLux;
+
+                // If this sensor has no cached data, try getting it fresh
+                // before moving on to the next available sensor.
+                if (luxValue < 0.0 && !sensor.id.empty()) {
+                    luxValue = GetLuxValueById(sensor.id);
+                }
+
+                if (luxValue >= 0.0) {
+                    break;
                 }
             }
         }

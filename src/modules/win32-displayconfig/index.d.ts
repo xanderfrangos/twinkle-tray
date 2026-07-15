@@ -32,7 +32,7 @@ interface TargetPathInfo {
   rotation: number;
   scaling: string;
   refreshRate: DisplayConfigFractional;
-  scanlineOrdering: string;
+  scanLineOrdering: string;
   targetAvailable: number;
   modeInfoIdx: number;
 }
@@ -118,7 +118,7 @@ interface NameInfo {
 
 export interface QueryDisplayConfigResults {
   pathArray: PathInfo[];
-  modeInfoArray: ModeInfo[];
+  modeArray: ModeInfo[];
   nameArray: NameInfo[];
 }
 
@@ -145,32 +145,34 @@ export interface ExtractedDisplayConfig {
   targetModeBuffer?: Buffer;
 }
 
-export function extractDisplayConfig(): Promise<ExtractedDisplayConfig>;
+export function extractDisplayConfig(): Promise<ExtractedDisplayConfig[]>;
 
 export interface ToggleEnabledDisplayArgs {
-  enablePaths: string[];
-  disablePaths: string[];
-  persistent: boolean;
+  enable?: string[];
+  disable?: string[];
+  persistent?: boolean;
 }
 
 export function toggleEnabledDisplays(
   args: ToggleEnabledDisplayArgs
 ): Promise<void>;
 
-export interface DisplayResotrationConfigurationEntry {
+export interface DisplayRestorationConfigurationEntry {
   devicePath: string;
   pathBuffer: string;
   sourceModeBuffer: string;
-  targetModeBuffer: string;
+  targetModeBuffer?: string;
 }
 
+export type DisplayResotrationConfigurationEntry = DisplayRestorationConfigurationEntry;
+
 export function displayConfigForRestoration(): Promise<
-  DisplayResotrationConfigurationEntry[]
+  DisplayRestorationConfigurationEntry[]
 >;
 
 export interface RestoreDisplayConfigArgs {
-  config: DisplayResotrationConfigurationEntry[];
-  persistent: boolean;
+  config: DisplayRestorationConfigurationEntry[];
+  persistent?: boolean;
 }
 
 export function restoreDisplayConfig(
@@ -179,7 +181,7 @@ export function restoreDisplayConfig(
 
 export type DisplayChangeListener = {
   (err: Error): void;
-  (err: null, conf: ExtractedDisplayConfig): void;
+  (err: null, conf: ExtractedDisplayConfig[]): void;
 };
 
 export function addDisplayChangeListener(

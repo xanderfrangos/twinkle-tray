@@ -30,7 +30,7 @@ on Node 10.21 and above. We'll note incompatibilities and accept patches for Nod
 
 The `queryDisplayConfig` function returns data somewhat similar to the outputs of the
 [`QueryDisplayConfig` function](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-querydisplayconfig)
-via the `pathArray` and `modeInfoArray` properties, and naming and manufacturer info via its
+via the `pathArray` and `modeArray` properties, and naming and manufacturer info via its
 `nameArray` properties.
 
 From [`scripts/dumpquery.js`](scripts/dumpquery.js):
@@ -114,7 +114,7 @@ This is generally lower-level output than you want. Consider using `extractDispl
 ### Querying Higher-Level Display Device Information
 
 The `extractDisplayConfig` function reshapes the output of `queryDisplayConfig` to be more useful
-to application programmers. Information from the `pathArray`, `modeInfoArray`, and `nameArray` properties
+to application programmers. Information from the `pathArray`, `modeArray`, and `nameArray` properties
 of the output of `queryDisplayConfig` are all joined according to their IDs.
 
 From [`scripts/dumpextract.js`](scripts/dumpextract.js):

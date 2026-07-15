@@ -82,6 +82,7 @@ class Win32DisplayChangeContext {
     DWORD Start() {
         this->hThread = CreateThread(NULL, 0, RunDisplayChangeContextLoop, this, 0, &this->dwThreadId);
         if (this->hThread == NULL) {
+            this->running.store(FALSE);
             this->tsfn.Release();
             return GetLastError();
         } else {
@@ -90,14 +91,14 @@ class Win32DisplayChangeContext {
     }
 
     void Stop() {
-        if (this->running.load() == FALSE) {
-            return;
-        }
-        this->running.store(FALSE);
+        auto wasRunning = this->running.exchange(FALSE);
         if (this->hThread != NULL) {
-            PostThreadMessage(this->dwThreadId, WM_USER, 0, 0);
+            if (wasRunning) {
+                PostThreadMessage(this->dwThreadId, WM_USER, 0, 0);
+            }
             WaitForSingleObject(this->hThread, INFINITE);
             CloseHandle(this->hThread);
+            this->hThread = NULL;
             this->tsfn.Release();
         }
     }
@@ -122,7 +123,7 @@ void HandleDisplayChangeSuccess(Napi::Env env, Napi::Function callback) {
 DWORD RunDisplayChangeContextLoop(LPVOID lpParam) {
     auto context = (Win32DisplayChangeContext *)lpParam;
     MSG msg;
-    BOOL getMessageResponse;
+    BOOL getMessageResponse = 0;
     DWORD error = ERROR_SUCCESS;
     UINT displayChange = 0;
 
@@ -150,6 +151,7 @@ DWORD RunDisplayChangeContextLoop(LPVOID lpParam) {
         if (hWnd != NULL) {
             DestroyWindow(hWnd);
         }
+        context->running.store(FALSE);
 #pragma warning(push)
 #pragma warning(disable : 4312)
         context->tsfn.NonBlockingCall((LPVOID)error, HandleDisplayChangeError);
@@ -166,8 +168,15 @@ DWORD RunDisplayChangeContextLoop(LPVOID lpParam) {
         DispatchMessage(&msg);
     }
 
+    auto wasRunning = context->running.exchange(FALSE);
     if (getMessageResponse < 0) {
         error = GetLastError();
+#pragma warning(push)
+#pragma warning(disable : 4312)
+        context->tsfn.NonBlockingCall((LPVOID)error, HandleDisplayChangeError);
+#pragma warning(pop)
+    } else if (getMessageResponse == 0 && wasRunning) {
+        error = ERROR_OPERATION_ABORTED;
 #pragma warning(push)
 #pragma warning(disable : 4312)
         context->tsfn.NonBlockingCall((LPVOID)error, HandleDisplayChangeError);
@@ -357,7 +366,7 @@ LONG ToggleEnabled(const std::shared_ptr<struct Win32DeviceConfigToggleEnabled> 
         preserve.data(),
         0,
         NULL,
-        SDC_APPLY | SDC_TOPOLOGY_SUPPLIED | SDC_TOPOLOGY_CLONE | SDC_TOPOLOGY_EXTEND | SDC_ALLOW_PATH_ORDER_CHANGES);
+        SDC_APPLY | SDC_TOPOLOGY_SUPPLIED | SDC_ALLOW_PATH_ORDER_CHANGES);
 
     if (error != ERROR_SUCCESS) {
         return error;
@@ -981,15 +990,20 @@ Napi::Value Win32RestoreDisplayConfig(const Napi::CallbackInfo &info) {
     auto configs = std::make_shared<std::vector<struct Win32RestoreDisplayConfigDevice>>();
     auto providedArray = info[0].As<Napi::Array>();
 
+    if (providedArray.Length() == 0) {
+        return Napi::Boolean::New(info.Env(), false);
+    }
+
     for (DWORD i = 0; i < providedArray.Length(); i++) {
         auto providedCur = providedArray.Get(i);
         if (!providedCur.IsObject()) {
-            continue;
+            return Napi::Boolean::New(info.Env(), false);
         }
 
-        if (ExtractRestoreDisplayConfigEntry(info.Env(), providedCur.As<Napi::Object>(), &curConfig)) {
-            configs->push_back(curConfig);
+        if (!ExtractRestoreDisplayConfigEntry(info.Env(), providedCur.As<Napi::Object>(), &curConfig)) {
+            return Napi::Boolean::New(info.Env(), false);
         }
+        configs->push_back(curConfig);
     }
 
     auto callback = info[1].As<Napi::Function>();
@@ -1005,7 +1019,12 @@ Napi::Value Win32ListenForDisplayChanges(const Napi::CallbackInfo &info) {
         return Napi::Boolean::New(info.Env(), false);
     }
     if (displayEventContext != NULL) {
-        return Napi::Boolean::New(info.Env(), true);
+        if (displayEventContext->running.load()) {
+            return Napi::Boolean::New(info.Env(), true);
+        }
+        displayEventContext->Stop();
+        delete displayEventContext;
+        displayEventContext = NULL;
     }
 
     auto callback = info[0].As<Napi::Function>();

@@ -52,7 +52,7 @@ module.exports.Win32Error = Win32Error;
  * @property {number} rotation
  * @property {string} scaling
  * @property {DisplayConfigFractional} refreshRate
- * @property {string} scanlineOrdering
+ * @property {string} scanLineOrdering
  * @property {number} targetAvailable
  * @property {number} modeInfoIdx
  */
@@ -167,7 +167,7 @@ module.exports.Win32Error = Win32Error;
  * @typedef QueryDisplayConfigResults
  * @type {object}
  * @property {PathInfo[]} pathArray
- * @property {ModeInfo[]} modeInfoArray
+ * @property {ModeInfo[]} modeArray
  * @property {NameInfo[]} nameArray
  */
 
@@ -177,14 +177,14 @@ module.exports.Win32Error = Win32Error;
  * The output of this function somewhat matches the "output" values of
  * QueryDisplayConfig, as documented at
  * https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-querydisplayconfig,
- * in the pathArray and modeInfoArray results.
+ * in the pathArray and modeArray results.
  *
  * Additionally, this function uses the DisplayConfigGetDeviceInfo function over
  * all resolved displays to return the names, output technology, and manufacturer IDs
  * in the nameArray results.
  *
  * @returns {Promise<QueryDisplayConfigResults>}
- *   A Promise, resolving to { pathArray: [...], modeInfoArray: [...], nameArray: [...] },
+ *   A Promise, resolving to { pathArray: [...], modeArray: [...], nameArray: [...] },
  *   or rejecting with a {@link Win32Error} if something goes wrong.
  */
 module.exports.queryDisplayConfig = () => {
@@ -197,7 +197,7 @@ module.exports.queryDisplayConfig = () => {
       }
     });
     if (!ran) {
-      resolve(undefined);
+      reject(new Win32Error(87));
     }
   });
 };
@@ -346,8 +346,8 @@ async function win32_toggleEnabledDisplays(args) {
 /**
  * @typedef ToggleEnabledDisplaysArgs
  * @type {object}
- * @property {string[]} enablePaths Exact Windows NT device paths of the displays to enable
- * @property {string[]} disablePaths Exact Windows NT device paths of the displays to disable
+ * @property {string[]} enable Exact Windows NT device paths of the displays to enable
+ * @property {string[]} disable Exact Windows NT device paths of the displays to disable
  * @property {boolean} persistent Whether to save this configuration as the default configuration
  */
 
@@ -456,7 +456,7 @@ async function win32_restoreDisplayConfig(configs, persistent) {
       persistent
     );
     if (!ran) {
-      resolve();
+      reject(new Win32Error(87));
     }
   });
 }
@@ -479,6 +479,10 @@ async function win32_restoreDisplayConfig(configs, persistent) {
  * @param {RestoreDisplayConfigArgs} args
  */
 module.exports.restoreDisplayConfig = async (args) => {
+  if (!args || !Array.isArray(args.config) || args.config.length === 0) {
+    throw new TypeError("args.config must contain at least one display configuration");
+  }
+
   const devicePathNames = args.config
     .filter(({ targetModeBuffer }) => targetModeBuffer !== undefined)
     .map(({ devicePath }) => devicePath);
@@ -522,6 +526,10 @@ module.exports.restoreDisplayConfig = async (args) => {
         sourceModeBuffer: Buffer.from(sourceModeBuffer, "base64"),
         targetModeBuffer: Buffer.from(targetModeBuffer, "base64"),
       });
+    }
+
+    if (coercedState.length === 0) {
+      throw new Win32Error(87);
     }
 
     await win32_restoreDisplayConfig(coercedState, args.persistent);
@@ -574,13 +582,26 @@ async function updateDisplayStateAndNotifyCallbacks() {
 let currentDisplayConfigPromise = updateDisplayStateAndNotifyCallbacks();
 
 function setupListenForDisplayChanges() {
-  addon.win32_listenForDisplayChanges((err) => {
+  const notifyError = (err) => {
+    const error = new Win32Error(err);
+    for (const callback of Array.from(displayChangeCallbacks)) {
+      callback(error);
+    }
+  };
+
+  const result = addon.win32_listenForDisplayChanges((err) => {
     if (err === null) {
       currentDisplayConfigPromise = currentDisplayConfigPromise.then(() =>
         updateDisplayStateAndNotifyCallbacks()
       );
+    } else {
+      notifyError(err);
     }
   });
+
+  if (typeof result === "number" && result !== 0) {
+    notifyError(result);
+  }
 }
 
 /**
@@ -599,11 +620,12 @@ function setupListenForDisplayChanges() {
  * @returns {function(Error | null, ExtractedDisplayConfig | undefined): void} the listener argument as passed
  */
 module.exports.addDisplayChangeListener = (listener) => {
-  if (displayChangeCallbacks.size === 0) {
+  const shouldStartListening = displayChangeCallbacks.size === 0;
+  displayChangeCallbacks.add(listener);
+
+  if (shouldStartListening) {
     setupListenForDisplayChanges();
   }
-
-  displayChangeCallbacks.add(listener);
 
   if (currentDisplayConfig !== undefined) {
     listener(null, currentDisplayConfig);
@@ -648,10 +670,13 @@ class VerticalRefreshRateContext {
         resolve();
       };
     });
+    this.readyPromiseResolver = readyPromiseResolver;
     this.geometry = [];
 
     const computeDisplayGeometryFromConfig = (err, conf) => {
       if (err !== null) {
+        this.geometry = [];
+        readyPromiseResolver();
         return;
       }
       const geom = [];
@@ -723,6 +748,8 @@ class VerticalRefreshRateContext {
    */
   close() {
     module.exports.removeDisplayChangeListener(this.changeListener);
+    this.geometry = [];
+    this.readyPromiseResolver();
   }
 }
 

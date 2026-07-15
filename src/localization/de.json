@@ -289,5 +289,6 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART": "Die virtuelle #Nabe kann sein konfiguriert zu #auto Start rennen mal es auf die Befehl Linie mit '-ich'",
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Sieh \"-ich : Installation da eine Bedienung\" hier",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "#Zusammenhangslos"
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "#Zusammenhangslos",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitor-Einstellungen"
 }

@@ -175,5 +175,6 @@
     "SETTINGS_GENERAL_ON_OVERLAY_TITLE": "Najkompatibilnije",
     "SETTINGS_GENERAL_FORCE_OVERLAY_TITLE": "Prisiljeno",
     "SETTINGS_GENERAL_LEGACY_DDC_TITLE": "Stara metoda otrkivanja DDC/CI ekrana",
-    "SETTINGS_FEATURES_POWER_COMPAT": "Najkompatibilnije"
+    "SETTINGS_FEATURES_POWER_COMPAT": "Najkompatibilnije",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Postavke monitora"
 }

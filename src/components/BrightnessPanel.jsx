@@ -24,6 +24,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const [init, setInit] = useState(false)
   const [lastLevels, setLastLevels] = useState([])
   const [T] = useState(new TranslateReact({}, {}))
+  const [, setLocalizationVersion] = useState(0)
 
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
@@ -178,7 +179,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   useEffect(() => {
     window.addEventListener("monitorsUpdated", (e) => recievedMonitors(e))
     window.addEventListener("settingsUpdated", (e) => recievedSettings(e))
-    window.addEventListener("localizationUpdated", (e) => T.setLocalizationData(e.detail.desired, e.detail.default))
+    window.addEventListener("localizationUpdated", (e) => {
+      T.setLocalizationData(e.detail.desired, e.detail.default)
+      setLocalizationVersion(version => version + 1)
+    })
     window.addEventListener("updateUpdated", (e) => recievedUpdate(e))
     window.addEventListener("sleepUpdated", (e) => recievedSleep(e))
     window.addEventListener("isRefreshing", (e) => handleIsRefreshingUpdate(e))

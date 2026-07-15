@@ -151,5 +151,6 @@
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
     "SETTINGS_FEATURES_POWER_OFF": "Enerji bağlıdır",
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Parlaqlıq",
-    "PANEL_LABEL_TURN_ON": "Enerji bağlıdır"
+    "PANEL_LABEL_TURN_ON": "Enerji bağlıdır",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitor Sazlamaları"
 }

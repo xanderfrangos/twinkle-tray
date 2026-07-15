@@ -246,5 +246,6 @@
     "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "停止于此亮度级别",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "如果您的显示器使用非标准的 VCP 亮度代码（例如 0x13 或 0x6B），或者您希望将亮度滑块重新映射到不同的 VCP 代码，您可以在下方输入该代码。",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "留空为默认值（0x10）。在下方列表中查找支持的代码。",
-    "GENERIC_SLIDER_INDICATOR_TYPE": "滑块指示器类型"
+    "GENERIC_SLIDER_INDICATOR_TYPE": "滑块指示器类型",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "监视器设置"
 }

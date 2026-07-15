@@ -177,18 +177,26 @@ const BrightnessPanel = memo(function BrightnessPanel() {
 
 
   useEffect(() => {
-    window.addEventListener("monitorsUpdated", (e) => recievedMonitors(e))
-    window.addEventListener("settingsUpdated", (e) => recievedSettings(e))
-    window.addEventListener("localizationUpdated", (e) => {
+    const handleMonitorsUpdated = (e) => recievedMonitors(e)
+    const handleSettingsUpdated = (e) => recievedSettings(e)
+    const handleLocalizationUpdated = (e) => {
       T.setLocalizationData(e.detail.desired, e.detail.default)
       setLocalizationVersion(version => version + 1)
-    })
-    window.addEventListener("updateUpdated", (e) => recievedUpdate(e))
-    window.addEventListener("sleepUpdated", (e) => recievedSleep(e))
-    window.addEventListener("isRefreshing", (e) => handleIsRefreshingUpdate(e))
+    }
+    const handleUpdateUpdated = (e) => recievedUpdate(e)
+    const handleSleepUpdated = (e) => recievedSleep(e)
+    const handleRefreshingUpdated = (e) => handleIsRefreshingUpdate(e)
+    const handleProgressUpdated = (e) => handleUpdateProgress(e)
+
+    window.addEventListener("monitorsUpdated", handleMonitorsUpdated)
+    window.addEventListener("settingsUpdated", handleSettingsUpdated)
+    window.addEventListener("localizationUpdated", handleLocalizationUpdated)
+    window.addEventListener("updateUpdated", handleUpdateUpdated)
+    window.addEventListener("sleepUpdated", handleSleepUpdated)
+    window.addEventListener("isRefreshing", handleRefreshingUpdated)
 
     if (window.isAppX === false) {
-      window.addEventListener("updateProgress", (e) => handleUpdateProgress(e))
+      window.addEventListener("updateProgress", handleProgressUpdated)
     }
 
     // Update brightness every interval, if changed
@@ -198,13 +206,13 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     window.reactReady = true
 
     return () => {
-      window.removeEventListener("monitorsUpdated")
-      window.removeEventListener("settingsUpdated")
-      window.removeEventListener("localizationUpdated")
-      window.removeEventListener("updateUpdated")
-      window.removeEventListener("sleepUpdated")
-      window.removeEventListener("isRefreshing")
-      window.removeEventListener("updateProgress")
+      window.removeEventListener("monitorsUpdated", handleMonitorsUpdated)
+      window.removeEventListener("settingsUpdated", handleSettingsUpdated)
+      window.removeEventListener("localizationUpdated", handleLocalizationUpdated)
+      window.removeEventListener("updateUpdated", handleUpdateUpdated)
+      window.removeEventListener("sleepUpdated", handleSleepUpdated)
+      window.removeEventListener("isRefreshing", handleRefreshingUpdated)
+      window.removeEventListener("updateProgress", handleProgressUpdated)
     }
   }, [])
 

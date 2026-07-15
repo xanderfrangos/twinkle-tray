@@ -187,5 +187,6 @@
     "SETTINGS_PROFILES_APP_PATH": "اضافه کردن مسیر",
     "SETTINGS_FEATURES_POWER_COMPAT": "سازگار ترین",
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "روشنایی",
-    "GENERIC_SUPPORTED": "پردازندهٔ پشتیبانی شده"
+    "GENERIC_SUPPORTED": "پردازندهٔ پشتیبانی شده",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "تنظیمات نمایشگر"
 }

@@ -195,5 +195,6 @@
     "GENERIC_SLIDER_TEXT": "Text posuvníku",
     "GENERIC_SLIDER_NAME": "Zadejte název posuvníku",
     "PANEL_LABEL_INPUTS": "Vstupy",
-    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Zakázat na uzamčené obrazovce"
+    "SETTINGS_GENERAL_DISABLE_ON_LOCK_SCREEN_TITLE": "Zakázat na uzamčené obrazovce",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Nastavení Monitorů"
 }

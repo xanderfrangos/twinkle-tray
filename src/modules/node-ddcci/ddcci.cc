@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 
 struct Monitor {
     HMONITOR handle;
@@ -241,21 +242,19 @@ getAllHandles() {
     try {
     for (auto& monitor : monitors) {
         DWORD numPhysicalMonitors;
-        LPPHYSICAL_MONITOR physicalMonitors = NULL;
         if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
                                                      &numPhysicalMonitors)) {
             throw std::runtime_error("Failed to get physical monitor count.");
-            exit(EXIT_FAILURE);
         }
 
-        physicalMonitors = new PHYSICAL_MONITOR[numPhysicalMonitors];
-        if (physicalMonitors == NULL) {
-            throw std::runtime_error(
-              "Failed to allocate physical monitor array");
-        }
+        // unique_ptr guarantees the array is freed even if the calls below
+        // throw, instead of leaking it on the GetPhysicalMonitorsFromHMONITOR
+        // failure path.
+        std::unique_ptr<PHYSICAL_MONITOR[]> physicalMonitors(
+          new PHYSICAL_MONITOR[numPhysicalMonitors]);
 
         if (!GetPhysicalMonitorsFromHMONITOR(
-              monitor.handle, numPhysicalMonitors, physicalMonitors)) {
+              monitor.handle, numPhysicalMonitors, physicalMonitors.get())) {
             throw std::runtime_error("Failed to get physical monitors.");
         }
 
@@ -265,7 +264,6 @@ getAllHandles() {
         }
 
         monitor.monitorName = getPhysicalMonitorName(monitor.handle);
-        delete[] physicalMonitors;
     }
     } catch (...) {
         destroyPhysicalMonitorHandles(monitors);
@@ -442,7 +440,7 @@ populateHandlesMapLegacy()
 
     std::vector<struct Monitor> monitors = getAllHandles();
 
-
+    try {
     DISPLAY_DEVICE adapterDev;
     adapterDev.cb = sizeof(DISPLAY_DEVICE);
 
@@ -525,6 +523,12 @@ populateHandlesMapLegacy()
         }
 
         physicalMonitorHandles.insert({ handle.first, newMonitor });
+    }
+    } catch (...) {
+        // Any handles not yet transferred into `handles` (destroy is a
+        // no-op for ones already moved, since their slot was set to NULL).
+        destroyPhysicalMonitorHandles(monitors);
+        throw;
     }
 }
 
@@ -711,8 +715,12 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
     destroyPhysicalMonitorHandles(monitors);
 
     cleanMonitorHandles(newHandles);
-    handles = newHandles;
-    physicalMonitorHandles = newPhysicalHandles;
+    // swap() is noexcept, unlike copy-assignment, so there's no window
+    // between committing `handles` and `physicalMonitorHandles` where an
+    // exception (e.g. bad_alloc) could leave a handle already visible in
+    // the committed global map while the catch below destroys it.
+    handles.swap(newHandles);
+    physicalMonitorHandles.swap(newPhysicalHandles);
     } catch (...) {
         // Keep the old global maps intact when refresh fails, and release any
         // new handles whose ownership had been transferred to local state.

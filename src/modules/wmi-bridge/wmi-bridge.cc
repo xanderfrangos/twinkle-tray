@@ -48,30 +48,38 @@ class ComScope {
     bool shouldUninitialize;
 };
 
-std::once_flag securityInitialization;
-HRESULT securityResult = E_UNEXPECTED;
+std::mutex securityInitializationMutex;
+bool securityInitialized = false;
 
 bool initializeWmiSecurity()
 {
-    std::call_once(securityInitialization, []() {
-        securityResult = CoInitializeSecurity(NULL,
-                                              -1,
-                                              NULL,
-                                              NULL,
-                                              RPC_C_AUTHN_LEVEL_CONNECT,
-                                              RPC_C_IMP_LEVEL_IMPERSONATE,
-                                              NULL,
-                                              EOAC_NONE,
-                                              0);
+    // CoInitializeSecurity only needs to succeed once per process, but a
+    // transient failure (e.g. a startup race with another COM initializer)
+    // shouldn't permanently disable WMI for the rest of the session, so
+    // retry on every call until it succeeds.
+    std::lock_guard<std::mutex> lock(securityInitializationMutex);
+    if (securityInitialized) {
+        return true;
+    }
 
-        // Another component may have configured process-wide COM security
-        // before the addon is loaded. That configuration is usable here.
-        if (securityResult == RPC_E_TOO_LATE) {
-            securityResult = S_OK;
-        }
-    });
+    HRESULT securityResult = CoInitializeSecurity(NULL,
+                                                   -1,
+                                                   NULL,
+                                                   NULL,
+                                                   RPC_C_AUTHN_LEVEL_CONNECT,
+                                                   RPC_C_IMP_LEVEL_IMPERSONATE,
+                                                   NULL,
+                                                   EOAC_NONE,
+                                                   0);
 
-    return SUCCEEDED(securityResult);
+    // Another component may have configured process-wide COM security
+    // before the addon is loaded. That configuration is usable here.
+    if (securityResult == RPC_E_TOO_LATE) {
+        securityResult = S_OK;
+    }
+
+    securityInitialized = SUCCEEDED(securityResult);
+    return securityInitialized;
 }
 
 Napi::Object makeFailure(const Napi::Env& env)
@@ -218,9 +226,9 @@ Napi::Object getWMIBrightness(const Napi::CallbackInfo& info)
         monitor.Set("Brightness", Napi::Number::New(env, brightnessAsInt.lVal));
         VariantClear(&brightnessAsInt);
 
-        // The public API returns one brightness value. Return the first valid
-        // WMI brightness device instead of silently overwriting it with the
-        // final enumerated row.
+        // The public API returns one brightness value. Preserve its existing
+        // first-valid-result behavior rather than relying on WMI enumeration
+        // order to overwrite it with a later entry.
         return monitor;
     }
 

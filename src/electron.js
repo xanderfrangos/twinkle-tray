@@ -4931,11 +4931,15 @@ const udp = {
           server.close()
         } catch (e) { }
 
-        if (udp.server === server) {
+        // If `udp.server` no longer points at this socket, stop() (or a
+        // newer startOnPort attempt) has already run — don't resurrect the
+        // server the user just disabled by retrying on the next port.
+        const wasActive = udp.server === server
+        if (wasActive) {
           udp.server = false
         }
 
-        if (!isListening && portIndex + 1 < ports.length) {
+        if (wasActive && !isListening && portIndex + 1 < ports.length) {
           startOnPort(portIndex + 1)
         }
       }

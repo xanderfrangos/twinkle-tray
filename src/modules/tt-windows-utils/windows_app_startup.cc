@@ -40,8 +40,13 @@ Napi::Boolean Enable(const Napi::CallbackInfo &info) {
       return Napi::Boolean::New(info.Env(), false);
     }
 
+    // This call is made synchronously from Electron's main process on an
+    // explicit user toggle (not a hot path), and RequestEnableAsync() can
+    // legitimately take a few seconds on first-time AppX registration, so
+    // give it more room than a cold-start WinRT call before treating it as
+    // a failure.
     auto enableAsync = task.RequestEnableAsync();
-    if (enableAsync.wait_for(std::chrono::seconds{1})
+    if (enableAsync.wait_for(std::chrono::seconds{5})
         != winrt::Windows::Foundation::AsyncStatus::Completed) {
       return Napi::Boolean::New(info.Env(), false);
     }

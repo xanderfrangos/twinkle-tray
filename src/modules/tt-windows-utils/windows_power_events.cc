@@ -135,14 +135,15 @@ Napi::Boolean RegisterPowerSettingNotifications(const Napi::CallbackInfo& info)
 
     for (const GUID* setting : settings) {
         HPOWERNOTIFY notification = RegisterPowerSettingNotification(hwnd, setting, 0);
-        if (notification == NULL) {
-            ClearPowerSettingNotifications();
-            return Napi::Boolean::New(info.Env(), false);
+        if (notification != NULL) {
+            powerNotifications.push_back(notification);
         }
-        powerNotifications.push_back(notification);
     }
 
-    return Napi::Boolean::New(info.Env(), true);
+    // Report success as long as at least one notification registered, so a
+    // single unsupported GUID (e.g. on an older Windows build or VM) doesn't
+    // tear down every other notification that succeeded.
+    return Napi::Boolean::New(info.Env(), !powerNotifications.empty());
 }
 
 Napi::Boolean UnregisterPowerSettingNotifications(const Napi::CallbackInfo& info)

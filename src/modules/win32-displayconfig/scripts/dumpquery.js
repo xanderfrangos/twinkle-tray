@@ -15,4 +15,7 @@ w32mon.queryDisplayConfig().then((config) => {
       { depth: 10 }
     )
   );
+}).catch((err) => {
+  console.error("queryDisplayConfig failed:", err);
+  process.exitCode = 1;
 });

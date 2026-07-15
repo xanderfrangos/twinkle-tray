@@ -8,7 +8,9 @@ import getMonitorName from "../utils/BrightnessPanel/getMonitorName";
 const BrightnessPanel = memo(function BrightnessPanel() {
 
   const [state, setState] = useState({
-    monitors: [],
+    // The preload may receive monitor data before this component registers
+    // its event listener, so begin with the latest available snapshot.
+    monitors: window.allMonitors || {},
     linkedLevelsActive: false,
     names: {},
     update: false,

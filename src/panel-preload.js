@@ -204,7 +204,6 @@ ipc.on("panel-unsleep", () => {
 
 // Monitor info updated
 ipc.on("monitors-updated", (e, monitors) => {
-    if (JSON.stringify(window.allMonitors) === JSON.stringify(monitors)) return false;
     window.allMonitors = monitors
     window.lastUpdate = Date.now()
     window.dispatchEvent(new CustomEvent('monitorsUpdated', {

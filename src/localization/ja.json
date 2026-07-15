@@ -248,5 +248,6 @@
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "使用しているディスプレイが輝度調整に標準以外の VCP コード (0x13 または 0x6B など) を使用している場合や明るさのスライダーを別の VCP コードに再度割り当てしたい場合は、以下の欄にコードを入力してください。",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "既定値 (0x10) の場合は空欄のままにしてください。対応しているコードは以下の一覧からご確認ください。",
     "SETTINGS_TIME_USE_SUN_POSITION": "太陽の位置を使用する",
-    "SETTINGS_HOTKEY_ADD_ACTION": "アクションを追加"
+    "SETTINGS_HOTKEY_ADD_ACTION": "アクションを追加",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "ディスプレイの設定"
 }

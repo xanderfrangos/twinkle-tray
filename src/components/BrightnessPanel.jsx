@@ -11,6 +11,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     // The preload may receive monitor data before this component registers
     // its event listener, so begin with the latest available snapshot.
     monitors: window.allMonitors || {},
+    hideDisplays: window.settings?.hideDisplays || {},
     linkedLevelsActive: false,
     names: {},
     update: false,
@@ -27,10 +28,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(window.settings?.hideDisplays?.[key] === true)) localNumMonitors++;
+      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
-  }, [state.monitors])
+  }, [state.monitors, state.hideDisplays])
 
   let updateInterval = null
   let panelHeight = -1
@@ -113,12 +114,14 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     const updateInterval = (settings.updateInterval || 500) * 1
     const remaps = (settings.remaps || {})
     const names = (settings.names || {})
+    const hideDisplays = (settings.hideDisplays || {})
     setLevelsChanged(true)
     setState(prev => ({
       ...prev,
       linkedLevelsActive,
       remaps,
       names,
+      hideDisplays,
       updateInterval,
       sleepAction
     }))

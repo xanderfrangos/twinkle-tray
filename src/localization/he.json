@@ -246,5 +246,6 @@
     "GENERIC_TEXT": "טקסט",
     "GENERIC_SLIDER_ICON": "סמל המחוון",
     "GENERIC_SLIDER_TEXT": "טקסט המחוון",
-    "GENERIC_SLIDER_NAME": "הכנס שם עבור המחוון"
+    "GENERIC_SLIDER_NAME": "הכנס שם עבור המחוון",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "הגדרות המסך"
 }

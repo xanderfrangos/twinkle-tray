@@ -1889,6 +1889,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
     }
     lastEagerUpdate = Date.now()
   } catch (e) {
+    failed = true
     console.log('Couldn\'t refresh monitors', e)
   }
 
@@ -3642,6 +3643,28 @@ function createSettings() {
     }
   });
 
+  const openExternalHttpUrl = (url) => {
+    try {
+      const protocol = new URL(url).protocol
+      if (protocol === "https:" || protocol === "http:") {
+        shell.openExternal(url)
+      }
+    } catch (e) {
+      console.log("Couldn't open external URL", e)
+    }
+  }
+
+  settingsWindow.webContents.setWindowOpenHandler((edata) => {
+    openExternalHttpUrl(edata.url)
+    return { action: "deny" };
+  });
+
+  // Prevent links from navigating a Node-enabled window.
+  settingsWindow.webContents.on('will-navigate', (e, url) => {
+    e.preventDefault()
+    openExternalHttpUrl(url)
+  })
+
   settingsWindow.loadURL(
     isDev
       ? "http://localhost:3000/settings.html"
@@ -3658,23 +3681,11 @@ function createSettings() {
 
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.setMenu(windowMenu)
-
-    settingsWindow.webContents.setWindowOpenHandler((edata) => {
-      shell.openExternal(edata.url);
-      return { action: "deny" };
-    });
     // Show after a very short delay to avoid visual bugs
     setTimeout(() => {
       sendMicaWallpaper()
       settingsWindow.show()
     }, 100)
-
-    // Prevent links from opening in Electron
-    settingsWindow.webContents.on('will-navigate', (e, url) => {
-      if (url.indexOf("http://localhost:3000") !== 0 || url.indexOf("file://") !== 0) return false;
-      e.preventDefault()
-      require('electron').shell.openExternal(url)
-    })
   })
 
   // Sort Time of Day Adjustments
@@ -3791,42 +3802,40 @@ getLatestUpdate = async (version) => {
     }
 
     const update = await fetch(version.downloadURL)
-    await new Promise((resolve, reject) => {
-      console.log("Downloading...!")
-      const readableNodeStream = Readable.fromWeb(update.body)
-      const dest = fs.createWriteStream(updatePath)
-      //update.body.pipe(dest);
-      readableNodeStream.on('error', (err) => {
-        reject(err)
-      })
+    if (!update.ok || !update.body) {
+      throw new Error(`Update download failed with HTTP ${update.status}`)
+    }
 
-      dest.on('close', () => {
-        setTimeout(() => {
-          runUpdate(version.filesize)
-        }, 1250)
-        resolve(true)
-      })
-      readableNodeStream.on('finish', function () {
-        console.log("Saved! Running...")
-      });
+    console.log("Downloading...!")
+    const readableNodeStream = Readable.fromWeb(update.body)
+    const dest = fs.createWriteStream(updatePath)
+    let size = 0
+    let lastSizeUpdate = 0
 
-      let size = 0
-      let lastSizeUpdate = 0
-      readableNodeStream.on('data', (chunk) => {
-        size += chunk.length
-        dest.write(chunk, (err) => {
-          if (size >= version.filesize) {
-            dest.close()
-          }
-        })
-        if (size >= lastSizeUpdate + (version.filesize * 0.01) || lastSizeUpdate === 0 || size === version.filesize) {
-          lastSizeUpdate = size
-          sendToAllWindows('updateProgress', Math.floor((size / version.filesize) * 100))
-          console.log(`Downloaded ${size / 1000}KB. [${Math.floor((size / version.filesize) * 100)}%]`)
-        }
-      })
-
+    readableNodeStream.on('data', (chunk) => {
+      size += chunk.length
+      if (size >= lastSizeUpdate + (version.filesize * 0.01) || lastSizeUpdate === 0 || size === version.filesize) {
+        lastSizeUpdate = size
+        sendToAllWindows('updateProgress', Math.floor((size / version.filesize) * 100))
+        console.log(`Downloaded ${size / 1000}KB. [${Math.floor((size / version.filesize) * 100)}%]`)
+      }
     })
+
+    await new Promise((resolve, reject) => {
+      readableNodeStream.once('error', reject)
+      dest.once('error', reject)
+      dest.once('finish', resolve)
+      readableNodeStream.pipe(dest)
+    })
+
+    if (size !== version.filesize) {
+      throw new Error(`Update download was incomplete. Expected ${version.filesize} bytes, got ${size}`)
+    }
+
+    console.log("Saved! Running...")
+    setTimeout(() => {
+      runUpdate(version.filesize)
+    }, 1250)
 
   } catch (e) {
     console.log("Couldn't download update!", e)
@@ -4901,55 +4910,72 @@ const udp = {
 
     console.log("[UDP] Starting local UDP Server...")
     const dgram = require('dgram')
-    const server = dgram.createSocket('udp4')
-    udp.server = server
-
-    server.on('error', error => {
-      console.log(`[UDP] UDP server error:\n${error.stack}`)
-      server.close()
-    });
-
-    server.on('message', async (message, remote) => {
-      const sendResponse = response => server.send(`${response}`, remote.port, remote.address)
-      try {
-        const response = await handleClientMessage(message, remote)
-        sendResponse(response)
-      } catch(e) {
-        console.log(e)
-      }
-    });
-
-    server.on('listening', () => {
-      const connection = server.address();
-      writeSettings({ udpPortActive: connection.port })
-      console.log(`[UDP] UDP server listening at ${connection.address}:${connection.port}`);
-    });
-
-    // Bind to default port, or another if it fails
     const address = (!settings.udpRemote ? 'localhost' : undefined)
-    try {
-      server.bind({ address, port })
-    } catch (e) {
-      try {
-        // Let's try another
-        server.bind({ address, port: (port + 13137) })
-      } catch (e2) {
+    const basePort = Number(port)
+    const ports = [basePort, basePort + 13137, basePort + 1603]
+      .filter(candidate => Number.isInteger(candidate) && candidate > 0 && candidate <= 65535)
+
+    if (ports.length === 0) {
+      console.log("[UDP] No valid ports were available.")
+      return false
+    }
+
+    const startOnPort = (portIndex) => {
+      const server = dgram.createSocket('udp4')
+      let isListening = false
+      udp.server = server
+
+      const handleError = error => {
+        console.log(`[UDP] UDP server error:\n${error.stack}`)
         try {
-          // Okay, one more?
-          server.bind({ address, port: (port + 1603) })
-        } catch (e3) {
-          console.log(e3)
+          server.close()
+        } catch (e) { }
+
+        if (udp.server === server) {
+          udp.server = false
+        }
+
+        if (!isListening && portIndex + 1 < ports.length) {
+          startOnPort(portIndex + 1)
         }
       }
+
+      server.on('error', handleError);
+
+      server.on('message', async (message, remote) => {
+        const sendResponse = response => server.send(`${response}`, remote.port, remote.address)
+        try {
+          const response = await handleClientMessage(message, remote)
+          sendResponse(response)
+        } catch(e) {
+          console.log(e)
+        }
+      });
+
+      server.on('listening', () => {
+        isListening = true
+        const connection = server.address();
+        writeSettings({ udpPortActive: connection.port })
+        console.log(`[UDP] UDP server listening at ${connection.address}:${connection.port}`);
+      });
+
+      try {
+        server.bind({ address, port: ports[portIndex] })
+      } catch (e) {
+        handleError(e)
+      }
     }
+
+    startOnPort(0)
 
   },
   stop: function () {
     try {
       if (udp.server) {
         console.log("[UDP] Stopping local UDP Server.")
-        udp.server.close()
+        const server = udp.server
         udp.server = false
+        server.close()
       }
     } catch (e) {
       console.log("[UDP] Couldn't close UDP server.")

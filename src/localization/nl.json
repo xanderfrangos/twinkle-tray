@@ -212,5 +212,6 @@
     "SETTINGS_UPDATES_CHANNEL": "Update kanaal",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Stabiel (standaard)",
     "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Helderheid"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Helderheid",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Beeldscherm instellingen"
 }

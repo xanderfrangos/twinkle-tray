@@ -1913,9 +1913,9 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 
 let lastRefreshMonitors = 0
 
-async function refreshMonitors(fullRefresh = false, bypassRateLimit = false) {
+async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, bypassWindowsIdle = false) {
 
-  if (isWindowsUserIdle) {
+  if (isWindowsUserIdle && !bypassWindowsIdle) {
     console.log("Displays are off, no updates.")
     return monitors
   }
@@ -4111,14 +4111,20 @@ powerMonitor.on("resume", async () => {
     await Utils.wait(parseInt(settings.wakeRestoreSeconds || 8) * 1000)
     block.release()
 
-    if (!settings.disableAutoRefresh) await refreshMonitors(true).then(() => {
+    // A replacement worker always needs an initial inventory before it can
+    // service brightness/VCP requests, even when automatic refresh behavior
+    // has been disabled by the user.
+    while(isRefreshing || pausedMonitorUpdates) await Utils.wait(50)
+    await refreshMonitors(true, true, true)
+
+    if (!settings.disableAutoRefresh) {
       if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
       if(settings.recreateTray) recreateTray();
       if(settings.recreateFlyout && !panelSize.visible) restartPanel();
 
       // Check if time adjustments should apply
       applyCurrentAdjustmentEvent(true, false)
-    })
+    }
   } catch(error) {
     block.release()
     console.error("Couldn't restore monitor thread after resume.", error)

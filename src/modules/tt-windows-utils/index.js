@@ -10,7 +10,6 @@ module.exports = {
         setWindowPos: WindowUtils.setWindowPos,
         getWindowPos: WindowUtils.getWindowPos,
         getClientPos: WindowUtils.getClientPos,
-        getClientPos: WindowUtils.getClientPos,
         setForegroundWindow: WindowUtils.setForegroundWindow,
         getForegroundWindow: WindowUtils.getForegroundWindow,
         getWindowLong: WindowUtils.getWindowLong,
@@ -18,6 +17,7 @@ module.exports = {
     },
     PowerEvents: {
         registerPowerSettingNotifications: PowerEvents.registerPowerSettingNotifications,
+        unregisterPowerSettingNotifications: PowerEvents.unregisterPowerSettingNotifications,
         getPowerSetting: PowerEvents.getPowerSetting,
     },
     MediaStatus: {
@@ -30,17 +30,17 @@ module.exports = {
     },
     WindowMaterial: {
         setWindowMaterial: (hwnd, materialType = 1, cornersType = 2, darkModeSupported = true) => {
-            WindowMaterial.setWindowMaterial(hwnd, materialType, cornersType, (darkModeSupported ? 1 : 0))
+            return WindowMaterial.setWindowMaterial(hwnd, materialType, cornersType, (darkModeSupported ? 1 : 0))
         },
         setWindowAttribute: WindowMaterial.setWindowAttribute,
         setWindowCorners: (hwnd, cornerType = 0) => {
-            WindowMaterial.setWindowAttribute(hwnd, 33, cornerType)
+            return WindowMaterial.setWindowAttribute(hwnd, 33, cornerType)
         },
         setDarkModeSupported: (hwnd, enabled = 1) => {
-            WindowMaterial.setWindowAttribute(hwnd, 20, enabled)
+            return WindowMaterial.setWindowAttribute(hwnd, 20, enabled)
         },
         setTransitionSupported: (hwnd, enabled = 1) => {
-            WindowMaterial.setWindowAttribute(hwnd, 3, enabled)
+            return WindowMaterial.setWindowAttribute(hwnd, 3, enabled)
         }
     }
 }

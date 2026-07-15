@@ -1,34 +1,85 @@
 #include <napi.h>
 #include <windows.h>
 #include <dwmapi.h>
+
+#include <cmath>
+#include <cstdint>
+
 #pragma comment(lib, "dwmapi.lib")
 
-Napi::Boolean SetWindowMaterial(const Napi::CallbackInfo &info) {
-  Napi::Number hwnd = info[0].As<Napi::Number>();
-  Napi::Number backdrop = info[1].As<Napi::Number>();
-  Napi::Number corners = info[2].As<Napi::Number>();
-  Napi::Number mode = info[3].As<Napi::Number>();
-  int backdropType = backdrop.Int32Value();
-  int darkMode = mode.Int32Value();
-  int borderType = corners.Int32Value();
-  DwmSetWindowAttribute((HWND) hwnd.Int32Value(), 20, &darkMode, sizeof(darkMode)); // DWMWA_USE_IMMERSIVE_DARK_MODE: 20
-  DwmSetWindowAttribute((HWND) hwnd.Int32Value(), 38, &backdropType, sizeof(backdropType)); // DWMWA_SYSTEMBACKDROP_TYPE: 38 
-  DwmSetWindowAttribute((HWND) hwnd.Int32Value(), 33, &borderType, sizeof(borderType)); // DWMWA_WINDOW_CORNER_PREFERENCE: 33
-  return Napi::Boolean::New(info.Env(), true);
+constexpr DWORD kUseImmersiveDarkMode = 20;
+constexpr DWORD kWindowCornerPreference = 33;
+constexpr DWORD kSystemBackdropType = 38;
+
+bool GetWindowHandle(const Napi::Value& value, HWND* handle)
+{
+  if (value.IsBigInt()) {
+    bool lossless = false;
+    uint64_t rawHandle = value.As<Napi::BigInt>().Uint64Value(&lossless);
+    if (!lossless) return false;
+    *handle = reinterpret_cast<HWND>(static_cast<uintptr_t>(rawHandle));
+    return true;
+  }
+
+  if (value.IsNumber()) {
+    double rawHandle = value.As<Napi::Number>().DoubleValue();
+    if (!std::isfinite(rawHandle) || std::trunc(rawHandle) != rawHandle) return false;
+    *handle = reinterpret_cast<HWND>(static_cast<intptr_t>(rawHandle));
+    return true;
+  }
+
+  return false;
 }
 
-Napi::Boolean SetWindowAttribute(const Napi::CallbackInfo &info) {
-  Napi::Number hwnd = info[0].As<Napi::Number>();
-  Napi::Number type = info[1].As<Napi::Number>();
-  Napi::Number value = info[2].As<Napi::Number>();
-  int intval = value.Int32Value();
-  DwmSetWindowAttribute((HWND) hwnd.Int32Value(), (DWORD) type.Int32Value(), &intval, sizeof(intval));
-  return Napi::Boolean::New(info.Env(), true);
+Napi::Boolean SetWindowMaterial(const Napi::CallbackInfo& info)
+{
+  if (info.Length() < 4 || !info[1].IsNumber() || !info[2].IsNumber() || !info[3].IsNumber()) {
+    return Napi::Boolean::New(info.Env(), false);
+  }
+
+  HWND hwnd = NULL;
+  if (!GetWindowHandle(info[0], &hwnd)) {
+    return Napi::Boolean::New(info.Env(), false);
+  }
+
+  int backdropType = info[1].As<Napi::Number>().Int32Value();
+  int borderType = info[2].As<Napi::Number>().Int32Value();
+  int darkMode = info[3].As<Napi::Number>().Int32Value();
+
+  HRESULT darkModeResult = DwmSetWindowAttribute(
+    hwnd, kUseImmersiveDarkMode, &darkMode, sizeof(darkMode));
+  HRESULT backdropResult = DwmSetWindowAttribute(
+    hwnd, kSystemBackdropType, &backdropType, sizeof(backdropType));
+  HRESULT cornersResult = DwmSetWindowAttribute(
+    hwnd, kWindowCornerPreference, &borderType, sizeof(borderType));
+
+  return Napi::Boolean::New(
+    info.Env(), SUCCEEDED(darkModeResult) && SUCCEEDED(backdropResult) && SUCCEEDED(cornersResult));
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
-  exports.Set(Napi::String::New(env, "setWindowMaterial"), Napi::Function::New(env, SetWindowMaterial));
-  exports.Set(Napi::String::New(env, "setWindowAttribute"), Napi::Function::New(env, SetWindowAttribute));
+Napi::Boolean SetWindowAttribute(const Napi::CallbackInfo& info)
+{
+  if (info.Length() < 3 || !info[1].IsNumber() || !info[2].IsNumber()) {
+    return Napi::Boolean::New(info.Env(), false);
+  }
+
+  HWND hwnd = NULL;
+  if (!GetWindowHandle(info[0], &hwnd)) {
+    return Napi::Boolean::New(info.Env(), false);
+  }
+
+  int value = info[2].As<Napi::Number>().Int32Value();
+  HRESULT result = DwmSetWindowAttribute(hwnd,
+                                         info[1].As<Napi::Number>().Uint32Value(),
+                                         &value,
+                                         sizeof(value));
+  return Napi::Boolean::New(info.Env(), SUCCEEDED(result));
+}
+
+Napi::Object Init(Napi::Env env, Napi::Object exports)
+{
+  exports.Set("setWindowMaterial", Napi::Function::New(env, SetWindowMaterial));
+  exports.Set("setWindowAttribute", Napi::Function::New(env, SetWindowAttribute));
   return exports;
 }
 

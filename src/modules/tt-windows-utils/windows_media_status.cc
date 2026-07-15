@@ -21,7 +21,7 @@ Napi::String getPlaybackStatus(const Napi::CallbackInfo &info) {
 
   try {
     auto session_async = GSMTCSM::RequestAsync();
-    if (session_async.wait_for(std::chrono::seconds{1}) !=
+    if (session_async.wait_for(std::chrono::milliseconds{100}) !=
         winrt::Windows::Foundation::AsyncStatus::Completed) {
       return Napi::String::New(info.Env(), statusStr);
     }
@@ -63,7 +63,7 @@ Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
 
   try {
     auto session_async = GSMTCSM::RequestAsync();
-    if (session_async.wait_for(std::chrono::seconds{1}) !=
+    if (session_async.wait_for(std::chrono::milliseconds{100}) !=
         winrt::Windows::Foundation::AsyncStatus::Completed) {
       return obj;
     }
@@ -74,7 +74,12 @@ Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
     if (session == NULL)
       return obj;
 
-    MediaProperties playback = session.TryGetMediaPropertiesAsync().get();
+    auto properties_async = session.TryGetMediaPropertiesAsync();
+    if (properties_async.wait_for(std::chrono::milliseconds{100}) !=
+        winrt::Windows::Foundation::AsyncStatus::Completed) {
+      return obj;
+    }
+    MediaProperties playback = properties_async.get();
 
     if (playback == NULL)
       return obj;
@@ -111,18 +116,19 @@ Napi::Object getPlaybackInfo(const Napi::CallbackInfo &info) {
             Napi::Number::New(info.Env(), playback.TrackNumber()));
 
     std::string typeStr = "unknown";
-    MediaPlaybackType type = playback.PlaybackType().Value();
-
-    switch (type) {
-    case MediaPlaybackType::Music:
-      typeStr = "music";
-      break;
-    case MediaPlaybackType::Video:
-      typeStr = "video";
-      break;
-    case MediaPlaybackType::Image:
-      typeStr = "image";
-      break;
+    auto playbackType = playback.PlaybackType();
+    if (playbackType != nullptr) {
+      switch (playbackType.Value()) {
+      case MediaPlaybackType::Music:
+        typeStr = "music";
+        break;
+      case MediaPlaybackType::Video:
+        typeStr = "video";
+        break;
+      case MediaPlaybackType::Image:
+        typeStr = "image";
+        break;
+      }
     }
 
     obj.Set(Napi::String::New(info.Env(), "type"),

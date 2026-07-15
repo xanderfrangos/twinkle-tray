@@ -22,7 +22,7 @@ StartupTask getStartupTask() {
     winrt::Windows::Foundation::Collections::IVectorView<StartupTask> tasks =
         package_async.get();
     for (auto &&task : tasks) {
-      if (tasks != NULL) {
+      if (task != NULL) {
         return task;
       }
     }
@@ -36,11 +36,18 @@ StartupTask getStartupTask() {
 Napi::Boolean Enable(const Napi::CallbackInfo &info) {
   try {
     StartupTask task = getStartupTask();
-    if (task != NULL) {
-      task.RequestEnableAsync();
+    if (task == NULL) {
+      return Napi::Boolean::New(info.Env(), false);
     }
 
-    return Napi::Boolean::New(info.Env(), true);
+    auto enableAsync = task.RequestEnableAsync();
+    if (enableAsync.wait_for(std::chrono::seconds{1})
+        != winrt::Windows::Foundation::AsyncStatus::Completed) {
+      return Napi::Boolean::New(info.Env(), false);
+    }
+
+    return Napi::Boolean::New(
+      info.Env(), enableAsync.get() == Windows::ApplicationModel::StartupTaskState::Enabled);
   } catch (...) {
     return Napi::Boolean::New(info.Env(), false);
   }
@@ -49,10 +56,13 @@ Napi::Boolean Enable(const Napi::CallbackInfo &info) {
 Napi::Boolean Disable(const Napi::CallbackInfo &info) {
   try {
     Windows::ApplicationModel::StartupTask task = getStartupTask();
-    if (task != NULL) {
-      task.Disable();
+    if (task == NULL) {
+      return Napi::Boolean::New(info.Env(), false);
     }
-    return Napi::Boolean::New(info.Env(), true);
+
+    task.Disable();
+    return Napi::Boolean::New(
+      info.Env(), task.State() != Windows::ApplicationModel::StartupTaskState::Enabled);
   } catch (...) {
     return Napi::Boolean::New(info.Env(), false);
   }

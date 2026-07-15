@@ -22,6 +22,8 @@
     "binding.gyp",
     "windows_media_status.cc",
     "windows_power_events.cc",
-    "windows_window_utils.cc"
+    "windows_window_utils.cc",
+    "windows_window_material.cc",
+    "windows_app_startup.cc"
   ]
 }

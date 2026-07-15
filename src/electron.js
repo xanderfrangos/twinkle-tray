@@ -2579,7 +2579,11 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
       : `file://${path.join(__dirname, "../build/index.html")}`
   );
 
-  mainWindow.on("closed", () => { console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~"); mainWindow = null });
+  mainWindow.on("closed", () => {
+    console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~")
+    PowerEvents.unregisterPowerSettingNotifications()
+    mainWindow = null
+  });
   mainWindow.on("minimize", () => { console.log("~~~~~ MAIN WINDOW MINIMIZED ~~~~~~") });
   mainWindow.on("restore", () => { console.log("~~~~~ MAIN WINDOW RESTORED ~~~~~~") });
 
@@ -2649,7 +2653,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
     if(wParam.readUInt32LE() !== 32787) return false;
     // PBT_POWERSETTINGCHANGE
 
-    const setting = PowerEvents.getPowerSetting(lParam.readBigInt64LE(0))
+    const setting = PowerEvents.getPowerSetting(lParam.readBigUInt64LE(0))
     if(setting.name !== "" || setting.guid) {
       console.log(`Event: ${setting.name || setting.guid} (${setting.data})`)
     }
@@ -2910,7 +2914,7 @@ function repositionPanel() {
 
 
 
-let forcedFocusID = 0
+let forcedFocusID = 0n
 let currentProfile
 const ignoreAppList = [
   "twinkletray.exe",
@@ -2951,7 +2955,7 @@ function startFocusTracking() {
       sendToAllWindows('window-history', windowHistory)
     }
 
-    if (forcedFocusID > 0 && forcedFocusID !== hwnd && hwnd != getMainWindowHandle()) {
+    if (forcedFocusID > 0n && forcedFocusID !== hwnd && hwnd !== getMainWindowHandle()) {
       // This is the overlay
       // We're going to force focus back to the previous window
       trySetForegroundWindow(hwnd)
@@ -3014,9 +3018,9 @@ function applyProfileBrightness(profile) {
 
 function getMainWindowHandle() {
   try {
-    return mainWindow.getNativeWindowHandle().readInt32LE()
+    return mainWindow.getNativeWindowHandle().readBigUInt64LE()
   } catch (e) {
-    return 0
+    return 0n
   }
 }
 
@@ -3058,7 +3062,7 @@ function showPanel(show = true, height = 300) {
     if (startHideTimeout) clearTimeout(startHideTimeout); // Reset "hide" timeout
     startHideTimeout = null
     mainWindow.restore()
-    mainWindowHandle = mainWindow.getNativeWindowHandle().readInt32LE(0)
+    mainWindowHandle = mainWindow.getNativeWindowHandle().readBigUInt64LE(0)
     repositionPanel()
     panelHeight = height
     panelSize.visible = true
@@ -3302,6 +3306,7 @@ app.on("activate", () => {
 
 app.on('quit', () => {
   try {
+    PowerEvents.unregisterPowerSettingNotifications()
     tray.destroy()
   } catch (e) {
 

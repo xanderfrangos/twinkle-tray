@@ -289,5 +289,6 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART": "El virtual hub puede ser configurado a inicio de coche por correrlo encima la línea de orden con '-i'",
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Ve \"-i : Instalación como servicio\" aquí",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Disconnected"
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Disconnected",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Ajustes de pantalla"
 }

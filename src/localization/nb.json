@@ -154,5 +154,6 @@
     "SETTINGS_FEATURES_POWER_OFF": "Slå av",
     "GENERIC_DELETE": "Slett",
     "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Lysstyrke",
-    "PANEL_LABEL_TURN_ON": "Slå av"
+    "PANEL_LABEL_TURN_ON": "Slå av",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Skjerminnstillinger"
 }

@@ -176,8 +176,8 @@ let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
-function startMonitorThread() {
-  if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || isWindowsUserIdle) return false;
+function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
+  if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || (isWindowsUserIdle && !allowWhileWindowsIdle)) return false;
   monitorsThreadReady = false
   monitorsThreadStarting = true
   console.log("Starting monitor thread")
@@ -224,23 +224,97 @@ function startMonitorThread() {
 
   require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
 
-    stopMonitorThread()
-    setTimeout(() => {
-      if(!monitorsThreadReal?.connected && !monitorsThreadStarting) {
-        startMonitorThread()
-      }
-    }, 1000)
+    stopMonitorThread().then(() => {
+      startMonitorThread()
+    }).catch(stopError => {
+      console.error("Couldn't restart monitor thread.", stopError)
+    })
+  })
+  return monitorsThreadReal
+}
+
+function waitForMonitorThreadReady(thread = monitorsThreadReal) {
+  if(!thread) return Promise.reject(new Error("Monitor thread was not started."));
+  if(thread === monitorsThreadReal && monitorsThreadReady) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup()
+      reject(new Error("Timed out waiting for monitor thread to become ready."))
+    }, 30000)
+
+    const cleanup = () => {
+      clearTimeout(timeout)
+      thread.removeListener("message", handleMessage)
+      thread.removeListener("exit", handleExit)
+      thread.removeListener("error", handleError)
+    }
+    const handleMessage = data => {
+      if(data?.type !== "ready") return;
+      cleanup()
+      resolve()
+    }
+    const handleExit = (code, signal) => {
+      cleanup()
+      reject(new Error(`Monitor thread exited before it was ready (code: ${code}, signal: ${signal}).`))
+    }
+    const handleError = err => {
+      cleanup()
+      reject(err)
+    }
+
+    thread.on("message", handleMessage)
+    thread.once("exit", handleExit)
+    thread.once("error", handleError)
   })
 }
 
+let monitorsThreadStopPromise = false
 function stopMonitorThread() {
   console.log("Killing monitor thread")
   monitorsThreadReady = false
   monitorsThreadStarting = false
   setIsRefreshing(false)
-  if(monitorsThreadReal?.connected) {
-    monitorsThreadReal.kill()
+
+  const thread = monitorsThreadReal
+  if(!thread || thread.exitCode !== null) {
+    if(monitorsThreadReal === thread) monitorsThreadReal = undefined
+    return Promise.resolve()
   }
+  if(monitorsThreadStopPromise) return monitorsThreadStopPromise;
+
+  monitorsThreadStopPromise = new Promise((resolve, reject) => {
+    const cleanup = () => {
+      thread.removeListener("exit", handleExit)
+      thread.removeListener("close", handleExit)
+    }
+    const handleExit = () => {
+      cleanup()
+      if(monitorsThreadReal === thread) monitorsThreadReal = undefined
+      resolve()
+    }
+
+    thread.once("exit", handleExit)
+    thread.once("close", handleExit)
+
+    try {
+      if(!thread.kill()) {
+        if(thread.exitCode !== null) {
+          handleExit()
+        } else {
+          cleanup()
+          reject(new Error("Monitor thread could not be terminated."))
+        }
+      }
+    } catch(error) {
+      cleanup()
+      reject(error)
+    }
+  }).finally(() => {
+    monitorsThreadStopPromise = false
+  })
+
+  return monitorsThreadStopPromise
 }
 
 function getVCP(monitor, code) {
@@ -4014,9 +4088,8 @@ function handleMonitorChange(t, e, d) {
 }
 
 // Handle resume from sleep/hibernation
-powerMonitor.on("resume", () => {
+powerMonitor.on("resume", async () => {
   console.log("Resuming......")
-  stopMonitorThread()
   const block = blockBadDisplays("powerMonitor:resume")
   setRecentlyInteracted(false)
   
@@ -4025,26 +4098,31 @@ powerMonitor.on("resume", () => {
     tray.destroy()
     app.relaunch()
     app.exit()
+    return
   }
 
-  setTimeout(
-    () => {
-      startMonitorThread()
-      setTimeout(
-        () => {
-          block.release()
-          if (!settings.disableAutoRefresh) refreshMonitors(true).then(() => {
-            if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
-            if(settings.recreateTray) recreateTray();
-            if(settings.recreateFlyout && !panelSize.visible) restartPanel();
-    
-            // Check if time adjustments should apply
-            applyCurrentAdjustmentEvent(true, false)
-          })
-        },
-        parseInt(settings.wakeRestoreSeconds || 8) * 1000 // Give Windows a few seconds to... you know... wake up.
-      )
-  }, 100)
+  try {
+    await stopMonitorThread()
+    const thread = startMonitorThread({ allowWhileWindowsIdle: true })
+    if(!thread) throw new Error("Monitor thread could not be restarted after resume.");
+    await waitForMonitorThreadReady(thread)
+
+    // Give Windows a few seconds to... you know... wake up.
+    await Utils.wait(parseInt(settings.wakeRestoreSeconds || 8) * 1000)
+    block.release()
+
+    if (!settings.disableAutoRefresh) await refreshMonitors(true).then(() => {
+      if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
+      if(settings.recreateTray) recreateTray();
+      if(settings.recreateFlyout && !panelSize.visible) restartPanel();
+
+      // Check if time adjustments should apply
+      applyCurrentAdjustmentEvent(true, false)
+    })
+  } catch(error) {
+    block.release()
+    console.error("Couldn't restore monitor thread after resume.", error)
+  }
 })
 
 function handleMetricsChange(type) {

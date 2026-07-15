@@ -234,5 +234,6 @@
     "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Havaitse näyttöjen virransäästötilojen muutokset. Tämän poistaminen käytöstä voi auttaa, jos kohtaat virheitä, kun näytöt sammutetaan/käynnistetään tai ne ovat käyttämättömänä. Vaatii uudelleenkäynnistyksen.",
     "SETTINGS_MONITORS_DETAILS_HDR": "HDR",
     "SETTINGS_TIME_USE_SUN_POSITION": "Käytä auringon sijaintia",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Lisää toiminto"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Lisää toiminto",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Näytön asetukset"
 }

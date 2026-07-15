@@ -246,5 +246,6 @@
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "모니터가 밝기를 위해 비표준 VCP 코드 (예: 0x13 또는 0x6B)를 사용하거나 밝기 슬라이더를 다른 VCP 코드로 다시 매핑하려면 아래에 해당 코드를 입력할 수 있습니다.",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "기본값 (0x10)은 비워 둡니다. 아래 목록에서 지원되는 코드를 찾습니다.",
     "SETTINGS_TIME_USE_SUN_POSITION": "태양 위치 사용",
-    "SETTINGS_HOTKEY_ADD_ACTION": "작업 추가"
+    "SETTINGS_HOTKEY_ADD_ACTION": "작업 추가",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "모니터 설정"
 }

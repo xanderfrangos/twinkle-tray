@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <map>
+#include <vector>
 
 enum DISPLAYCONFIG_DEVICE_INFO_TYPE_INTERNAL {
     DISPLAYCONFIG_DEVICE_INFO_SET_SDR_WHITE_LEVEL = 0xFFFFFFEE,
@@ -40,11 +41,17 @@ struct Display {
     int bits;
 };
 
-std::string wcharToString(const wchar_t* wstr, boolean hasNullTerminator) {
+std::string wcharToString(const wchar_t* wstr) {
     try {
-        int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr) - (hasNullTerminator ? 1 : 0);
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+        if (size_needed <= 0) {
+            return "";
+        }
         std::string str(size_needed, 0);
-        WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], size_needed, nullptr, nullptr);
+        if (WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], size_needed, nullptr, nullptr) != size_needed) {
+            return "";
+        }
+        str.pop_back();
         return str;
     } catch (...) {
         return (std::string)("");
@@ -83,21 +90,14 @@ boolean setSDRBrightness(DISPLAYCONFIG_PATH_INFO target, int desiredNits, bool s
 std::map<std::string, Display> getDisplays() {
     std::map<std::string, Display> newDisplays;
 
-    DISPLAYCONFIG_PATH_INFO *paths = 0;
-    DISPLAYCONFIG_MODE_INFO *modes = 0;
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
     UINT32 pathCount, modeCount;
     {
       UINT32 flags = QDC_ONLY_ACTIVE_PATHS;
       LONG result = ERROR_SUCCESS;
 
       do {
-        if (paths) {
-          free(paths);
-        }
-        if (modes) {
-          free(modes);
-        }
-
         result = GetDisplayConfigBufferSizes(flags, &pathCount, &modeCount);
 
         if (result != ERROR_SUCCESS) {
@@ -105,11 +105,11 @@ std::map<std::string, Display> getDisplays() {
           return newDisplays;
         }
 
-        paths = (DISPLAYCONFIG_PATH_INFO *)malloc(pathCount * sizeof(paths[0]));
-        modes = (DISPLAYCONFIG_MODE_INFO *)malloc(modeCount * sizeof(modes[0]));
+        paths.resize(pathCount);
+        modes.resize(modeCount);
 
         result =
-            QueryDisplayConfig(flags, &pathCount, paths, &modeCount, modes, 0);
+            QueryDisplayConfig(flags, &pathCount, paths.data(), &modeCount, modes.data(), 0);
         if (result != ERROR_SUCCESS && result != ERROR_INSUFFICIENT_BUFFER) {
           fprintf(stderr, "Error on QueryDisplayConfig\n");
           return newDisplays;
@@ -117,7 +117,7 @@ std::map<std::string, Display> getDisplays() {
       } while (result == ERROR_INSUFFICIENT_BUFFER);
     }
 
-    for (int i = 0; i < pathCount; i++) {
+    for (UINT32 i = 0; i < pathCount; i++) {
       DISPLAYCONFIG_PATH_INFO path = paths[i];
 
       DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
@@ -130,7 +130,7 @@ std::map<std::string, Display> getDisplays() {
       if (result != ERROR_SUCCESS) {
         fprintf(stderr,
                 "Error on DisplayConfigGetDeviceInfo for target name\n");
-        return newDisplays;
+        continue;
       }
 
       DISPLAYCONFIG_SDR_WHITE_LEVEL displayInfo = {};
@@ -145,7 +145,7 @@ std::map<std::string, Display> getDisplays() {
       if (result != ERROR_SUCCESS) {
         fprintf(stderr,
                 "Error on DisplayConfigGetDeviceInfo for SDR white level\n");
-        return newDisplays;
+        continue;
       }
 
       DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO hdrInfo = {};
@@ -156,13 +156,19 @@ std::map<std::string, Display> getDisplays() {
 
       result = DisplayConfigGetDeviceInfo(&hdrInfo.header);
 
+      if (result != ERROR_SUCCESS) {
+        fprintf(stderr,
+                "Error on DisplayConfigGetDeviceInfo for advanced color\n");
+        continue;
+      }
+
       int nits = (int)displayInfo.SDRWhiteLevel * 80 / 1000;
       std::string monitorDevicePath =
-          wcharToString(targetName.monitorDevicePath, false);
+          wcharToString(targetName.monitorDevicePath);
 
       Display newDisplay;
       newDisplay.name =
-          wcharToString(targetName.monitorFriendlyDeviceName, true);
+          wcharToString(targetName.monitorFriendlyDeviceName);
       newDisplay.path =
           monitorDevicePath.substr(0, monitorDevicePath.find("#{"));
       newDisplay.nits = nits;

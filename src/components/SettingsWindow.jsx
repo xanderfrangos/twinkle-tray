@@ -1230,6 +1230,7 @@ export default class SettingsWindow extends PureComponent {
                                         <SettingsChild title={"WMIC"} input={this.renderToggle("disableWMIC", true, "right", true)} />
                                         <SettingsChild title={"WMI-Bridge"} input={this.renderToggle("disableWMI", true, "right", true)} />
                                         <SettingsChild title={"Win32-DisplayConfig"} input={this.renderToggle("disableWin32", true, "right", true)} />
+                                        <SettingsChild title={"WinRT-DisplayMonitor"} input={this.renderToggle("disableWinRT", true, "right", true)} />
                                     </SettingsOption>
 
                                    <SettingsOption title={T.t("SETTINGS_GENERAL_LEGACY_DDC_TITLE")} description={T.t("SETTINGS_GENERAL_LEGACY_DDC_DESC")} input={

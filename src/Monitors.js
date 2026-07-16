@@ -50,6 +50,7 @@ process.on('message', async (data) => {
             if (settings?.disableWMIC) wmicUnavailable = true;
             if (settings?.disableWMI) wmiFailed = true;
             if (settings?.disableWin32) win32Failed = true;
+            if (settings?.disableWinRT) winrtDisplayInfoFailed = true;
 
         } else if (data.type === "ddcBrightnessVCPs") {
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
@@ -298,23 +299,27 @@ getAllMonitors = async (ddcciMethod = "default") => {
     }
 
     // Extra display details via WinRT (internal/external, physical size)
-    try {
-        startTime = process.hrtime.bigint()
-        const monitorsWinRT = await getMonitorsWinRT()
-        console.log(`getMonitorsWinRT() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+    if (!winrtDisplayInfoFailed) {
+        try {
+            startTime = process.hrtime.bigint()
+            const monitorsWinRT = await getMonitorsWinRT()
+            console.log(`getMonitorsWinRT() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
-        for (const hwid2 in monitorsWinRT) {
-            const monitor = monitorsWinRT[hwid2]
-            // Only use the WinRT name when no other source provided one
-            const winrtName = monitor.winrtName
-            delete monitor.winrtName
-            if (winrtName && !foundMonitors[hwid2]?.name) {
-                monitor.name = winrtName
+            for (const hwid2 in monitorsWinRT) {
+                const monitor = monitorsWinRT[hwid2]
+                // Only use the WinRT name when no other source provided one
+                const winrtName = monitor.winrtName
+                delete monitor.winrtName
+                if (winrtName && !foundMonitors[hwid2]?.name) {
+                    monitor.name = winrtName
+                }
+                updateDisplay(foundMonitors, hwid2, monitor)
             }
-            updateDisplay(foundMonitors, hwid2, monitor)
+        } catch (e) {
+            console.log("\x1b[41m" + "getMonitorsWinRT() failed!" + "\x1b[0m", e)
         }
-    } catch (e) {
-        console.log("\x1b[41m" + "getMonitorsWinRT() failed!" + "\x1b[0m", e)
+    } else {
+        console.log("getMonitorsWinRT() skipped due to previous failure.")
     }
 
     // List Apple Studio displays

@@ -1998,6 +1998,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
     }
 
     monitors = newMonitors;
+    lightSensor.setMonitors(monitors)
 
     // Only send update if something changed
     if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {

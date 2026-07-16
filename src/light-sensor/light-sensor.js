@@ -117,6 +117,12 @@ class LightSensor {
         }
     }
 
+    setMonitors(monitors) {
+        for (const sensor of Object.values(this.sensors)) {
+            sensor.monitors = monitors;
+        }
+    }
+
     /**
      * @param {{ enabled?: boolean; active: 'fake' | 'yocto' | 'windows'; sensors?: { yocto: { hubUrl: string; }; fake: { overriddenLux: number; }; windows: {}; }; monitorSettings?: {}; } | undefined} settings
      * @param {{}} monitors

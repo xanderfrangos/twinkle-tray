@@ -13,6 +13,7 @@ let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
 let lastHDR = {}
+let lastWinRT = {}
 
 function deepCopy(obj) {
     try {
@@ -107,6 +108,7 @@ process.on('message', async (data) => {
                     monitorReports,
                     monitorReportsRaw,
                     lastRefresh,
+                    lastWinRT,
                     settings
                 }
             })
@@ -804,6 +806,7 @@ getMonitorsWinRT = async () => {
     } catch (e) {
         console.log("getMonitorsWinRT: Failed to get display info.", e)
     }
+    lastWinRT = deepCopy(foundMonitors)
     return foundMonitors
 }
 

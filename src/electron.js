@@ -183,7 +183,7 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   monitorsThreadStarting = true
   console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
-  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest], { silent: false })
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest, "--datapath=" + app.getPath("userData")], { silent: false })
   monitorsThreadReal.on("message", (data) => {
     if (data?.type) {
       if (data.type === "ready") {

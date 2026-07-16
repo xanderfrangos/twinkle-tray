@@ -1171,10 +1171,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
         await wait(parseInt(settings?.checkVCPWaitMS || 20))
         return result
     } catch (e) {
-        let reason = e
-        if(e.message.indexOf("the I2C bus") > 0) reason = "I2C bus error";
-        if(e.message.indexOf("does not support") > 0) reason = "VCP code unsupported";
-        console.log(`Error reading VCP code ${vcpString} for ${monitor}. Reason: ${reason}`)
+        console.log(`Error reading VCP code ${vcpString} for ${monitor}. Reason: ${classifyDDCError(e)}`)
 
         // Since it failed, let's check for an existing value first
         if(vcpCache[monitor]?.["vcp_" + vcpString]) {
@@ -1201,6 +1198,7 @@ async function setVCP(monitor, code, value) {
         }
         return result
     } catch (e) {
+        console.log(`Error setting VCP code ${vcpStr(code)} for ${monitor}. Reason: ${classifyDDCError(e)}`)
         return false
     }
 }
@@ -1439,6 +1437,36 @@ function wait(ms = 2000) {
 
 function vcpStr(code) {
     return `0x${parseInt(code).toString(16).toUpperCase()}`
+}
+
+// Win32 error codes for DDC/CI failures (winerror.h), exposed by
+// node-ddcci as error.win32Code. Message strings from Windows are
+// localized, so failures are classified by code instead.
+const DDC_ERROR_REASONS = {
+    0xC0262580: "I2C not supported",                    // ERROR_GRAPHICS_I2C_NOT_SUPPORTED
+    0xC0262581: "I2C device does not exist",            // ERROR_GRAPHICS_I2C_DEVICE_DOES_NOT_EXIST
+    0xC0262582: "I2C bus error (transmit)",             // ERROR_GRAPHICS_I2C_ERROR_TRANSMITTING_DATA
+    0xC0262583: "I2C bus error (receive)",              // ERROR_GRAPHICS_I2C_ERROR_RECEIVING_DATA
+    0xC0262584: "VCP code unsupported",                 // ERROR_GRAPHICS_DDCCI_VCP_NOT_SUPPORTED
+    0xC0262585: "invalid DDC/CI data",                  // ERROR_GRAPHICS_DDCCI_INVALID_DATA
+    0xC0262586: "invalid timing status byte",           // ERROR_GRAPHICS_DDCCI_MONITOR_RETURNED_INVALID_TIMING_STATUS_BYTE
+    0xC0262587: "invalid capabilities string",          // ERROR_GRAPHICS_MCA_INVALID_CAPABILITIES_STRING
+    0xC0262589: "invalid DDC/CI message command",       // ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_COMMAND
+    0xC026258A: "invalid DDC/CI message length",        // ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_LENGTH
+    0xC026258B: "invalid DDC/CI message checksum",      // ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_CHECKSUM
+    0xC026258C: "invalid physical monitor handle",      // ERROR_GRAPHICS_INVALID_PHYSICAL_MONITOR_HANDLE
+    0xC026258D: "monitor no longer exists"              // ERROR_GRAPHICS_MONITOR_NO_LONGER_EXISTS
+}
+
+function classifyDDCError(e) {
+    const code = e?.win32Code
+    if (code !== undefined && DDC_ERROR_REASONS[code]) {
+        return `${DDC_ERROR_REASONS[code]} (0x${(code >>> 0).toString(16).toUpperCase()})`
+    }
+    // Fallback for errors without an attached code
+    if (e?.message?.indexOf("the I2C bus") > 0) return "I2C bus error";
+    if (e?.message?.indexOf("does not support") > 0) return "VCP code unsupported";
+    return e
 }
 
 testDDCCIMethods = async () => {

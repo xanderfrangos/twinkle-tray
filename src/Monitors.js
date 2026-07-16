@@ -801,7 +801,7 @@ getMonitorsWMI = () => {
                 // Something went wrong
                 console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
                 clearTimeout(timeout)
-                resolve(foundMonitor)
+                resolve(foundMonitors)
             } else {
                 // Sort through results
                 for (let monitorHWID in wmiMonitors) {
@@ -888,8 +888,11 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
-            const timeout = setTimeout(() => { console.log("getFeaturesDDC Timed out."); reject({}) }, 80000)
-            
+            // If the whole scan runs too long, return whatever was collected
+            // so far rather than failing every display.
+            let timedOut = false
+            const timeout = setTimeout(() => { timedOut = true; console.log("getFeaturesDDC Timed out. Returning partial results."); resolve(monitorFeatures) }, 80000)
+
             getDDCCI()
             await wait(10)
 
@@ -924,8 +927,10 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             lastDDCCIList = ddcciMonitors
 
             for (let monitor of ddcciMonitors) {
+                if (timedOut) break;
                 const id = monitor.deviceKey
-                const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC Timed out on monitor:", id); reject({}) }, 15000)
+                // A slow monitor shouldn't abort the scan for the others.
+                const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC is taking a long time on monitor:", id) }, 15000)
                 const hwid = id.split("#")
                 let features = {}
 

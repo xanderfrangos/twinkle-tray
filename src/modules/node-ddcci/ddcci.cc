@@ -525,34 +525,33 @@ getCapabilitiesString(HANDLE handle)
 
     d("== cLength: " + std::to_string(cchStringLength));
 
-    // Allocate the string buffer.
-    LPSTR szCapabilitiesString = (LPSTR)malloc(cchStringLength);
-    if (szCapabilitiesString != NULL) {
-
-        // Get the capabilities string.
-        // We know it exists, so we'll try a few times if needed.
-        int attempt = 0;
-        bSuccess = 0;
-        while (bSuccess != 1 && attempt < 5) {
-            if(attempt > 1) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-            attempt++;
-            bSuccess = CapabilitiesRequestAndCapabilitiesReply(
-              handle, szCapabilitiesString, cchStringLength);
-            d("== cString attempt #" + std::to_string(attempt) + ": " + std::to_string(bSuccess));
-        }
-
-        if (bSuccess != 1) {
-            d("Couldn't get capabilities string!");
-            return ""; // Does not respond to DDC/CI
-        }
-
-        returnString = std::string(szCapabilitiesString);
-
-        // Free the string buffer.
-        free(szCapabilitiesString);
+    if (cchStringLength == 0) {
+        return "";
     }
+
+    // Allocate the string buffer.
+    std::vector<char> capabilitiesBuffer(cchStringLength);
+
+    // Get the capabilities string.
+    // We know it exists, so we'll try a few times if needed.
+    int attempt = 0;
+    bSuccess = 0;
+    while (bSuccess != 1 && attempt < 5) {
+        if(attempt > 1) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        attempt++;
+        bSuccess = CapabilitiesRequestAndCapabilitiesReply(
+          handle, capabilitiesBuffer.data(), cchStringLength);
+        d("== cString attempt #" + std::to_string(attempt) + ": " + std::to_string(bSuccess));
+    }
+
+    if (bSuccess != 1) {
+        d("Couldn't get capabilities string!");
+        return ""; // Does not respond to DDC/CI
+    }
+
+    returnString = std::string(capabilitiesBuffer.data());
 
     return returnString;
 }
@@ -1013,7 +1012,7 @@ populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool c
 
         return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
     } catch (...) {
-        
+        p("populateHandlesMap: refresh failed. Keeping previous monitor data.");
     }
 }
 
@@ -1400,14 +1399,13 @@ getMonitorInputs(const Napi::CallbackInfo& info)
     }
     
     std::string searchKey = info[0].As<Napi::String>();
-    
-    // Ищем монитор по разным ключам
+
+    // Look up the monitor by any of its known keys
     const PhysicalMonitor* foundMonitor = nullptr;
-    
+
     for (auto const& pair : physicalMonitorHandles) {
         const PhysicalMonitor& monitor = pair.second;
-        
-        // Проверяем разные варианты ключей
+
         if (pair.first == searchKey ||
             monitor.name == searchKey ||
             monitor.fullName == searchKey ||
@@ -1431,21 +1429,21 @@ getMonitorInputs(const Napi::CallbackInfo& info)
     Napi::Array resultArray = Napi::Array::New(env);
     
     try {
-        // Ищем подстроку с информацией о входах (VCP code 60)
+        // Find the input source list (VCP code 60) in the capabilities string
         size_t inputStart = result.find("60(");
         if (inputStart == std::string::npos) {
             return resultArray;
         }
-        
+
         size_t inputEnd = result.find(")", inputStart);
         if (inputEnd == std::string::npos) {
             return resultArray;
         }
-        
-        // Извлекаем подстроку с кодами входов
+
+        // Extract the substring containing the input source codes
         std::string inputsStr = result.substr(inputStart + 3, inputEnd - inputStart - 3);
-        
-        // Разбиваем на отдельные коды
+
+        // Split into individual codes
         std::vector<std::string> inputCodes;
         std::istringstream iss(inputsStr);
         std::string code;
@@ -1460,29 +1458,18 @@ getMonitorInputs(const Napi::CallbackInfo& info)
             return resultArray;
         }
         
-        // Получаем текущий вход монитора
+        // Read the monitor's current input source
         DWORD currentInput = 0;
         DWORD inputs = 0;
         BOOL success = GetVCPFeatureAndVCPFeatureReply(
-            monitor.handle, 
+            monitor.handle,
             (BYTE)0x60,
-            NULL, 
+            NULL,
             &currentInput,
             &inputs
         );
 
-        DWORD currentInput1 = 0;
-        DWORD inputs1 = 0;
-
-        BOOL success1 = GetVCPFeatureAndVCPFeatureReply(
-            monitor.handle, 
-            (BYTE)0xDC,
-            NULL, 
-            &currentInput1,
-            &inputs1
-        );
-        std::cout << inputs1 << "," << currentInput1;
-        // Преобразуем текущий вход в число
+        // Convert the current input to a number
         unsigned int currentCodeValue = 0;
         if (success) {
             std::stringstream ss;
@@ -1490,12 +1477,12 @@ getMonitorInputs(const Napi::CallbackInfo& info)
             ss >> currentCodeValue;
         }
         
-        // Создаем массив всех доступных входов (только коды)
+        // Build the array of all available inputs (codes only)
         Napi::Array availableInputs = Napi::Array::New(env);
         int availableIndex = 0;
-        
+
         for (const auto& code : inputCodes) {
-            // Преобразуем hex строку в число
+            // Convert the hex string to a number
             unsigned int codeValue;
             std::stringstream ss;
             ss << std::hex << code;
@@ -1504,9 +1491,9 @@ getMonitorInputs(const Napi::CallbackInfo& info)
             availableInputs.Set(uint32_t(availableIndex++), Napi::Number::New(env, codeValue));
         }
         
-        // Возвращаем массив из двух элементов
-        resultArray.Set(uint32_t(0), Napi::Number::New(env, currentCodeValue));  // Первый элемент - текущий вход (число)
-        resultArray.Set(uint32_t(1), availableInputs);                          // Второй элемент - массив всех входов (числа)
+        // Return a two-element array: [current input, all available inputs]
+        resultArray.Set(uint32_t(0), Napi::Number::New(env, currentCodeValue));
+        resultArray.Set(uint32_t(1), availableInputs);
         
     } catch (const std::exception& e) {
         Napi::Error::New(env, std::string("Error parsing monitor inputs: ") + e.what()).ThrowAsJavaScriptException();

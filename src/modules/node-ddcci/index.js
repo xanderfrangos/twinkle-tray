@@ -86,13 +86,15 @@ module.exports = {
 };
 
 function parseCapabilitiesString(report = "") {
-    const start = report.indexOf('vcp('); // Find where VCP list starts
+    // Find where VCP list starts. Some monitors report "VCP(" or "vcp (",
+    // so match case-insensitively and allow whitespace before the parenthesis.
+    const startMatch = report.match(/vcp\s*\(/i);
 
     // Only run if VCP list found
-    if (start > 0) {
+    if (startMatch) {
         let layers = 1;
         let output = "";
-        let position = start + 4;
+        let position = startMatch.index + startMatch[0].length;
 
         // Iterate through report string after the start of the list until we hit the end.
         // We'll check for nested parenthesis to correctly find the end of the list.

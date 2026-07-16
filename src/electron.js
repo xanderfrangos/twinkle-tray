@@ -188,6 +188,7 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
       if (data.type === "ready") {
         monitorsThreadReady = true
         monitorsThreadStarting = false
+        monitorsThreadFailed = false
         isRefreshing = false
         monitorsThreadReal.send({
           type: "settings",
@@ -213,19 +214,20 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   monitorsThreadReal.on("error", err => {
     console.error(err)
 
-    if(monitorsThreadFailed) return false;
-    monitorsThreadFailed = true
-
-    const options = {
-    title: 'Monitors thread failed',
-    message: 'The monitors thread failed with the following message:',
-    detail: err.message || err.toString(),
-  };
-
-  require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
+    // Suppress duplicate dialogs from the same failure episode, but never
+    // suppress recovery. The flag is reset when a replacement reaches ready.
+    if(!monitorsThreadFailed) {
+      monitorsThreadFailed = true
+      const options = {
+        title: 'Monitors thread failed',
+        message: 'The monitors thread failed with the following message:',
+        detail: err.message || err.toString(),
+      };
+      require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
+    }
 
     stopMonitorThread().then(() => {
-      startMonitorThread()
+      startMonitorThread({ allowWhileWindowsIdle: true })
     }).catch(stopError => {
       console.error("Couldn't restart monitor thread.", stopError)
     })

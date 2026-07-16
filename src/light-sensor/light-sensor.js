@@ -104,6 +104,19 @@ class LightSensor {
         }
     }
 
+    async resume() {
+        if (!this.active || typeof this.active.reconnect !== 'function') {
+            return;
+        }
+
+        try {
+            console.log(`Light Sensor: reconnecting ${this.active.name} after resume`);
+            await this.active.reconnect();
+        } catch (e) {
+            console.error(`Error reconnecting ${this.active.name} sensor after resume:`, e);
+        }
+    }
+
     /**
      * @param {{ enabled?: boolean; active: 'fake' | 'yocto' | 'windows'; sensors?: { yocto: { hubUrl: string; }; fake: { overriddenLux: number; }; windows: {}; }; monitorSettings?: {}; } | undefined} settings
      * @param {{}} monitors

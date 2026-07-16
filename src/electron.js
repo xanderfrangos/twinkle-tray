@@ -4156,6 +4156,10 @@ powerMonitor.on("resume", async () => {
       // Check if time adjustments should apply
       applyCurrentAdjustmentEvent(true, false)
     }
+
+    // Native sensor handles and external sensor connections may not survive
+    // sleep. Reconnect after monitor recovery and force a fresh reading.
+    await lightSensor.resume()
     resumeRecoveryHandled = true
   } catch(error) {
     block.release()

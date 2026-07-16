@@ -532,6 +532,97 @@ populateHandlesMapLegacy()
     }
 }
 
+// Per-physical-monitor work item for the probing phase. Matching and all
+// shared-map access happen on the calling thread; only the I2C-bound
+// probing runs on worker threads, and it only touches the item itself.
+struct MonitorProbeItem {
+    Monitor* monitor = nullptr;
+    size_t index = 0;
+    PhysicalMonitor newMonitor;
+    HANDLE acquiredHandle = NULL;
+    bool hasPrevious = false;
+    PhysicalMonitor previousMonitor;
+    bool hasCachedCapabilities = false;
+    std::string cachedCapabilities;
+    bool reuseOldHandle = false;
+    bool saveCapabilities = false;
+};
+
+// Runs the I2C-bound checks for one physical monitor.
+void
+probePhysicalMonitor(MonitorProbeItem& item,
+                     const std::string& validationMethod,
+                     bool checkHighLevel)
+{
+    PhysicalMonitor& newMonitor = item.newMonitor;
+
+    // Check if monitor was previously tested and supported
+    if (item.hasPrevious) {
+        const PhysicalMonitor& previous = item.previousMonitor;
+        newMonitor.result = previous.result;
+        newMonitor.ddcciSupported = previous.ddcciSupported;
+
+        // Test old handle if it's valid
+        if (previous.handle != NULL && previous.handleIsValid) {
+            p("-- -- Testing old handle.");
+            if ("ok" == getPhysicalHandleResults(previous.handle, "fast")) {
+                p("-- -- Using old handle.");
+                item.reuseOldHandle = true;
+                newMonitor.handle = previous.handle;
+                newMonitor.handleIsValid = previous.handleIsValid;
+                newMonitor.hlCapabilities = previous.hlCapabilities;
+            }
+        }
+    }
+
+    // Test high level capabilities
+    if ((newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
+        if (checkHighLevel) {
+            p("-- -- High Level: Checking...");
+            newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
+        } else {
+            p("-- -- High Level: Skipped");
+        }
+    }
+    if (newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) {
+        p("-- -- High Level: Supported");
+    }
+
+    // Test DDC/CI
+    if (newMonitor.ddcciSupported == false) {
+        std::string result = "invalid";
+        if (!item.hasCachedCapabilities) {
+            // Capabilities string not found, read it
+
+            // If "accurate", check "fast" first
+            if (validationMethod == "accurate") {
+                result = getPhysicalHandleResults(newMonitor.handle, "fast");
+            }
+
+            // Check results using requested method
+            std::string validationMethodResult =
+              getPhysicalHandleResults(newMonitor.handle, validationMethod);
+
+            if (validationMethodResult != "invalid") {
+                result = validationMethodResult;
+            }
+
+            item.saveCapabilities = true;
+        } else {
+            // Reuse capabilities string
+            result = item.cachedCapabilities;
+            p("-- -- Using previous capabilities string.");
+        }
+
+        newMonitor.result = result;
+        p("-- -- DDC/CI: " + result);
+
+        newMonitor.ddcciSupported = (result != "invalid");
+    } else {
+        p("-- -- DDC/CI: previously OK");
+    }
+}
+
 void
 populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
 {
@@ -554,13 +645,15 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
     // Get physical monitor handles
     std::vector<struct Monitor> monitors = getAllHandles();
     try {
+    /**
+     * Phase 1: match physical monitors to devices and snapshot any shared
+     * state the probing phase needs. Runs on the calling thread.
+     */
+    std::vector<std::vector<MonitorProbeItem>> probeGroups;
+    std::set<std::string> seenDeviceKeys;
     for (auto& monitor : monitors) {
+        std::vector<MonitorProbeItem> group;
         for (size_t i = 0; i < monitor.physicalHandles.size(); i++) {
-
-            /**
-             * Loop through physical monitors, check capabilities,
-             * and only include ones that work.
-             */
 
             std::string fullMonitorName =
               monitor.monitorName + "\\" + "Monitor" + std::to_string(i);
@@ -587,7 +680,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                      * - \\.\DISPLAY1\Monitor1
                      * - \\.\DISPLAY2\Monitor0
                      * - \\.\DISPLAY2\Monitor2
-                     * 
+                     *
                      * And the physical monitor name is \\.\DISPLAY2...
                      * And we're on physical monitor index 1 ("i == 1")...
                      * ...then we want \\.\DISPLAY2\Monitor2 because it is index 1 of the "\\.\DISPLAY2" DISPLAY_DEVICEs.
@@ -609,101 +702,109 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                 break;
             }
 
-            // Check if monitor was previously tested and supported
+            // A duplicate device key would be discarded when committing, so
+            // don't spend I2C time probing it (and don't let two threads
+            // talk to the same physical device at once).
+            if (!seenDeviceKeys.insert(newMonitor.deviceKey).second) {
+                p("-- -- Duplicate device key. Skipping.");
+                continue;
+            }
+
+            MonitorProbeItem item;
+            item.monitor = &monitor;
+            item.index = i;
+            item.acquiredHandle = acquiredHandle;
+
+            // Snapshot the previous result for this monitor, if any
             if(usePreviousResults) {
                 for (auto const& previousDisplay : physicalMonitorHandles) {
                     if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported && previousDisplay.second.result != "invalid") {
-                        newMonitor.result = previousDisplay.second.result;
-                        newMonitor.ddcciSupported = previousDisplay.second.ddcciSupported;
-                        
-                        // Test old handle if it's valid
-                        if(previousDisplay.second.handle != NULL && previousDisplay.second.handleIsValid) {
-                            p("-- -- Testing old handle.");
-                             if("ok" == getPhysicalHandleResults(previousDisplay.second.handle, "fast")) {
-                                 p("-- -- Using old handle.");
-                                DestroyPhysicalMonitor(acquiredHandle);
-                                monitor.physicalHandles[i] = NULL;
-                                 newMonitor.handle = previousDisplay.second.handle;
-                                newMonitor.handleIsValid = previousDisplay.second.handleIsValid;
-                                newMonitor.hlCapabilities = previousDisplay.second.hlCapabilities;
-                            }
-                        }
+                        item.hasPrevious = true;
+                        item.previousMonitor = previousDisplay.second;
                         break;
                     }
                 }
             }
 
-            // Test high level capabilities
-            if((newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
-                if(checkHighLevel) {
-                    p("-- -- High Level: Checking...");
-                    newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
-                } else {
-                    p("-- -- High Level: Skipped");
-                }
-            }
-            if(newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) {
-                p("-- -- High Level: Supported");
+            // Snapshot the cached capabilities string, if any
+            auto cached = capabilities.find(newMonitor.deviceKey);
+            if (cached != capabilities.end()) {
+                item.hasCachedCapabilities = true;
+                item.cachedCapabilities = cached->second;
             }
 
-            // Test DDC/CI
-            bool saveCapabilities = false;
-            if (newMonitor.ddcciSupported == false) {
-                std::string result = "invalid";
-                if (capabilities.find(newMonitor.deviceKey) == capabilities.end()) {
-                    // Capabilities string not found, read it
+            item.newMonitor = newMonitor;
+            group.push_back(std::move(item));
+        }
+        if (!group.empty()) {
+            probeGroups.push_back(std::move(group));
+        }
+    }
 
-                    // If "accurate", check "fast" first
-                    if(validationMethod == "accurate") {
-                        result = getPhysicalHandleResults(newMonitor.handle, "fast");
+    /**
+     * Phase 2: probe. Physical monitors on different HMONITORs sit on
+     * separate outputs (separate I2C buses), so they are probed in
+     * parallel. The physical monitors of a single HMONITOR share a bus and
+     * stay sequential. Worker threads only write to their own items.
+     */
+    if (probeGroups.size() > 1) {
+        std::vector<std::thread> probeThreads;
+        for (auto& group : probeGroups) {
+            probeThreads.emplace_back([&group, &validationMethod, checkHighLevel]() {
+                for (auto& item : group) {
+                    try {
+                        probePhysicalMonitor(item, validationMethod, checkHighLevel);
+                    } catch (...) {
+                        // Leave the item marked as unsupported.
                     }
-
-                    // Check results using requested method
-                    std::string validationMethodResult = getPhysicalHandleResults(newMonitor.handle, validationMethod);
-
-                    if(validationMethodResult != "invalid") {
-                        result = validationMethodResult;
-                    }
-
-                    saveCapabilities = true;
-                } else {
-                    // Reuse capabilities string
-                    result = capabilities.find(newMonitor.deviceKey)->second;
-                    p("-- -- Using previous capabilities string.");  
                 }
+            });
+        }
+        for (auto& probeThread : probeThreads) {
+            probeThread.join();
+        }
+    } else if (!probeGroups.empty()) {
+        // A single group runs on the calling thread; no need for a thread.
+        for (auto& item : probeGroups[0]) {
+            probePhysicalMonitor(item, validationMethod, checkHighLevel);
+        }
+    }
 
-                newMonitor.result = result;
-                p("-- -- DDC/CI: " + result);                
+    /**
+     * Phase 3: commit results and resolve handle ownership. Runs on the
+     * calling thread.
+     */
+    for (auto& group : probeGroups) {
+        for (auto& item : group) {
+            PhysicalMonitor& newMonitor = item.newMonitor;
 
-                if (result == "invalid") {
-                    newMonitor.ddcciSupported = false;
-                } else {
-                    newMonitor.ddcciSupported = true;
-                }
-            } else {
-                p("-- -- DDC/CI: previously OK");
+            // The newly acquired handle isn't needed when a still-working
+            // old handle was reused.
+            if (item.reuseOldHandle && item.acquiredHandle != NULL) {
+                DestroyPhysicalMonitor(item.acquiredHandle);
+                item.monitor->physicalHandles[item.index] = NULL;
+                item.acquiredHandle = NULL;
             }
 
             // Add to monitor list. The physical handle is either transferred
-            // to `handles`, or the newly acquired handle was destroyed above
-            // when an existing handle was reused.
+            // to `handles`, or destroyed when it isn't needed.
             auto inserted = newHandles.insert(
               { newMonitor.deviceKey, newMonitor.handle });
             if (!inserted.second) {
-                if (newMonitor.handle == acquiredHandle) {
-                    DestroyPhysicalMonitor(acquiredHandle);
-                    monitor.physicalHandles[i] = NULL;
+                if (newMonitor.handle == item.acquiredHandle && item.acquiredHandle != NULL) {
+                    DestroyPhysicalMonitor(item.acquiredHandle);
+                    item.monitor->physicalHandles[item.index] = NULL;
                 }
                 continue;
             }
-            if (newMonitor.handle == acquiredHandle) {
-                newlyAcquiredHandles.insert(acquiredHandle);
-                monitor.physicalHandles[i] = NULL;
+            if (newMonitor.handle == item.acquiredHandle && item.acquiredHandle != NULL) {
+                newlyAcquiredHandles.insert(item.acquiredHandle);
+                item.monitor->physicalHandles[item.index] = NULL;
             }
             newPhysicalHandles.insert({ newMonitor.fullName, newMonitor });
 
             // Add to capabilities list
-            if (saveCapabilities && validationMethod == "accurate" && newMonitor.result != "ok"
+            if (item.saveCapabilities && validationMethod == "accurate" && newMonitor.result != "ok"
                 && newMonitor.result != "invalid") {
                 capabilities.insert(
                     { newMonitor.deviceKey, newMonitor.result });

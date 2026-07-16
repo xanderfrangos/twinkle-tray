@@ -176,6 +176,7 @@ let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
+let monitorsThreadFailedResetTimer = false
 function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || (isWindowsUserIdle && !allowWhileWindowsIdle)) return false;
   monitorsThreadReady = false
@@ -188,7 +189,14 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
       if (data.type === "ready") {
         monitorsThreadReady = true
         monitorsThreadStarting = false
-        monitorsThreadFailed = false
+        // Only clear the failure flag once the replacement has stayed up for
+        // a while, so a thread that cycles ready -> error doesn't show the
+        // failure dialog on every cycle.
+        if(monitorsThreadFailedResetTimer) clearTimeout(monitorsThreadFailedResetTimer);
+        monitorsThreadFailedResetTimer = setTimeout(() => {
+          monitorsThreadFailed = false
+          monitorsThreadFailedResetTimer = false
+        }, 30000)
         isRefreshing = false
         monitorsThreadReal.send({
           type: "settings",
@@ -226,7 +234,15 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
       require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
     }
 
-    stopMonitorThread().then(() => {
+    if(monitorsThreadFailedResetTimer) {
+      clearTimeout(monitorsThreadFailedResetTimer)
+      monitorsThreadFailedResetTimer = false
+    }
+
+    stopMonitorThread().then(async () => {
+      // Pace restarts so a repeatedly-failing thread doesn't stop/start in
+      // a tight loop.
+      await Utils.wait(1000)
       startMonitorThread({ allowWhileWindowsIdle: true })
     }).catch(stopError => {
       console.error("Couldn't restart monitor thread.", stopError)
@@ -272,6 +288,7 @@ function waitForMonitorThreadReady(thread = monitorsThreadReal) {
 }
 
 let monitorsThreadStopPromise = false
+let monitorsThreadStopTarget = false
 function stopMonitorThread() {
   console.log("Killing monitor thread")
   monitorsThreadReady = false
@@ -283,9 +300,12 @@ function stopMonitorThread() {
     if(monitorsThreadReal === thread) monitorsThreadReal = undefined
     return Promise.resolve()
   }
-  if(monitorsThreadStopPromise) return monitorsThreadStopPromise;
+  // Only reuse a pending stop if it targets this same thread. A newer
+  // thread can be forked while an older one is still exiting, and the
+  // newer one still needs its own kill.
+  if(monitorsThreadStopPromise && monitorsThreadStopTarget === thread) return monitorsThreadStopPromise;
 
-  monitorsThreadStopPromise = new Promise((resolve, reject) => {
+  const stopPromise = new Promise((resolve, reject) => {
     const cleanup = () => {
       thread.removeListener("exit", handleExit)
       thread.removeListener("close", handleExit)
@@ -313,10 +333,15 @@ function stopMonitorThread() {
       reject(error)
     }
   }).finally(() => {
-    monitorsThreadStopPromise = false
+    if(monitorsThreadStopPromise === stopPromise) {
+      monitorsThreadStopPromise = false
+      monitorsThreadStopTarget = false
+    }
   })
+  monitorsThreadStopPromise = stopPromise
+  monitorsThreadStopTarget = thread
 
-  return monitorsThreadStopPromise
+  return stopPromise
 }
 
 function getVCP(monitor, code) {
@@ -1914,6 +1939,7 @@ refreshMonitorsJob = async (fullRefresh = false) => {
 }
 
 let lastRefreshMonitors = 0
+let lastCompletedRefresh = 0
 
 async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, bypassWindowsIdle = false) {
 
@@ -2000,6 +2026,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
     }
 
     monitors = newMonitors;
+    lastCompletedRefresh = Date.now()
     lightSensor.setMonitors(monitors)
 
     // Only send update if something changed
@@ -4137,7 +4164,10 @@ powerMonitor.on("resume", async () => {
 
   try {
     await stopMonitorThread()
-    const thread = startMonitorThread({ allowWhileWindowsIdle: true })
+    // If a concurrent recovery path (e.g. the thread's own error handler)
+    // already started a replacement, adopt it instead of treating the start
+    // as a failure.
+    const thread = startMonitorThread({ allowWhileWindowsIdle: true }) || monitorsThreadReal
     if(!thread) throw new Error("Monitor thread could not be restarted after resume.");
     await waitForMonitorThreadReady(thread)
 
@@ -4147,8 +4177,12 @@ powerMonitor.on("resume", async () => {
 
     // A replacement worker always needs an initial inventory before it can
     // service brightness/VCP requests, even when automatic refresh behavior
-    // has been disabled by the user.
-    while(isRefreshing || pausedMonitorUpdates) await Utils.wait(50)
+    // has been disabled by the user. Hardware events are dropped while
+    // recovery is in progress, so don't let panel interactions (which keep
+    // extending pausedMonitorUpdates) stall it indefinitely.
+    const refreshWaitDeadline = Date.now() + 30000
+    while((isRefreshing || pausedMonitorUpdates) && Date.now() < refreshWaitDeadline) await Utils.wait(50)
+    const refreshRequested = Date.now()
     await refreshMonitors(true, true, true)
 
     if (!settings.disableAutoRefresh) {
@@ -4160,14 +4194,19 @@ powerMonitor.on("resume", async () => {
       applyCurrentAdjustmentEvent(true, false)
     }
 
-    // Native sensor handles and external sensor connections may not survive
-    // sleep. Reconnect after monitor recovery and force a fresh reading.
-    await lightSensor.resume()
-    resumeRecoveryHandled = true
+    // refreshMonitors returns silently when it can't run (thread died,
+    // another refresh in flight, updates paused). Only mark recovery as
+    // handled when the inventory actually completed, so unlock-screen can
+    // still trigger a refresh otherwise.
+    resumeRecoveryHandled = lastCompletedRefresh >= refreshRequested
   } catch(error) {
     block.release()
     console.error("Couldn't restore monitor thread after resume.", error)
   } finally {
+    // Native sensor handles and external sensor connections may not survive
+    // sleep. Reconnect even when monitor thread recovery failed — the
+    // sensors don't depend on it.
+    await lightSensor.resume()
     resumeRecoveryInProgress = false
     clearRecentlyWokeUpLater()
   }

@@ -4,6 +4,7 @@ const PowerEvents = require("bindings")("windows_power_events");
 const MediaStatus = require("bindings")("windows_media_status");
 const AppStartup = require("bindings")("windows_app_startup");
 const WindowMaterial = require("bindings")("windows_window_material");
+const DisplayInfo = require("bindings")("windows_display_info");
 
 module.exports = {
     WindowUtils: {
@@ -23,6 +24,9 @@ module.exports = {
     MediaStatus: {
         getPlaybackStatus: MediaStatus.getPlaybackStatus,
         getPlaybackInfo: MediaStatus.getPlaybackInfo
+    },
+    DisplayInfo: {
+        getDisplayMonitors: DisplayInfo.getDisplayMonitors
     },
     AppStartup: {
         enable: AppStartup.enable,

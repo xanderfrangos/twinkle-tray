@@ -69,6 +69,23 @@
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
       'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
+    },
+    {
+      "target_name": "windows_display_info",
+      "cflags!": [ ],
+      "cflags_cc!": [ ],
+      "conditions": [
+        ["OS=='win'", {
+          "sources": [ "windows_display_info.cc" ]
+        }],
+      ],
+      'msvs_settings': {
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
+      },
+      "include_dirs": [
+        "<!@(node -p \"require('node-addon-api').include\")"
+      ],
+      'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
     }
   ]
 }

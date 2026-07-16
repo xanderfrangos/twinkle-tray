@@ -173,6 +173,24 @@ let monitorsThread = {
 }
 let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
+
+// Instant updates when the internal display's brightness changes outside
+// the app (brightness keys, Windows quick settings, adaptive brightness).
+monitorsEventEmitter.on("wmiBrightnessChanged", (data) => {
+  try {
+    const updated = data?.monitor
+    if (!updated?.key || !monitors[updated.key]) return;
+    if (pausedMonitorUpdates) return; // Avoid judder while the user is interacting
+    if (monitors[updated.key].brightness === updated.brightness) return;
+
+    monitors[updated.key].brightness = updated.brightness
+    monitors[updated.key].brightnessRaw = updated.brightnessRaw
+    setTrayPercent()
+    sendToAllWindows('monitors-updated', monitors)
+  } catch (e) {
+    console.log("Error handling WMI brightness change event", e)
+  }
+})
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false

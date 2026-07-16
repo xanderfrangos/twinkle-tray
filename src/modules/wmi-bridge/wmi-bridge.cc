@@ -5,6 +5,10 @@
 #include <string>
 #include <mutex>
 #include <cmath>
+#include <thread>
+#include <atomic>
+#include <memory>
+#include <chrono>
 #include <WbemCli.h>
 #include <comdef.h>
 #include <wrl/client.h>
@@ -420,6 +424,179 @@ Napi::Boolean setBrightness(const Napi::CallbackInfo& info)
     return Napi::Boolean::New(env, setWMIBrightness(static_cast<int>(requestedLevel)));
 }
 
+//
+// Brightness change notifications (WmiMonitorBrightnessEvent)
+//
+
+struct BrightnessEvent {
+    std::string instanceName;
+    int brightness = -1;
+    bool active = true;
+};
+
+void callJsBrightnessEvent(Napi::Env env,
+                           Napi::Function callback,
+                           std::nullptr_t* /*context*/,
+                           BrightnessEvent* event)
+{
+    if (env != nullptr && callback != nullptr && event != nullptr) {
+        Napi::Object out = Napi::Object::New(env);
+        out.Set("InstanceName", Napi::String::New(env, event->instanceName));
+        out.Set("Brightness", Napi::Number::New(env, event->brightness));
+        out.Set("Active", Napi::Boolean::New(env, event->active));
+        callback.Call({ out });
+    }
+    delete event;
+}
+
+using BrightnessEventCallback =
+  Napi::TypedThreadSafeFunction<std::nullptr_t, BrightnessEvent, callJsBrightnessEvent>;
+
+std::mutex watcherMutex;
+std::shared_ptr<std::atomic<bool>> watcherStopFlag;
+
+int readWmiEventInt(IWbemClassObject* obj, const wchar_t* name, int fallback)
+{
+    VARIANT value;
+    VariantInit(&value);
+    if (FAILED(obj->Get(name, 0, &value, NULL, NULL))) {
+        VariantClear(&value);
+        return fallback;
+    }
+
+    VARIANT asInt;
+    VariantInit(&asInt);
+    HRESULT hr = VariantChangeType(&asInt, &value, 0, VT_I4);
+    VariantClear(&value);
+    if (FAILED(hr)) {
+        VariantClear(&asInt);
+        return fallback;
+    }
+
+    int result = asInt.lVal;
+    VariantClear(&asInt);
+    return result;
+}
+
+void brightnessWatcherThreadProc(BrightnessEventCallback callback,
+                                 std::shared_ptr<std::atomic<bool>> shouldStop)
+{
+    ComScope com;
+    if (!com.isUsable() || !initializeWmiSecurity()) {
+        callback.Release();
+        return;
+    }
+
+    while (!shouldStop->load()) {
+        ComPtr<IWbemLocator> locator;
+        ComPtr<IWbemServices> service;
+        ComPtr<IEnumWbemClassObject> enumerator;
+
+        HRESULT hr = E_FAIL;
+        if (connectToWmi(locator, service)) {
+            hr = service->ExecNotificationQuery(
+              L"WQL",
+              L"SELECT * FROM WmiMonitorBrightnessEvent",
+              WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+              NULL,
+              enumerator.GetAddressOf());
+        }
+
+        if (FAILED(hr) || !enumerator) {
+            // The event class doesn't exist on systems without a
+            // WMI-controllable display, so there is nothing to watch.
+            if (hr == WBEM_E_INVALID_CLASS || hr == WBEM_E_INVALID_QUERY
+                || hr == WBEM_E_NOT_SUPPORTED || hr == WBEM_E_NOT_FOUND) {
+                break;
+            }
+            // Otherwise (e.g. the WMI service is restarting), wait and retry.
+            for (int i = 0; i < 50 && !shouldStop->load(); i++) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            continue;
+        }
+
+        while (!shouldStop->load()) {
+            ComPtr<IWbemClassObject> event;
+            ULONG returned = 0;
+            hr = enumerator->Next(1000, 1, event.GetAddressOf(), &returned);
+            if (hr == WBEM_S_TIMEDOUT) {
+                continue;
+            }
+            if (FAILED(hr) || returned == 0 || !event) {
+                // Connection died. Reconnect via the outer loop.
+                break;
+            }
+
+            VARIANT instanceName;
+            VariantInit(&instanceName);
+            HRESULT instanceResult =
+              event->Get(L"InstanceName", 0, &instanceName, NULL, NULL);
+            std::string instance;
+            if (SUCCEEDED(instanceResult) && instanceName.vt == VT_BSTR) {
+                instance = bstr_to_str(instanceName.bstrVal);
+            }
+            VariantClear(&instanceName);
+
+            BrightnessEvent* data = new BrightnessEvent();
+            data->instanceName = instance;
+            data->brightness = readWmiEventInt(event.Get(), L"Brightness", -1);
+            data->active = (readWmiEventInt(event.Get(), L"Active", 1) != 0);
+
+            if (callback.BlockingCall(data) != napi_ok) {
+                // The environment is shutting down.
+                delete data;
+                shouldStop->store(true);
+                break;
+            }
+        }
+    }
+
+    callback.Release();
+}
+
+Napi::Boolean startBrightnessWatcher(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    if (info.Length() < 1 || !info[0].IsFunction()) {
+        return Napi::Boolean::New(env, false);
+    }
+
+    std::lock_guard<std::mutex> lock(watcherMutex);
+    if (watcherStopFlag && !watcherStopFlag->load()) {
+        // Already running
+        return Napi::Boolean::New(env, true);
+    }
+
+    auto stopFlag = std::make_shared<std::atomic<bool>>(false);
+    BrightnessEventCallback callback = BrightnessEventCallback::New(
+      env, info[0].As<Napi::Function>(), "wmiBrightnessWatcher", 0, 1);
+    // The watcher must not keep the process alive on its own.
+    callback.Unref(env);
+
+    try {
+        // The thread owns its copy of the callback and releases it on exit.
+        std::thread(brightnessWatcherThreadProc, callback, stopFlag).detach();
+    } catch (...) {
+        callback.Release();
+        return Napi::Boolean::New(env, false);
+    }
+
+    watcherStopFlag = stopFlag;
+    return Napi::Boolean::New(env, true);
+}
+
+Napi::Boolean stopBrightnessWatcher(const Napi::CallbackInfo& info)
+{
+    Napi::Env env = info.Env();
+    std::lock_guard<std::mutex> lock(watcherMutex);
+    if (!watcherStopFlag || watcherStopFlag->load()) {
+        return Napi::Boolean::New(env, false);
+    }
+    watcherStopFlag->store(true);
+    return Napi::Boolean::New(env, true);
+}
+
 Napi::Object getBrightness(const Napi::CallbackInfo& info)
 {
     try {
@@ -446,6 +623,10 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
                 Napi::Function::New(env, getBrightness));
     exports.Set(Napi::String::New(env, "getMonitors"),
                 Napi::Function::New(env, getMonitors));
+    exports.Set(Napi::String::New(env, "startBrightnessWatcher"),
+                Napi::Function::New(env, startBrightnessWatcher));
+    exports.Set(Napi::String::New(env, "stopBrightnessWatcher"),
+                Napi::Function::New(env, stopBrightnessWatcher));
 
     return exports;
 }

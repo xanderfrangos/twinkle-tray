@@ -86,6 +86,7 @@ process.on('message', async (data) => {
             ddcci._clearDisplayCache()
         } else if (data.type === "wmi-bridge-ok") {
             canUseWmiBridge = data.value
+            if (canUseWmiBridge) startWmiBrightnessWatcher();
         } else if (data.type === "getVCP") {
             getDDCCI()
             const vcp = await checkVCP(data.monitor, data.code)
@@ -675,6 +676,47 @@ getHDRDisplays = async (monitors) => {
     }
 
     return monitors
+}
+
+// Watches for internal display brightness changes made outside this
+// process (brightness keys, Windows quick settings, adaptive brightness)
+// so they show up without waiting for the next polled refresh.
+let wmiBrightnessWatcherStarted = false
+function startWmiBrightnessWatcher() {
+    if (wmiBrightnessWatcherStarted || settings?.disableWMI) return false;
+    try {
+        const ok = wmibridge.startBrightnessWatcher(handleWmiBrightnessEvent)
+        wmiBrightnessWatcherStarted = (ok !== false)
+        if (wmiBrightnessWatcherStarted) console.log("Started WMI brightness watcher.");
+    } catch (e) {
+        console.log("Couldn't start WMI brightness watcher", e)
+    }
+    return wmiBrightnessWatcherStarted
+}
+
+function handleWmiBrightnessEvent(event) {
+    try {
+        if (!monitors) return false;
+        const brightness = parseInt(event?.Brightness)
+        if (isNaN(brightness) || brightness < 0) return false;
+
+        const wmiMonitor = Object.values(monitors).find(mon => mon.type === "wmi")
+        if (!wmiMonitor) return false;
+
+        // Skip no-op updates, including echoes of this process's own writes.
+        if (wmiMonitor.brightness === brightness && wmiMonitor.brightnessRaw === brightness) return false;
+
+        wmiMonitor.brightness = brightness
+        wmiMonitor.brightnessRaw = brightness
+        if (wmiMonitor.brightnessValues) wmiMonitor.brightnessValues[0] = brightness;
+
+        process.send({
+            type: 'wmiBrightnessChanged',
+            monitor: deepCopy(wmiMonitor)
+        })
+    } catch (e) {
+        console.log("Error handling WMI brightness event", e)
+    }
 }
 
 let wmiFailed = false

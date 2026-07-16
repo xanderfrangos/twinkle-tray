@@ -2753,11 +2753,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
           console.log("Displays have woken up.")
           recentlyWokeUp = true
           handleMetricsChange("GUID_SESSION_USER_PRESENCE")
-          setTimeout(() => {
-            recentlyWokeUp = false
-          },
-            15000
-          )
+          if(!resumeRecoveryInProgress) clearRecentlyWokeUpLater()
         }
       }
     } else if(setting.name === "GUID_VIDEO_POWERDOWN_TIMEOUT") {
@@ -4048,6 +4044,11 @@ function handleMonitorChange(t, e, d) {
     return false
   }
 
+  if(resumeRecoveryInProgress) {
+    console.log(`Resume recovery is already handling ${t}.`)
+    return false
+  }
+
   console.log("Hardware change detected.")
 
   const block = blockBadDisplays("handleMonitorChange")
@@ -4087,9 +4088,39 @@ function handleMonitorChange(t, e, d) {
 
 }
 
+// Monitor system power/lock state to avoid accidentally tripping the WMI
+// auto-disabler and to coalesce the events Windows emits during resume.
+let recentlyWokeUp = false
+let recentlyWokeUpTimeout = false
+let resumeRecoveryInProgress = false
+let resumeRecoveryHandled = false
+function clearRecentlyWokeUpLater() {
+  if(recentlyWokeUpTimeout) clearTimeout(recentlyWokeUpTimeout);
+  recentlyWokeUpTimeout = setTimeout(() => {
+    recentlyWokeUp = false
+    resumeRecoveryHandled = false
+    recentlyWokeUpTimeout = false
+  }, 15000)
+}
+
 // Handle resume from sleep/hibernation
 powerMonitor.on("resume", async () => {
   console.log("Resuming......")
+  recentlyWokeUp = true
+  resumeRecoveryInProgress = true
+  resumeRecoveryHandled = false
+  if(recentlyWokeUpTimeout) {
+    clearTimeout(recentlyWokeUpTimeout)
+    recentlyWokeUpTimeout = false
+  }
+  if(handleChangeTimeout1) {
+    clearTimeout(handleChangeTimeout1)
+    handleChangeTimeout1 = false
+  }
+  if(handleChangeTimeout2) {
+    clearTimeout(handleChangeTimeout2)
+    handleChangeTimeout2 = false
+  }
   const block = blockBadDisplays("powerMonitor:resume")
   setRecentlyInteracted(false)
   
@@ -4125,14 +4156,23 @@ powerMonitor.on("resume", async () => {
       // Check if time adjustments should apply
       applyCurrentAdjustmentEvent(true, false)
     }
+    resumeRecoveryHandled = true
   } catch(error) {
     block.release()
     console.error("Couldn't restore monitor thread after resume.", error)
+  } finally {
+    resumeRecoveryInProgress = false
+    clearRecentlyWokeUpLater()
   }
 })
 
 function handleMetricsChange(type) {
   console.log(`Event: handleMetricsChange (${type})`);
+
+  if(resumeRecoveryInProgress) {
+    console.log(`Resume recovery is already handling ${type}.`)
+    return false
+  }
 
   const block = blockBadDisplays("handleMetricsChange")
 
@@ -4168,33 +4208,32 @@ function handleMetricsChange(type) {
 }
 
 
-// Monitor system power/lock state to avoid accidentally tripping the WMI auto-disabler
-let recentlyWokeUp = false
-powerMonitor.on("suspend", () => { console.log("Event: suspend"); recentlyWokeUp = true })
+powerMonitor.on("suspend", () => {
+  console.log("Event: suspend")
+  recentlyWokeUp = true
+  resumeRecoveryHandled = false
+  if(recentlyWokeUpTimeout) {
+    clearTimeout(recentlyWokeUpTimeout)
+    recentlyWokeUpTimeout = false
+  }
+})
 powerMonitor.on("lock-screen", () => {
   console.log("Event: lock-screen");
-  if (settings.disableOnLockScreen) recentlyWokeUp = true
+  if (settings.disableOnLockScreen) {
+    recentlyWokeUp = true
+    resumeRecoveryHandled = false
+  }
 })
 powerMonitor.on("unlock-screen", () => {
   console.log("Event: unlock-screen");
   if (recentlyWokeUp) {
-    if (!settings.disableAutoRefresh) handleMetricsChange("unlock-screen");
-    setTimeout(() => {
-      recentlyWokeUp = false
-    },
-      15000
-    )
+    if(resumeRecoveryInProgress) {
+      console.log("Resume recovery is already handling unlock-screen.")
+      return
+    }
+    if (!resumeRecoveryHandled && !settings.disableAutoRefresh) handleMetricsChange("unlock-screen");
+    clearRecentlyWokeUpLater()
   }
-})
-powerMonitor.on("resume", () => {
-  console.log("Event: resume");
-  recentlyWokeUp = true
-  if (!settings.disableAutoRefresh) handleMetricsChange("resume");
-  setTimeout(() => {
-    recentlyWokeUp = false
-  },
-    15000
-  )
 })
 
 

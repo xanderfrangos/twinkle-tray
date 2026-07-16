@@ -223,6 +223,98 @@ getAllDisplays(std::string keyType)
     return out;
 }
 
+std::string
+wideToString(const wchar_t* wstr)
+{
+    int sizeNeeded =
+      WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+    if (sizeNeeded <= 0) {
+        return "";
+    }
+    std::string str(sizeNeeded, 0);
+    if (WideCharToMultiByte(
+          CP_UTF8, 0, wstr, -1, &str[0], sizeNeeded, nullptr, nullptr)
+        != sizeNeeded) {
+        return "";
+    }
+    str.pop_back(); // Trailing null
+    return str;
+}
+
+struct DisplayConfigTarget {
+    std::string gdiDeviceName; // e.g. "\\.\DISPLAY2"
+    std::string devicePath;    // e.g. "\\?\DISPLAY#ABC1234#5&..#{GUID}"
+    std::string deviceKey;     // devicePath up to "#{"
+};
+
+// Lists active display paths with both their GDI source name and their
+// monitor device path. Unlike EnumDisplayDevices, this ties each target
+// directly to its source, so physical monitors can be matched to device
+// paths without relying on enumeration order across two separate APIs.
+std::vector<DisplayConfigTarget>
+getDisplayConfigTargets()
+{
+    std::vector<DisplayConfigTarget> targets;
+
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes;
+    LONG result = ERROR_SUCCESS;
+
+    do {
+        result =
+          GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount);
+        if (result != ERROR_SUCCESS) {
+            return targets;
+        }
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+        result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS,
+                                    &pathCount,
+                                    paths.data(),
+                                    &modeCount,
+                                    modes.data(),
+                                    NULL);
+    } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+    if (result != ERROR_SUCCESS) {
+        return targets;
+    }
+    paths.resize(pathCount);
+
+    for (auto const& path : paths) {
+        DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName = {};
+        sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+        sourceName.header.size = sizeof(sourceName);
+        sourceName.header.adapterId = path.sourceInfo.adapterId;
+        sourceName.header.id = path.sourceInfo.id;
+        if (DisplayConfigGetDeviceInfo(&sourceName.header) != ERROR_SUCCESS) {
+            continue;
+        }
+
+        DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
+        targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+        targetName.header.size = sizeof(targetName);
+        targetName.header.adapterId = path.targetInfo.adapterId;
+        targetName.header.id = path.targetInfo.id;
+        if (DisplayConfigGetDeviceInfo(&targetName.header) != ERROR_SUCCESS) {
+            continue;
+        }
+
+        DisplayConfigTarget target;
+        target.gdiDeviceName = wideToString(sourceName.viewGdiDeviceName);
+        target.devicePath = wideToString(targetName.monitorDevicePath);
+        target.deviceKey =
+          target.devicePath.substr(0, target.devicePath.find("#{"));
+        if (target.gdiDeviceName.empty() || target.devicePath.empty()) {
+            continue;
+        }
+        targets.push_back(target);
+    }
+    return targets;
+}
+
 std::vector<struct Monitor>
 getAllHandles() {
     std::vector<struct Monitor> monitors;
@@ -548,7 +640,13 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
         d("-- -- deviceID: " + display.second.deviceID);
         d("-- -- deviceKey: " + display.second.deviceKey);
     }
-    
+
+    std::vector<DisplayConfigTarget> targets = getDisplayConfigTargets();
+    for (auto const& target : targets) {
+        d("-- Target: " + target.gdiDeviceName);
+        d("-- -- devicePath: " + target.devicePath);
+    }
+
     p("Testing all physicalMonitors...");
 
     // Get physical monitor handles
@@ -575,38 +673,63 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
             newMonitor.physicalName = fullMonitorName;
             newMonitor.ddcciSupported = false;
 
-            // Match with DISPLAY_DEVICE list
+            /**
+             * Match with QueryDisplayConfig targets. Each active path ties a
+             * GDI source (e.g. "\\.\DISPLAY2") directly to its monitor device
+             * path, so the Nth physical monitor on a source corresponds to
+             * the Nth active path with that source.
+             */
             bool foundMatchingDisplay = false;
-            int foundCount = 0;
-            for (auto const& display : displays) {
-                // Match with display number (e.g. "\\.\DISPLAY2")
-                if(display.second.adapterName == monitor.monitorName) {
-                    /**
-                     * Match the physical monitor index with the index of found matching display numbers.
-                     * For example, if all DISPLAY_DEVICE includes:
-                     * - \\.\DISPLAY1\Monitor1
-                     * - \\.\DISPLAY2\Monitor0
-                     * - \\.\DISPLAY2\Monitor2
-                     * 
-                     * And the physical monitor name is \\.\DISPLAY2...
-                     * And we're on physical monitor index 1 ("i == 1")...
-                     * ...then we want \\.\DISPLAY2\Monitor2 because it is index 1 of the "\\.\DISPLAY2" DISPLAY_DEVICEs.
-                     */
+            size_t foundCount = 0;
+            for (auto const& target : targets) {
+                if(target.gdiDeviceName == monitor.monitorName) {
                     if(foundCount == i) {
-                        newMonitor.deviceKey = display.second.deviceKey;
-                        newMonitor.deviceID = display.second.deviceID;
-                        newMonitor.fullName = display.second.deviceName;
+                        newMonitor.deviceKey = target.deviceKey;
+                        newMonitor.deviceID = target.devicePath;
+                        newMonitor.fullName = monitor.monitorName + "\\Monitor" + std::to_string(i);
                         foundMatchingDisplay = true;
-                        p("-- -- Matched with: " + display.second.deviceKey);
+                        p("-- -- Matched with: " + target.deviceKey);
                         break;
                     }
                     foundCount++;
                 }
             }
 
+            /**
+             * Fall back to matching against the DISPLAY_DEVICE list by
+             * enumeration order, e.g. if QueryDisplayConfig failed.
+             * For example, if all DISPLAY_DEVICE includes:
+             * - \\.\DISPLAY1\Monitor1
+             * - \\.\DISPLAY2\Monitor0
+             * - \\.\DISPLAY2\Monitor2
+             *
+             * And the physical monitor name is \\.\DISPLAY2...
+             * And we're on physical monitor index 1 ("i == 1")...
+             * ...then we want \\.\DISPLAY2\Monitor2 because it is index 1 of the "\\.\DISPLAY2" DISPLAY_DEVICEs.
+             */
             if(!foundMatchingDisplay) {
+                foundCount = 0;
+                for (auto const& display : displays) {
+                    // Match with display number (e.g. "\\.\DISPLAY2")
+                    if(display.second.adapterName == monitor.monitorName) {
+                        if(foundCount == i) {
+                            newMonitor.deviceKey = display.second.deviceKey;
+                            newMonitor.deviceID = display.second.deviceID;
+                            newMonitor.fullName = display.second.deviceName;
+                            foundMatchingDisplay = true;
+                            p("-- -- Matched with (fallback): " + display.second.deviceKey);
+                            break;
+                        }
+                        foundCount++;
+                    }
+                }
+            }
+
+            if(!foundMatchingDisplay) {
+                // Skip just this physical monitor; the remaining ones on
+                // this HMONITOR may still match.
                 p("-- -- Couldn't find match. Skipping.");
-                break;
+                continue;
             }
 
             // Check if monitor was previously tested and supported

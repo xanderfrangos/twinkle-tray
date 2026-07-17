@@ -107,7 +107,8 @@ process.on('message', async (data) => {
                     monitorReports,
                     monitorReportsRaw,
                     lastRefresh,
-                    settings
+                    settings,
+                    unstableDDC
                 }
             })
         }
@@ -118,6 +119,90 @@ process.on('message', async (data) => {
 
 let isDev = (process.argv.indexOf("--isdev=true") >= 0)
 let skipTest = (process.argv.indexOf("--skiptest=true") >= 0)
+
+//
+// Crash evidence for risky DDC/CI operations.
+//
+// Capabilities reads and DDC probing can hang or crash the whole process
+// (or machine) on misbehaving monitors/drivers. A sentinel file is written
+// before each risky operation and removed afterwards. If a sentinel
+// survives to the next startup, the previous session died mid-operation,
+// and DDC/CI validation is downgraded to the "fast" method (which never
+// requests capabilities strings) instead of hanging again on every start.
+//
+const sentinelFs = require('fs')
+const sentinelPathModule = require('path')
+const dataPathArg = process.argv.find(arg => arg.indexOf("--datapath=") === 0)
+const sentinelDir = (dataPathArg ? dataPathArg.substring(11) : require('os').tmpdir())
+const sentinelPath = sentinelPathModule.join(sentinelDir, "ddc-probe.lock")
+const unstableDDCPath = sentinelPathModule.join(sentinelDir, "ddc-unstable.json")
+
+let unstableDDC = {}
+
+function writeUnstableDDC() {
+    try {
+        sentinelFs.writeFileSync(unstableDDCPath, JSON.stringify(unstableDDC))
+    } catch (e) {
+        console.log("Couldn't save unstable DDC list", e)
+    }
+}
+
+function checkForDDCCrashEvidence() {
+    try {
+        try {
+            if (sentinelFs.existsSync(unstableDDCPath)) {
+                unstableDDC = JSON.parse(sentinelFs.readFileSync(unstableDDCPath, "utf8")) || {}
+            }
+        } catch (e) {
+            unstableDDC = {}
+        }
+
+        if (!sentinelFs.existsSync(sentinelPath)) return;
+
+        let evidence = {}
+        try {
+            evidence = JSON.parse(sentinelFs.readFileSync(sentinelPath, "utf8")) || {}
+        } catch (e) { }
+        sentinelFs.unlinkSync(sentinelPath)
+
+        console.log("\x1b[41mA previous session died during a DDC/CI operation. Downgrading DDC/CI validation to \"fast\".\x1b[0m", evidence)
+        unstableDDC.downgraded = { time: Date.now(), stage: evidence.stage, monitor: evidence.monitor }
+        if (evidence.monitor) {
+            unstableDDC[evidence.monitor] = { time: Date.now(), stage: evidence.stage }
+        }
+        writeUnstableDDC()
+    } catch (e) {
+        console.log("Error checking DDC crash evidence", e)
+    }
+}
+checkForDDCCrashEvidence()
+
+function ddcSentinelStart(stage, monitor = false) {
+    try {
+        sentinelFs.writeFileSync(sentinelPath, JSON.stringify({ stage, monitor, time: Date.now() }))
+    } catch (e) { }
+}
+
+function ddcSentinelEnd() {
+    try {
+        sentinelFs.unlinkSync(sentinelPath)
+    } catch (e) { }
+}
+
+function withDDCSentinel(stage, monitor, operation) {
+    ddcSentinelStart(stage, monitor)
+    try {
+        return operation()
+    } finally {
+        // A native crash never reaches this point, leaving evidence for the
+        // next worker. Ordinary JavaScript/native errors do, so don't treat
+        // them as crashes on the next startup.
+        ddcSentinelEnd()
+    }
+}
+
+// A graceful exit mid-operation isn't crash evidence.
+process.on('exit', ddcSentinelEnd)
 
 let monitors = false
 let monitorNames = []
@@ -463,8 +548,12 @@ function determineDDCCIMethod() {
     const savedMethod = settings?.preferredDDCCIMethod
     const ddcciMethodValues = ["fast", "accurate", "no-validation", "legacy"]
     if(savedMethod && ddcciMethodValues.indexOf(savedMethod) >= 0) {
+        // An explicit user preference wins over the crash downgrade.
         ddcciMethod = savedMethod
-    } 
+    } else if (unstableDDC.downgraded && ddcciMethod === "accurate") {
+        console.log("Using \"fast\" DDC/CI validation due to crash evidence from a previous session.")
+        ddcciMethod = "fast"
+    }
     return ddcciMethod
 }
 
@@ -782,7 +871,9 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             await wait(10)
 
             // Sometimes the handles returned are NULL, so we should try again.
-            let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+            let tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
+                ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+            )
             if(tmpDdcciMonitors) {
                 let doRetry = false
                 for(const monitor of tmpDdcciMonitors) {
@@ -794,7 +885,9 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                 if(doRetry) {
                     console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
                     await wait(200)
-                    tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+                    tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
+                        ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+                    )
                     for(const monitor of tmpDdcciMonitors) {
                         if(monitor.handleIsValid === false) {
                             console.log(`DDC/CI results still contain a null handle (${doRetry?.deviceKey}). Continuing anyway.`)
@@ -855,8 +948,12 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
 
             // Detect valid VCP codes for display if not already available
             try {
-                if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
-                    const reportRaw = ddcci.getCapabilitiesRaw(monitor)
+                if(unstableDDC[monitor]) {
+                    console.log(`Skipping capabilities report for ${monitor} due to crash evidence from a previous session.`)
+                } else if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
+                    const reportRaw = withDDCSentinel("capabilities", monitor, () =>
+                        ddcci.getCapabilitiesRaw(monitor)
+                    )
                     if(reportRaw) {
                         monitorReportsRaw[monitor] = reportRaw
                         const report = ddcci._parseCapabilitiesString(reportRaw)
@@ -1476,12 +1573,20 @@ testDDCCIMethods = async () => {
             console.log("Skipping DDC/CI test...")
             return false
         }
+        if(unstableDDC.downgraded) {
+            // The accurate test reads capabilities strings, which is what
+            // likely killed the previous session. Don't try it again.
+            console.log("Skipping DDC/CI test due to crash evidence from a previous session.")
+            return true
+        }
 
         console.log("Testing DDC/CI methods...")
         getDDCCI()
-    
+
         let startTime = process.hrtime.bigint()
-        const accurateResults = ddcci.getAllMonitors("accurate", false)
+        const accurateResults = withDDCSentinel("method-test", false, () =>
+            ddcci.getAllMonitors("accurate", false)
+        )
         const accurateIDs = []
         const accurateFeatures = []
         for(const monitor of accurateResults) {
@@ -1499,7 +1604,9 @@ testDDCCIMethods = async () => {
         ddcci._clearDisplayCache()
     
         startTime = process.hrtime.bigint()
-        const fastResults = ddcci.getAllMonitors("fast", false)
+        const fastResults = withDDCSentinel("method-test", false, () =>
+            ddcci.getAllMonitors("fast", false)
+        )
         const fastIDs = []
         const fastFeatures = []
         for(const monitor of fastResults) {

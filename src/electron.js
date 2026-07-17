@@ -181,10 +181,14 @@ monitorsEventEmitter.on("wmiBrightnessChanged", (data) => {
     const updated = data?.monitor
     if (!updated?.key || !monitors[updated.key]) return;
     if (pausedMonitorUpdates) return; // Avoid judder while the user is interacting
-    if (monitors[updated.key].brightness === updated.brightness) return;
+    const monitor = monitors[updated.key]
+    const brightnessRaw = updated.brightnessRaw
+    if (!Number.isFinite(brightnessRaw)) return;
+    const brightness = normalizeBrightness(brightnessRaw, true, monitor.min, monitor.max, monitor.calibration)
+    if (monitor.brightness === brightness && monitor.brightnessRaw === brightnessRaw) return;
 
-    monitors[updated.key].brightness = updated.brightness
-    monitors[updated.key].brightnessRaw = updated.brightnessRaw
+    monitor.brightness = brightness
+    monitor.brightnessRaw = brightnessRaw
     setTrayPercent()
     sendToAllWindows('monitors-updated', monitors)
   } catch (e) {

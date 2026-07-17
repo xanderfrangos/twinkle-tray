@@ -299,7 +299,10 @@ getDisplayConfigTargets()
         sourceName.header.adapterId = path.sourceInfo.adapterId;
         sourceName.header.id = path.sourceInfo.id;
         if (DisplayConfigGetDeviceInfo(&sourceName.header) != ERROR_SUCCESS) {
-            continue;
+            // A partial target list would shift the remaining indexes and
+            // could associate a physical handle with the wrong monitor.
+            // Return no targets so the caller uses the DISPLAY_DEVICE fallback.
+            return {};
         }
 
         DISPLAYCONFIG_TARGET_DEVICE_NAME targetName = {};
@@ -308,7 +311,7 @@ getDisplayConfigTargets()
         targetName.header.adapterId = path.targetInfo.adapterId;
         targetName.header.id = path.targetInfo.id;
         if (DisplayConfigGetDeviceInfo(&targetName.header) != ERROR_SUCCESS) {
-            continue;
+            return {};
         }
 
         DisplayConfigTarget target;
@@ -317,7 +320,7 @@ getDisplayConfigTargets()
         target.deviceKey =
           target.devicePath.substr(0, target.devicePath.find("#{"));
         if (target.gdiDeviceName.empty() || target.devicePath.empty()) {
-            continue;
+            return {};
         }
         targets.push_back(target);
     }

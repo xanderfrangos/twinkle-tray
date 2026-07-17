@@ -11,6 +11,43 @@ enum DISPLAYCONFIG_DEVICE_INFO_TYPE_INTERNAL {
     DISPLAYCONFIG_DEVICE_INFO_SET_SDR_WHITE_LEVEL = 0xFFFFFFEE,
 };
 
+// DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 (Windows 11 24H2+) reports the
+// active color mode directly, which distinguishes real HDR from SDR with
+// Auto Color Management, where the legacy struct reports
+// advancedColorEnabled for both. Defined locally (with distinct names) so
+// this builds with older SDKs; on older Windows the call simply fails and
+// the legacy path is used.
+enum {
+    TT_DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO_2 = 15
+};
+
+typedef enum _TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE {
+    TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE_SDR = 0,
+    TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE_WCG = 1,
+    TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE_HDR = 2
+} TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE;
+
+typedef struct _TT_DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 {
+    DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+    union {
+        struct {
+            UINT32 advancedColorSupported : 1;
+            UINT32 advancedColorActive : 1;
+            UINT32 reserved1 : 1;
+            UINT32 advancedColorLimitedByPolicy : 1;
+            UINT32 highDynamicRangeSupported : 1;
+            UINT32 highDynamicRangeUserEnabled : 1;
+            UINT32 wideColorSupported : 1;
+            UINT32 wideColorUserEnabled : 1;
+            UINT32 reserved : 24;
+        };
+        UINT32 value;
+    };
+    DISPLAYCONFIG_COLOR_ENCODING colorEncoding;
+    UINT32 bitsPerColorChannel;
+    TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE activeColorMode;
+} TT_DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2;
+
 typedef struct _DISPLAYCONFIG_SET_SDR_WHITE_LEVEL {
     DISPLAYCONFIG_DEVICE_INFO_HEADER header;
     unsigned int SDRWhiteLevel;
@@ -148,20 +185,6 @@ std::map<std::string, Display> getDisplays() {
         continue;
       }
 
-      DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO hdrInfo = {};
-      hdrInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
-      hdrInfo.header.size = sizeof(DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO);
-      hdrInfo.header.adapterId = path.targetInfo.adapterId;
-      hdrInfo.header.id = path.targetInfo.id;
-
-      result = DisplayConfigGetDeviceInfo(&hdrInfo.header);
-
-      if (result != ERROR_SUCCESS) {
-        fprintf(stderr,
-                "Error on DisplayConfigGetDeviceInfo for advanced color\n");
-        continue;
-      }
-
       int nits = (int)displayInfo.SDRWhiteLevel * 80 / 1000;
       std::string monitorDevicePath =
           wcharToString(targetName.monitorDevicePath);
@@ -172,15 +195,52 @@ std::map<std::string, Display> getDisplays() {
       newDisplay.path =
           monitorDevicePath.substr(0, monitorDevicePath.find("#{"));
       newDisplay.nits = nits;
-      newDisplay.hdrSupported = hdrInfo.advancedColorSupported;
-      newDisplay.hdrEnabled = hdrInfo.advancedColorEnabled;
-      newDisplay.bits = hdrInfo.bitsPerColorChannel;
       newDisplay.target = path;
 
-      // Only check for HDR if Windows reports it's on
-      newDisplay.hdrActive = false;
-      if(hdrInfo.advancedColorEnabled) {
-        newDisplay.hdrActive = setSDRBrightness(path, nits, true);
+      // Prefer the newer advanced color info, which reports the active
+      // color mode directly.
+      TT_DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 hdrInfo2 = {};
+      hdrInfo2.header.type = (DISPLAYCONFIG_DEVICE_INFO_TYPE)
+          TT_DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO_2;
+      hdrInfo2.header.size = sizeof(hdrInfo2);
+      hdrInfo2.header.adapterId = path.targetInfo.adapterId;
+      hdrInfo2.header.id = path.targetInfo.id;
+
+      result = DisplayConfigGetDeviceInfo(&hdrInfo2.header);
+
+      if (result == ERROR_SUCCESS) {
+        newDisplay.hdrSupported = hdrInfo2.highDynamicRangeSupported;
+        newDisplay.hdrEnabled = hdrInfo2.highDynamicRangeUserEnabled;
+        newDisplay.bits = hdrInfo2.bitsPerColorChannel;
+        newDisplay.hdrActive =
+            (hdrInfo2.activeColorMode == TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE_HDR);
+      } else {
+        // Older Windows: fall back to the legacy advanced color info
+        DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO hdrInfo = {};
+        hdrInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
+        hdrInfo.header.size = sizeof(DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO);
+        hdrInfo.header.adapterId = path.targetInfo.adapterId;
+        hdrInfo.header.id = path.targetInfo.id;
+
+        result = DisplayConfigGetDeviceInfo(&hdrInfo.header);
+
+        if (result != ERROR_SUCCESS) {
+          fprintf(stderr,
+                  "Error on DisplayConfigGetDeviceInfo for advanced color\n");
+          continue;
+        }
+
+        newDisplay.hdrSupported = hdrInfo.advancedColorSupported;
+        newDisplay.hdrEnabled = hdrInfo.advancedColorEnabled;
+        newDisplay.bits = hdrInfo.bitsPerColorChannel;
+
+        // The legacy struct doesn't report whether HDR is actually active,
+        // so probe by attempting to set the current SDR white level.
+        // Only check for HDR if Windows reports it's on
+        newDisplay.hdrActive = false;
+        if(hdrInfo.advancedColorEnabled) {
+          newDisplay.hdrActive = setSDRBrightness(path, nits, true);
+        }
       }
 
       newDisplays.insert({newDisplay.path, newDisplay});

@@ -297,8 +297,13 @@ function applyFeatureSnapshots(foundMonitors) {
 
         // Current Fast readings take precedence (especially brightness), while
         // the last verified feature set keeps controls available during refresh.
-        monitor.features = Object.assign({}, snapshot.features || {}, monitor.features || {})
-        monitor.vcpCodes = Object.assign({}, snapshot.vcpCodes || {}, monitor.vcpCodes || {})
+        // Keep the session cache isolated from the live model. A VCP update
+        // must not silently mutate a snapshot that was intentionally frozen.
+        const snapshotFeatures = deepCopy(snapshot.features || {})
+        const snapshotVcpCodes = deepCopy(snapshot.vcpCodes || {})
+        if (!snapshotFeatures || !snapshotVcpCodes) continue
+        monitor.features = Object.assign({}, snapshotFeatures, monitor.features || {})
+        monitor.vcpCodes = Object.assign({}, snapshotVcpCodes, monitor.vcpCodes || {})
         monitor.featuresPending = false
         monitor.featuresRefreshing = true
     }

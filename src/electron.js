@@ -195,8 +195,8 @@ async function flushQueuedMonitorCommands(beforeRefresh = false) {
         command.resolve()
         continue
       }
-      await monitorsThread.sendNow(command.data)
-      command.resolve()
+      const sent = await monitorsThread.sendNow(command.data)
+      command.resolve(sent !== false)
     }
   } catch (error) {
     for (const command of commands) command.reject(error)
@@ -233,6 +233,7 @@ let monitorsThread = {
       if(!monitorsThreadReady) throw("Thread not ready!");
       if(!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) throw("Thread not available!");
       monitorsThreadReal.send(data)
+      return true
     } catch (e) {
       console.log("Couldn't communicate with Monitor thread.", e)
       return false

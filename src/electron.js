@@ -2137,12 +2137,20 @@ refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
       }, 60000)
       monitorsEventEmitter.on("refreshMonitors", listener)
 
-      monitorsThread.send({
+      Promise.resolve(monitorsThread.send({
         type: "refreshMonitors",
         fullRefresh,
         generation
+      })).then(sent => {
+        if (sent !== false) return
+        cleanup()
+        reject("Monitor thread failed to send.")
+      }).catch(() => {
+        cleanup()
+        reject("Monitor thread failed to send.")
       })
     } catch (e) {
+      cleanup()
       reject("Monitor thread failed to send.")
     }
   })

@@ -483,6 +483,7 @@ void brightnessWatcherThreadProc(BrightnessEventCallback callback,
 {
     ComScope com;
     if (!com.isUsable() || !initializeWmiSecurity()) {
+        shouldStop->store(true);
         callback.Release();
         return;
     }
@@ -552,6 +553,7 @@ void brightnessWatcherThreadProc(BrightnessEventCallback callback,
         }
     }
 
+    shouldStop->store(true);
     callback.Release();
 }
 

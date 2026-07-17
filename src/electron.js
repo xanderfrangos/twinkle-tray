@@ -264,7 +264,18 @@ let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
 let monitorsThreadFailedResetTimer = false
+let monitorThreadRecoveryPromise = false
+let monitorInventoryRecoveryTimer = false
+let isAppQuitting = false
 let ddcSafetyRetryPromise = false
+
+app.on('before-quit', () => {
+  isAppQuitting = true
+  if (monitorInventoryRecoveryTimer) {
+    clearTimeout(monitorInventoryRecoveryTimer)
+    monitorInventoryRecoveryTimer = false
+  }
+})
 
 function getDDCSafetyStatus() {
   try {
@@ -325,7 +336,8 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest, "--datapath=" + app.getPath("userData")], { silent: false })
-  monitorsThreadReal.on("message", (data) => {
+  const monitorThread = monitorsThreadReal
+  monitorThread.on("message", (data) => {
     if (data?.type) {
       if (data.type === "ready") {
         monitorsThreadReady = true
@@ -361,33 +373,19 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
       monitorsEventEmitter.emit(data.type, data)
     }
   })
-  monitorsThreadReal.on("error", err => {
-    console.error(err)
-
-    // Suppress duplicate dialogs from the same failure episode, but never
-    // suppress recovery. The flag is reset when a replacement reaches ready.
-    if(!monitorsThreadFailed) {
-      monitorsThreadFailed = true
-      const options = {
-        title: 'Monitors thread failed',
-        message: 'The monitors thread failed with the following message:',
-        detail: err.message || err.toString(),
-      };
-      require('electron').dialog.showMessageBox(null, options, (response, checkboxChecked) => { });
-    }
-
-    if(monitorsThreadFailedResetTimer) {
-      clearTimeout(monitorsThreadFailedResetTimer)
-      monitorsThreadFailedResetTimer = false
-    }
-
-    stopMonitorThread().then(async () => {
-      // Pace restarts so a repeatedly-failing thread doesn't stop/start in
-      // a tight loop.
-      await Utils.wait(1000)
-      startMonitorThread({ allowWhileWindowsIdle: true })
-    }).catch(stopError => {
-      console.error("Couldn't restart monitor thread.", stopError)
+  monitorThread.on("error", error => {
+    recoverMonitorThread(monitorThread, error).then(recovered => {
+      if (recovered && !activeCapabilitiesEnrichmentPromise) {
+        scheduleMonitorInventoryRecovery()
+      }
+    })
+  })
+  monitorThread.once("exit", (code, signal) => {
+    const error = new Error(`Monitor thread exited (code: ${code}, signal: ${signal}).`)
+    recoverMonitorThread(monitorThread, error).then(recovered => {
+      if (recovered && !activeCapabilitiesEnrichmentPromise) {
+        scheduleMonitorInventoryRecovery()
+      }
     })
   })
   return monitorsThreadReal
@@ -431,6 +429,56 @@ function waitForMonitorThreadReady(thread = monitorsThreadReal) {
 
 let monitorsThreadStopPromise = false
 let monitorsThreadStopTarget = false
+function scheduleMonitorInventoryRecovery(generation = monitorRefreshGeneration) {
+  if (monitorInventoryRecoveryTimer) return
+  monitorInventoryRecoveryTimer = setTimeout(async () => {
+    monitorInventoryRecoveryTimer = false
+    if (isAppQuitting || !monitorsThreadReady || activeCapabilitiesEnrichmentPromise || queuedRefreshPromise) return
+    if (generation !== monitorRefreshGeneration) return
+    await refreshMonitors(true, true, true, hasEnabledLinkedFeatures(), true)
+  }, 0)
+}
+
+function recoverMonitorThread(thread, error) {
+  // An explicit stop (wake recovery, validation retry, timeout recovery) has
+  // its own replacement/refresh path and must not race this fallback.
+  if (isAppQuitting || !thread || monitorsThreadStopTarget === thread) return Promise.resolve(false)
+  if (monitorThreadRecoveryPromise) return monitorThreadRecoveryPromise
+
+  console.error(error)
+  if (!monitorsThreadFailed) {
+    monitorsThreadFailed = true
+    require('electron').dialog.showMessageBox(null, {
+      title: 'Monitors thread failed',
+      message: 'The monitors thread failed with the following message:',
+      detail: error?.message || error?.toString() || 'Unknown error',
+    }, () => { })
+  }
+
+  if (monitorsThreadFailedResetTimer) {
+    clearTimeout(monitorsThreadFailedResetTimer)
+    monitorsThreadFailedResetTimer = false
+  }
+
+  monitorThreadRecoveryPromise = (async () => {
+    if (monitorsThreadReal === thread) await stopMonitorThread()
+    // Pace restarts so a repeatedly-failing worker cannot loop tightly.
+    await Utils.wait(1000)
+    if (isAppQuitting) return false
+    const replacement = startMonitorThread({ allowWhileWindowsIdle: true }) || monitorsThreadReal
+    if (!replacement) throw new Error("Monitor thread could not be restarted.")
+    await waitForMonitorThreadReady(replacement)
+    return true
+  })().catch(recoveryError => {
+    console.error("Couldn't restart monitor thread.", recoveryError)
+    return false
+  }).finally(() => {
+    monitorThreadRecoveryPromise = false
+  })
+
+  return monitorThreadRecoveryPromise
+}
+
 function stopMonitorThread() {
   console.log("Killing monitor thread")
   monitorsThreadReady = false
@@ -2123,6 +2171,7 @@ enrichMonitorCapabilitiesJob = async (generation) => {
         cleanup()
         const error = new Error("Monitor worker stopped during capabilities enrichment.")
         error.code = "MONITOR_WORKER_STOPPED"
+        error.worker = worker
         reject(error)
       }
       const timeout = setTimeout(() => {
@@ -2359,8 +2408,16 @@ function queueCapabilitiesEnrichment(generation) {
   }).catch(async error => {
     console.log("Couldn't enrich monitor capabilities", error)
     if (error?.code === "MONITOR_WORKER_STOPPED") {
+      // Keep a queued full refresh behind the replacement worker's ready
+      // signal, even when that refresh has already superseded this generation.
+      const recovered = await recoverMonitorThread(error.worker, error)
       if (generation === monitorRefreshGeneration) {
         clearFeaturesPendingAfterEnrichmentFailure()
+        if (recovered && !queuedRefreshPromise) {
+          // Wait for this promise's finally block to release the exclusive
+          // slot, then rebuild the replacement worker's monitor inventory.
+          scheduleMonitorInventoryRecovery(generation)
+        }
       }
       return
     }

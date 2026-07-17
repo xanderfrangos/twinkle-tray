@@ -771,8 +771,10 @@ getMonitorsWinRT = async () => {
     const foundMonitors = {}
     try {
         const displayInfo = getWinRTDisplayInfo()
-        if (!displayInfo?.getDisplayMonitors) return foundMonitors;
-
+        if (!displayInfo?.getDisplayMonitors) {
+            lastWinRT = deepCopy(foundMonitors)
+            return foundMonitors;
+        }
         const displays = displayInfo.getDisplayMonitors()
         for (const display of displays) {
             if (!display?.deviceInterfaceId) continue;

@@ -22,27 +22,41 @@ function deepCopy(obj) {
     }
 }
 
-process.on('message', async (data) => {
+async function handleMonitorMessage(data) {
     try {
         if (data.type === "refreshMonitors") {
             if(data.clearCache) {
                 vcpCache = {}
                 monitorReports = {}
                 monitorReportsRaw = {}
+                monitorFeatureSnapshots = {}
+                invalidatedFeatureSnapshotMonitorIds.clear()
             }
-            refreshMonitors(data.fullRefresh, data.ddcciType).then((results) => {
-                lastRefresh = deepCopy(results)
-                process.send({
-                    type: 'refreshMonitors',
-                    monitors: results
-                })
+            const results = await refreshMonitors(data.fullRefresh, data.ddcciType)
+            lastRefresh = deepCopy(results)
+            process.send({
+                type: 'refreshMonitors',
+                monitors: results,
+                generation: data.generation,
+                canEnrichCapabilities: !!(data.fullRefresh && shouldEnrichCapabilities())
+            })
+        } else if (data.type === "enrichMonitorCapabilities") {
+            const results = await enrichMonitorCapabilities()
+            if (results) lastRefresh = deepCopy(results)
+            process.send({
+                type: 'monitorsEnriched',
+                monitors: (results || false),
+                generation: data.generation,
+                failed: !results
             })
         } else if (data.type === "brightness") {
             setBrightness(data.brightness, data.id)
         }  else if (data.type === "sdr") {
             setSDRBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
+            const changedMonitors = changedFeatureMonitorIds(settings, data.settings || {})
             settings = data.settings
+            invalidateFeatureSnapshots(changedMonitors)
 
             // Overrides
             if (settings?.disableAppleStudio) appleStudioUnavailable = true;
@@ -51,7 +65,12 @@ process.on('message', async (data) => {
             if (settings?.disableWin32) win32Failed = true;
 
         } else if (data.type === "ddcBrightnessVCPs") {
+            const changedMonitors = changedFeatureMonitorIds(
+                { userDDCBrightnessVCPs: ddcBrightnessVCPs },
+                { userDDCBrightnessVCPs: data.ddcBrightnessVCPs || {} }
+            )
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
+            invalidateFeatureSnapshots(changedMonitors)
             // Update brightnessType for all monitors when user changes VCP settings
             if (monitors) {
                 for (const hwid2 in monitors) {
@@ -83,6 +102,8 @@ process.on('message', async (data) => {
             vcpCache = {}
             monitorReports = {}
             monitorReportsRaw = {}
+            monitorFeatureSnapshots = {}
+            invalidatedFeatureSnapshotMonitorIds.clear()
             ddcci._clearDisplayCache()
         } else if (data.type === "wmi-bridge-ok") {
             canUseWmiBridge = data.value
@@ -116,7 +137,7 @@ process.on('message', async (data) => {
     } catch (e) {
         console.log(e)
     }
-})
+}
 
 let isDev = (process.argv.indexOf("--isdev=true") >= 0)
 let skipTest = (process.argv.indexOf("--skiptest=true") >= 0)
@@ -233,12 +254,88 @@ let monitorsAppleStudio = {}
 let monitorsWin32 = {}
 let monitorReports = {}
 let monitorReportsRaw = {}
+let monitorFeatureSnapshots = {}
+let invalidatedFeatureSnapshotMonitorIds = new Set()
 
 let settings = { order: [] }
 let localization = {}
 let canUseWmiBridge = false
 
 let ddcBrightnessVCPs = {}
+
+function featureSnapshotKey(monitor) {
+    return Array.isArray(monitor?.hwid) ? monitor.hwid.join("#") : false
+}
+
+function saveFeatureSnapshot(monitor, acceptInvalidatedSnapshots = false) {
+    if (!monitor?.ddcciSupported || monitor.featuresPending || monitor.featuresRefreshing) return false
+    const monitorId = monitor.hwid?.[1]
+    if (invalidatedFeatureSnapshotMonitorIds.has(monitorId) && !acceptInvalidatedSnapshots) return false
+    const key = featureSnapshotKey(monitor)
+    const snapshot = deepCopy({
+        features: monitor.features || {},
+        vcpCodes: monitor.vcpCodes || {}
+    })
+    if (!key || !snapshot) return false
+
+    monitorFeatureSnapshots[key] = snapshot
+    if (acceptInvalidatedSnapshots) invalidatedFeatureSnapshotMonitorIds.delete(monitorId)
+    return true
+}
+
+function saveFeatureSnapshots(source = monitors, acceptInvalidatedSnapshots = false) {
+    for (const monitor of Object.values(source || {})) {
+        saveFeatureSnapshot(monitor, acceptInvalidatedSnapshots)
+    }
+}
+
+function applyFeatureSnapshots(foundMonitors) {
+    for (const monitor of Object.values(foundMonitors || {})) {
+        if (!monitor?.ddcciSupported || monitor.type !== "ddcci" || !monitor.featuresPending) continue
+        const snapshot = monitorFeatureSnapshots[featureSnapshotKey(monitor)]
+        if (!snapshot) continue
+
+        // Current Fast readings take precedence (especially brightness), while
+        // the last verified feature set keeps controls available during refresh.
+        // Keep the session cache isolated from the live model. A VCP update
+        // must not silently mutate a snapshot that was intentionally frozen.
+        const snapshotFeatures = deepCopy(snapshot.features || {})
+        const snapshotVcpCodes = deepCopy(snapshot.vcpCodes || {})
+        if (!snapshotFeatures || !snapshotVcpCodes) continue
+        monitor.features = Object.assign({}, snapshotFeatures, monitor.features || {})
+        monitor.vcpCodes = Object.assign({}, snapshotVcpCodes, monitor.vcpCodes || {})
+        monitor.featuresPending = false
+        monitor.featuresRefreshing = true
+    }
+}
+
+function changedFeatureMonitorIds(previous = {}, next = {}) {
+    const ids = new Set()
+    const settingGroups = [
+        "monitorFeatures",
+        "monitorFeaturesSettings",
+        "userDDCBrightnessVCPs"
+    ]
+    for (const group of settingGroups) {
+        for (const id of new Set([
+            ...Object.keys(previous[group] || {}),
+            ...Object.keys(next[group] || {})
+        ])) {
+            if (JSON.stringify(previous[group]?.[id]) !== JSON.stringify(next[group]?.[id])) {
+                ids.add(id)
+            }
+        }
+    }
+    return ids
+}
+
+function invalidateFeatureSnapshots(monitorIds) {
+    if (!monitorIds?.size) return
+    for (const id of monitorIds) invalidatedFeatureSnapshotMonitorIds.add(id)
+    for (const key of Object.keys(monitorFeatureSnapshots)) {
+        if (monitorIds.has(key.split("#")[1])) delete monitorFeatureSnapshots[key]
+    }
+}
 
 let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
@@ -250,7 +347,13 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
         busyLevel = (fullRefresh ? 2 : 1)
 
         if (!monitors || fullRefresh) {
-            const foundMonitors = await getAllMonitors(determineDDCCIMethod())
+            if (fullRefresh) saveFeatureSnapshots(monitors)
+            const useCapabilityEnrichment = shouldEnrichCapabilities()
+            const foundMonitors = await getAllMonitors(
+                (useCapabilityEnrichment ? "fast" : determineDDCCIMethod()),
+                useCapabilityEnrichment
+            )
+            if (useCapabilityEnrichment) applyFeatureSnapshots(foundMonitors)
             monitors = foundMonitors
         } else {
             let startTime = process.hrtime()
@@ -259,7 +362,11 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             try {
                 if (settings?.getDDCBrightnessUpdates) {
                     if(!getDDCCI()) {
-                        ddcci._refresh(determineDDCCIMethod(), true, !settings.disableHighLevel)
+                        ddcci._refresh(
+                            (shouldEnrichCapabilities() ? "fast" : determineDDCCIMethod()),
+                            true,
+                            !settings.disableHighLevel
+                        )
                     }
                     for (const hwid2 in monitors) {
                         if (monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
@@ -349,8 +456,55 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
     return monitors
 }
 
+// Accurate and Auto scans publish a usable Fast result before requesting
+// capabilities strings, which are the least reliable DDC/CI operation.
+async function enrichMonitorCapabilities() {
+    if (busyLevel > 0 || !monitors || !shouldEnrichCapabilities()) {
+        console.log("Skipping capabilities enrichment.")
+        return false
+    }
 
-getAllMonitors = async (ddcciMethod = "default") => {
+    busyLevel = 2
+    try {
+        getDDCCI()
+        const monitorsToEnrich = Array.isArray(lastDDCCIList) ? [...lastDDCCIList] : []
+
+        for (const monitor of monitorsToEnrich) {
+            const id = monitor?.deviceKey
+            if (!id || monitorReports[id] || unstableDDC[id]) continue
+
+            try {
+                const reportRaw = withDDCSentinel("capabilities", id, () =>
+                    ddcci.getCapabilitiesRaw(id)
+                )
+                if (reportRaw) {
+                    monitorReportsRaw[id] = reportRaw
+                    const report = ddcci._parseCapabilitiesString(reportRaw)
+                    if (report && Object.keys(report).length > 0) {
+                        monitorReports[id] = report
+                    }
+                }
+            } catch (e) {
+                // One optional report must not invalidate the Fast result.
+                console.log("Couldn't get capabilities report for monitor " + id)
+            }
+        }
+
+        // The native cache now owns the capabilities strings. Rebuild the
+        // normal feature set without requesting another string from hardware.
+        monitors = await getAllMonitors("fast", false)
+        saveFeatureSnapshots(monitors, true)
+        return monitors
+    } catch (e) {
+        console.log("Couldn't enrich monitor capabilities", e)
+        return false
+    } finally {
+        busyLevel = 0
+    }
+}
+
+
+getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
     const foundMonitors = {}
     let startTime = process.hrtime.bigint()
     let fullStartTime = process.hrtime.bigint()
@@ -420,7 +574,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
     // DDC/CI Brightness + Features
     try {
         startTime = process.hrtime.bigint()
-        const featuresList = await getFeaturesDDC(ddcciMethod, false)
+        const featuresList = await getFeaturesDDC(ddcciMethod, coreOnly)
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
@@ -442,6 +596,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
                 highLevelSupported,
                 features: features,
                 vcpCodes: vcpCodes,
+                featuresPending: !!coreOnly,
                 type: ((ddcciSupported || highLevelSupported?.brightness) && brightnessType ? "ddcci" : "none"),
                 min: 0,
                 max: 100,
@@ -584,6 +739,15 @@ function determineDDCCIMethod() {
         ddcciMethod = "fast"
     }
     return ddcciMethod
+}
+
+function shouldEnrichCapabilities() {
+    const savedMethod = settings?.preferredDDCCIMethod
+    if (savedMethod === "accurate") return true
+    // Auto keeps its crash-recovery behavior: don't retry a capabilities read
+    // after a worker died while probing DDC/CI.
+    if (savedMethod === "auto") return !unstableDDC.downgraded
+    return false
 }
 
 let appleStudioUnavailable = false
@@ -890,7 +1054,7 @@ getMonitorsWin32 = () => {
     })
 }
 
-getFeaturesDDC = (ddcciMethod = "accurate") => {
+getFeaturesDDC = (ddcciMethod = "accurate", coreOnly = false) => {
     const monitorFeatures = {}
     return new Promise(async (resolve, reject) => {
         try {
@@ -958,7 +1122,7 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                         monitorReports[id] = monitor.capabilities
                     }
 
-                    if(monitor.ddcciSupported && !shouldAbortFeatureScan()) {
+                    if(monitor.ddcciSupported && !coreOnly && !shouldAbortFeatureScan()) {
                         await wait(10)
                         features = await checkMonitorFeatures(id, false, ddcciMethod, shouldAbortFeatureScan)
                     }
@@ -1355,8 +1519,10 @@ async function setVCP(monitor, code, value) {
         }
         
         const hwid = monitor.split("#")
-        if(monitors[hwid[2]]?.features?.[vcpString]) {
-            monitors[hwid[2]].features[vcpString][0] = parseInt(value)
+        const updatedMonitor = monitors[hwid[2]]
+        if(updatedMonitor?.features?.[vcpString]) {
+            updatedMonitor.features[vcpString][0] = parseInt(value)
+            saveFeatureSnapshot(updatedMonitor)
         }
         return result
     } catch (e) {
@@ -1719,16 +1885,21 @@ testDDCCIMethods = async () => {
 }
 
 
+// Auto now uses the same Fast-first/enrichment flow as Accurate, so probing
+// Accurate before the worker is ready would defeat the startup improvement.
+// Keep the legacy test helper available for diagnostics, but don't run it as
+// part of the worker bootstrap.
 let isFastFine = true
-testDDCCIMethods().then(result => {
-    isFastFine = result
-    if(!skipTest) {
-        process.send({
-            type: 'ddcciModeTestResult',
-            value: isFastFine
-        })
-    }
-    process.send({
-        type: 'ready'
-    })
+process.send({
+    type: 'ready'
+})
+
+// Node does not await asynchronous EventEmitter listeners. Keep DDC/CI and
+// cache mutations in one worker-side queue so a late IPC message cannot
+// interleave with a refresh or a capabilities read.
+let monitorMessageQueue = Promise.resolve()
+process.on('message', data => {
+    monitorMessageQueue = monitorMessageQueue
+        .then(() => handleMonitorMessage(data))
+        .catch(e => console.log(e))
 })

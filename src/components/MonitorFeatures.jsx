@@ -12,6 +12,14 @@ export default function MonitorFeatures(props) {
 
     let extraHTML = []
 
+    if (monitor.featuresPending) {
+        extraHTML.push(<div className="description" style={{padding: "8px 0"}}>Detecting display features…</div>)
+    }
+
+    if (monitor.featuresRefreshing) {
+        extraHTML.push(<div className="description" style={{padding: "8px 0"}} key="features-refreshing">Refreshing display features…</div>)
+    }
+
     const inputsData = {
         1: "VGA-1",
         2: "VGA-2",

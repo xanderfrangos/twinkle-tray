@@ -267,20 +267,25 @@ function featureSnapshotKey(monitor) {
     return Array.isArray(monitor?.hwid) ? monitor.hwid.join("#") : false
 }
 
+function saveFeatureSnapshot(monitor, acceptInvalidatedSnapshots = false) {
+    if (!monitor?.ddcciSupported || monitor.featuresPending || monitor.featuresRefreshing) return false
+    const monitorId = monitor.hwid?.[1]
+    if (invalidatedFeatureSnapshotMonitorIds.has(monitorId) && !acceptInvalidatedSnapshots) return false
+    const key = featureSnapshotKey(monitor)
+    const snapshot = deepCopy({
+        features: monitor.features || {},
+        vcpCodes: monitor.vcpCodes || {}
+    })
+    if (!key || !snapshot) return false
+
+    monitorFeatureSnapshots[key] = snapshot
+    if (acceptInvalidatedSnapshots) invalidatedFeatureSnapshotMonitorIds.delete(monitorId)
+    return true
+}
+
 function saveFeatureSnapshots(source = monitors, acceptInvalidatedSnapshots = false) {
     for (const monitor of Object.values(source || {})) {
-        if (!monitor?.ddcciSupported || monitor.featuresPending || monitor.featuresRefreshing) continue
-        const monitorId = monitor.hwid?.[1]
-        if (invalidatedFeatureSnapshotMonitorIds.has(monitorId) && !acceptInvalidatedSnapshots) continue
-        const key = featureSnapshotKey(monitor)
-        const snapshot = deepCopy({
-            features: monitor.features || {},
-            vcpCodes: monitor.vcpCodes || {}
-        })
-        if (key && snapshot) {
-            monitorFeatureSnapshots[key] = snapshot
-            if (acceptInvalidatedSnapshots) invalidatedFeatureSnapshotMonitorIds.delete(monitorId)
-        }
+        saveFeatureSnapshot(monitor, acceptInvalidatedSnapshots)
     }
 }
 
@@ -1509,9 +1514,10 @@ async function setVCP(monitor, code, value) {
         }
         
         const hwid = monitor.split("#")
-        if(monitors[hwid[2]]?.features?.[vcpString]) {
-            monitors[hwid[2]].features[vcpString][0] = parseInt(value)
-            saveFeatureSnapshots(monitors)
+        const updatedMonitor = monitors[hwid[2]]
+        if(updatedMonitor?.features?.[vcpString]) {
+            updatedMonitor.features[vcpString][0] = parseInt(value)
+            saveFeatureSnapshot(updatedMonitor)
         }
         return result
     } catch (e) {

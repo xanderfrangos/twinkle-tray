@@ -501,7 +501,8 @@ async function getVCP(monitor, code) {
       // Write VCP values to monitor object
       if(data?.value?.[0] != undefined) {
         try {
-          monitors[hwid?.split("#")[2]].features[vcpStr(vcpParsed)] = data.value?.[0]
+          const feature = monitors[hwid?.split("#")[2]]?.features?.[vcpStr(vcpParsed)]
+          if (Array.isArray(feature)) feature[0] = data.value[0]
         } catch(e) {
           console.log(e)
         }

@@ -189,6 +189,18 @@ function ddcSentinelEnd() {
     } catch (e) { }
 }
 
+function withDDCSentinel(stage, monitor, operation) {
+    ddcSentinelStart(stage, monitor)
+    try {
+        return operation()
+    } finally {
+        // A native crash never reaches this point, leaving evidence for the
+        // next worker. Ordinary JavaScript/native errors do, so don't treat
+        // them as crashes on the next startup.
+        ddcSentinelEnd()
+    }
+}
+
 // A graceful exit mid-operation isn't crash evidence.
 process.on('exit', ddcSentinelEnd)
 
@@ -859,9 +871,9 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             await wait(10)
 
             // Sometimes the handles returned are NULL, so we should try again.
-            ddcSentinelStart("refresh")
-            let tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
-            ddcSentinelEnd()
+            let tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
+                ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+            )
             if(tmpDdcciMonitors) {
                 let doRetry = false
                 for(const monitor of tmpDdcciMonitors) {
@@ -873,9 +885,9 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
                 if(doRetry) {
                     console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
                     await wait(200)
-                    ddcSentinelStart("refresh")
-                    tmpDdcciMonitors = ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
-                    ddcSentinelEnd()
+                    tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
+                        ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+                    )
                     for(const monitor of tmpDdcciMonitors) {
                         if(monitor.handleIsValid === false) {
                             console.log(`DDC/CI results still contain a null handle (${doRetry?.deviceKey}). Continuing anyway.`)
@@ -939,9 +951,9 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
                 if(unstableDDC[monitor]) {
                     console.log(`Skipping capabilities report for ${monitor} due to crash evidence from a previous session.`)
                 } else if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
-                    ddcSentinelStart("capabilities", monitor)
-                    const reportRaw = ddcci.getCapabilitiesRaw(monitor)
-                    ddcSentinelEnd()
+                    const reportRaw = withDDCSentinel("capabilities", monitor, () =>
+                        ddcci.getCapabilitiesRaw(monitor)
+                    )
                     if(reportRaw) {
                         monitorReportsRaw[monitor] = reportRaw
                         const report = ddcci._parseCapabilitiesString(reportRaw)
@@ -1572,9 +1584,9 @@ testDDCCIMethods = async () => {
         getDDCCI()
 
         let startTime = process.hrtime.bigint()
-        ddcSentinelStart("method-test")
-        const accurateResults = ddcci.getAllMonitors("accurate", false)
-        ddcSentinelEnd()
+        const accurateResults = withDDCSentinel("method-test", false, () =>
+            ddcci.getAllMonitors("accurate", false)
+        )
         const accurateIDs = []
         const accurateFeatures = []
         for(const monitor of accurateResults) {
@@ -1592,9 +1604,9 @@ testDDCCIMethods = async () => {
         ddcci._clearDisplayCache()
     
         startTime = process.hrtime.bigint()
-        ddcSentinelStart("method-test")
-        const fastResults = ddcci.getAllMonitors("fast", false)
-        ddcSentinelEnd()
+        const fastResults = withDDCSentinel("method-test", false, () =>
+            ddcci.getAllMonitors("fast", false)
+        )
         const fastIDs = []
         const fastFeatures = []
         for(const monitor of fastResults) {

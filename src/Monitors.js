@@ -425,7 +425,13 @@ getAllMonitors = async (ddcciMethod = "default") => {
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
             const { features, id, hwid, vcpCodes, path, ddcciSupported, highLevelSupported, featureScanTimedOut } = monitor
-            const brightnessType = featureScanTimedOut ? false : await determineBrightnessVCPCode(id)
+            const canUseHighLevelBrightness = !settings.disableHighLevel && highLevelSupported?.brightness
+            // A timed-out DDC scan must not trigger another DDC probe. Use the
+            // standard luminance VCP as the high-level API's placeholder so
+            // downstream feature and display-type handling remains valid.
+            const brightnessType = featureScanTimedOut
+                ? (canUseHighLevelBrightness ? 0x10 : false)
+                : await determineBrightnessVCPCode(id)
 
             let ddcciInfo = {
                 id: id,
@@ -444,7 +450,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
             }
 
             let brightness;
-            if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !(brightnessType > 0x10)) {
+            if(canUseHighLevelBrightness && !(brightnessType > 0x10)) {
                 brightness = await getHighLevelBrightness(id)
             } else {
                 brightness = await checkVCP(id, parseInt(brightnessType))

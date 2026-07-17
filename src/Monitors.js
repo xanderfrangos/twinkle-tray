@@ -108,7 +108,8 @@ process.on('message', async (data) => {
                     monitorReportsRaw,
                     lastRefresh,
                     settings,
-                    unstableDDC
+                    unstableDDC,
+                    ddcSafetyFallback: getDDCSafetyReport()
                 }
             })
         }
@@ -176,6 +177,28 @@ function checkForDDCCrashEvidence() {
     }
 }
 checkForDDCCrashEvidence()
+
+function getDDCSafetyReport() {
+    const fallback = unstableDDC.downgraded || false
+    const effectiveMethod = determineDDCCIMethod()
+    const affectedDisplays = Object.entries(unstableDDC)
+        .filter(([id]) => id !== "downgraded")
+        .map(([id, evidence]) => ({
+            id,
+            stage: evidence?.stage || false,
+            time: evidence?.time || false
+        }))
+
+    return {
+        active: !!fallback,
+        fallbackInEffect: !!fallback && effectiveMethod === "fast",
+        effectiveValidationMethod: effectiveMethod,
+        fallbackValidationMethod: (fallback ? "fast" : false),
+        detectedAt: fallback?.time || false,
+        stage: fallback?.stage || false,
+        affectedDisplays
+    }
+}
 
 function ddcSentinelStart(stage, monitor = false) {
     try {

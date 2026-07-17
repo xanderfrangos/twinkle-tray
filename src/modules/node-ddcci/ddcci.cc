@@ -226,6 +226,10 @@ getAllDisplays(std::string keyType)
 std::string
 wideToString(const wchar_t* wstr)
 {
+    if (!wstr) {
+        return "";
+    }
+
     int sizeNeeded =
       WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
     if (sizeNeeded <= 0) {

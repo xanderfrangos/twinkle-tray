@@ -13,6 +13,7 @@ let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
 let lastHDR = {}
+let lastWinRT = {}
 
 function deepCopy(obj) {
     try {
@@ -49,6 +50,7 @@ process.on('message', async (data) => {
             if (settings?.disableWMIC) wmicUnavailable = true;
             if (settings?.disableWMI) wmiFailed = true;
             if (settings?.disableWin32) win32Failed = true;
+            if (settings?.disableWinRT) winrtDisplayInfoFailed = true;
 
         } else if (data.type === "ddcBrightnessVCPs") {
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
@@ -107,6 +109,7 @@ process.on('message', async (data) => {
                     monitorReports,
                     monitorReportsRaw,
                     lastRefresh,
+                    lastWinRT,
                     settings
                 }
             })
@@ -295,6 +298,30 @@ getAllMonitors = async (ddcciMethod = "default") => {
         console.log("getMonitorsWin32() skipped due to previous failure.")
     }
 
+    // Extra display details via WinRT (internal/external, physical size)
+    if (!winrtDisplayInfoFailed) {
+        try {
+            startTime = process.hrtime.bigint()
+            const monitorsWinRT = await getMonitorsWinRT()
+            console.log(`getMonitorsWinRT() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+
+            for (const hwid2 in monitorsWinRT) {
+                const monitor = monitorsWinRT[hwid2]
+                // Only use the WinRT name when no other source provided one
+                const winrtName = monitor.winrtName
+                delete monitor.winrtName
+                if (winrtName && !foundMonitors[hwid2]?.name) {
+                    monitor.name = winrtName
+                }
+                updateDisplay(foundMonitors, hwid2, monitor)
+            }
+        } catch (e) {
+            console.log("\x1b[41m" + "getMonitorsWinRT() failed!" + "\x1b[0m", e)
+        }
+    } else {
+        console.log("getMonitorsWinRT() skipped due to previous failure.")
+    }
+
     // List Apple Studio displays
     if (!appleStudioUnavailable) {
         try {
@@ -307,7 +334,7 @@ getAllMonitors = async (ddcciMethod = "default") => {
     } else {
         console.log("getStudioDisplay() skipped due to previous failure.")
     }
-    
+
 
     // DDC/CI Brightness + Features
     try {
@@ -722,6 +749,72 @@ getMonitorsWMI = () => {
         lastWMI = deepCopy(foundMonitors)
         resolve(foundMonitors)
     })
+}
+
+// Extra display details via WinRT DisplayMonitor: definitive
+// internal/external classification, physical size, native resolution,
+// and a display name that doesn't depend on the WMI/Win32 sources.
+let winrtDisplayInfo = false
+let winrtDisplayInfoFailed = false
+function getWinRTDisplayInfo() {
+    if (winrtDisplayInfo || winrtDisplayInfoFailed) return winrtDisplayInfo;
+    try {
+        winrtDisplayInfo = require("tt-windows-utils").DisplayInfo
+    } catch (e) {
+        console.log("Couldn't load WinRT display info module", e)
+        winrtDisplayInfoFailed = true
+    }
+    return winrtDisplayInfo
+}
+
+getMonitorsWinRT = async () => {
+    const foundMonitors = {}
+    try {
+        const displayInfo = getWinRTDisplayInfo()
+        if (!displayInfo?.getDisplayMonitors) {
+            lastWinRT = deepCopy(foundMonitors)
+            return foundMonitors;
+        }
+        const displays = displayInfo.getDisplayMonitors()
+        for (const display of displays) {
+            if (!display?.deviceInterfaceId) continue;
+
+            const path = display.deviceInterfaceId
+            const keyEnd = path.indexOf("#{")
+            const hwid = (keyEnd >= 0 ? path.substring(0, keyEnd) : path).split("#")
+            if (hwid.length < 3) continue;
+            hwid[2] = hwid[2].split("_")[0]
+
+            const winrtInfo = {
+                key: hwid[2],
+                isInternal: (display.connectionKind === "internal"),
+                connectionKind: display.connectionKind,
+                physicalConnector: display.physicalConnector
+            }
+            if (display.nativeWidth > 0 && display.nativeHeight > 0) {
+                winrtInfo.nativeResolution = {
+                    width: display.nativeWidth,
+                    height: display.nativeHeight
+                }
+            }
+            if (display.physicalDiagonal > 0) {
+                winrtInfo.physicalSize = {
+                    width: display.physicalWidth,
+                    height: display.physicalHeight,
+                    diagonal: display.physicalDiagonal
+                }
+            }
+            if (display.name) {
+                winrtInfo.winrtName = display.name
+            }
+
+            foundMonitors[hwid[2]] = winrtInfo
+        }
+    } catch (e) {
+        console.log("getMonitorsWinRT: Failed to get display info.", e)
+    }
+    lastWinRT = deepCopy(foundMonitors)
+    return foundMonitors
 }
 
 let win32Failed = false

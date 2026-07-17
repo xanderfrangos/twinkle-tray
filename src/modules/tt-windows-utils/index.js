@@ -5,6 +5,17 @@ const MediaStatus = require("bindings")("windows_media_status");
 const AppStartup = require("bindings")("windows_app_startup");
 const WindowMaterial = require("bindings")("windows_window_material");
 
+// DisplayMonitor is an optional WinRT enrichment source. Load it only when
+// requested so a missing or unloadable binding cannot prevent the app itself
+// from starting.
+let DisplayInfo = null;
+function getDisplayInfo() {
+    if (!DisplayInfo) {
+        DisplayInfo = require("bindings")("windows_display_info");
+    }
+    return DisplayInfo;
+}
+
 module.exports = {
     WindowUtils: {
         setWindowPos: WindowUtils.setWindowPos,
@@ -23,6 +34,12 @@ module.exports = {
     MediaStatus: {
         getPlaybackStatus: MediaStatus.getPlaybackStatus,
         getPlaybackInfo: MediaStatus.getPlaybackInfo
+    },
+    get DisplayInfo() {
+        const displayInfo = getDisplayInfo();
+        return {
+            getDisplayMonitors: displayInfo.getDisplayMonitors
+        };
     },
     AppStartup: {
         enable: AppStartup.enable,

@@ -687,6 +687,21 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                         newMonitor.deviceKey = target.deviceKey;
                         newMonitor.deviceID = target.devicePath;
                         newMonitor.fullName = monitor.monitorName + "\\Monitor" + std::to_string(i);
+
+                        // QueryDisplayConfig provides the reliable physical
+                        // monitor-to-device-path association, but its target
+                        // path does not include the canonical DISPLAY_DEVICE
+                        // name. Reuse that name and ID when available so the
+                        // identifiers used for settings and cached results
+                        // remain stable (the MonitorN suffix is not always i).
+                        for (auto const& display : displays) {
+                            if (display.second.deviceKey == target.deviceKey) {
+                                newMonitor.fullName = display.second.deviceName;
+                                newMonitor.deviceID = display.second.deviceID;
+                                break;
+                            }
+                        }
+
                         foundMatchingDisplay = true;
                         p("-- -- Matched with: " + target.deviceKey);
                         break;

@@ -1464,8 +1464,8 @@ function classifyDDCError(e) {
         return `${DDC_ERROR_REASONS[code]} (0x${(code >>> 0).toString(16).toUpperCase()})`
     }
     // Fallback for errors without an attached code
-    if (e?.message?.indexOf("the I2C bus") > 0) return "I2C bus error";
-    if (e?.message?.indexOf("does not support") > 0) return "VCP code unsupported";
+    if (e?.message?.indexOf("the I2C bus") >= 0) return "I2C bus error";
+    if (e?.message?.indexOf("does not support") >= 0) return "VCP code unsupported";
     return e
 }
 

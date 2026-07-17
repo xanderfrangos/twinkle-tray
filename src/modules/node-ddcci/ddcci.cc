@@ -140,9 +140,8 @@ cleanMonitorHandles(std::map<std::string, HANDLE> newHandles)
 }
 
 std::string
-getLastErrorString()
+getLastErrorString(DWORD errorCode)
 {
-    DWORD errorCode = GetLastError();
     if (!errorCode) {
         return std::string();
     }
@@ -158,8 +157,77 @@ getLastErrorString()
                     0,
                     NULL);
 
+    if (buf == NULL || size == 0) {
+        return std::string();
+    }
+
     std::string message(buf, size);
+    LocalFree(buf);
     return message;
+}
+
+std::string
+getLastErrorString()
+{
+    return getLastErrorString(GetLastError());
+}
+
+// DDC/CI failures that indicate a garbled message or an I2C bus glitch.
+// These are worth retrying, unlike permanent conditions such as an
+// unsupported VCP code or a monitor that no longer exists.
+bool
+isTransientDdcError(DWORD errorCode)
+{
+    switch (errorCode) {
+        case ERROR_GRAPHICS_I2C_ERROR_TRANSMITTING_DATA:
+        case ERROR_GRAPHICS_I2C_ERROR_RECEIVING_DATA:
+        case ERROR_GRAPHICS_DDCCI_MONITOR_RETURNED_INVALID_TIMING_STATUS_BYTE:
+        case ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_COMMAND:
+        case ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_LENGTH:
+        case ERROR_GRAPHICS_DDCCI_INVALID_MESSAGE_CHECKSUM:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Runs a DDC/CI operation, retrying a couple of times when it fails with
+// a transient error. Returns TRUE on success; on failure, `errorCode`
+// holds the Win32 error of the last attempt.
+template<typename F>
+BOOL
+tryDdcCiOperation(F operation, DWORD& errorCode)
+{
+    const int maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (attempt > 1) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+        if (operation()) {
+            return TRUE;
+        }
+        errorCode = GetLastError();
+        if (!isTransientDdcError(errorCode)) {
+            return FALSE;
+        }
+        std::stringstream hexCode;
+        hexCode << std::hex << std::uppercase << errorCode;
+        d("Transient DDC/CI error. Attempt #" + std::to_string(attempt)
+          + " failed with 0x" + hexCode.str());
+    }
+    return FALSE;
+}
+
+// Throws a JS error carrying the Win32 error code, so callers can
+// classify failures without parsing localized message strings.
+void
+throwDdcCiError(Napi::Env env, const std::string& message, DWORD errorCode)
+{
+    Napi::Error error =
+      Napi::Error::New(env, message + "\n" + getLastErrorString(errorCode));
+    error.Set("win32Code",
+              Napi::Number::New(env, static_cast<double>(errorCode)));
+    throw error;
 }
 
 std::string
@@ -1086,10 +1154,12 @@ setVCP(const Napi::CallbackInfo& info)
         throw Napi::Error::New(env, "Monitor not found");
     }
 
-    if (!SetVCPFeature(it->second, vcpCode, newValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to set VCP code value\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() { return SetVCPFeature(it->second, vcpCode, newValue); },
+      errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to set VCP code value", errorCode);
     }
 
     return env.Undefined();
@@ -1117,11 +1187,15 @@ getVCP(const Napi::CallbackInfo& info)
 
     DWORD currentValue;
     DWORD maxValue;
-    if (!GetVCPFeatureAndVCPFeatureReply(
-          it->second, vcpCode, NULL, &currentValue, &maxValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to get VCP code value\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() {
+          return GetVCPFeatureAndVCPFeatureReply(
+            it->second, vcpCode, NULL, &currentValue, &maxValue);
+      },
+      errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to get VCP code value", errorCode);
     }
 
     Napi::Array ret = Napi::Array::New(env, 2);
@@ -1179,11 +1253,15 @@ getHighLevelBrightness(const Napi::CallbackInfo& info)
     DWORD minValue;
     DWORD currentValue;
     DWORD maxValue;
-    if (!GetMonitorBrightness(
-          it->second, &minValue, &currentValue, &maxValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to get high level brightness\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() {
+          return GetMonitorBrightness(
+            it->second, &minValue, &currentValue, &maxValue);
+      },
+      errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to get high level brightness", errorCode);
     }
 
     Napi::Array ret = Napi::Array::New(env, 3);
@@ -1215,10 +1293,11 @@ setHighLevelBrightness(const Napi::CallbackInfo& info)
         throw Napi::Error::New(env, "Monitor not found");
     }
 
-    if (!SetMonitorBrightness(it->second, newValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to set high level brightness\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() { return SetMonitorBrightness(it->second, newValue); }, errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to set high level brightness", errorCode);
     }
 
     return env.Undefined();
@@ -1246,11 +1325,15 @@ getHighLevelContrast(const Napi::CallbackInfo& info)
     DWORD minValue;
     DWORD currentValue;
     DWORD maxValue;
-    if (!GetMonitorContrast(
-          it->second, &minValue, &currentValue, &maxValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to get high level contrast\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() {
+          return GetMonitorContrast(
+            it->second, &minValue, &currentValue, &maxValue);
+      },
+      errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to get high level contrast", errorCode);
     }
 
     Napi::Array ret = Napi::Array::New(env, 3);
@@ -1282,10 +1365,11 @@ setHighLevelContrast(const Napi::CallbackInfo& info)
         throw Napi::Error::New(env, "Monitor not found");
     }
 
-    if (!SetMonitorContrast(it->second, newValue)) {
-        throw Napi::Error::New(env,
-                               std::string("Failed to set high level contrast\n")
-                                 + getLastErrorString());
+    DWORD errorCode = ERROR_SUCCESS;
+    BOOL ok = tryDdcCiOperation(
+      [&]() { return SetMonitorContrast(it->second, newValue); }, errorCode);
+    if (!ok) {
+        throwDdcCiError(env, "Failed to set high level contrast", errorCode);
     }
 
     return env.Undefined();

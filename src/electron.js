@@ -142,8 +142,87 @@ function vcpStr(code) {
 // Monitors thread
 // Handles WMI + DDC/CI activity
 
+const monitorCommandsThatMutateWorkerState = new Set([
+  "brightness", "sdr", "vcp", "getVCP", "flushvcp", "settings",
+  "ddcBrightnessVCPs", "localization", "wmi-bridge-ok"
+])
+const monitorCommandsRequiredBeforeRefresh = new Set([
+  "flushvcp", "settings", "ddcBrightnessVCPs", "localization", "wmi-bridge-ok"
+])
+let queuedMonitorCommands = []
+let flushingMonitorCommands = false
+
+function monitorWorkerHasExclusiveWork() {
+  return !!(isRefreshing || activeCapabilitiesEnrichmentPromise || queuedRefreshPromise)
+}
+
+async function waitForMonitorWorkerIdle() {
+  while (monitorWorkerHasExclusiveWork()) {
+    if (activeCapabilitiesEnrichmentPromise) {
+      await activeCapabilitiesEnrichmentPromise
+    } else if (queuedRefreshPromise) {
+      await queuedRefreshPromise
+    } else {
+      await Utils.wait(50)
+    }
+  }
+}
+
+async function flushQueuedMonitorCommands(beforeRefresh = false) {
+  const exclusiveWorkInProgress = !!(isRefreshing || activeCapabilitiesEnrichmentPromise)
+  if (flushingMonitorCommands) {
+    while (flushingMonitorCommands) await Utils.wait(10)
+    return flushQueuedMonitorCommands(beforeRefresh)
+  }
+  if (exclusiveWorkInProgress || (!beforeRefresh && queuedRefreshPromise) || !queuedMonitorCommands.length) return
+  flushingMonitorCommands = true
+  const commands = []
+  const remainingCommands = []
+  for (const command of queuedMonitorCommands) {
+    if (!beforeRefresh || monitorCommandsRequiredBeforeRefresh.has(command.data.type)) {
+      commands.push(command)
+    } else {
+      remainingCommands.push(command)
+    }
+  }
+  queuedMonitorCommands = remainingCommands
+
+  try {
+    for (const command of commands) {
+      if (!monitorCommandsRequiredBeforeRefresh.has(command.data.type)
+        && command.generation !== monitorRefreshGeneration
+        && !queuedCommandTargetsCurrentMonitor(command.data)) {
+        command.resolve()
+        continue
+      }
+      await monitorsThread.sendNow(command.data)
+      command.resolve()
+    }
+  } catch (error) {
+    for (const command of commands) command.reject(error)
+  } finally {
+    flushingMonitorCommands = false
+    if (queuedMonitorCommands.length && !beforeRefresh) flushQueuedMonitorCommands()
+  }
+}
+
+function queuedCommandTargetsCurrentMonitor(data) {
+  if (data.type === "brightness" || data.type === "sdr") {
+    if (!data.id) return true
+    return Object.values(monitors || {}).some(monitor =>
+      monitor?.id === data.id || monitor?.id?.indexOf(data.id) >= 0
+    )
+  }
+  if (data.type === "vcp" || data.type === "getVCP") {
+    return Object.values(monitors || {}).some(monitor =>
+      monitor?.hwid?.join("#") === data.monitor
+    )
+  }
+  return false
+}
+
 let monitorsThread = {
-  send: async function (data) {
+  sendNow: async function (data) {
     try {
       if (!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) {
         startMonitorThread()
@@ -153,13 +232,19 @@ let monitorsThread = {
       }
       if(!monitorsThreadReady) throw("Thread not ready!");
       if(!(monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null)) throw("Thread not available!");
-      if((data.type == "vcp" || data.type == "brightness" || data.type == "getVCP") && isRefreshing) while(isRefreshing) {
-        await Utils.wait(50)
-      }
       monitorsThreadReal.send(data)
     } catch (e) {
       console.log("Couldn't communicate with Monitor thread.", e)
+      return false
     }
+  },
+  send: function (data) {
+    if (monitorCommandsThatMutateWorkerState.has(data.type) && monitorWorkerHasExclusiveWork()) {
+      return new Promise((resolve, reject) => {
+        queuedMonitorCommands.push({ data, resolve, reject, generation: monitorRefreshGeneration })
+      })
+    }
+    return this.sendNow(data)
   },
   once: function (message, callback) {
     try {
@@ -400,7 +485,10 @@ function stopMonitorThread() {
   return stopPromise
 }
 
-function getVCP(monitor, code) {
+async function getVCP(monitor, code) {
+  // Offset/cycle hotkeys need a real value; don't let a synchronous
+  // capabilities request turn their three-second timeout into -1.
+  await waitForMonitorWorkerIdle()
   return new Promise((resolve, reject) => {
     if (!monitor || !code) resolve(-1);
     const vcpParsed = parseInt(`0x${parseInt(code).toString(16).toUpperCase()}`)
@@ -1974,15 +2062,20 @@ const setIsRefreshing = newValue => {
 }
 
 
-refreshMonitorsJob = async (fullRefresh = false) => {
+refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
   return await new Promise((resolve, reject) => {
     try {
-      monitorsThread.send({
-        type: "refreshMonitors",
-        fullRefresh
-      })
-
-      let timeout = setTimeout(() => {
+      const cleanup = () => {
+        clearTimeout(timeout)
+        monitorsEventEmitter.removeListener("refreshMonitors", listener)
+      }
+      const listener = data => {
+        if (data?.generation !== generation) return
+        cleanup()
+        resolve(data)
+      }
+      const timeout = setTimeout(() => {
+        cleanup()
         reject("Monitor thread timed out.")
 
         // Attempt to fix common issue with wmi-bridge by relying only on Win32
@@ -1992,24 +2085,298 @@ refreshMonitorsJob = async (fullRefresh = false) => {
           settings.disableWMI = true
         }
       }, 60000)
+      monitorsEventEmitter.on("refreshMonitors", listener)
 
-      function listen(resolve) {
-        monitorsThread.once("refreshMonitors", data => {
-          clearTimeout(timeout)
-          resolve(data.monitors)
-        })
-      }
-      listen(resolve)
+      monitorsThread.send({
+        type: "refreshMonitors",
+        fullRefresh,
+        generation
+      })
     } catch (e) {
       reject("Monitor thread failed to send.")
     }
   })
 }
 
+enrichMonitorCapabilitiesJob = async (generation) => {
+  return await new Promise((resolve, reject) => {
+    let cleanup = () => { }
+    try {
+      const worker = monitorsThreadReal
+      if (!(worker?.connected && worker?.exitCode === null)) {
+        throw new Error("Monitor worker is not available for capabilities enrichment.")
+      }
+      cleanup = () => {
+        clearTimeout(timeout)
+        monitorsEventEmitter.removeListener("monitorsEnriched", listener)
+        worker.removeListener("exit", workerStopped)
+        worker.removeListener("error", workerStopped)
+      }
+      const listener = data => {
+        if (data?.generation !== generation) return
+        cleanup()
+        resolve(data)
+      }
+      const workerStopped = () => {
+        cleanup()
+        const error = new Error("Monitor worker stopped during capabilities enrichment.")
+        error.code = "MONITOR_WORKER_STOPPED"
+        reject(error)
+      }
+      const timeout = setTimeout(() => {
+        cleanup()
+        reject(new Error("Monitor capabilities enrichment timed out."))
+      }, 60000)
+      monitorsEventEmitter.on("monitorsEnriched", listener)
+      worker.once("exit", workerStopped)
+      worker.once("error", workerStopped)
+
+      worker.send({
+        type: "enrichMonitorCapabilities",
+        generation
+      })
+    } catch (e) {
+      cleanup()
+      reject(new Error("Monitor thread failed to start capabilities enrichment."))
+    }
+  })
+}
+
 let lastRefreshMonitors = 0
 let lastCompletedRefresh = 0
+let monitorRefreshGeneration = 0
+let activeCapabilitiesEnrichment = 0
+let activeCapabilitiesEnrichmentPromise = false
+let queuedRefreshRequest = false
+let queuedRefreshPromise = false
+const deferredFeatureUpdates = new Map()
+const deferredLinkedFeatureUpdates = new Map()
 
-async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, bypassWindowsIdle = false) {
+async function waitForActiveMonitorWork() {
+  while (isRefreshing || activeCapabilitiesEnrichmentPromise) {
+    if (activeCapabilitiesEnrichmentPromise) {
+      await activeCapabilitiesEnrichmentPromise
+    } else {
+      await Utils.wait(50)
+    }
+  }
+}
+
+function queueRefreshAfterEnrichment(fullRefresh, bypassRateLimit, bypassWindowsIdle, waitForFeatureEnrichment) {
+  const generation = ++monitorRefreshGeneration
+  // Preserve explicit user feature changes across a superseding full refresh.
+  // They are replayed only if the matching monitor is still present later.
+  for (const update of deferredFeatureUpdates.values()) update.generation = generation
+  for (const update of deferredLinkedFeatureUpdates.values()) update.generation = generation
+
+  if (!queuedRefreshRequest) {
+    queuedRefreshRequest = {
+      fullRefresh,
+      bypassRateLimit,
+      bypassWindowsIdle,
+      waitForFeatureEnrichment,
+      generation
+    }
+    queuedRefreshPromise = (async () => {
+      await waitForActiveMonitorWork()
+      await flushQueuedMonitorCommands(true)
+      const request = queuedRefreshRequest
+      return refreshMonitors(
+        request.fullRefresh,
+        request.bypassRateLimit,
+        request.bypassWindowsIdle,
+        request.waitForFeatureEnrichment,
+        true,
+        request.generation
+      )
+    })().finally(() => {
+      queuedRefreshRequest = false
+      queuedRefreshPromise = false
+      flushQueuedMonitorCommands()
+    })
+  } else {
+    queuedRefreshRequest.fullRefresh = queuedRefreshRequest.fullRefresh || fullRefresh
+    queuedRefreshRequest.bypassRateLimit = queuedRefreshRequest.bypassRateLimit || bypassRateLimit
+    queuedRefreshRequest.bypassWindowsIdle = queuedRefreshRequest.bypassWindowsIdle || bypassWindowsIdle
+    queuedRefreshRequest.waitForFeatureEnrichment = queuedRefreshRequest.waitForFeatureEnrichment || waitForFeatureEnrichment
+    queuedRefreshRequest.generation = generation
+  }
+
+  return queuedRefreshPromise
+}
+
+function hasEnabledLinkedFeatures() {
+  try {
+    return Object.entries(settings.monitorFeaturesSettings || {}).some(([monitorId, features]) =>
+      Object.entries(features || {}).some(([vcp, featureSettings]) =>
+        featureSettings?.linked && settings.monitorFeatures?.[monitorId]?.[vcp]
+      )
+    )
+  } catch (e) {
+    return false
+  }
+}
+
+function deferFeatureUpdate(monitor, level, useCap, vcpValue, clearTransition = true) {
+  if (!monitor?.id) return false
+  deferredFeatureUpdates.set(`${monitor.id}:${vcpValue}`, {
+    generation: monitorRefreshGeneration,
+    monitorId: monitor.id,
+    level,
+    useCap,
+    vcpValue,
+    clearTransition
+  })
+  return true
+}
+
+function deferLinkedFeatureUpdate(monitor, level, useCap) {
+  if (!monitor?.id) return false
+  deferredLinkedFeatureUpdates.set(monitor.id, {
+    generation: monitorRefreshGeneration,
+    monitorId: monitor.id,
+    level,
+    useCap
+  })
+  return true
+}
+
+function flushDeferredFeatureUpdates() {
+  if (Object.values(monitors).some(monitor => monitor?.featuresPending || monitor?.featuresRefreshing)) return
+
+  const featureUpdates = [...deferredFeatureUpdates.values()]
+  const linkedUpdates = [...deferredLinkedFeatureUpdates.values()]
+  deferredFeatureUpdates.clear()
+  deferredLinkedFeatureUpdates.clear()
+
+  for (const update of featureUpdates) {
+    if (update.generation !== monitorRefreshGeneration) continue
+    const monitor = Object.values(monitors).find(item => item?.id === update.monitorId)
+    if (monitor) {
+      updateBrightness(update.monitorId, update.level, update.useCap, update.vcpValue, update.clearTransition)
+    }
+  }
+
+  for (const update of linkedUpdates) {
+    if (update.generation !== monitorRefreshGeneration) continue
+    const monitor = Object.values(monitors).find(item => item?.id === update.monitorId)
+    if (monitor) {
+      applyLinkedFeatures(monitor, update.level, update.useCap)
+    }
+  }
+}
+
+function clearFeaturesPendingAfterEnrichmentFailure() {
+  const oldMonitors = JSON.stringify(monitors)
+  for (const monitor of Object.values(monitors)) {
+    if (monitor?.featuresPending) monitor.featuresPending = false
+    if (monitor?.featuresRefreshing) monitor.featuresRefreshing = false
+  }
+  flushDeferredFeatureUpdates()
+  if (JSON.stringify(monitors) !== oldMonitors) {
+    sendToAllWindows('monitors-updated', monitors)
+  }
+}
+
+function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
+  applyOrder(newMonitors)
+  applyRemaps(newMonitors)
+  applyHotkeys(newMonitors)
+
+  // Normalize values
+  for (let id in newMonitors) {
+    const monitor = newMonitors[id]
+    monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
+
+    // Replace DDC/CI brightness with SDR
+    if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+      monitor.brightness = monitor.sdrLevel
+    }
+
+    // Other DDC/CI normalizations
+    const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
+    if(featuresSettings) {
+      for(const vcp in monitor.features) {
+        if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+          monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
+        }
+      }
+    }
+  }
+
+  monitors = newMonitors
+  lastCompletedRefresh = Date.now()
+  lightSensor.setMonitors(monitors)
+  flushDeferredFeatureUpdates()
+
+  if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
+    setTrayPercent()
+    sendToAllWindows('monitors-updated', monitors)
+  } else {
+    console.log("===--- NO CHANGE ---===")
+  }
+}
+
+async function recoverFromCapabilitiesTimeout(generation) {
+  console.log("Capabilities enrichment timed out. Restarting monitor worker while keeping the Fast results.")
+  try {
+    if (activeCapabilitiesEnrichment === generation) {
+      activeCapabilitiesEnrichment = 0
+      activeCapabilitiesEnrichmentPromise = false
+    }
+    await stopMonitorThread()
+    const thread = startMonitorThread({ allowWhileWindowsIdle: true })
+    if (!thread) return
+    await waitForMonitorThreadReady(thread)
+    if (generation === monitorRefreshGeneration && !queuedRefreshPromise) {
+      return await refreshMonitors(true, true, true, hasEnabledLinkedFeatures(), true)
+    }
+  } catch (e) {
+    console.log("Couldn't recover monitor worker after capabilities timeout", e)
+  }
+}
+
+function queueCapabilitiesEnrichment(generation) {
+  if (activeCapabilitiesEnrichmentPromise) return activeCapabilitiesEnrichmentPromise
+  activeCapabilitiesEnrichment = generation
+
+  let enrichmentPromise
+  enrichmentPromise = enrichMonitorCapabilitiesJob(generation).then(data => {
+    if (data?.generation !== generation || generation !== monitorRefreshGeneration) {
+      return
+    }
+
+    if (!data.monitors) {
+      console.log("Monitor capabilities enrichment completed without feature data.")
+      clearFeaturesPendingAfterEnrichmentFailure()
+      return
+    }
+
+    const oldMonitors = Object.assign({}, monitors)
+    commitRefreshedMonitors(data.monitors, oldMonitors)
+  }).catch(async error => {
+    console.log("Couldn't enrich monitor capabilities", error)
+    if (error?.code === "MONITOR_WORKER_STOPPED") {
+      if (generation === monitorRefreshGeneration) {
+        clearFeaturesPendingAfterEnrichmentFailure()
+      }
+      return
+    }
+    await recoverFromCapabilitiesTimeout(generation)
+  }).finally(() => {
+    // A timeout recovery can start a new enrichment for the same refresh
+    // generation. Only the promise that owns this slot may clear it.
+    if (activeCapabilitiesEnrichmentPromise === enrichmentPromise) {
+      activeCapabilitiesEnrichment = 0
+      activeCapabilitiesEnrichmentPromise = false
+    }
+    flushQueuedMonitorCommands()
+  })
+  activeCapabilitiesEnrichmentPromise = enrichmentPromise
+  return enrichmentPromise
+}
+
+async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, bypassWindowsIdle = false, waitForFeatureEnrichment = false, skipEnrichmentQueue = false, reservedGeneration = false) {
 
   if (isWindowsUserIdle && !bypassWindowsIdle) {
     console.log("Displays are off, no updates.")
@@ -2021,9 +2388,22 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
     return monitors
   }
 
+  if (!skipEnrichmentQueue && (activeCapabilitiesEnrichmentPromise || queuedRefreshPromise)) {
+    console.log("Waiting for capabilities enrichment before refreshing monitors.")
+    if (!fullRefresh) {
+      await (activeCapabilitiesEnrichmentPromise || queuedRefreshPromise)
+      return monitors
+    }
+    return queueRefreshAfterEnrichment(fullRefresh, bypassRateLimit, bypassWindowsIdle, waitForFeatureEnrichment)
+  }
+
   // Don't do 2+ refreshes at once
   if (isRefreshing) {
-    console.log(`Already refreshing. Aborting.`)
+    console.log(`Already refreshing.`)
+    if (fullRefresh) {
+      console.log("Queueing the full refresh after the current worker operation.")
+      return queueRefreshAfterEnrichment(fullRefresh, bypassRateLimit, bypassWindowsIdle, waitForFeatureEnrichment)
+    }
     return monitors;
   }
 
@@ -2049,61 +2429,31 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
   // Save old monitors for comparison
   let oldMonitors = Object.assign({}, monitors)
   let newMonitors
+  let canEnrichCapabilities = false
+  const generation = (reservedGeneration || ++monitorRefreshGeneration)
 
   let failed = false
   try {
-    newMonitors = await refreshMonitorsJob(fullRefresh)
+    const result = await refreshMonitorsJob(fullRefresh, generation)
+    newMonitors = result?.monitors
+    canEnrichCapabilities = !!result?.canEnrichCapabilities
     if (!newMonitors) {
       failed = true;
       throw "No monitors recieved!";
     }
-    lastEagerUpdate = Date.now()
+    if (generation !== monitorRefreshGeneration) {
+      console.log("Discarding a superseded monitor refresh.")
+      failed = true
+    } else {
+      lastEagerUpdate = Date.now()
+    }
   } catch (e) {
     failed = true
     console.log('Couldn\'t refresh monitors', e)
   }
 
   if (!failed) {
-    applyOrder(newMonitors)
-    applyRemaps(newMonitors)
-    applyHotkeys(newMonitors)
-
-    // Normalize values
-    for (let id in newMonitors) {
-      const monitor = newMonitors[id]
-      // Brightness
-      monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
-
-
-      // Replace DDC/CI brightness with SDR
-      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
-        monitor.brightness = monitor.sdrLevel
-      }
-
-      // Other DDC/CI normalizations
-      const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-      if(featuresSettings) {
-        // For each feature, check for matching normalization data
-        for(const vcp in monitor.features) {
-          if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
-            monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
-          }
-        }
-      }
-
-    }
-
-    monitors = newMonitors;
-    lastCompletedRefresh = Date.now()
-    lightSensor.setMonitors(monitors)
-
-    // Only send update if something changed
-    if (JSON.stringify(newMonitors) !== JSON.stringify(oldMonitors)) {
-      setTrayPercent()
-      sendToAllWindows('monitors-updated', monitors)
-    } else {
-      console.log("===--- NO CHANGE ---===")
-    }
+    commitRefreshedMonitors(newMonitors, oldMonitors)
   }
 
   if (shouldShowPanel) {
@@ -2113,6 +2463,11 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
   setIsRefreshing(false)
+  if (!failed && canEnrichCapabilities) {
+    const enrichmentPromise = queueCapabilitiesEnrichment(generation)
+    if (waitForFeatureEnrichment) await enrichmentPromise
+  }
+  flushQueuedMonitorCommands()
   return monitors;
 }
 
@@ -2175,6 +2530,33 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
 
 let ignoreBrightnessEvent = false
 let ignoreBrightnessEventTimeout = false
+
+function hasEnabledLinkedFeaturesForMonitor(monitor) {
+  const monitorId = monitor?.hwid?.[1]
+  if (!monitorId) return false
+  return Object.entries(settings.monitorFeaturesSettings?.[monitorId] || {}).some(([vcp, featureSettings]) =>
+    featureSettings?.linked && settings.monitorFeatures?.[monitorId]?.[vcp]
+  )
+}
+
+function applyLinkedFeatures(monitor, newLevel, useCap = true) {
+  const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid?.[1]]
+  if (!featuresSettings) return
+
+  for(const vcp in monitor.features || {}) {
+    if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
+      const maxBrightness = (featuresSettings[vcp].maxVisual ?? 100)
+      let processedLevel = newLevel
+      if(processedLevel > maxBrightness) {
+        processedLevel = maxBrightness
+      }
+
+      const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
+      updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+    }
+  }
+}
+
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   if(isWindowsUserIdle) return false; // Skip if displays are off
   try {
@@ -2212,6 +2594,14 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     if(vcp == "brightness" && monitor.hdr === "active" && settings.sdrAsMainSliderDisplays?.[monitor.key]) {
       vcp = "sdr"
       useCap = false
+    }
+
+    // Feature VCPs need the enriched monitor map. A Fast-only result can be
+    // used for brightness, but queue feature work until it is safe to run.
+    if ((monitor.featuresPending || monitor.featuresRefreshing)
+      && ((vcp !== "brightness" && vcp !== "sdr") || monitor.type === "none")) {
+      deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
+      return true
     }
 
     if (clearTransition && currentTransition) {
@@ -2252,23 +2642,11 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           monitor.brightness = monitor.sdrLevel
         }
 
-        // Apply linked DDC/CI features
-        const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-        if(featuresSettings) {
-          // For each feature, check for linked value
-          for(const vcp in monitor.features) {
-            if(featuresSettings[vcp]?.linked && settings.monitorFeatures?.[monitor.hwid[1]]?.[vcp]) {
-
-              const maxBrightness = (featuresSettings[vcp].maxVisual ?? 100)
-              let processedLevel = newLevel
-              if(processedLevel > maxBrightness) {
-                processedLevel = maxBrightness
-              }
-
-              const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
-              updateBrightnessThrottle(index, capped, useCap, false, vcp)
-            }
-          }
+        // Apply linked DDC/CI features now, or replay them after enrichment.
+        if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
+          deferLinkedFeatureUpdate(monitor, newLevel, useCap)
+        } else {
+          applyLinkedFeatures(monitor, newLevel, useCap)
         }
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
@@ -2509,6 +2887,7 @@ function sleepDisplays(mode = "ps", delayMS = 333) {
 
 async function turnOffDisplayDDC(hwid, toggle = false) {
   try {
+    await waitForMonitorWorkerIdle()
     const offVal = parseInt(settings.ddcPowerOffValue)
     if (toggle) {
       const currentValue = await getVCP(hwid, 0xD6)
@@ -3442,7 +3821,7 @@ app.on("ready", async () => {
     })
 
     isRefreshing = false
-    await refreshMonitors(true, true)
+    await refreshMonitors(true, true, false, hasEnabledLinkedFeatures())
 
     if (settings.brightnessAtStartup) setKnownBrightness();
     if (settings.checkTimeAtStartup) {
@@ -4159,7 +4538,7 @@ function handleMonitorChange(t, e, d) {
     if(settings.recreateTray) recreateTray();
 
     // Reset all known displays
-    await refreshMonitors(true)
+    await refreshMonitors(true, false, false, hasEnabledLinkedFeatures())
 
     // During startup grace period, use current monitor brightness instead of saved profile
     // This prevents overwriting brightness that was manually set before shutdown
@@ -4251,7 +4630,7 @@ powerMonitor.on("resume", async () => {
     const refreshWaitDeadline = Date.now() + 30000
     while((isRefreshing || pausedMonitorUpdates) && Date.now() < refreshWaitDeadline) await Utils.wait(50)
     const refreshRequested = Date.now()
-    await refreshMonitors(true, true, true)
+    await refreshMonitors(true, true, true, hasEnabledLinkedFeatures())
 
     if (!settings.disableAutoRefresh) {
       if (!settings.disableAutoApply && !hasRecentlyInteracted) setKnownBrightness();
@@ -4300,7 +4679,7 @@ function handleMetricsChange(type) {
     if(handleChangeTimeout2) return false;
 
     // Do a quick check to ensure handles are all good
-    await refreshMonitors(true)
+    await refreshMonitors(true, false, false, hasEnabledLinkedFeatures())
 
     // During startup grace period, use current monitor brightness instead of saved profile
     // This prevents overwriting brightness that was manually set before shutdown

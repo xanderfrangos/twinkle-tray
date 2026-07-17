@@ -69,6 +69,36 @@ std::map<std::string, HANDLE> handles;
 std::map<std::string, PhysicalMonitor> physicalMonitorHandles;
 std::map<std::string, std::string> capabilities;
 
+PhysicalMonitor*
+findPhysicalMonitor(const std::string& monitorName)
+{
+    for (auto& entry : physicalMonitorHandles) {
+        PhysicalMonitor& monitor = entry.second;
+        if (entry.first == monitorName || monitor.name == monitorName
+            || monitor.fullName == monitorName
+            || monitor.physicalName == monitorName
+            || monitor.deviceKey == monitorName
+            || monitor.deviceID == monitorName) {
+            return &monitor;
+        }
+    }
+
+    return nullptr;
+}
+
+void
+applyCapabilitiesResult(PhysicalMonitor* monitor,
+                        const std::string& result)
+{
+    if (monitor == nullptr || result.empty()) return;
+
+    monitor->result = result;
+    monitor->ddcciSupported = true;
+    if (!monitor->deviceKey.empty()) {
+        capabilities[monitor->deviceKey] = result;
+    }
+}
+
 int logLevel = 0;
 
 // `handles` owns every physical-monitor handle. `physicalMonitorHandles`
@@ -1061,15 +1091,24 @@ getNAPICapabilitiesString(const Napi::CallbackInfo& info)
     }
 
     std::string monitorName = info[0].As<Napi::String>().Utf8Value();
+    PhysicalMonitor* physicalMonitor = findPhysicalMonitor(monitorName);
+    const std::string cacheKey = (physicalMonitor != nullptr
+      && !physicalMonitor->deviceKey.empty())
+      ? physicalMonitor->deviceKey
+      : monitorName;
 
     // Check if it's already saved in memory first.
-    auto found = capabilities.find(monitorName);
+    auto found = capabilities.find(cacheKey);
     if (found != capabilities.end()) {
+        applyCapabilitiesResult(physicalMonitor, found->second);
         return Napi::String::New(env, found->second);
     }
 
     // Find requested monitor.
-    auto it = handles.find(monitorName);
+    auto it = handles.find(cacheKey);
+    if (it == handles.end()) {
+        it = handles.find(monitorName);
+    }
     if (it == handles.end()) {
         throw Napi::Error::New(env, "Monitor not found");
     }
@@ -1079,6 +1118,14 @@ getNAPICapabilitiesString(const Napi::CallbackInfo& info)
     if(returnString == "") {
         throw Napi::Error::New(
           env, "Monitor not responding."); // Does not respond to DDC/CI
+    }
+
+    // A capabilities request can be performed after a fast discovery pass.
+    // Persist it in both native caches so later refreshes and input discovery
+    // observe the enriched state without another hardware request.
+    applyCapabilitiesResult(physicalMonitor, returnString);
+    if (physicalMonitor == nullptr) {
+        capabilities[cacheKey] = returnString;
     }
 
     return Napi::String::New(env, returnString);

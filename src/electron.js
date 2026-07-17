@@ -2366,10 +2366,12 @@ function queueCapabilitiesEnrichment(generation) {
     await recoverFromCapabilitiesTimeout(generation)
   }).finally(() => {
     // A timeout recovery can start a new enrichment for the same refresh
-    // generation. Only the promise that owns this slot may clear it.
+    // generation. Only the promise that owns this slot may clear it or end
+    // the panel's loading state.
     if (activeCapabilitiesEnrichmentPromise === enrichmentPromise) {
       activeCapabilitiesEnrichment = 0
       activeCapabilitiesEnrichmentPromise = false
+      setIsRefreshing(false)
     }
     flushQueuedMonitorCommands()
   })
@@ -2463,10 +2465,11 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
   }
 
   console.log("\x1b[34m---------------------------------------------- \x1b[0m")
-  setIsRefreshing(false)
   if (!failed && canEnrichCapabilities) {
     const enrichmentPromise = queueCapabilitiesEnrichment(generation)
     if (waitForFeatureEnrichment) await enrichmentPromise
+  } else {
+    setIsRefreshing(false)
   }
   flushQueuedMonitorCommands()
   return monitors;

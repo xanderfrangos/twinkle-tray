@@ -72,6 +72,14 @@ function resetSettings() {
     ipc.send('reset-settings')
 }
 
+function requestDDCSafetyStatus() {
+    ipc.send('request-ddc-safety-status')
+}
+
+function retryDDCValidation() {
+    ipc.send('retry-ddc-validation')
+}
+
 function detectSunValley() {
     if(!window.reactReady) return false;
     try {
@@ -167,6 +175,12 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+ipc.on('ddc-safety-status', (event, status) => {
+    window.dispatchEvent(new CustomEvent('ddcSafetyStatus', {
+        detail: status
+    }))
+})
+
 ipc.on('window-history', (event, history) => {
     window.windowHistory = history
     window.dispatchEvent(new CustomEvent('windowHistory', {
@@ -257,6 +271,8 @@ window.sendSettings = sendSettings
 window.sendSettingsImmediate = sendSettingsImmediate
 window.requestSettings = requestSettings
 window.resetSettings = resetSettings
+window.requestDDCSafetyStatus = requestDDCSafetyStatus
+window.retryDDCValidation = retryDDCValidation
 window.getUpdate = getUpdate
 window.checkForUpdates = checkForUpdates
 window.openURL = openURL

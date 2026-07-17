@@ -22,6 +22,7 @@ const Utils = require("./Utils")
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
 const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
 const knownDisplaysPath = path.join(configFilesDir, `\\known-displays${(isDev ? "-dev" : "")}.json`)
+const ddcUnstablePath = path.join(app.getPath("userData"), "ddc-unstable.json")
 
 // Handle multiple instances before continuing
 const singleInstanceLock = app.requestSingleInstanceLock(process.argv)
@@ -177,6 +178,60 @@ let monitorsThreadReady = false
 let monitorsThreadStarting = false
 let monitorsThreadFailed = false
 let monitorsThreadFailedResetTimer = false
+let ddcSafetyRetryPromise = false
+
+function getDDCSafetyStatus() {
+  try {
+    const unstableDDC = JSON.parse(fs.readFileSync(ddcUnstablePath, "utf8"))
+    return unstableDDC?.downgraded || false
+  } catch (e) {
+    return false
+  }
+}
+
+function sendDDCSafetyStatus(target = false) {
+  const status = getDDCSafetyStatus()
+  if (target && !target.isDestroyed()) {
+    target.send("ddc-safety-status", status)
+  } else {
+    sendToAllWindows("ddc-safety-status", status)
+  }
+  return status
+}
+
+function clearDDCSafetyStatus() {
+  try {
+    fs.unlinkSync(ddcUnstablePath)
+  } catch (e) {
+    if (e.code !== "ENOENT") {
+      console.log("Couldn't clear DDC/CI safety status", e)
+    }
+  }
+}
+
+async function retryDDCCIValidation(newSettings = { preferredDDCCIMethod: "auto" }) {
+  if (ddcSafetyRetryPromise) return ddcSafetyRetryPromise
+
+  ddcSafetyRetryPromise = (async () => {
+    clearDDCSafetyStatus()
+    writeSettings(newSettings, false, false)
+    sendDDCSafetyStatus()
+    sendToAllWindows('settings-updated', settings)
+
+    await stopMonitorThread()
+    const thread = startMonitorThread({ allowWhileWindowsIdle: true })
+    if (!thread) throw new Error("Monitor thread could not be restarted for DDC/CI validation.")
+    await waitForMonitorThreadReady(thread)
+    await refreshMonitors(true, true, true)
+  })().catch(error => {
+    console.error("Couldn't retry DDC/CI validation.", error)
+  }).finally(() => {
+    ddcSafetyRetryPromise = false
+  })
+
+  return ddcSafetyRetryPromise
+}
+
 function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || (isWindowsUserIdle && !allowWhileWindowsIdle)) return false;
   monitorsThreadReady = false
@@ -206,6 +261,7 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
           type: "ddcBrightnessVCPs",
           ddcBrightnessVCPs: getDDCBrightnessVCPs()
         })
+        sendDDCSafetyStatus()
         monitorsThread.send({
           type: "wmi-bridge-ok",
           value: wmiBridgeOK
@@ -1754,7 +1810,19 @@ function sendToAllWindows(eventName, data) {
 
 ipcMain.on('send-settings', (event, data) => {
   console.log("Recieved new settings", data.newSettings)
+  if (data.newSettings?.preferredDDCCIMethod === "accurate" && getDDCSafetyStatus()) {
+    retryDDCCIValidation(data.newSettings)
+    return
+  }
   writeSettings(data.newSettings, true, data.sendUpdate)
+})
+
+ipcMain.on('request-ddc-safety-status', event => {
+  sendDDCSafetyStatus(event.sender)
+})
+
+ipcMain.on('retry-ddc-validation', () => {
+  retryDDCCIValidation()
 })
 
 ipcMain.on('request-settings', (event) => {

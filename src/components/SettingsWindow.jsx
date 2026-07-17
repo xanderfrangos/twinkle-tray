@@ -146,7 +146,8 @@ export default class SettingsWindow extends PureComponent {
             showAddFeatureOverlay: false,
             addFeatureMonitor: "",
             addFeatureValue: "",
-            addFeatureError: false
+            addFeatureError: false,
+            ddcSafetyStatus: false
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -174,6 +175,7 @@ export default class SettingsWindow extends PureComponent {
     componentDidMount() {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
+        window.addEventListener("ddcSafetyStatus", this.recievedDDCSafetyStatus)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages });  T.setLocalizationData(e.detail.desired, e.detail.default)}); 
         window.addEventListener("windowHistory", e => this.setState({ windowHistory: e.detail }))
 
@@ -203,6 +205,7 @@ export default class SettingsWindow extends PureComponent {
         window.ipc.send('get-window-history')
         window.ipc.send("sendSettingsWindowPos")
         window.ipc.send('request-localization')
+        window.requestDDCSafetyStatus()
         window.reactReady = true
     }
 
@@ -1097,6 +1100,10 @@ export default class SettingsWindow extends PureComponent {
         })
     }
 
+    recievedDDCSafetyStatus = (e) => {
+        this.setState({ ddcSafetyStatus: e.detail || false })
+    }
+
 
     isSection = (name) => {
         if (this.state.activePage == name) {
@@ -1557,6 +1564,8 @@ export default class SettingsWindow extends PureComponent {
                                             <option value="legacy">Legacy (v1.15.4 behavior)</option>
                                         </select>
                                     } />
+
+                                    {this.state.ddcSafetyStatus ? <SettingsOption title="DDC/CI safety mode is active" description={`A monitor worker stopped during ${this.state.ddcSafetyStatus.stage || "DDC/CI detection"}${this.state.ddcSafetyStatus.monitor ? ` for ${this.state.ddcSafetyStatus.monitor}` : ""}. Automatic detection is using the safer Fast method.`} input={<a className="button button-primary" onClick={() => window.retryDDCValidation()}>Retry Accurate Validation</a>} /> : null}
 
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHDRMonitors()}

@@ -424,8 +424,8 @@ getAllMonitors = async (ddcciMethod = "default") => {
 
         for (const hwid2 in featuresList) {
             const monitor = featuresList[hwid2]
-            const { features, id, hwid, vcpCodes, path, ddcciSupported, highLevelSupported } = monitor
-            const brightnessType = await determineBrightnessVCPCode(id)
+            const { features, id, hwid, vcpCodes, path, ddcciSupported, highLevelSupported, featureScanTimedOut } = monitor
+            const brightnessType = featureScanTimedOut ? false : await determineBrightnessVCPCode(id)
 
             let ddcciInfo = {
                 id: id,
@@ -891,7 +891,12 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             // If the whole scan runs too long, return whatever was collected
             // so far rather than failing every display.
             let timedOut = false
-            const timeout = setTimeout(() => { timedOut = true; console.log("getFeaturesDDC Timed out. Returning partial results."); resolve(monitorFeatures) }, 80000)
+            const timeout = setTimeout(() => {
+                timedOut = true
+                console.log("getFeaturesDDC Timed out. Returning partial results.")
+                const snapshot = deepCopy(monitorFeatures)
+                resolve(snapshot || monitorFeatures)
+            }, 80000)
 
             getDDCCI()
             await wait(10)
@@ -929,34 +934,49 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
             for (let monitor of ddcciMonitors) {
                 if (timedOut) break;
                 const id = monitor.deviceKey
-                // A slow monitor shouldn't abort the scan for the others.
-                const featureTimeout = setTimeout(() => { console.log("getFeaturesDDC is taking a long time on monitor:", id) }, 15000)
-                const hwid = id.split("#")
-                let features = {}
+                let featureTimedOut = false
+                // Stop this monitor's feature scan at the next safe await point,
+                // then continue with the remaining displays.
+                const featureTimeout = setTimeout(() => {
+                    featureTimedOut = true
+                    console.log("getFeaturesDDC Timed out on monitor:", id)
+                }, 15000)
+                const shouldAbortFeatureScan = () => timedOut || featureTimedOut
 
-                // Apply capabilities report, if available.
-                if(monitor.capabilities && !monitorReports[id]) {
-                    monitorReports[id] = monitor.capabilities
-                }
+                try {
+                    const hwid = id.split("#")
+                    let features = {}
 
-                if(monitor.ddcciSupported) {
-                    await wait(10)
-                    features = await checkMonitorFeatures(id, false, ddcciMethod)
-                }
+                    // Apply capabilities report, if available.
+                    if(monitor.capabilities && !monitorReports[id]) {
+                        monitorReports[id] = monitor.capabilities
+                    }
 
-                monitorFeatures[hwid[2]] = {
-                    id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
-                    hwid,
-                    features,
-                    ddcciSupported: monitor.ddcciSupported,
-                    highLevelSupported: {
-                        brightness: monitor.hlBrightnessSupported,
-                        contrast: monitor.hlContrastSupported
-                    },
-                    path: monitor.fullName,
-                    vcpCodes: (monitorReports[id] ? monitorReports[id] : {} )
+                    if(monitor.ddcciSupported && !shouldAbortFeatureScan()) {
+                        await wait(10)
+                        features = await checkMonitorFeatures(id, false, ddcciMethod, shouldAbortFeatureScan)
+                    }
+
+                    // Do not alter the collection after the global timeout has
+                    // returned its snapshot.
+                    if(timedOut) break
+
+                    monitorFeatures[hwid[2]] = {
+                        id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
+                        hwid,
+                        features,
+                        featureScanTimedOut: featureTimedOut,
+                        ddcciSupported: monitor.ddcciSupported,
+                        highLevelSupported: {
+                            brightness: monitor.hlBrightnessSupported,
+                            contrast: monitor.hlContrastSupported
+                        },
+                        path: monitor.fullName,
+                        vcpCodes: (monitorReports[id] ? monitorReports[id] : {} )
+                    }
+                } finally {
+                    clearTimeout(featureTimeout)
                 }
-                clearTimeout(featureTimeout)
             }
             clearTimeout(timeout)
         } catch (e) {
@@ -968,67 +988,78 @@ getFeaturesDDC = (ddcciMethod = "accurate") => {
     })
 }
 
-checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurate") => {
-    return new Promise(async (resolve, reject) => {
-        const features = {}
+checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurate", shouldAbort = () => false) => {
+    const features = {}
+    try {
+        const hwid = monitor.split("#")
+
+        // Detect valid VCP codes for display if not already available
         try {
-            const hwid = monitor.split("#")
-
-            // Detect valid VCP codes for display if not already available
-            try {
-                if(unstableDDC[monitor]) {
-                    console.log(`Skipping capabilities report for ${monitor} due to crash evidence from a previous session.`)
-                } else if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
-                    const reportRaw = withDDCSentinel("capabilities", monitor, () =>
-                        ddcci.getCapabilitiesRaw(monitor)
-                    )
-                    if(reportRaw) {
-                        monitorReportsRaw[monitor] = reportRaw
-                        const report = ddcci._parseCapabilitiesString(reportRaw)
-                        if(report && Object.keys(report)?.length > 0) {
-                            monitorReports[monitor] = report
-                        }
+            if(shouldAbort()) return {}
+            if(unstableDDC[monitor]) {
+                console.log(`Skipping capabilities report for ${monitor} due to crash evidence from a previous session.`)
+            } else if(ddcciMethod === "accurate" && !monitorReports[monitor]) {
+                const reportRaw = withDDCSentinel("capabilities", monitor, () =>
+                    ddcci.getCapabilitiesRaw(monitor)
+                )
+                if(shouldAbort()) return {}
+                if(reportRaw) {
+                    monitorReportsRaw[monitor] = reportRaw
+                    const report = ddcci._parseCapabilitiesString(reportRaw)
+                    if(report && Object.keys(report)?.length > 0) {
+                        monitorReports[monitor] = report
                     }
                 }
-            } catch(e) {
-                console.log("Couldn't get capabilities report for monitor " + monitor)
             }
-
-            let getAllValues = false
-            if(getAllValues && monitorReports[monitor]) {
-                for(const code in monitorReports[monitor]) {
-                    features[vcpStr(code)] = await checkVCP(monitor, code)
-                }
-            } else {
-                // Get custom DDC/CI features
-                const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
-                if(settingsFeatures) {
-                    for(const vcp in settingsFeatures) {
-                        if(ddcBrightnessVCPs[hwid[1]] && vcp == ddcBrightnessVCPs[hwid[1]]) {
-                            continue; // Skip if custom brightness
-                        }
-                        if(settingsFeatures[vcp]) {
-                            features[vcpStr(vcp)] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, skipCache)
-                        }
-                    }
-                }
-                
-                // Capabilities report allows us to skip this for unsupported codes, generally
-                features["0x10"] = await checkVCPIfEnabled(monitor, 0x10, "luminance", skipCache)
-                features["0x13"] = await checkVCPIfEnabled(monitor, 0x13, "brightness", skipCache)
-                features["0x12"] = await checkVCPIfEnabled(monitor, 0x12, "contrast", skipCache)
-                features["0xD6"] = await checkVCPIfEnabled(monitor, 0xD6, "powerState", skipCache)
-                features["0x60"] = await checkVCPIfEnabled(monitor, 0x60, "inputControls", skipCache)
-                features["0x62"] = await checkVCPIfEnabled(monitor, 0x62, "volume", skipCache)
-            }
-
-
-            
-        } catch (e) {
-            console.log(e)
+        } catch(e) {
+            console.log("Couldn't get capabilities report for monitor " + monitor)
         }
-        resolve(features)
-    })
+
+        if(shouldAbort()) return {}
+
+        let getAllValues = false
+        if(getAllValues && monitorReports[monitor]) {
+            for(const code in monitorReports[monitor]) {
+                if(shouldAbort()) return {}
+                features[vcpStr(code)] = await checkVCP(monitor, code)
+                if(shouldAbort()) return {}
+            }
+        } else {
+            // Get custom DDC/CI features
+            const settingsFeatures = settings?.monitorFeatures?.[hwid[1]]
+            if(settingsFeatures) {
+                for(const vcp in settingsFeatures) {
+                    if(shouldAbort()) return {}
+                    if(ddcBrightnessVCPs[hwid[1]] && vcp == ddcBrightnessVCPs[hwid[1]]) {
+                        continue; // Skip if custom brightness
+                    }
+                    if(settingsFeatures[vcp]) {
+                        features[vcpStr(vcp)] = await checkVCPIfEnabled(monitor, parseInt(vcp), vcp, skipCache)
+                        if(shouldAbort()) return {}
+                    }
+                }
+            }
+
+            // Capabilities report allows us to skip this for unsupported codes, generally
+            const defaultFeatures = [
+                [0x10, "luminance"],
+                [0x13, "brightness"],
+                [0x12, "contrast"],
+                [0xD6, "powerState"],
+                [0x60, "inputControls"],
+                [0x62, "volume"]
+            ]
+            for(const [code, setting] of defaultFeatures) {
+                if(shouldAbort()) return {}
+                features[vcpStr(code)] = await checkVCPIfEnabled(monitor, code, setting, skipCache)
+                if(shouldAbort()) return {}
+            }
+        }
+
+    } catch (e) {
+        console.log(e)
+    }
+    return shouldAbort() ? {} : features
 }
 
 determineBrightnessVCPCode = async (monitor) => {

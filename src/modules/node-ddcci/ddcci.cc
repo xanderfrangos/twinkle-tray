@@ -174,7 +174,8 @@ getPhysicalMonitorName(HMONITOR handle)
 }
 
 std::map<std::string, DisplayDevice>
-getAllDisplays(std::string keyType)
+getAllDisplays(std::string keyType,
+               std::vector<DisplayDevice>* orderedDisplays = nullptr)
 {
     std::map<std::string, DisplayDevice> out;
 
@@ -213,6 +214,10 @@ getAllDisplays(std::string keyType)
             newDevice.deviceID = static_cast<std::string>(displayDev.DeviceID);
             newDevice.deviceKey =
             newDevice.deviceID.substr(0, newDevice.deviceID.find("#{"));
+
+            if (orderedDisplays) {
+                orderedDisplays->push_back(newDevice);
+            }
 
             out.insert(
             { (keyType == "name" ? newDevice.deviceName : keyType == "adapter" ? newDevice.adapterName :  newDevice.deviceKey),
@@ -637,7 +642,9 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 
     d("Getting all display devices...");
 
-    std::map<std::string, DisplayDevice> displays = getAllDisplays("name");
+    std::vector<DisplayDevice> displaysInEnumerationOrder;
+    std::map<std::string, DisplayDevice> displays =
+      getAllDisplays("name", &displaysInEnumerationOrder);
     for (auto const& display : displays) {
         d("-- Display: " + display.first);
         d("-- -- deviceName: " + display.second.deviceName);
@@ -728,15 +735,15 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
              */
             if(!foundMatchingDisplay) {
                 foundCount = 0;
-                for (auto const& display : displays) {
+                for (auto const& display : displaysInEnumerationOrder) {
                     // Match with display number (e.g. "\\.\DISPLAY2")
-                    if(display.second.adapterName == monitor.monitorName) {
+                    if(display.adapterName == monitor.monitorName) {
                         if(foundCount == i) {
-                            newMonitor.deviceKey = display.second.deviceKey;
-                            newMonitor.deviceID = display.second.deviceID;
-                            newMonitor.fullName = display.second.deviceName;
+                            newMonitor.deviceKey = display.deviceKey;
+                            newMonitor.deviceID = display.deviceID;
+                            newMonitor.fullName = display.deviceName;
                             foundMatchingDisplay = true;
-                            p("-- -- Matched with (fallback): " + display.second.deviceKey);
+                            p("-- -- Matched with (fallback): " + display.deviceKey);
                             break;
                         }
                         foundCount++;

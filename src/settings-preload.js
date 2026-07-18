@@ -223,6 +223,8 @@ const processTheme = (event, theme) => {
 ipc.on('theme-settings', processTheme)
 
 ipc.on('mica-wallpaper', (event, wallpaper) => {
+    // Native Mica is used instead on Windows 11 22H2+
+    if (window.document.body.dataset.nativeMica === "true") return;
     const mica = document.querySelector("#mica .displays")
     const micaIMG = document.querySelector("#mica img")
     if(!wallpaper) {
@@ -237,6 +239,7 @@ ipc.on('mica-wallpaper', (event, wallpaper) => {
 
 // Request startup data
 window.addEventListener("DOMContentLoaded", () => {
+    window.document.body.dataset.nativeMica = (getArgumentVars().useNativeMica ? "true" : "false")
     processTheme(undefined, getArgumentVars().lastTheme)
     requestSettings()
     requestMonitors()

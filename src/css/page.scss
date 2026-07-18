@@ -1113,6 +1113,11 @@ body[data-is-win11="true"] {
     }
 }
 
+// Native Mica (Windows 11 22H2+): let the DWM-drawn backdrop show through
+body[data-native-mica="true"][data-transparent="true"] {
+    background-color: transparent;
+}
+
 body[data-is-win11="false"] {
     .win11only {
         display: none;

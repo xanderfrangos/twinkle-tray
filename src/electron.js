@@ -82,6 +82,7 @@ const Translate = require('./Translate');
 const { EventEmitter } = require("events");
 
 const isReallyWin11 = (require("os").release()?.split(".")[2] * 1) >= 22000
+const isReallyWin11_22H2 = (require("os").release()?.split(".")[2] * 1) >= 22621
 const isAtLeast1803 = (require("os").release()?.split(".")[2] * 1) >= 17134
 
 let ddcciModeTestResult = "auto"
@@ -1163,6 +1164,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       }
       newSettings.useAcrylic = settings.useAcrylic
       sendToAllWindows('theme-settings', lastTheme)
+      updateSettingsWindowMaterial()
       doRestartPanel = true
     }
 
@@ -1173,6 +1175,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
         currentWallpaperTime = false
         sendMicaWallpaper()
       }
+      updateSettingsWindowMaterial()
       doRestartPanel = true
     }
 
@@ -4238,6 +4241,7 @@ function createSettings() {
     minimizable: true,
     backgroundColor: "#00000000",
     frame: false,
+    backgroundMaterial: (isReallyWin11_22H2 && settings.isWin11 && settings.useAcrylic ? "mica" : "none"),
     icon: './src/assets/logo.ico',
     title: "Twinkle Tray Settings",
     webPreferences: {
@@ -4255,7 +4259,8 @@ function createSettings() {
         appBuild: appBuildShort,
         settings,
         lastTheme,
-        settingsPath
+        settingsPath,
+        useNativeMica: isReallyWin11_22H2
       })).toString('base64')]
     }
   });
@@ -4321,6 +4326,12 @@ function createSettings() {
 function sendSettingsBounds() {
   const newBounds = settingsWindow.getBounds()
   settingsWindow.webContents.send("settingsWindowMove", [newBounds.x, newBounds.y])
+}
+
+// Native Mica (Windows 11 22H2+) replaces the fake wallpaper-based effect
+function updateSettingsWindowMaterial() {
+  if (!settingsWindow || !isReallyWin11_22H2) return false;
+  settingsWindow.setBackgroundMaterial(settings.isWin11 && settings.useAcrylic ? "mica" : "none")
 }
 
 ipcMain.on("sendSettingsWindowPos", sendSettingsBounds)

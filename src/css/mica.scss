@@ -44,7 +44,7 @@ body[data-focused="false"] {
     }
 }
 
-body[data-use-mica="false"], body[data-is-win11="false"], body[data-transparent="false"] {
+body[data-use-mica="false"], body[data-is-win11="false"], body[data-transparent="false"], body[data-native-mica="true"] {
     #mica {
         display: none;
     }

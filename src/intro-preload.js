@@ -1,5 +1,13 @@
 const { ipcRenderer: ipc } = require('electron');
 
+// Send logs to main thread
+const con = {
+    log: console.log,
+    error: console.error
+}
+console.log = (...e) => { e.forEach((c) => { ipc.send('log', c); con.log(c) }) }
+console.error = (...e) => { e.forEach((c) => { ipc.send('log', c); con.error(c) }) }
+
 window.closeIntro = () => {
     ipc.send('close-intro')
 }

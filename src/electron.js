@@ -18,6 +18,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
+const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
 const settingsPath = path.join(configFilesDir, `\\settings${(isDev ? "-dev" : "")}.json`)
@@ -30,6 +31,9 @@ if (!singleInstanceLock) {
   try { Utils.handleProcessedArgs(Utils.processArgs(process.argv, app), knownDisplaysPath, settingsPath).then(() => app.exit()) } catch (e) { app.exit() }
   return false
 } else {
+  // Tee console output into the session log file. In non-dev (without --console),
+  // console.log stays quiet on stdout but is still collected to the file.
+  logger.patchConsole({ tag: "MAIN", mirrorLog: (isDev || app.commandLine.hasSwitch("console")) })
   console.log("Starting Twinkle Tray...")
   app.on('second-instance', handleCommandLine)
 }
@@ -45,6 +49,19 @@ function reopenAppWithConsole() {
 if(app.commandLine.hasSwitch("show-console")) {
   reopenAppWithConsole()
 }
+
+// Open the session log file. Earlier console output is buffered and flushed here.
+// Runs after the --show-console relaunch so the exiting stub doesn't rotate the logs.
+logger.initMainLogger({ dir: configFilesDir, isDev })
+console.log("Session log file: " + logger.getSessionLogPath())
+
+process.on("uncaughtException", (err) => {
+  logger.writeLogSync("MAIN", "error", "UNCAUGHT EXCEPTION:", err)
+  throw err
+})
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason)
+})
 
 const { Readable } = require("node:stream")
 //require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
@@ -120,7 +137,6 @@ const debug = {
   error: log
 }
 
-if (!isDev && !app.commandLine.hasSwitch("console")) console.log = () => { };
 
 
 const windowMenu = Menu.buildFromTemplate([{
@@ -335,7 +351,8 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   monitorsThreadStarting = true
   console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
-  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest, "--datapath=" + app.getPath("userData")], { silent: false })
+  monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest, "--datapath=" + app.getPath("userData")], { silent: true })
+  logger.attachChild(monitorsThreadReal, "MON")
   const monitorThread = monitorsThreadReal
   monitorThread.on("message", (data) => {
     if (data?.type) {
@@ -573,7 +590,8 @@ let monitorsThreadTest
 let wmiBridgeOK = false
 async function doWMIBridgeTest() {
   return new Promise((resolve, reject) => {
-    monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: false })
+    monitorsThreadTest = fork(path.join(__dirname, 'wmi-bridge-test.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath()], { silent: true })
+    logger.attachChild(monitorsThreadTest, "WMI-TEST")
     monitorsThreadTest.on("message", (data) => {
       if (data?.type === "ready") {
         console.log("WMI-BRIDGE TEST: READY")
@@ -3046,7 +3064,16 @@ ipcMain.on('get-refreshing', () => {
 
 ipcMain.on('open-settings', createSettings)
 
-ipcMain.on('log', (e, msg) => console.log(msg))
+function getSenderLogTag(sender) {
+  try {
+    if (sender === mainWindow?.webContents) return "PANEL";
+    if (sender === settingsWindow?.webContents) return "SETTINGS";
+    if (sender === introWindow?.webContents) return "INTRO";
+  } catch (e) { }
+  return "WIN"
+}
+
+ipcMain.on('log', (e, msg) => logger.logAs(getSenderLogTag(e.sender), msg))
 
 ipcMain.on('pause-updates', pauseMonitorUpdates)
 
@@ -3929,6 +3956,7 @@ app.on('quit', () => {
   } catch (e) {
 
   }
+  logger.closeLogger()
 })
 
 

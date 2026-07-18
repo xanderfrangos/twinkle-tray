@@ -72,6 +72,7 @@
       "src/monitor-rules.json",
       "src/localization/*",
       "src/Utils.js",
+      "src/Logger.js",
       "src/Monitors.js",
       "src/wmi-bridge-test.js",
       "src/vcp-codes.js",

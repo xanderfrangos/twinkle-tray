@@ -4278,6 +4278,7 @@ function createSettings() {
 
   // Prevent links from navigating a Node-enabled window.
   settingsWindow.webContents.on('will-navigate', (e, url) => {
+    if(url.startsWith("file://") || url.startsWith("http://localhost:3000")) return false;
     e.preventDefault()
     openExternalHttpUrl(url)
   })

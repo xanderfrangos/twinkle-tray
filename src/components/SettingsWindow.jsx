@@ -1592,6 +1592,7 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title="Use GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS events" input={this.renderToggle("useGuidBrightnessEvent")} />
                                     <SettingsOption title="Reload tray icon on hardware events" input={this.renderToggle("reloadTray")} />
                                     <SettingsOption title="Reload flyout panel on hardware events" input={this.renderToggle("reloadFlyout")} />
+                                    <SettingsOption title="Save logs to file" description="Write a log file each session for troubleshooting. The last few sessions are kept in the app's data folder." input={this.renderToggle("logging")} />
                                     <SettingsOption title="Show console window (requires restart)" input={this.renderToggle("showConsole")} />
                                     <SettingsOption title="Use Taskbar Registry" input={this.renderToggle("useTaskbarRegistry")} />
                                     <SettingsOption title="Disable Mouse Events (requires restart)" input={this.renderToggle("disableMouseEvents")} />

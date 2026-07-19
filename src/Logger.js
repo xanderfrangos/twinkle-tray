@@ -27,7 +27,9 @@ let stream = null
 let sessionPath = null
 let bytesWritten = 0
 let capped = false
+let disabled = false
 let mirrorLogEnabled = true
+let initOpts = null
 const preInitBuffer = []
 
 const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, "")
@@ -52,7 +54,7 @@ function formatLine(tag, level, args) {
 }
 
 function appendLine(line) {
-  if (capped) return;
+  if (capped || disabled) return;
   if (!stream) {
     preInitBuffer.push(line)
     return;
@@ -73,13 +75,24 @@ function writeLog(tag, level, ...args) {
 // Synchronous write for fatal errors, where the process may die before the stream flushes
 function writeLogSync(tag, level, ...args) {
   const line = formatLine(tag, level, args)
-  if (capped || !sessionPath) return;
+  if (capped || disabled || !sessionPath) return;
   try {
     fs.appendFileSync(sessionPath, line)
   } catch (e) { }
 }
 
-function initMainLogger({ dir, isDev = false } = {}) {
+// Open a session log file. When enabled is false, no file is created or rotated
+// and all subsequent writes are dropped; console output is unaffected either way.
+function initMainLogger({ dir, isDev = false, enabled = true } = {}) {
+  initOpts = { dir, isDev }
+  if (!enabled) {
+    disabled = true
+    preInitBuffer.length = 0
+    return;
+  }
+  disabled = false
+  capped = false
+  bytesWritten = 0
   const logDir = path.join(dir, "logs")
   const suffix = isDev ? "-dev" : ""
   try {
@@ -154,6 +167,26 @@ function attachChild(child, tag) {
 
 function getSessionLogPath() { return sessionPath }
 
+function isLoggingEnabled() { return !disabled }
+
+// Turn file logging on/off at runtime (from the settings toggle). Enabling starts
+// a fresh session file; disabling stops writing and closes the current one.
+// Console output is never affected. No-op before initMainLogger has run.
+function setLoggingEnabled(enabled) {
+  if (!initOpts) return;
+  if (enabled) {
+    if (!disabled && stream) return; // already on
+    initMainLogger({ ...initOpts, enabled: true })
+    writeLog("MAIN", "log", "Logging enabled by user.")
+  } else {
+    if (disabled) return; // already off
+    writeLog("MAIN", "log", "Logging disabled by user.")
+    closeLogger()
+    stream = null
+    disabled = true
+  }
+}
+
 function closeLogger() {
   try { stream?.end() } catch (e) { }
 }
@@ -166,5 +199,7 @@ module.exports = {
   patchConsole,
   attachChild,
   getSessionLogPath,
+  isLoggingEnabled,
+  setLoggingEnabled,
   closeLogger
 }

@@ -50,11 +50,6 @@ if(app.commandLine.hasSwitch("show-console")) {
   reopenAppWithConsole()
 }
 
-// Open the session log file. Earlier console output is buffered and flushed here.
-// Runs after the --show-console relaunch so the exiting stub doesn't rotate the logs.
-logger.initMainLogger({ dir: configFilesDir, isDev })
-console.log("Session log file: " + logger.getSessionLogPath())
-
 process.on("uncaughtException", (err) => {
   logger.writeLogSync("MAIN", "error", "UNCAUGHT EXCEPTION:", err)
   throw err
@@ -865,6 +860,7 @@ const defaultSettings = {
   udpPortActive: 14715,
   udpKey: uuid(),
   showConsole: false,
+  logging: true,
   profiles: [],
   uuid: uuid(),
   branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
@@ -1048,6 +1044,13 @@ function readSettings(doProcessSettings = true) {
 }
 
 readSettings(false)
+
+// Open the session log file now that the `logging` preference is known. Earlier
+// console output was buffered by patchConsole and is flushed here. Runs after the
+// --show-console relaunch check so the exiting stub doesn't rotate the logs.
+logger.initMainLogger({ dir: configFilesDir, isDev, enabled: settings.logging })
+if (logger.isLoggingEnabled()) console.log("Session log file: " + logger.getSessionLogPath())
+
 if (settings.disableThrottling) {
   // Prevent background throttling
   app.commandLine.appendSwitch('disable-renderer-backgrounding');
@@ -1161,6 +1164,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       if (!udp.server) udp.start(settings.udpPort);
     } else if (settings.udpEnabled === false) {
       if (udp.server) udp.stop();
+    }
+
+    if (newSettings.logging !== undefined) {
+      logger.setLoggingEnabled(settings.logging)
     }
 
     if (newSettings.order !== undefined) {

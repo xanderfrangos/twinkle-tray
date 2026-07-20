@@ -248,5 +248,6 @@
     "SETTINGS_PROFILES_APP_PATH": "Đường dẫn ứng dụng",
     "SETTINGS_PROFILES_APP_DESC": "Nếu bạn muốn hồ sơ này được kích hoạt tự động khi một ứng dụng bất kỳ được sử dụng, nhập đường dẫn tệp EXE xuống dưới.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Ghi đè loại lớp phủ",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Thay đổi hành vi của lớp phủ phím tắt khi một ứng dụng chỉ định được sử dụng. Tính năng này không hoạt động khi hồ sơ được kích hoạt thủ công."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Thay đổi hành vi của lớp phủ phím tắt khi một ứng dụng chỉ định được sử dụng. Tính năng này không hoạt động khi hồ sơ được kích hoạt thủ công.",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Thiết lập màn hình"
 }

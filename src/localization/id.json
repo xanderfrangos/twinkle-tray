@@ -246,5 +246,6 @@
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Jika monitor Anda menggunakan kode VCP nonstandar untuk kecerahan (seperti 0x13 atau 0x6B), atau jika Anda ingin memetakan ulang slider kecerahan ke kode VCP lain, Anda dapat memasukkan kode tersebut di bawah ini.",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Biarkan kosong untuk default (0x10). Temukan kode yang didukung pada daftar di bawah ini.",
     "SETTINGS_TIME_USE_SUN_POSITION": "Gunakan posisi matahari",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Tambahkan Tindakan"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Tambahkan Tindakan",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Pengaturan Monitor"
 }

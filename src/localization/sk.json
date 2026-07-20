@@ -226,5 +226,6 @@
     "GENERIC_TEXT": "Text",
     "GENERIC_ICON": "Ikona",
     "PANEL_LABEL_INPUTS": "Vstupy",
-    "GENERIC_DETECTING_DISPLAYS": "Detekcia displejov…"
+    "GENERIC_DETECTING_DISPLAYS": "Detekcia displejov…",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Nastavenia monitorov"
 }

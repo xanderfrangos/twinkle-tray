@@ -203,5 +203,6 @@
     "SETTINGS_HOTKEY_VALUE": "Valeur",
     "SETTINGS_HOTKEY_VALUES": "Valeurs",
     "SETTINGS_HOTKEY_ADD_VALUE": "Ajouter une valeur",
-    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Luminosité"
+    "SETTINGS_FEATURES_SDR_BRIGHTNESS": "Luminosité",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Paramètres du moniteur"
 }

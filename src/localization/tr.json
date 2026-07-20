@@ -220,5 +220,6 @@
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Parlaklığa Bağlı",
     "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Bu parlaklık seviyesinden sonra durdur",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Monitörünüz parlaklık için standart dışı bir VCP kodu (0x13 veya 0x6B gibi) kullanıyorsa veya parlaklık kaydırıcısını farklı bir VCP koduna atamak isterseniz, bu kodu aşağıya girebilirsiniz.",
-    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Varsayılan (0x10) için boş bırakın. Desteklenen kodlar için aşağıdaki listeye bakın."
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Varsayılan (0x10) için boş bırakın. Desteklenen kodlar için aşağıdaki listeye bakın.",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitör Ayarları"
 }

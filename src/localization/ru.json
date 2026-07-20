@@ -248,5 +248,6 @@
     "GENERIC_SLIDER_ICON": "Значок ползунка",
     "GENERIC_SLIDER_TEXT": "Текст ползунка",
     "GENERIC_SLIDER_NAME": "Введите имя ползунка",
-    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Обнаружение обновления темы"
+    "SETTINGS_GENERAL_SKIP_THEME_CHANGES_TITLE": "Обнаружение обновления темы",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Настройки монитора"
 }

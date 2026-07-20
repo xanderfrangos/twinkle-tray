@@ -234,5 +234,6 @@
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Länkad till ljusstyrkan",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Lämna tomt för standard (0x10). Hitta koder som stöds i listan nedan.",
     "SETTINGS_TIME_USE_SUN_POSITION": "Använd solens position",
-    "SETTINGS_HOTKEY_ADD_ACTION": "Lägg till åtgärd"
+    "SETTINGS_HOTKEY_ADD_ACTION": "Lägg till åtgärd",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Bildskärmsinställningar"
 }

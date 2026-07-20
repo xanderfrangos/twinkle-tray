@@ -247,5 +247,6 @@
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Collegato alla luminosità",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Lascia vuoto per il predefinito (0x10). Puoi trovare i codici supportati nella lista qui sotto.",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Se il tuo schermo usa un codice VCP non standard per la luminosità (come 0x13 o 0x6B), o se vuoi rimappare lo slider della luminosità a un altro codice VCP, puoi inserire quel codice qui sotto.",
-    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Ferma dopo questo livello di luminosità"
+    "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Ferma dopo questo livello di luminosità",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Impostazioni Schermi"
 }

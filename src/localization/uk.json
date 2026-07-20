@@ -246,5 +246,6 @@
     "SETTINGS_FEATURES_LINKED_TO_BRIGHTNESS": "Прив’язано до яскравості",
     "SETTINGS_FEATURES_STOP_ON_BRIGHTNESS": "Зупинитися після цього рівня яскравості",
     "SETTINGS_FEATURES_BRIGHTNESS_VCP_INFO": "Якщо ваш монітор використовує нестандартний код VCP для яскравості (наприклад, 0x13 або 0x6B), або якщо хочете перепризначити повзунок яскравості на інший код VCP, ви можете ввести цей код нижче.",
-    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Залиште порожнім для типового значення (0x10). Знайдіть підтримувані коди у списку нижче."
+    "SETTINGS_FEATURES_BRIGHTNESS_VCP_DESC": "Залиште порожнім для типового значення (0x10). Знайдіть підтримувані коди у списку нижче.",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Налаштування монітора"
 }

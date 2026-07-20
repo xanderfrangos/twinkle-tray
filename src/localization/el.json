@@ -246,5 +246,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Λήψη και Εγκατάσταση {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Κανάλι Ενημέρωσης",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Σταθερό (προεπιλογή)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "έκδοση ΒΕΤΑ"
+    "SETTINGS_UPDATES_BRANCH_BETA": "έκδοση ΒΕΤΑ",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Ρυθμίσεις οθόνης"
 }

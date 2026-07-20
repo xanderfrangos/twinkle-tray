@@ -234,5 +234,6 @@
     "SETTINGS_UPDATES_DOWNLOAD": "Descarregarr & Instalar {{1}}",
     "SETTINGS_UPDATES_CHANNEL": "Canal de atualização",
     "SETTINGS_UPDATES_BRANCH_STABLE": "Estável (padrão)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Beta"
+    "SETTINGS_UPDATES_BRANCH_BETA": "Beta",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Configurações do monitor"
 }

@@ -246,5 +246,6 @@
     "GENERIC_SLIDER_INDICATOR_TYPE": "Šliaužiklio/Slinktuko skaitiklio tipas",
     "GENERIC_SLIDER_ICON": "Šliaužiklio/Slinktuko piktograma",
     "GENERIC_SLIDER_TEXT": "Šliaužiklio/Slinktuko tekstas",
-    "GENERIC_SLIDER_NAME": "Įveskite šliaužiklio/slinktuko pavadinimą"
+    "GENERIC_SLIDER_NAME": "Įveskite šliaužiklio/slinktuko pavadinimą",
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitoriaus/Vaizduoklio nustatymai"
 }

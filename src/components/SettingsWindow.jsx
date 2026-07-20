@@ -151,6 +151,7 @@ export default class SettingsWindow extends PureComponent {
         }
         this.numMonitors = 0
         this.downKeys = {}
+        this.recordingHotkeyId = false
         this.lastLevels = []
         this.onDragEnd = this.onDragEnd.bind(this);
         this.sendSettingsTimeout = false
@@ -176,6 +177,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("monitorsUpdated", this.recievedMonitors)
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("ddcSafetyStatus", this.recievedDDCSafetyStatus)
+        window.addEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages });  T.setLocalizationData(e.detail.desired, e.detail.default)}); 
         window.addEventListener("windowHistory", e => this.setState({ windowHistory: e.detail }))
 
@@ -207,6 +209,11 @@ export default class SettingsWindow extends PureComponent {
         window.ipc.send('request-localization')
         window.requestDDCSafetyStatus()
         window.reactReady = true
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
+        window.ipc.send("set-native-hotkey-recording", false)
     }
 
 
@@ -742,7 +749,14 @@ export default class SettingsWindow extends PureComponent {
             return (
                 <SettingsOption className="win10-has-background" key={hotkey.id} content={
                     <div className="row hotkey-combo-input">
-                        <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onKeyDown={
+                        <input placeholder={T.t("SETTINGS_HOTKEYS_PRESS_KEYS_HINT")} value={hotkey.accelerator} type="text" readOnly={true} onFocus={() => {
+                            this.recordingHotkeyId = hotkey.id
+                            window.ipc.send("set-native-hotkey-recording", true)
+                        }} onBlur={() => {
+                            this.recordingHotkeyId = false
+                            this.downKeys = {}
+                            window.ipc.send("set-native-hotkey-recording", false)
+                        }} onKeyDown={
                             (e) => {
                                 e.preventDefault()
                                 let key = cleanUpKeyboardKeys(e.key, e.keyCode)
@@ -783,6 +797,15 @@ export default class SettingsWindow extends PureComponent {
                 </SettingsOption>
             )
         })
+    }
+
+    recievedNativeBrightnessKey = (e) => {
+        const idx = this.state.hotkeys.findIndex(hotkey => hotkey.id === this.recordingHotkeyId)
+        if(idx < 0) return;
+        this.downKeys = {}
+        const hotkey = this.state.hotkeys[idx]
+        hotkey.accelerator = e.detail
+        this.updateHotkey(hotkey, idx)
     }
 
     getHotkeyStatusIcon = hotkey => {

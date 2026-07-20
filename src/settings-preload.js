@@ -175,6 +175,12 @@ ipc.on('settings-updated', (event, settings) => {
     }))
 })
 
+ipc.on('native-brightness-key', (event, accelerator) => {
+    window.dispatchEvent(new CustomEvent('nativeBrightnessKey', {
+        detail: accelerator
+    }))
+})
+
 ipc.on('ddc-safety-status', (event, status) => {
     window.dispatchEvent(new CustomEvent('ddcSafetyStatus', {
         detail: status

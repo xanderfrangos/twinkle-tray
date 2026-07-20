@@ -1,6 +1,20 @@
 {
   "targets": [
     {
+      "target_name": "windows_brightness_keys",
+      "cflags!": [ ],
+      "cflags_cc!": [ ],
+      "sources": [ "windows_brightness_keys.cc" ],
+      "include_dirs": [
+        "<!@(node -p \"require('node-addon-api').include\")"
+      ],
+      "libraries": [ "hid.lib" ],
+      'msvs_settings': {
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
+      },
+      'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
+    },
+    {
       "target_name": "windows_window_utils",
       "cflags!": [ ],
       "cflags_cc!": [ ],

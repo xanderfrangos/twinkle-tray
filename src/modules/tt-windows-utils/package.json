@@ -20,6 +20,7 @@
   "files": [
     "index.js",
     "binding.gyp",
+    "windows_brightness_keys.cc",
     "windows_media_status.cc",
     "windows_power_events.cc",
     "windows_window_utils.cc",

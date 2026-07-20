@@ -80,7 +80,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
+const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -622,6 +622,78 @@ async function doWMIBridgeTest() {
 let mouseEventsActive = false
 let mouseEvents
 let bounds
+
+const nativeBrightnessAccelerators = {
+  up: "BrightnessUp",
+  down: "BrightnessDown"
+}
+let nativeBrightnessKeysRegistered = false
+let nativeHotkeyRecording = false
+let nativeBrightnessKey = false
+let nativeBrightnessKeyRepeatDelay = false
+let nativeBrightnessKeyRepeat = false
+
+function stopNativeBrightnessKeyRepeat() {
+  nativeBrightnessKey = false
+  if(nativeBrightnessKeyRepeatDelay) clearTimeout(nativeBrightnessKeyRepeatDelay);
+  if(nativeBrightnessKeyRepeat) clearInterval(nativeBrightnessKeyRepeat);
+  nativeBrightnessKeyRepeatDelay = false
+  nativeBrightnessKeyRepeat = false
+}
+
+function triggerNativeBrightnessHotkey(direction) {
+  const accelerator = nativeBrightnessAccelerators[direction]
+  if(!accelerator) return false;
+
+  if(nativeHotkeyRecording && settingsWindow?.isFocused()) {
+    settingsWindow.webContents.send("native-brightness-key", accelerator)
+    return false
+  }
+
+  const hotkey = settings.hotkeys?.find?.(item => item.accelerator === accelerator)
+  if(!hotkey) return false;
+  // Windows already applies dedicated brightness keys to the built-in panel.
+  // Avoid applying a configured offset to that panel a second time.
+  doHotkey(hotkey, { skipInternalBrightnessOffset: true })
+  return true
+}
+
+function handleNativeBrightnessKey(key) {
+  if(key === "release") {
+    stopNativeBrightnessKeyRepeat()
+    return
+  }
+  if(key !== "up" && key !== "down") return;
+  if(nativeBrightnessKey === key) return;
+
+  stopNativeBrightnessKeyRepeat()
+  nativeBrightnessKey = key
+  if(!triggerNativeBrightnessHotkey(key)) {
+    nativeBrightnessKey = false
+    return
+  }
+  nativeBrightnessKeyRepeatDelay = setTimeout(() => {
+    nativeBrightnessKeyRepeat = setInterval(() => {
+      if(nativeBrightnessKey) triggerNativeBrightnessHotkey(nativeBrightnessKey)
+    }, 100)
+  }, 400)
+}
+
+function applyNativeBrightnessKeys() {
+  try {
+    stopNativeBrightnessKeyRepeat()
+    BrightnessKeys.unregister()
+    nativeBrightnessKeysRegistered = false
+    if(mainWindow) {
+      nativeBrightnessKeysRegistered = BrightnessKeys.register(getMainWindowHandle())
+      console.log(`Native brightness keys: ${nativeBrightnessKeysRegistered ? "enabled" : "unavailable"}`)
+    }
+  } catch(e) {
+    console.log("Couldn't apply native brightness keys:", e)
+  }
+  applyHotkeys()
+  return nativeBrightnessKeysRegistered
+}
 
 function enableMouseEvents() {
   if (mouseEventsActive || settings.disableMouseEvents) return false;
@@ -1464,15 +1536,22 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
 
 function applyHotkeys(monitorList = monitors) {
   try {
+    globalShortcut.unregisterAll()
+    const claimedNativeAccelerators = new Set()
     if (settings.hotkeys !== undefined && settings.hotkeys?.length) {
-      globalShortcut.unregisterAll()
       for (const hotkey of settings.hotkeys) {
+        hotkey.active = false
         try {
           // Only apply if found/valid
           if (hotkey.accelerator) {
-            hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
-              doHotkey(hotkey)
-            })
+            if(Object.values(nativeBrightnessAccelerators).includes(hotkey.accelerator)) {
+              hotkey.active = nativeBrightnessKeysRegistered && !claimedNativeAccelerators.has(hotkey.accelerator)
+              claimedNativeAccelerators.add(hotkey.accelerator)
+            } else {
+              hotkey.active = globalShortcut.register(hotkey.accelerator, () => {
+                doHotkey(hotkey)
+              })
+            }
           }
         } catch (e) {
           // Couldn't register hotkey
@@ -1490,7 +1569,7 @@ let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
 const hotkeyCycleIndexes = []
-async function doHotkey(hotkey) {
+async function doHotkey(hotkey, options = {}) {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
 
@@ -1534,6 +1613,10 @@ async function doHotkey(hotkey) {
             } else if (Object.keys(action.monitors)?.length && action.monitors[monitor.id]) {
               // Target specified monitors
               applicable = true
+            }
+
+            if(options.skipInternalBrightnessOffset && action.type === "offset" && action.target === "brightness" && monitor.type === "wmi") {
+              applicable = false
             }
 
             if (applicable) {
@@ -3331,6 +3414,9 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
   mainWindow.on("closed", () => {
     console.log("~~~~~ MAIN WINDOW CLOSED ~~~~~~")
     PowerEvents.unregisterPowerSettingNotifications()
+    BrightnessKeys.unregister()
+    nativeBrightnessKeysRegistered = false
+    stopNativeBrightnessKeyRepeat()
     mainWindow = null
   });
   mainWindow.on("minimize", () => { console.log("~~~~~ MAIN WINDOW MINIMIZED ~~~~~~") });
@@ -3394,6 +3480,15 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
 
   mainWindow.hookWindowMessage(126, (wParam, lParam) => {
     if(settings.useWmDisplayChangeEvent && !settings.disablePowerNotifications) handleMetricsChange("wm_displaychange")
+  })
+
+  // WM_INPUT: HID Consumer Control brightness increment/decrement reports.
+  mainWindow.hookWindowMessage(0x00FF, (wParam, lParam) => {
+    try {
+      handleNativeBrightnessKey(BrightnessKeys.getKey(lParam.readBigUInt64LE(0)))
+    } catch(e) {
+      console.log("Couldn't process native brightness key:", e)
+    }
   })
 
   // WM_POWERBROADCAST
@@ -3465,6 +3560,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
   })
 
   if(!settings.disablePowerNotifications) PowerEvents.registerPowerSettingNotifications(getMainWindowHandle())
+  applyNativeBrightnessKeys()
 
 }
 
@@ -4052,6 +4148,9 @@ app.on("activate", () => {
 app.on('quit', () => {
   try {
     PowerEvents.unregisterPowerSettingNotifications()
+    BrightnessKeys.unregister()
+    nativeBrightnessKeysRegistered = false
+    stopNativeBrightnessKeyRepeat()
     tray.destroy()
   } catch (e) {
 
@@ -4345,6 +4444,12 @@ ipcMain.on('close-intro', (event, newSettings) => {
 //
 
 let settingsWindow
+
+ipcMain.on("set-native-hotkey-recording", (event, recording) => {
+  if(settingsWindow?.webContents.id !== event.sender.id) return;
+  nativeHotkeyRecording = Boolean(recording)
+})
+
 function createSettings() {
 
   if (settingsWindow != null) {
@@ -4419,7 +4524,10 @@ function createSettings() {
       : `file://${path.join(__dirname, "../build/settings.html")}`
   );
 
-  settingsWindow.on("closed", () => (settingsWindow = null));
+  settingsWindow.on("closed", () => {
+    nativeHotkeyRecording = false
+    settingsWindow = null
+  });
 
   settingsWindow.on("move", sendSettingsBounds)
   settingsWindow.on("resize", sendSettingsBounds)

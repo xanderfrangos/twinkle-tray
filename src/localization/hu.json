@@ -247,9 +247,6 @@
     "SETTINGS_UPDATES_NONE_AVAILABLE": "Naprakész. Az aktuális verzió a következő változásokat tartalmazza:",
     "SETTINGS_UPDATES_DOWNLOADING": "Frissítés letöltése…",
     "SETTINGS_UPDATES_DOWNLOAD": "Letöltés és telepítés {{1}}",
-    "SETTINGS_UPDATES_CHANNEL": "Frissítési csatorna",
-    "SETTINGS_UPDATES_BRANCH_STABLE": "Stabil (alapértelmezett)",
-    "SETTINGS_UPDATES_BRANCH_BETA": "Béta",
     "SETTINGS_LIGHT_SENSOR_TITLE": "Fényérzékelő",
     "SETTINGS_LIGHT_SENSOR_DESC": "Automatikusan frissíti a fényerőt a fényérzékelő által mért környezeti fény alapján.",
     "SETTINGS_LIGHT_SENSOR_ENABLE": "Funkció engedélyezése",
@@ -289,5 +286,7 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART": "A virtuális központ beállítható automatikus indításra a parancssorból az '-i' kapcsolóval futtatva.",
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Lásd az \"-i : Telepítés szolgáltatásként\" részt itt.",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Szétkapcsolva"
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Szétkapcsolva",
+    "GENERIC_LUX": "lux",
+    "SETTINGS_SIDEBAR_LIGHT_SENSOR": "Fényérzékelő"
 }

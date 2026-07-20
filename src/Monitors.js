@@ -1618,7 +1618,8 @@ function getDDCCI() {
     if (ddcci) return false;
     try {
         ddcci = require("@hensm/ddcci");
-        if(isDev) ddcci._setLogLevel(2);
+        // Level 2 (verbose) in dev; level 1 (errors/warnings) otherwise, captured to the session log
+        ddcci._setLogLevel(isDev ? 2 : 1);
         return true;
     } catch (e) {
         console.log('Couldn\'t start DDC/CI', e);

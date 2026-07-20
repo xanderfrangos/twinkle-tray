@@ -259,10 +259,10 @@ ipc.on('isRefreshing', (event, newValue) => {
 // Settings recieved
 ipc.on('settings-updated', (event, settings) => {
     if (settings.isDev == false) {
-        console.log = () => { }
-    } else {
-        console.log = log
+        // Keep forwarding to the main process session log; stay quiet in DevTools
         console.log = (...e) => { e.forEach((c) => ipc.send('log', c)) }
+    } else {
+        console.log = (...e) => { e.forEach((c) => { ipc.send('log', c); con.log(c) }) }
     }
     window.settings = settings
     detectSunValley()

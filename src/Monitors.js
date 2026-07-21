@@ -40,6 +40,13 @@ async function handleMonitorMessage(data) {
                 generation: data.generation,
                 canEnrichCapabilities: !!(data.fullRefresh && shouldEnrichCapabilities())
             })
+        } else if (data.type === "readKnownBrightness") {
+            const brightness = await readKnownBrightness()
+            process.send({
+                type: 'knownBrightness',
+                brightness,
+                requestId: data.requestId
+            })
         } else if (data.type === "enrichMonitorCapabilities") {
             const results = await enrichMonitorCapabilities()
             if (results) lastRefresh = deepCopy(results)
@@ -454,6 +461,92 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 
     busyLevel = 0
     return monitors
+}
+
+// Read only the values needed to accurately apply an animated time adjustment.
+// This deliberately avoids rediscovering displays, scanning capabilities, or
+// refreshing feature values. Those operations remain the responsibility of a
+// normal monitor refresh.
+async function readKnownBrightness() {
+    if (!monitors) return {}
+
+    const result = {}
+    const unreadableMonitorIds = new Set()
+
+    try {
+        for (const hwid2 in monitors) {
+            const monitor = monitors[hwid2]
+            if (monitor.type !== "ddcci" || !monitor.brightnessType) continue
+
+            const refreshedMonitor = await getBrightnessDDC(monitor, false, true)
+            if (!refreshedMonitor.brightnessReadFailed) {
+                monitors[hwid2] = refreshedMonitor
+            } else {
+                unreadableMonitorIds.add(monitor.id)
+            }
+        }
+    } catch (e) {
+        console.log("\x1b[41mgetKnownBrightnessDDC() failed!\x1b[0m", e)
+    }
+
+    if (!wmicUnavailable) {
+        try {
+            const wmiBrightness = await getBrightnessWMIC()
+            if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
+        } catch (e) {
+            console.log("\x1b[41mgetKnownBrightnessWMIC() failed!\x1b[0m", e)
+        }
+    }
+
+    if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
+        try {
+            const wmiBrightness = await getBrightnessWMI()
+            if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
+        } catch (e) {
+            console.log("\x1b[41mgetKnownBrightnessWMI() failed!\x1b[0m", e)
+        }
+    }
+
+    if (!appleStudioUnavailable) {
+        for (const monitorKey in monitors) {
+            const monitor = monitors[monitorKey]
+            if (monitor.type !== "studio-display") continue
+            try {
+                const display = monitorsAppleStudio[monitorKey]
+                if (!display) throw new Error("Studio Display is not in the known display cache.")
+                const brightness = await display.getBrightness()
+                monitor.brightness = brightness
+                monitor.brightnessRaw = brightness
+                monitor.brightnessMax = 100
+            } catch (e) {
+                unreadableMonitorIds.add(monitor.id)
+                console.log("\x1b[41mgetKnownBrightnessStudioDisplay() failed!\x1b[0m", e)
+            }
+        }
+    }
+
+    if (!settings?.disableHDR) {
+        try {
+            monitorsHDR = await getHDRDisplays(monitors)
+        } catch (e) {
+            console.log("\x1b[41mgetKnownBrightnessHDR() failed!\x1b[0m", e)
+        }
+    }
+
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        if (!monitor?.id || monitor.type === "none") continue
+        if (unreadableMonitorIds.has(monitor.id)) continue
+        result[monitor.id] = {
+            brightness: monitor.brightness,
+            brightnessRaw: monitor.brightnessRaw,
+            brightnessMax: monitor.brightnessMax,
+            sdrLevel: monitor.sdrLevel,
+            hdr: monitor.hdr
+        }
+    }
+
+    return result
 }
 
 // Accurate and Auto scans publish a usable Fast result before requesting
@@ -1293,7 +1386,7 @@ getBrightnessWMI = () => {
 
 }
 
-getBrightnessDDC = (monitorObj) => {
+getBrightnessDDC = (monitorObj, includeFeatures = true, reportReadFailure = false) => {
     return new Promise(async (resolve, reject) => {
         let monitor = Object.assign({}, monitorObj)
 
@@ -1309,7 +1402,8 @@ getBrightnessDDC = (monitorObj) => {
             }
 
             // Determine / get brightness
-            let brightnessValues = await checkVCP(ddcciPath, monitor.brightnessType)
+            let brightnessValues = await checkVCP(ddcciPath, monitor.brightnessType, false, !reportReadFailure)
+            const brightnessReadFailed = !brightnessValues
 
             // If something goes wrong and there are previous values, use those
             if (!brightnessValues) {
@@ -1338,7 +1432,7 @@ getBrightnessDDC = (monitorObj) => {
 
             // Get custom DDC/CI features
             const settingsFeatures = settings?.monitorFeatures?.[monitor.hwid[1]]
-            if(settingsFeatures) {
+            if(includeFeatures && settingsFeatures) {
                 for(const vcp in settingsFeatures) {
                     if(vcp == monitor.brightnessType) {
                         continue; // Skip brightness
@@ -1349,12 +1443,13 @@ getBrightnessDDC = (monitorObj) => {
                 }
             }
 
+            if (reportReadFailure) monitor.brightnessReadFailed = brightnessReadFailed
             clearTimeout(timeout)
             resolve(monitor)
 
         } catch (e) {
             console.log("updateBrightnessDDC: Couldn't get DDC/CI brightness.", e)
-            resolve(monitorObj)
+            resolve(reportReadFailure ? Object.assign({}, monitorObj, { brightnessReadFailed: true }) : monitorObj)
         }
 
     })
@@ -1483,7 +1578,7 @@ async function checkIfVCPSupported(monitor, code) {
     }
 }
 
-async function checkVCP(monitor, code, skipCacheWrite = false) {
+async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError = true) {
     const vcpString = vcpStr(code)
     if(!code || code == "0x0") return false;
     try {
@@ -1500,7 +1595,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false) {
         console.log(`Error reading VCP code ${vcpString} for ${monitor}. Reason: ${classifyDDCError(e)}`)
 
         // Since it failed, let's check for an existing value first
-        if(vcpCache[monitor]?.["vcp_" + vcpString]) {
+        if(useCachedOnError && vcpCache[monitor]?.["vcp_" + vcpString]) {
             return vcpCache[monitor]["vcp_" + vcpString]
         }
         

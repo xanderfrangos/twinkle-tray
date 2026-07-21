@@ -2215,6 +2215,44 @@ refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
   })
 }
 
+readKnownBrightnessJob = async (requestId) => {
+  return await new Promise((resolve, reject) => {
+    let cleanup = () => { }
+    try {
+      const worker = monitorsThreadReal
+      if (!(worker?.connected && worker?.exitCode === null)) {
+        throw new Error("Monitor worker is not available for brightness reads.")
+      }
+      const listener = data => {
+        if (data?.requestId !== requestId) return
+        cleanup()
+        resolve(data?.brightness || {})
+      }
+      const workerStopped = () => {
+        cleanup()
+        reject(new Error("Monitor worker stopped during brightness read."))
+      }
+      const timeout = setTimeout(() => {
+        cleanup()
+        reject(new Error("Monitor worker timed out reading current brightness."))
+      }, 30000)
+      cleanup = () => {
+        clearTimeout(timeout)
+        monitorsEventEmitter.removeListener("knownBrightness", listener)
+        worker.removeListener("exit", workerStopped)
+        worker.removeListener("error", workerStopped)
+      }
+      monitorsEventEmitter.on("knownBrightness", listener)
+      worker.once("exit", workerStopped)
+      worker.once("error", workerStopped)
+      worker.send({ type: "readKnownBrightness", requestId })
+    } catch (e) {
+      cleanup()
+      reject(e)
+    }
+  })
+}
+
 enrichMonitorCapabilitiesJob = async (generation) => {
   return await new Promise((resolve, reject) => {
     let cleanup = () => { }
@@ -2974,6 +3012,27 @@ function transitionlessBrightness(level, eventMonitors = []) {
     updateBrightness(monitor.id, normalized)
     sendToAllWindows('monitors-updated', monitors)
   }
+}
+
+function applyAnimatedBrightness(level, eventMonitors = [], readableMonitorIds = false) {
+  let didUpdate = false
+  for (let key in monitors) {
+    const monitor = monitors[key]
+    if (readableMonitorIds && !readableMonitorIds.has(monitor.id)) continue
+    let normalized = level
+    if (settings.adjustmentTimeIndividualDisplays) {
+      normalized = (eventMonitors[monitor.id] >= 0 ? eventMonitors[monitor.id] : level)
+    }
+
+    // A dedicated brightness read provides an accurate starting point. Apply
+    // the target directly instead of interpolating from a potentially stale
+    // cached value, and avoid a redundant DDC/CI write when it already matches.
+    if (Math.round(monitor.brightness) !== Math.round(normalized)) {
+      updateBrightness(monitor.id, normalized)
+      didUpdate = true
+    }
+  }
+  if (didUpdate) sendToAllWindows('monitors-updated', monitors)
 }
 
 // Flag recent user activity to skip certain events
@@ -5166,8 +5225,9 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
 
     const date = new Date()
 
-    // Reset on new day
-    if (force || settings.adjustmentTimeAnimate || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
+    // Reset when the selected schedule can have changed. Animated schedules
+    // still run once per background tick, but do not need to clear this cache.
+    if (force || (lastTimeEvent && lastTimeEvent.day != date.getDate())) {
       console.log("New day (or forced)... resetting lastTimeEvent")
       lastTimeEvent = false
     }
@@ -5175,7 +5235,8 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
     // Find most recent event
     const foundEvent = getCurrentAdjustmentEvent()
     if (foundEvent) {
-      if (lastTimeEvent == false || lastTimeEvent.value < foundEvent.value) {
+      const isNewScheduleEvent = lastTimeEvent == false || lastTimeEvent.value < foundEvent.value
+      if (isNewScheduleEvent || settings.adjustmentTimeAnimate) {
 
         if (settings.adjustmentTimeAnimate) {
           // If LERPing, override foundEvent with interpolated value
@@ -5191,13 +5252,34 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
         lastTimeEvent = Object.assign({}, foundEvent)
         lastTimeEvent.day = new Date().getDate()
 
-        refreshMonitors().then(() => {
-          if (instant || settings.adjustmentTimeSpeed === "instant") {
+        const applyAdjustment = (readableMonitorIds = false) => {
+          if (settings.adjustmentTimeAnimate) {
+            applyAnimatedBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}), readableMonitorIds)
+          } else if (instant || settings.adjustmentTimeSpeed === "instant") {
             transitionlessBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           } else {
             transitionBrightness(foundEvent.brightness, (foundEvent.monitors ? foundEvent.monitors : {}))
           }
-        })
+        }
+
+        if (settings.adjustmentTimeAnimate) {
+          const requestId = `${Date.now()}-${Math.random()}`
+          readKnownBrightnessJob(requestId)
+            .then(knownBrightness => {
+              for (const monitor of Object.values(monitors)) {
+                const current = knownBrightness[monitor.id]
+                if (!current) continue
+                Object.assign(monitor, current)
+                if (settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+                  monitor.brightness = monitor.sdrLevel
+                }
+              }
+              applyAdjustment(new Set(Object.keys(knownBrightness)))
+            })
+            .catch(error => console.log("Couldn't read known brightness for animated adjustment.", error))
+        } else {
+          refreshMonitors().then(applyAdjustment)
+        }
         return foundEvent
       }
     }

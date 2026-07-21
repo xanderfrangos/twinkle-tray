@@ -216,25 +216,29 @@ export default class SettingsWindow extends PureComponent {
         if (!result.destination) {
             return;
         }
-        const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+        // Keep the draggable list limited to monitors that can be displayed in
+        // the panel. Unsupported monitors can have a null `key`, while this
+        // collection itself is keyed independently of that value.
+        const sorted = Object.values(this.state.monitors)
+            .filter(monitor => monitor.type != "none")
+            .sort(monitorSort)
         const items = reorder(
             sorted,
             result.source.index,
             result.destination.index
         );
 
-        let order = []
-        let idx = 0
-        for (let monitor of items) {
-            this.state.monitors[monitor.key].order = idx
-            order.push({
-                id: monitor.id,
-                order: idx
-            })
-            idx++
-        }
+        const order = items.map(monitor => monitor.id)
+        const orderById = new Map(order.map((id, index) => [id, index]))
+        const monitors = Object.fromEntries(Object.entries(this.state.monitors).map(([key, monitor]) => [
+            key,
+            orderById.has(monitor.id)
+                ? { ...monitor, order: orderById.get(monitor.id) }
+                : monitor
+        ]))
 
         this.setState({
+            monitors,
             order
         });
 
@@ -575,7 +579,9 @@ export default class SettingsWindow extends PureComponent {
         if (this.state.monitors == undefined || this.numMonitors == 0) {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
         } else {
-            const sorted = Object.values(this.state.monitors).slice(0).sort(monitorSort)
+            const sorted = Object.values(this.state.monitors)
+                .filter(monitor => monitor.type != "none")
+                .sort(monitorSort)
             return (
                 <DragDropContext onDragEnd={this.onDragEnd}>
                     <Droppable droppableId="droppable">
@@ -585,27 +591,23 @@ export default class SettingsWindow extends PureComponent {
                                 ref={provided.innerRef}
                             >
                                 {sorted.map((monitor, index) => {
-                                    if (monitor.type == "none") {
-                                        return (<div key={monitor.id}></div>)
-                                    } else {
-                                        return (
-                                            <Draggable key={monitor.id} draggableId={monitor.id} index={index}>
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        style={getItemStyle(
-                                                            snapshot.isDragging,
-                                                            provided.draggableProps.style
-                                                        )}
-                                                    >
-                                                        <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{getMonitorName(monitor, this.state.names)}</div></div>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        )
-                                    }
+                                    return (
+                                        <Draggable key={monitor.id} draggableId={monitor.id} index={index}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
+                                                    style={getItemStyle(
+                                                        snapshot.isDragging,
+                                                        provided.draggableProps.style
+                                                    )}
+                                                >
+                                                    <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{getMonitorName(monitor, this.state.names)}</div></div>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    )
                                 })}
                                 {provided.placeholder}
                             </div>

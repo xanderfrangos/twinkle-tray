@@ -875,6 +875,29 @@ const tempSettings = {
 
 let settings = Object.assign({}, defaultSettings)
 
+// Used to upgrade to v1.18.0+ format
+function normalizeMonitorOrder(order = []) {
+  if (!Array.isArray(order)) return []
+
+  // The current format is an ordered list of monitor IDs.
+  if (order.every(entry => typeof entry === "string")) return order
+
+  // Legacy settings used `{ id, order }` entries. Sort them before dropping
+  // the redundant order property so existing custom orders are preserved.
+  const legacyOrder = order
+    .filter(entry => entry && typeof entry.id === "string")
+    .sort((a, b) => (a.order * 1) - (b.order * 1))
+
+  const seenIds = new Set()
+  return legacyOrder.reduce((ids, entry) => {
+    if (!seenIds.has(entry.id)) {
+      seenIds.add(entry.id)
+      ids.push(entry.id)
+    }
+    return ids
+  }, [])
+}
+
 function readSettings(doProcessSettings = true) {
   try {
     if (fs.existsSync(settingsPath)) {
@@ -1022,6 +1045,15 @@ function readSettings(doProcessSettings = true) {
   if (settingsVersion < Utils.getVersionValue("v1.16.1")) {
     // Disable win32display-config events by default as of v1.16.1
     // settings.useWin32Event = false
+  }
+
+  // v1.18.0: Store monitor order as an ordered list of IDs. Check the shape
+  // as well as the version because prerelease versions share the base numeric
+  // version with the final release.
+  const normalizedOrder = normalizeMonitorOrder(settings.order)
+  if (JSON.stringify(settings.order) !== JSON.stringify(normalizedOrder)) {
+    settings.order = normalizedOrder
+    console.log("Upgraded monitor order to v1.18.0 format!")
   }
 
   // Fix missing UUIDs for app profiles
@@ -1746,12 +1778,11 @@ function hotkeyOverlayHide(force = true) {
 }
 
 function applyOrder(monitorList = monitors) {
+  const orderById = new Map(normalizeMonitorOrder(settings.order).map((id, index) => [id, index]))
   for (let key in monitorList) {
     const monitor = monitorList[key]
-    for (let order of settings.order) {
-      if (monitor.id == order.id) {
-        monitor.order = order.order
-      }
+    if (orderById.has(monitor.id)) {
+      monitor.order = orderById.get(monitor.id)
     }
   }
 }

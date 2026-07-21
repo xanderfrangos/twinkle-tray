@@ -237,7 +237,7 @@
     "SETTINGS_PROFILES_APP_PATH": "Alkalmazásútvonal",
     "SETTINGS_PROFILES_APP_DESC": "Ha azt szeretné, hogy ez a profil automatikusan aktiválódjon, amikor egy adott alkalmazásra fókuszál, adja meg az EXE fájl teljes vagy részleges elérési útját alább.",
     "SETTINGS_PROFILES_OVERLAY_TITLE": "Átfedés típus felülírása",
-    "SETTINGS_PROFILES_OVERLAY_DESC": "Módosítja a gyorsbillentyű fedvény viselkedését, amikor a megadott alkalmazásra fókuszálnak. Ez a funkció nem működik, ha a profil manuálisan van aktiválva."
+    "SETTINGS_PROFILES_OVERLAY_DESC": "Módosítja a gyorsbillentyű fedvény viselkedését, amikor a megadott alkalmazásra fókuszálnak. Ez a funkció nem működik, ha a profil manuálisan van aktiválva.",
     "SETTINGS_UPDATES_TITLE": "Frissítések",
     "SETTINGS_UPDATES_VERSION": "A Twinkle Tray jelenlegi verziója: {{1}}.",
     "SETTINGS_UPDATES_AUTOMATIC_TITLE": "Új verziók automatikus ellenőrzése",

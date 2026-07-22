@@ -21,6 +21,7 @@
   "files": [
     "index.js",
     "binding.gyp",
+    "utils.hpp",
     "windows_ambient_sensor.cc",
     "build/"
   ]

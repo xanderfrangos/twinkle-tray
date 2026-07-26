@@ -234,5 +234,11 @@
     "SETTINGS_TIME_USE_SUN_POSITION": "Usar nascer do sol e pôr do sol",
     "SETTINGS_HOTKEY_ADD_ACTION": "Adicionar ação",
     "SETTINGS_GENERAL_SKIP_THEME_CHANGES_DESC": "Detecta mudanças de papel de parede e tema no Windows para atualizar o ícone da barra de tarefas e o efeito de transparência. Desativar esse recurso pode ajudar caso algum aplicativo esteja alterando o tema com frequência, elevando o uso de CPU.",
-    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Detecta alterações no estado de energia dos monitores. Desativar esse recurso pode ajudar caso você enfrente erros quando os monitores são ligados, desligados ou ficam inativos. Requer reinicialização para entrar em vigor."
+    "SETTINGS_GENERAL_SKIP_POWER_EVENTS_DESC": "Detecta alterações no estado de energia dos monitores. Desativar esse recurso pode ajudar caso você enfrente erros quando os monitores são ligados, desligados ou ficam inativos. Requer reinicialização para entrar em vigor.",
+    "GENERIC_CALIBRATION_POINT": "Ponto de Calibração",
+    "GENERIC_LUX": "Lux",
+    "GENERIC_SLIDER_INDICATOR_TYPE": "Tipo de indicador de controle deslizante",
+    "GENERIC_ICON": "Ícone",
+    "GENERIC_TEXT": "Texto",
+    "GENERIC_SLIDER_ICON": "Ícone de controle deslizante"
 }

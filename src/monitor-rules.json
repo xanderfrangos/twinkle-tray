@@ -1,7 +1,8 @@
 {
     "ddcBrightnessCodes": {
         "FUS087C": 107,
-        "FUS06AB": 19
+        "FUS06AB": 19,
+        "SPT0ACD": 16
     },
     "skipReapply": [
         "DEL41D9"

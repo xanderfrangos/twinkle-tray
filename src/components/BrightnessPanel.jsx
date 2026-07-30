@@ -236,7 +236,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         let lastValidMonitor
         for(const key in state.monitors) {
           const monitor = state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
            lastValidMonitor = monitor 
           }
         }
@@ -279,7 +279,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
           if ((monitor.type == "none" && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
 
               let hasFeatures = true
               let featureCount = 0

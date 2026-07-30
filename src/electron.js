@@ -1447,7 +1447,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
         if(shouldSkipDisplay(monitor)) continue;
 
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType)) {
           // Replace DDC/CI brightness with SDR
           if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
             monitor.brightness = monitor.sdrLevel
@@ -1688,7 +1688,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -2848,6 +2848,14 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       monitorsThread.send({
         type: "brightness",
         brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+        id: monitor.id
+      })
+    } else if (monitor.type === "software") {
+      monitor.brightness = level
+      monitor.brightnessRaw = normalized
+      monitorsThread.send({
+        type: "brightness",
+        brightness: normalized,
         id: monitor.id
       })
     } else if (monitor.type == "wmi") {
@@ -4186,7 +4194,7 @@ function setTrayPercent() {
       let averagePerc = 0
       let i = 0
       for (let key in monitors) {
-        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi") {
+        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software") {
           i++
           averagePerc += monitors[key].brightness
         }

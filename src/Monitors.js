@@ -13,6 +13,67 @@ let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
 let lastHDR = {}
+let softwareBrightnessAPI
+let softwareBrightnessUnavailable = false
+
+function getSoftwareBrightnessAPI() {
+    if (softwareBrightnessAPI) return softwareBrightnessAPI
+    if (softwareBrightnessUnavailable) return false
+
+    try {
+        const windowsUtils = require("tt-windows-utils")
+        if (!windowsUtils?.DisplayBrightness?.getBrightness || !windowsUtils?.DisplayBrightness?.setBrightness) {
+            throw new Error("Display brightness native module is unavailable.")
+        }
+        softwareBrightnessAPI = windowsUtils.DisplayBrightness
+        return softwareBrightnessAPI
+    } catch (e) {
+        softwareBrightnessUnavailable = true
+        console.log("Software display brightness is unavailable.", e)
+        return false
+    }
+}
+
+function getSoftwareBrightness(monitor) {
+    const api = getSoftwareBrightnessAPI()
+    const path = monitor?.softwarePath || monitor?.path
+    if (!api || typeof path !== "string" || path.length === 0) return false
+
+    try {
+        const brightness = api.getBrightness(path)
+        if (typeof brightness !== "number" || !Number.isFinite(brightness) || brightness < 0) return false
+        return Math.max(0, Math.min(100, Math.round(brightness)))
+    } catch (e) {
+        console.log(`Couldn't read software brightness for ${path}`, e)
+        return false
+    }
+}
+
+function applySoftwareBrightness(monitors) {
+    const usedPaths = new Set()
+
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        const path = monitor?.softwarePath || monitor?.path
+        if (monitor?.type !== "none" || monitor?.hdr === "active" || typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
+
+        const brightness = getSoftwareBrightness(monitor)
+        if (brightness === false) continue
+
+        usedPaths.add(path)
+        updateDisplay(monitors, hwid2, {
+            type: "software",
+            softwarePath: path,
+            brightness,
+            brightnessRaw: brightness,
+            brightnessMax: 100,
+            brightnessValues: [brightness, 100],
+            brightnessType: false,
+            min: 0,
+            max: 100
+        })
+    }
+}
 
 function deepCopy(obj) {
     try {
@@ -533,6 +594,8 @@ async function readKnownBrightness() {
         }
     }
 
+    applySoftwareBrightness(monitors)
+
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
         if (!monitor?.id || monitor.type === "none") continue
@@ -791,6 +854,8 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
             console.log("\x1b[41m" + "getHDRDisplays() failed!" + "\x1b[0m", e)
         }
     }
+
+    applySoftwareBrightness(foundMonitors)
 
     // Hide internal
     if (settings?.hideClosedLid) {
@@ -1498,6 +1563,13 @@ function setBrightness(brightness, id) {
                 const hasCustomBrightnessVCP = monitor.hwid && ddcBrightnessVCPs[monitor.hwid[1]]
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
+                } else if (monitor.type === "software") {
+                    const api = getSoftwareBrightnessAPI()
+                    const path = monitor.softwarePath || monitor.path
+                    const requested = Math.max(0, Math.min(100, Math.round(Number(brightness))))
+                    if (!api || typeof path !== "string" || !Number.isFinite(requested) || !api.setBrightness(path, requested)) {
+                        console.log(`Couldn't set software brightness for monitor ${monitor.id}`)
+                    }
                 } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !hasCustomBrightnessVCP) {
                     setHighLevelBrightness(monitor.hwid.join("#"), brightness)
                 } else {

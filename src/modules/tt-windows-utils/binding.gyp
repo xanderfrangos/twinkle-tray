@@ -69,6 +69,19 @@
         "<!@(node -p \"require('node-addon-api').include\")"
       ],
       'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
+    },
+    {
+      "target_name": "windows_display_brightness",
+      "cflags!": [ ],
+      "cflags_cc!": [ ],
+      "sources": [ "windows_display_brightness.cc" ],
+      "include_dirs": [
+        "<!@(node -p \"require('node-addon-api').include\")"
+      ],
+      'msvs_settings': {
+        'VCCLCompilerTool': { "ExceptionHandling": 1 }
+      },
+      'defines': [ 'NAPI_CPP_EXCEPTIONS' ],
     }
   ]
 }

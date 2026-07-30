@@ -1,11 +1,14 @@
 #include <napi.h>
 #include <windows.h>
 
+#include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <map>
 #include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -17,6 +20,11 @@ struct GammaState {
 
 std::map<std::wstring, GammaState> gammaStates;
 std::mutex gammaMutex;
+constexpr int kMinimumBrightness = 20;
+constexpr int kMinimumDriverScale = 70;
+constexpr int kMinimumReliableCurve = 60;
+constexpr int kSetAttempts = 3;
+constexpr WORD kRampVerificationTolerance = 256;
 
 std::wstring utf8ToWide(const std::string& value)
 {
@@ -45,6 +53,40 @@ bool readRamp(HDC dc, std::vector<WORD>& ramp)
 {
     ramp.resize(3 * 256);
     return GetDeviceGammaRamp(dc, ramp.data()) != FALSE;
+}
+
+bool rampsMatch(const std::vector<WORD>& expected, const std::vector<WORD>& actual)
+{
+    if (expected.size() != actual.size()) return false;
+    for (size_t i = 0; i < expected.size(); i++) {
+        const int difference = std::abs(static_cast<int>(expected[i]) - static_cast<int>(actual[i]));
+        if (difference > kRampVerificationTolerance) return false;
+    }
+    return true;
+}
+
+std::vector<WORD> buildBrightnessRamp(const std::vector<WORD>& baseRamp, int brightness)
+{
+    std::vector<WORD> ramp(baseRamp.size());
+    const double curveBrightness = kMinimumReliableCurve
+        + ((brightness - kMinimumBrightness) * (100.0 - kMinimumReliableCurve)
+            / (100.0 - kMinimumBrightness));
+    const double requestedScale = curveBrightness / 100.0;
+    const double peakScale = (std::max)(curveBrightness, static_cast<double>(kMinimumDriverScale)) / 100.0;
+
+    // Windows rejects very dark linear ramps. Below the driver-safe peak,
+    // preserve that peak and darken mid-tones enough to match the requested
+    // level at 50% input. This remains monotonic and passes the GDI safeguard.
+    const double exponent = curveBrightness < kMinimumDriverScale
+        ? std::log((requestedScale * 0.5) / peakScale) / std::log(0.5)
+        : 1.0;
+
+    for (size_t i = 0; i < ramp.size(); i++) {
+        const double normalized = baseRamp[i] / 65535.0;
+        const double adjusted = peakScale * std::pow(normalized, exponent);
+        ramp[i] = static_cast<WORD>(std::lround((std::min)(1.0, adjusted) * 65535.0));
+    }
+    return ramp;
 }
 
 bool ensureState(const std::wstring& displayName, HDC dc, GammaState*& state)
@@ -82,10 +124,11 @@ Napi::Boolean setBrightness(const Napi::CallbackInfo& info)
 {
     Napi::Env env = info.Env();
     if (info.Length() < 2 || !info[0].IsString() || !info[1].IsNumber()) return Napi::Boolean::New(env, false);
-    const double requested = info[1].As<Napi::Number>().DoubleValue();
-    if (!std::isfinite(requested) || requested < 0 || requested > 100 || std::floor(requested) != requested) {
+    const double requestedValue = info[1].As<Napi::Number>().DoubleValue();
+    if (!std::isfinite(requestedValue) || requestedValue < 0 || requestedValue > 100 || std::floor(requestedValue) != requestedValue) {
         return Napi::Boolean::New(env, false);
     }
+    const int requested = (std::max)(kMinimumBrightness, static_cast<int>(requestedValue));
     const std::wstring displayName = utf8ToWide(info[0].As<Napi::String>().Utf8Value());
     if (displayName.empty()) return Napi::Boolean::New(env, false);
 
@@ -97,14 +140,24 @@ Napi::Boolean setBrightness(const Napi::CallbackInfo& info)
         DeleteDC(dc);
         return Napi::Boolean::New(env, false);
     }
-
-    std::vector<WORD> ramp(state->baseRamp.size());
-    const uint64_t scale = static_cast<uint64_t>(requested);
-    for (size_t i = 0; i < ramp.size(); i++) {
-        ramp[i] = static_cast<WORD>((static_cast<uint64_t>(state->baseRamp[i]) * scale + 50) / 100);
-    }
-    const bool ok = SetDeviceGammaRamp(dc, ramp.data()) != FALSE;
     DeleteDC(dc);
+
+    std::vector<WORD> ramp = buildBrightnessRamp(state->baseRamp, requested);
+    bool ok = false;
+    for (int attempt = 0; attempt < kSetAttempts && !ok; attempt++) {
+        dc = openDisplay(displayName);
+        if (dc) {
+            ok = SetDeviceGammaRamp(dc, ramp.data()) != FALSE;
+            if (ok) {
+                std::vector<WORD> appliedRamp;
+                ok = readRamp(dc, appliedRamp) && rampsMatch(ramp, appliedRamp);
+            }
+            DeleteDC(dc);
+        }
+        if (!ok && attempt + 1 < kSetAttempts) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(20 * (attempt + 1)));
+        }
+    }
     if (ok) state->brightness = static_cast<int>(requested);
     return Napi::Boolean::New(env, ok);
 }

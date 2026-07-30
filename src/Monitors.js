@@ -15,6 +15,7 @@ let lastWMI = {}
 let lastHDR = {}
 let softwareBrightnessAPI
 let softwareBrightnessUnavailable = false
+const SOFTWARE_BRIGHTNESS_MIN = 20
 
 function getSoftwareBrightnessAPI() {
     if (softwareBrightnessAPI) return softwareBrightnessAPI
@@ -42,7 +43,7 @@ function getSoftwareBrightness(monitor) {
     try {
         const brightness = api.getBrightness(path)
         if (typeof brightness !== "number" || !Number.isFinite(brightness) || brightness < 0) return false
-        return Math.max(0, Math.min(100, Math.round(brightness)))
+        return Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(brightness)))
     } catch (e) {
         console.log(`Couldn't read software brightness for ${path}`, e)
         return false
@@ -69,7 +70,7 @@ function applySoftwareBrightness(monitors) {
             brightnessMax: 100,
             brightnessValues: [brightness, 100],
             brightnessType: false,
-            min: 0,
+            min: SOFTWARE_BRIGHTNESS_MIN,
             max: 100
         })
     }
@@ -1558,7 +1559,6 @@ function setBrightness(brightness, id) {
         if (id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             if(monitor) {
-                monitor.brightness = brightness
                 // Check if user has set a custom brightness VCP code for this monitor
                 const hasCustomBrightnessVCP = monitor.hwid && ddcBrightnessVCPs[monitor.hwid[1]]
                 if (monitor.type == "studio-display") {
@@ -1566,9 +1566,11 @@ function setBrightness(brightness, id) {
                 } else if (monitor.type === "software") {
                     const api = getSoftwareBrightnessAPI()
                     const path = monitor.softwarePath || monitor.path
-                    const requested = Math.max(0, Math.min(100, Math.round(Number(brightness))))
-                    if (!api || typeof path !== "string" || !Number.isFinite(requested) || !api.setBrightness(path, requested)) {
+                    const requested = Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(Number(brightness))))
+                    const applied = api && typeof path === "string" && Number.isFinite(requested) && api.setBrightness(path, requested)
+                    if (!applied) {
                         console.log(`Couldn't set software brightness for monitor ${monitor.id}`)
+                        return false
                     }
                 } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !hasCustomBrightnessVCP) {
                     setHighLevelBrightness(monitor.hwid.join("#"), brightness)
@@ -1576,7 +1578,9 @@ function setBrightness(brightness, id) {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
                 }
                 // Update tracked brightness values
-                const brightnessRaw = parseInt(brightness)
+                const brightnessRaw = monitor.type === "software"
+                    ? Math.max(SOFTWARE_BRIGHTNESS_MIN, parseInt(brightness))
+                    : parseInt(brightness)
                 monitor.brightness = brightnessRaw * (100 / (monitor.brightnessMax || 100))
                 monitor.brightnessRaw = brightnessRaw
                 if(monitor.brightnessValues) monitor.brightnessValues[0] = brightnessRaw;

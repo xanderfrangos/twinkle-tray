@@ -1179,6 +1179,10 @@ export default class SettingsWindow extends PureComponent {
     }
 
     render() {
+        const hasNativeBrightnessHotkey = this.state.hotkeys?.some(hotkey => (
+            hotkey.accelerator === "BrightnessUp" || hotkey.accelerator === "BrightnessDown"
+        ))
+
         return (
             <SafeRender>
                 <div className="window-base" data-theme={window.settings.theme || "default"}>
@@ -1442,6 +1446,9 @@ export default class SettingsWindow extends PureComponent {
                                 <div className="pageSection">
                                     <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
                                     <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
+                                    {hasNativeBrightnessHotkey ? (
+                                        <p>⚠️ <em>{T.t("SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN")}</em></p>
+                                    ) : null}
                                     <div className="hotkey-monitors">
                                         {this.getHotkeyList()}
                                         <p><a className="button" onClick={() => {

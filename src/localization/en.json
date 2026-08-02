@@ -196,6 +196,7 @@
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "Idle detection will be disabled while any media is playing. This includes both video and audio. This only applies when Windows reports that media is playing.",
     "SETTINGS_HOTKEYS_TITLE": "Hotkeys",
     "SETTINGS_HOTKEYS_DESC": "Configure hotkeys to adjust the brightness of one or all displays.",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Windows will still adjust the built-in display when a brightness key is pressed. Do not use a BrightnessUp or BrightnessDown hotkey to adjust the built-in display's brightness.",
     "SETTINGS_HOTKEYS_ADD": "Add Hotkey",
     "SETTINGS_HOTKEYS_REMOVE": "Remove hotkey",
     "SETTINGS_HOTKEYS_INCREASE": "Increase Brightness",

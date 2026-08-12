@@ -41,20 +41,20 @@ export default function MonitorFeatures(props) {
         18: "HDMI-2"
     }
 
-    if (monitor.ddcciSupported && Object.keys(monitor.features || {}).length > 0) {
+    // Keep the custom brightness VCP override available when feature detection
+    // cannot identify a supported brightness code.
+    if (monitor.ddcciSupported && !monitor.featuresPending) {
 
         // Brightness (with VCP Code Selection in expanded section)
-        if (monitor.features["0x10"]) {
-            const currentBrightnessVCP = window.settings?.userDDCBrightnessVCPs?.[monitor?.hwid?.[1]] || ""
-            
-            extraHTML.push(
-                <SettingsOption className="monitor-feature-item" key="brightness" icon="e706" title={T.t("PANEL_LABEL_BRIGHTNESS")} expandable={true}>
-                    <SettingsChild>
-                        <BrightnessFeatureSettings hwid={monitor?.hwid?.[1]} currentBrightnessVCP={currentBrightnessVCP} T={T} />
-                    </SettingsChild>
-                </SettingsOption>
-            )
-        }
+        const currentBrightnessVCP = window.settings?.userDDCBrightnessVCPs?.[monitor?.hwid?.[1]] || ""
+
+        extraHTML.push(
+            <SettingsOption className="monitor-feature-item" key="brightness" icon="e706" title={T.t("PANEL_LABEL_BRIGHTNESS")} expandable={true}>
+                <SettingsChild>
+                    <BrightnessFeatureSettings hwid={monitor?.hwid?.[1]} currentBrightnessVCP={currentBrightnessVCP} T={T} />
+                </SettingsChild>
+            </SettingsOption>
+        )
 
         // Contrast
         if (monitor.features["0x12"]) {

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <string>
@@ -23,6 +24,9 @@ std::mutex gammaMutex;
 constexpr int kMinimumBrightness = 20;
 constexpr int kMinimumDriverScale = 70;
 constexpr int kMinimumReliableCurve = 60;
+constexpr int kAssumeDefaultBrightness = 95;
+constexpr size_t kChannelEntries = 256;
+constexpr size_t kGreenChannel = kChannelEntries;
 constexpr int kSetAttempts = 3;
 constexpr WORD kRampVerificationTolerance = 256;
 
@@ -65,28 +69,99 @@ bool rampsMatch(const std::vector<WORD>& expected, const std::vector<WORD>& actu
     return true;
 }
 
-std::vector<WORD> buildBrightnessRamp(const std::vector<WORD>& baseRamp, int brightness)
+struct BrightnessCurve {
+    double requestedScale;
+    double peakScale;
+    double exponent;
+};
+
+BrightnessCurve curveForBrightness(int brightness)
 {
-    std::vector<WORD> ramp(baseRamp.size());
     const double curveBrightness = kMinimumReliableCurve
         + ((brightness - kMinimumBrightness) * (100.0 - kMinimumReliableCurve)
             / (100.0 - kMinimumBrightness));
-    const double requestedScale = curveBrightness / 100.0;
-    const double peakScale = (std::max)(curveBrightness, static_cast<double>(kMinimumDriverScale)) / 100.0;
+
+    BrightnessCurve curve;
+    curve.requestedScale = curveBrightness / 100.0;
+    curve.peakScale = (std::max)(curveBrightness, static_cast<double>(kMinimumDriverScale)) / 100.0;
 
     // Windows rejects very dark linear ramps. Below the driver-safe peak,
     // preserve that peak and darken mid-tones enough to match the requested
     // level at 50% input. This remains monotonic and passes the GDI safeguard.
-    const double exponent = curveBrightness < kMinimumDriverScale
-        ? std::log((requestedScale * 0.5) / peakScale) / std::log(0.5)
+    curve.exponent = curveBrightness < kMinimumDriverScale
+        ? std::log((curve.requestedScale * 0.5) / curve.peakScale) / std::log(0.5)
         : 1.0;
+    return curve;
+}
 
+std::vector<WORD> buildBrightnessRamp(const std::vector<WORD>& baseRamp, int brightness)
+{
+    const BrightnessCurve curve = curveForBrightness(brightness);
+    std::vector<WORD> ramp(baseRamp.size());
     for (size_t i = 0; i < ramp.size(); i++) {
         const double normalized = baseRamp[i] / 65535.0;
-        const double adjusted = peakScale * std::pow(normalized, exponent);
+        const double adjusted = curve.peakScale * std::pow(normalized, curve.exponent);
         ramp[i] = static_cast<WORD>(std::lround((std::min)(1.0, adjusted) * 65535.0));
     }
     return ramp;
+}
+
+std::vector<WORD> defaultRamp()
+{
+    std::vector<WORD> ramp(3 * kChannelEntries);
+    for (size_t channel = 0; channel < 3; channel++) {
+        for (size_t i = 0; i < kChannelEntries; i++) {
+            ramp[(channel * kChannelEntries) + i] =
+                static_cast<WORD>((std::min)(65535, static_cast<int>(i) * 257));
+        }
+    }
+    return ramp;
+}
+
+// The brightness curve pins the mid-tone entry to an exact multiple of the
+// requested scale, so that entry is where the level can be measured back out.
+size_t midToneIndex(const std::vector<WORD>& baseRamp)
+{
+    size_t closest = kChannelEntries / 2;
+    int smallest = (std::numeric_limits<int>::max)();
+    for (size_t i = 0; i < kChannelEntries; i++) {
+        const int difference = std::abs(static_cast<int>(baseRamp[kGreenChannel + i]) - 32768);
+        if (difference < smallest) {
+            smallest = difference;
+            closest = i;
+        }
+    }
+    return closest;
+}
+
+int brightnessFromRamp(const std::vector<WORD>& baseRamp, const std::vector<WORD>& ramp)
+{
+    if (baseRamp.size() != ramp.size() || ramp.size() < 3 * kChannelEntries) return 100;
+
+    const size_t index = kGreenChannel + midToneIndex(baseRamp);
+    const double baseMidTone = baseRamp[index] / 65535.0;
+    if (baseMidTone <= 0.0) return 100;
+
+    const double curveBrightness = ((ramp[index] / 65535.0) / baseMidTone) * 100.0;
+    const double brightness = kMinimumBrightness
+        + ((curveBrightness - kMinimumReliableCurve) * (100.0 - kMinimumBrightness)
+            / (100.0 - kMinimumReliableCurve));
+    return (std::max)(kMinimumBrightness, (std::min)(100, static_cast<int>(std::lround(brightness))));
+}
+
+// Gamma ramps outlive the process, so a display can already be dimmed the first
+// time it's read. Undo the curve to recover the ramp it started out with.
+std::vector<WORD> restoreBaseRamp(const std::vector<WORD>& ramp, int brightness)
+{
+    const BrightnessCurve curve = curveForBrightness(brightness);
+    if (curve.peakScale <= 0.0 || curve.exponent <= 0.0) return ramp;
+
+    std::vector<WORD> baseRamp(ramp.size());
+    for (size_t i = 0; i < ramp.size(); i++) {
+        const double normalized = (std::min)(1.0, (ramp[i] / 65535.0) / curve.peakScale);
+        baseRamp[i] = static_cast<WORD>(std::lround(std::pow(normalized, 1.0 / curve.exponent) * 65535.0));
+    }
+    return baseRamp;
 }
 
 bool ensureState(const std::wstring& displayName, HDC dc, GammaState*& state)
@@ -98,7 +173,19 @@ bool ensureState(const std::wstring& displayName, HDC dc, GammaState*& state)
         return true;
     }
     GammaState initial;
-    if (!readRamp(dc, initial.baseRamp)) return false;
+    std::vector<WORD> current;
+    if (!readRamp(dc, current)) return false;
+
+    // Measured against a default ramp, since there's no stored base yet. A
+    // calibrated display reads a little under 100, so only a clearly dimmed
+    // ramp is treated as one of ours.
+    const int measured = brightnessFromRamp(defaultRamp(), current);
+    if (measured >= kAssumeDefaultBrightness) {
+        initial.baseRamp = std::move(current);
+    } else {
+        initial.brightness = measured;
+        initial.baseRamp = restoreBaseRamp(current, measured);
+    }
     auto inserted = gammaStates.emplace(normalized, std::move(initial));
     state = &inserted.first->second;
     return true;
@@ -116,6 +203,13 @@ Napi::Number getBrightness(const Napi::CallbackInfo& info)
     if (!dc) return Napi::Number::New(env, -1);
     GammaState* state = nullptr;
     const bool initialized = ensureState(displayName, dc, state);
+
+    // Re-read the ramp rather than trusting the last value set here. Another
+    // app, or an earlier session, may have changed it since.
+    std::vector<WORD> current;
+    if (initialized && readRamp(dc, current)) {
+        state->brightness = brightnessFromRamp(state->baseRamp, current);
+    }
     DeleteDC(dc);
     return Napi::Number::New(env, initialized ? state->brightness : -1);
 }

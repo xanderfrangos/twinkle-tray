@@ -50,6 +50,29 @@ function getSoftwareBrightness(monitor) {
     }
 }
 
+// Gamma ramps are owned by Windows, not by us, so the level is read back on
+// every refresh instead of being assumed from the last value set.
+function readGammaBrightness(monitors) {
+    if (!getSoftwareBrightnessAPI()) return;
+
+    const readPaths = {}
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        const path = monitor?.softwarePath || monitor?.path
+        if (typeof path !== "string" || path.length === 0) continue
+
+        // Displays can share a path (and therefore a gamma ramp)
+        const brightness = (readPaths[path] === undefined ? getSoftwareBrightness(monitor) : readPaths[path])
+        readPaths[path] = brightness
+        if (brightness === false) continue
+
+        updateDisplay(monitors, hwid2, {
+            softwarePath: path,
+            gammaBrightness: brightness
+        })
+    }
+}
+
 function applySoftwareBrightness(monitors) {
     if (settings?.disableSoftwareBrightness) return;
 
@@ -60,7 +83,7 @@ function applySoftwareBrightness(monitors) {
         const path = monitor?.softwarePath || monitor?.path
         if (monitor?.type !== "none" || monitor?.hdr === "active" || typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
 
-        const brightness = getSoftwareBrightness(monitor)
+        const brightness = (monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : getSoftwareBrightness(monitor))
         if (brightness === false) continue
 
         usedPaths.add(path)
@@ -78,6 +101,7 @@ function applySoftwareBrightness(monitors) {
     }
 }
 
+// Returns the level that was applied, or false if it couldn't be.
 function setSoftwareBrightness(monitor, brightness) {
     const api = getSoftwareBrightnessAPI()
     const path = monitor?.softwarePath || monitor?.path
@@ -85,11 +109,18 @@ function setSoftwareBrightness(monitor, brightness) {
     if (!api || typeof path !== "string" || path.length === 0 || !Number.isFinite(requested)) return false
 
     try {
-        return (api.setBrightness(path, requested) ? true : false)
+        if (!api.setBrightness(path, requested)) return false
     } catch (e) {
         console.log(`Couldn't set software brightness for ${path}`, e)
         return false
     }
+
+    // Track the level against every display sharing this ramp
+    for (const hwid2 in monitors) {
+        const other = monitors[hwid2]
+        if ((other?.softwarePath || other?.path) === path) other.gammaBrightness = requested
+    }
+    return requested
 }
 
 // Debug tool. Applies a gamma ramp to any display with a known path, even when
@@ -99,11 +130,13 @@ function setGammaBrightness(brightness, id) {
 
     const monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
     if (!monitor) return false
-    if (!setSoftwareBrightness(monitor, brightness)) {
+
+    const applied = setSoftwareBrightness(monitor, brightness)
+    if (applied === false) {
         console.log(`Couldn't set gamma brightness for monitor ${monitor.id}`)
         return false
     }
-    return true
+    return applied
 }
 
 // Reset gamma ramps when the fallback is turned off, so displays don't stay dimmed.
@@ -646,6 +679,7 @@ async function readKnownBrightness() {
         }
     }
 
+    readGammaBrightness(monitors)
     applySoftwareBrightness(monitors)
 
     for (const hwid2 in monitors) {
@@ -907,6 +941,7 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
         }
     }
 
+    readGammaBrightness(foundMonitors)
     applySoftwareBrightness(foundMonitors)
 
     // Hide internal
@@ -1615,7 +1650,7 @@ function setBrightness(brightness, id) {
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
                 } else if (monitor.type === "software") {
-                    if (!setSoftwareBrightness(monitor, brightness)) {
+                    if (setSoftwareBrightness(monitor, brightness) === false) {
                         console.log(`Couldn't set software brightness for monitor ${monitor.id}`)
                         return false
                     }

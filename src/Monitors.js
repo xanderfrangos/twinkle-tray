@@ -74,7 +74,7 @@ function readGammaBrightness(monitors) {
 }
 
 function applySoftwareBrightness(monitors) {
-    if (settings?.disableSoftwareBrightness) return;
+    if (!settings?.useSoftwareBrightnessFallback) return;
 
     const usedPaths = new Set()
 
@@ -205,11 +205,11 @@ async function handleMonitorMessage(data) {
             setGammaBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
             const changedMonitors = changedFeatureMonitorIds(settings, data.settings || {})
-            const hadSoftwareBrightness = (settings?.disableSoftwareBrightness ? false : true)
+            const hadSoftwareBrightness = (settings?.useSoftwareBrightnessFallback ? true : false)
             settings = data.settings
             invalidateFeatureSnapshots(changedMonitors)
 
-            if (hadSoftwareBrightness && settings?.disableSoftwareBrightness) restoreSoftwareBrightness();
+            if (hadSoftwareBrightness && !settings?.useSoftwareBrightnessFallback) restoreSoftwareBrightness();
 
             // Overrides
             if (settings?.disableAppleStudio) appleStudioUnavailable = true;

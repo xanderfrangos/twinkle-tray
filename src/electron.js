@@ -835,7 +835,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   disableHDR: false,
-  disableSoftwareBrightness: false,
+  useSoftwareBrightnessFallback: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
@@ -1257,7 +1257,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
-    if (newSettings.disableSoftwareBrightness !== undefined) {
+    if (newSettings.useSoftwareBrightnessFallback !== undefined) {
       shouldRefreshMonitors = true
     }
 

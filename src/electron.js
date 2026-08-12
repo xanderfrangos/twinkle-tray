@@ -796,6 +796,7 @@ const defaultSettings = {
   monitorFeaturesSettings: {},
   hideDisplays: {},
   hdrDisplays: {},
+  gammaAsMainSliderDisplays: {},
   sdrAsMainSliderDisplays: {},
   sdrAsMainSlider: false,
   checkForUpdates: !isDev,
@@ -1260,6 +1261,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       shouldRefreshMonitors = true
     }
 
+    if (newSettings.gammaAsMainSliderDisplays !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
     if (settings.profiles) {
       rebuildTray = true
       if(settings.profiles?.length > 0) {
@@ -1318,6 +1323,13 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   if (shouldRefreshMonitors) {
     refreshMonitors(true, true)
   }
+}
+
+// Per-display opt-in: the primary slider drives the display's gamma ramp
+// instead of the brightness control that was detected for it.
+function usesGammaSlider(monitor) {
+  if (!settings.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+  return (monitor?.gammaBrightness >= 0)
 }
 
 // Check if given display should be skipped during brightness update
@@ -1452,7 +1464,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
         if(shouldSkipDisplay(monitor)) continue;
 
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesGammaSlider(monitor)) {
           // Replace DDC/CI brightness with SDR
           if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
             monitor.brightness = monitor.sdrLevel
@@ -1693,7 +1705,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software" || usesGammaSlider(monitor)) && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -2454,6 +2466,12 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
       monitor.brightness = monitor.sdrLevel
     }
 
+    // Replace detected brightness with the gamma ramp level
+    if(usesGammaSlider(monitor)) {
+      monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+      monitor.brightnessRaw = monitor.gammaBrightness
+    }
+
     // Other DDC/CI normalizations
     const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
     if(featuresSettings) {
@@ -2795,9 +2813,13 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       useCap = false
     }
 
+    if(vcp == "brightness" && usesGammaSlider(monitor)) {
+      vcp = "gamma"
+    }
+
     // Feature VCPs need the enriched monitor map. A Fast-only result can be
     // used for brightness, but queue feature work until it is safe to run.
-    if ((monitor.featuresPending || monitor.featuresRefreshing)
+    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma"
       && ((vcp !== "brightness" && vcp !== "sdr") || monitor.type === "none")) {
       deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
       return true
@@ -2826,6 +2848,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         monitor.brightness = level
         monitor.brightnessRaw = normalized
       }
+    } else if (vcp === "gamma") {
+      monitor.brightness = level
+      monitor.brightnessRaw = normalized
+      monitor.gammaBrightness = normalized
+      monitorsThread.send({
+        type: "gamma",
+        brightness: normalized,
+        id: monitor.id
+      })
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
@@ -2920,7 +2951,7 @@ function updateAllBrightness(brightness, mode = "offset") {
   // Update internal brightness values
   for (let key in monitors) {
     const monitor = monitors[key]
-    if (monitor.type !== "none") {
+    if (monitor.type !== "none" || usesGammaSlider(monitor)) {
 
       // Replace DDC/CI brightness with SDR
       if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
@@ -4230,7 +4261,7 @@ function setTrayPercent() {
       let averagePerc = 0
       let i = 0
       for (let key in monitors) {
-        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software") {
+        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software" || usesGammaSlider(monitors[key])) {
           i++
           averagePerc += monitors[key].brightness
         }
@@ -5316,6 +5347,9 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                 Object.assign(monitor, current)
                 if (settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
                   monitor.brightness = monitor.sdrLevel
+                }
+                if (usesGammaSlider(monitor)) {
+                  monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
                 }
               }
               applyAdjustment(new Set(Object.keys(knownBrightness)))

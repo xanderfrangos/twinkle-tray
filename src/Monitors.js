@@ -684,12 +684,13 @@ async function readKnownBrightness() {
 
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        if (!monitor?.id || monitor.type === "none") continue
+        if (!monitor?.id || (monitor.type === "none" && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
         if (unreadableMonitorIds.has(monitor.id)) continue
         result[monitor.id] = {
             brightness: monitor.brightness,
             brightnessRaw: monitor.brightnessRaw,
             brightnessMax: monitor.brightnessMax,
+            gammaBrightness: monitor.gammaBrightness,
             sdrLevel: monitor.sdrLevel,
             hdr: monitor.hdr
         }

@@ -913,6 +913,28 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getGammaMonitorsSettings = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setGammaMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.gammaAsMainSliderDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.gammaAsMainSliderDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     getSDRMonitorsSettings = () => {
                 try {
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
@@ -939,6 +961,12 @@ export default class SettingsWindow extends PureComponent {
         const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
         hdrDisplays[monitor.key] = value
         this.setSetting("hdrDisplays", hdrDisplays)
+    }
+
+    setGammaMonitor = (value, monitor) => {
+        const gammaDisplays = Object.assign({}, this.state.rawSettings?.gammaAsMainSliderDisplays)
+        gammaDisplays[monitor.key] = value
+        this.setSetting("gammaAsMainSliderDisplays", gammaDisplays)
     }
 
     setSDRMonitor = (value, monitor) => {
@@ -1377,6 +1405,9 @@ export default class SettingsWindow extends PureComponent {
                                                 {this.getReorderMonitors()}
                                             </div>
                                         } />
+                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_GAMMA_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION")} expandable={true}>
+                                        {this.getGammaMonitorsSettings()}
                                     </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_SDR_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION")} expandable={true}>
                                         {this.getSDRMonitorsSettings()}

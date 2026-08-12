@@ -5,6 +5,13 @@ import HDRSliders from "./HDRSliders";
 import TranslateReact from "../TranslateReact"
 import getMonitorName from "../utils/BrightnessPanel/getMonitorName";
 
+// Per-display opt-in: the primary slider drives the display's gamma ramp
+// instead of the brightness control that was detected for it.
+function usesGammaSlider(monitor) {
+  if (!window.settings?.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+  return (monitor?.gammaBrightness >= 0)
+}
+
 const BrightnessPanel = memo(function BrightnessPanel() {
 
   const [state, setState] = useState({
@@ -236,7 +243,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         let lastValidMonitor
         for(const key in state.monitors) {
           const monitor = state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active" || usesGammaSlider(monitor)) {
            lastValidMonitor = monitor 
           }
         }
@@ -276,10 +283,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         }
 
         return sorted.map((monitor) => {
-          if ((monitor.type == "none" && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
+          if ((monitor.type == "none" && monitor.hdr !== "active" && !usesGammaSlider(monitor)) || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active") {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active" || usesGammaSlider(monitor)) {
 
               let hasFeatures = true
               let featureCount = 0
@@ -317,7 +324,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
               }
 
               // Check if it's an HDR display and only supports SDR brightness adjustment.
-              const isHDROnlySDR = (monitor.hdr === "active" || monitor.hdr === "supported") && monitor.type === "none";
+              const isHDROnlySDR = (monitor.hdr === "active" || monitor.hdr === "supported") && monitor.type === "none" && !usesGammaSlider(monitor);
               
               if (!useFeatures || !hasFeatures) {
                 // For HDR displays that only support SDR, the HDR slider is displayed directly instead of the regular brightness slider.

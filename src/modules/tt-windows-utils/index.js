@@ -1,11 +1,17 @@
 "use strict";
 const WindowUtils = require("bindings")("windows_window_utils");
+const BrightnessKeys = require("bindings")("windows_brightness_keys");
 const PowerEvents = require("bindings")("windows_power_events");
 const MediaStatus = require("bindings")("windows_media_status");
 const AppStartup = require("bindings")("windows_app_startup");
 const WindowMaterial = require("bindings")("windows_window_material");
 
 module.exports = {
+    BrightnessKeys: {
+        register: BrightnessKeys.register,
+        unregister: BrightnessKeys.unregister,
+        getKey: BrightnessKeys.getKey
+    },
     WindowUtils: {
         setWindowPos: WindowUtils.setWindowPos,
         getWindowPos: WindowUtils.getWindowPos,

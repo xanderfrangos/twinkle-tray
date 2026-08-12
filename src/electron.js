@@ -1184,6 +1184,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       }
     }
 
+    if (newSettings.userDDCBrightnessVCPs !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
     if (app.isReady() && newSettings.preferredDDCCIMethod) {
       monitorsThread.send({
         type: "flushvcp"

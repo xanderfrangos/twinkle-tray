@@ -314,21 +314,32 @@ function BrightnessFeatureSettings(props) {
         setVcpInput(currentBrightnessVCP)
     }, [currentBrightnessVCP])
 
-    const handleVCPChange = (e) => {
-        const value = e.target.value.trim()
-        setVcpInput(value)
-        
+    // Saving triggers a monitor refresh, which unmounts this input. Commit once
+    // the user is done editing instead of on every keystroke.
+    const commitVCPChange = () => {
+        const value = vcpInput.trim()
         const newUserVCPs = Object.assign({}, window.settings?.userDDCBrightnessVCPs || {})
+
         if (value === "") {
+            // Nothing to clear, so avoid a pointless refresh.
+            if (newUserVCPs[hwid] === undefined) return;
             delete newUserVCPs[hwid]
         } else {
-            // Validate the input is a valid hex VCP code (0x00-0xFF)
-            const parsed = parseInt(value, 16)
-            if (isNaN(parsed) || parsed < 0 || parsed > 0xFF) {
-                // Invalid input - don't save, just update the input field
+            // Validate the input is a valid hex VCP code (0x01-0xFF)
+            const parsed = (/^(0x)?[0-9a-f]{1,2}$/i.test(value) ? parseInt(value, 16) : NaN)
+            if (isNaN(parsed) || parsed < 1 || parsed > 0xFF) {
+                // Invalid input - discard it and restore the saved code
+                setVcpInput(currentBrightnessVCP)
                 return
             }
-            newUserVCPs[hwid] = value
+            // Unchanged code (ignoring formatting), so avoid a pointless refresh.
+            if (parseInt(currentBrightnessVCP, 16) === parsed) {
+                setVcpInput(currentBrightnessVCP)
+                return
+            }
+            const normalized = `0x${parsed.toString(16).toUpperCase().padStart(2, "0")}`
+            setVcpInput(normalized)
+            newUserVCPs[hwid] = normalized
         }
         window.sendSettings({ userDDCBrightnessVCPs: newUserVCPs })
     }
@@ -341,7 +352,7 @@ function BrightnessFeatureSettings(props) {
             <div className="input-row">
                 <div className="field" style={{ flex: 1 }}>
                     <label>{T.t("SETTINGS_FEATURES_ADD_VCP")}</label>
-                    <input type="text" value={vcpInput} onChange={handleVCPChange} placeholder="0x10" style={{ maxWidth: "120px" }} />
+                    <input type="text" value={vcpInput} onChange={e => setVcpInput(e.target.value)} onBlur={commitVCPChange} onKeyDown={e => { if (e.key === "Enter") e.target.blur() }} placeholder="0x10" style={{ maxWidth: "120px" }} />
                 </div>
             </div>
             <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>

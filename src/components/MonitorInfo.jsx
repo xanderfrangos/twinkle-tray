@@ -9,6 +9,7 @@ export default function MonitorInfo(props) {
     const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
     const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
     const [sdr, setSDR] = useState(monitor.sdrLevel >= 0 ? monitor.sdrLevel : 50)
+    const [gamma, setGamma] = useState(monitor.type === "software" && monitor.brightnessRaw >= 0 ? monitor.brightnessRaw : 100)
     const [manualVCP, setManualVCP] = useState("")
     const [manualValue, setManualValue] = useState("")
     const [T] = useState(new TranslateReact({}, {}))
@@ -84,6 +85,16 @@ export default function MonitorInfo(props) {
         </div>
     )
 
+    // Gamma ramp test. Only displays with a known device path can be adjusted.
+    if (props.debug === true && (monitor.softwarePath || monitor.path)) {
+        extraHTML.push(
+            <div className="feature-row" key="gamma">
+                <div className="feature-icon">&#x3B3;</div>
+                <Slider type="gamma" monitorID={monitor.id} level={gamma} monitorName={monitor.name} min={20} max={100} monitortype={monitor.type} onChange={val => { setGamma(val); setGammaBrightness(monitor.id, val) }} scrolling={false} />
+            </div>
+        )
+    }
+
     // SDR test
     extraHTML.push(
         <div className="feature-row" key="sdrLevel">
@@ -126,6 +137,10 @@ function setSDRBrightness(monitor, value) {
             value
         }
     }))
+}
+
+function setGammaBrightness(monitor, value) {
+    window.ipc.send("set-gamma-brightness", { monitor, value })
 }
 
 function getDebugMonitorType(type) {

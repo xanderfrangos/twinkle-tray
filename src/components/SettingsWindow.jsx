@@ -1571,6 +1571,8 @@ export default class SettingsWindow extends PureComponent {
 
                                     {this.state.ddcSafetyStatus ? <SettingsOption title="DDC/CI safety mode is active" description={`A monitor worker stopped during ${this.state.ddcSafetyStatus.stage || "DDC/CI detection"}${this.state.ddcSafetyStatus.monitor ? ` for ${this.state.ddcSafetyStatus.monitor}` : ""}. Automatic detection is using the safer Fast method.`} input={<a className="button button-primary" onClick={() => window.retryDDCValidation()}>Retry Accurate Validation</a>} /> : null}
 
+                                    <SettingsOption title="Gamma ramp fallback" description="Adjust brightness with the display's gamma ramp when no hardware brightness control (DDC/CI, WMI) is available. This dims the image instead of the backlight." input={this.renderToggle("disableSoftwareBrightness", true, "right", true)} />
+
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHDRMonitors()}
                                     </SettingsOption>

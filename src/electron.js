@@ -155,7 +155,7 @@ function vcpStr(code) {
 // Handles WMI + DDC/CI activity
 
 const monitorCommandsThatMutateWorkerState = new Set([
-  "brightness", "sdr", "vcp", "getVCP", "flushvcp", "settings",
+  "brightness", "sdr", "gamma", "vcp", "getVCP", "flushvcp", "settings",
   "ddcBrightnessVCPs", "localization", "wmi-bridge-ok"
 ])
 const monitorCommandsRequiredBeforeRefresh = new Set([
@@ -219,7 +219,7 @@ async function flushQueuedMonitorCommands(beforeRefresh = false) {
 }
 
 function queuedCommandTargetsCurrentMonitor(data) {
-  if (data.type === "brightness" || data.type === "sdr") {
+  if (data.type === "brightness" || data.type === "sdr" || data.type === "gamma") {
     if (!data.id) return true
     return Object.values(monitors || {}).some(monitor =>
       monitor?.id === data.id || monitor?.id?.indexOf(data.id) >= 0
@@ -834,6 +834,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   disableHDR: false,
+  disableSoftwareBrightness: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
@@ -1253,6 +1254,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
     if (newSettings.isDev === true || newSettings.isDev === false) {
       rebuildTray = true
+    }
+
+    if (newSettings.disableSoftwareBrightness !== undefined) {
+      shouldRefreshMonitors = true
     }
 
     if (settings.profiles) {
@@ -2655,6 +2660,33 @@ function pauseMonitorUpdates() {
 //
 
 
+// Debug gamma ramp control. Sent straight to the monitor worker, since it
+// bypasses the tracked brightness that normal updates maintain.
+let gammaBrightnessTimeout = false
+let gammaBrightnessQueue = {}
+function setGammaBrightnessThrottle(id, level) {
+  gammaBrightnessQueue[id] = level
+  if (gammaBrightnessTimeout) return false
+  flushGammaBrightness()
+  return true
+}
+
+function flushGammaBrightness() {
+  const queue = gammaBrightnessQueue
+  gammaBrightnessQueue = {}
+  for (const id in queue) {
+    monitorsThread.send({
+      type: "gamma",
+      brightness: queue[id],
+      id
+    })
+  }
+  gammaBrightnessTimeout = setTimeout(() => {
+    gammaBrightnessTimeout = false
+    if (Object.keys(gammaBrightnessQueue).length) flushGammaBrightness()
+  }, settings.updateInterval || 100)
+}
+
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 let lastBrightnessTimes = []
@@ -3244,6 +3276,10 @@ ipcMain.on('set-vcp', (e, values) => {
 ipcMain.on('set-sdr-brightness', (e, values) => {
   setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, "sdr")
+})
+ipcMain.on('set-gamma-brightness', (e, values) => {
+  setRecentlyInteracted(true)
+  setGammaBrightnessThrottle(values.monitor, values.value)
 })
 
 ipcMain.on('get-window-history', () => sendToAllWindows('window-history', windowHistory))

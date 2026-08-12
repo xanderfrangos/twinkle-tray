@@ -51,6 +51,8 @@ function getSoftwareBrightness(monitor) {
 }
 
 function applySoftwareBrightness(monitors) {
+    if (settings?.disableSoftwareBrightness) return;
+
     const usedPaths = new Set()
 
     for (const hwid2 in monitors) {
@@ -73,6 +75,50 @@ function applySoftwareBrightness(monitors) {
             min: SOFTWARE_BRIGHTNESS_MIN,
             max: 100
         })
+    }
+}
+
+function setSoftwareBrightness(monitor, brightness) {
+    const api = getSoftwareBrightnessAPI()
+    const path = monitor?.softwarePath || monitor?.path
+    const requested = Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(Number(brightness))))
+    if (!api || typeof path !== "string" || path.length === 0 || !Number.isFinite(requested)) return false
+
+    try {
+        return (api.setBrightness(path, requested) ? true : false)
+    } catch (e) {
+        console.log(`Couldn't set software brightness for ${path}`, e)
+        return false
+    }
+}
+
+// Debug tool. Applies a gamma ramp to any display with a known path, even when
+// the fallback is disabled or the display has hardware brightness control.
+function setGammaBrightness(brightness, id) {
+    if (!monitors || !id) return false
+
+    const monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
+    if (!monitor) return false
+    if (!setSoftwareBrightness(monitor, brightness)) {
+        console.log(`Couldn't set gamma brightness for monitor ${monitor.id}`)
+        return false
+    }
+    return true
+}
+
+// Reset gamma ramps when the fallback is turned off, so displays don't stay dimmed.
+function restoreSoftwareBrightness() {
+    if (!softwareBrightnessAPI || !monitors) return;
+
+    const usedPaths = new Set()
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        if (monitor?.type !== "software") continue
+        const path = monitor.softwarePath || monitor.path
+        if (typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
+
+        usedPaths.add(path)
+        setSoftwareBrightness(monitor, 100)
     }
 }
 
@@ -122,10 +168,15 @@ async function handleMonitorMessage(data) {
             setBrightness(data.brightness, data.id)
         }  else if (data.type === "sdr") {
             setSDRBrightness(data.brightness, data.id)
+        } else if (data.type === "gamma") {
+            setGammaBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
             const changedMonitors = changedFeatureMonitorIds(settings, data.settings || {})
+            const hadSoftwareBrightness = (settings?.disableSoftwareBrightness ? false : true)
             settings = data.settings
             invalidateFeatureSnapshots(changedMonitors)
+
+            if (hadSoftwareBrightness && settings?.disableSoftwareBrightness) restoreSoftwareBrightness();
 
             // Overrides
             if (settings?.disableAppleStudio) appleStudioUnavailable = true;
@@ -1564,11 +1615,7 @@ function setBrightness(brightness, id) {
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
                 } else if (monitor.type === "software") {
-                    const api = getSoftwareBrightnessAPI()
-                    const path = monitor.softwarePath || monitor.path
-                    const requested = Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(Number(brightness))))
-                    const applied = api && typeof path === "string" && Number.isFinite(requested) && api.setBrightness(path, requested)
-                    if (!applied) {
+                    if (!setSoftwareBrightness(monitor, brightness)) {
                         console.log(`Couldn't set software brightness for monitor ${monitor.id}`)
                         return false
                     }

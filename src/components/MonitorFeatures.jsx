@@ -13,7 +13,7 @@ export default function MonitorFeatures(props) {
     let extraHTML = []
 
     if (monitor.featuresPending) {
-        extraHTML.push(<div className="description" style={{padding: "8px 0"}}>Detecting display features…</div>)
+        extraHTML.push(<div className="description" style={{padding: "8px 0"}} key="features-pending">Detecting display features…</div>)
     }
 
     if (monitor.featuresRefreshing) {

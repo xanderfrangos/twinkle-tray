@@ -36,7 +36,7 @@ export default function MonitorInfo(props) {
                 <br />Key: <b>{monitor.key}</b>
                 <br />ID: <b>{monitor.id}</b>
                 <br />Connection Type: <b>{monitor.connector}</b>
-                <br />Gamma Level: <b>{(monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : "Unsupported")}</b>
+                <br />Gamma Level: <b>{getGammaLevel(monitor)}</b>
                 <br /><br />
             </div>
         )
@@ -147,6 +147,25 @@ function setSDRBrightness(monitor, value) {
 
 function setGammaBrightness(monitor, value) {
     window.ipc.send("set-gamma-brightness", { monitor, value })
+}
+
+// Mirrors gammaFeaturesActive() in Monitors.js, which decides whether ramps
+// are read at all. Without it, a display that was never queried looks broken.
+function gammaFeaturesActive() {
+    if (window.settings?.useSoftwareBrightnessFallback) return true
+    if (Object.values(window.settings?.gammaAsMainSliderDisplays || {}).some(enabled => enabled)) return true
+    if (Object.values(window.settings?.extendMinimumDisplays || {}).some(enabled => enabled)) return true
+    return false
+}
+
+function getGammaLevel(monitor) {
+    if (monitor.gammaBrightness >= 0) return monitor.gammaBrightness
+
+    // No device path means the ramp can't be reached at all
+    if (!(monitor.softwarePath || monitor.path)) return "Unsupported"
+
+    // Ramps are only read while a gamma feature is switched on
+    return (gammaFeaturesActive() ? "Read failed" : "Not read")
 }
 
 function getDebugMonitorType(type) {

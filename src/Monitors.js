@@ -942,7 +942,15 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
         }
     }
 
-    readGammaBrightness(foundMonitors)
+    // Gamma
+    try {
+        startTime = process.hrtime.bigint()
+        readGammaBrightness(foundMonitors)
+        console.log(`readGammaBrightness() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+    } catch (e) {
+        console.log("\x1b[41m" + "readGammaBrightness() failed!" + "\x1b[0m", e)
+    }
+
     applySoftwareBrightness(foundMonitors)
 
     // Hide internal

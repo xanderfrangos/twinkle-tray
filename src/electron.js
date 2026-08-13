@@ -1383,6 +1383,44 @@ function setExtendedMinimumGamma(monitor, level) {
   return true
 }
 
+// Does this display's brightness depend on its gamma ramp?
+function usesGammaRamp(monitor) {
+  return (usesExtendedMinimum(monitor) || usesGammaSlider(monitor) || monitor?.type === "software")
+}
+
+// Windows resets gamma ramps on most display events (monitor connect/disconnect,
+// resolution changes), so a display can come back brighter than it was left at.
+// Only an exact return to the default ramp reads as a reset -- any other value
+// means another application has taken over the ramp, so we leave it alone.
+function restoreGammaAfterReset(monitor, previous) {
+  if (!(previous?.gammaBrightness >= 0) || previous.gammaBrightness >= 100) return false
+  if (!(monitor?.gammaBrightness >= 100) || !usesGammaRamp(monitor)) return false
+
+  console.log(`\x1b[36mGamma ramp was reset for ${monitor.id}. Restoring ${previous.gammaBrightness}.\x1b[0m`)
+  monitor.gammaBrightness = previous.gammaBrightness
+
+  // Displays driven entirely by gamma report it as their brightness
+  if (monitor.type === "software") {
+    monitor.brightness = previous.gammaBrightness
+    monitor.brightnessRaw = previous.gammaBrightness
+  }
+
+  setGammaBrightnessThrottle(monitor.id, previous.gammaBrightness)
+  return true
+}
+
+// Write the ramp out again without checking the tracked value first. Used when
+// restoring displays after an event that may have cleared it behind our back.
+function reapplyGammaRamps() {
+  for (const key in monitors) {
+    const monitor = monitors[key]
+    if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
+    if (!usesGammaRamp(monitor)) continue
+
+    setGammaBrightnessThrottle(monitor.id, monitor.gammaBrightness)
+  }
+}
+
 // Undo software dimming for displays no longer using the extended range
 function restoreExtendedMinimumGamma() {
   for (const key in monitors) {
@@ -1499,6 +1537,10 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
 
   const known = getKnownDisplays(useCurrentMonitors)
   applyProfile(known, useTransition, transitionSpeed)
+
+  // Brightness alone won't restore a ramp that an event cleared, since the
+  // tracked level still matches what we last set.
+  reapplyGammaRamps()
 }
 
 function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, skipBadDisplays = false) {
@@ -2520,6 +2562,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
   // Normalize values
   for (let id in newMonitors) {
     const monitor = newMonitors[id]
+    restoreGammaAfterReset(monitor, oldMonitors[id])
     monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
 
     // Replace DDC/CI brightness with SDR

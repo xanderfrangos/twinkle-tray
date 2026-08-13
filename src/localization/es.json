@@ -280,7 +280,7 @@
     "SETTINGS_LIGHT_SENSOR_WINDOWS_SENSOR_INDEX": "Sensor {{1}}",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_CURRENT": "Lectura actual:",
     "SETTINGS_LIGHT_SENSOR_YOCTO_TITLE": "Sensor de luz Yocto",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DESC": "Consigue la luz de entorno de un sensor de luz Yocto.",
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DESC": "Obtiene la luz de entorno de un sensor de luz Yocto.",
     "SETTINGS_LIGHT_SENSOR_YOCTO_HUB_NOT_FOUND": "Hub virtual Yocto no encontrado",
     "SETTINGS_LIGHT_SENSOR_YOCTO_NOT_FOUND": "Sensor de luz Yocto no encontrado",
     "SETTINGS_LIGHT_SENSOR_YOCTO_FOUND": "Sensor de luz Yocto encontrado",

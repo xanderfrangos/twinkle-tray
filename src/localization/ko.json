@@ -248,7 +248,7 @@
     "SETTINGS_TIME_USE_SUN_POSITION": "태양 위치 사용",
     "SETTINGS_HOTKEY_ADD_ACTION": "작업 추가",
     "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "모니터 설정",
-    "GENERIC_LUX": "럭스",
+    "GENERIC_LUX": "룩스",
     "SETTINGS_SIDEBAR_LIGHT_SENSOR": "조도 센서",
     "SETTINGS_LIGHT_SENSOR_TITLE": "조도 센서",
     "SETTINGS_LIGHT_SENSOR_DESC": "조도 센서를 통해 주변 조명에 따라 밝기를 자동으로 조정합니다.",

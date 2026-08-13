@@ -913,6 +913,32 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    getExtendMinimumMonitorsSettings = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+                    const enabled = (this.state.rawSettings?.extendMinimumDisplays?.[monitor.key] ? true : false)
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <>
+                                <input type="number" min="5" max="90" title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT")} disabled={!enabled} value={this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} style={{display: "none"}} />
+                                <div className="inputToggle-generic">
+                                    <input onChange={(e) => { this.setExtendMinimumMonitor(e.target.checked, monitor) }} checked={enabled} data-checked={enabled} type="checkbox" />
+                                </div>
+                            </>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     getGammaMonitorsSettings = () => {
         try {
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
@@ -961,6 +987,23 @@ export default class SettingsWindow extends PureComponent {
         const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
         hdrDisplays[monitor.key] = value
         this.setSetting("hdrDisplays", hdrDisplays)
+    }
+
+    getExtendMinimumBreakpoint = (monitor) => {
+        const breakpoint = parseInt(this.state.rawSettings?.extendMinimumBreakpoints?.[monitor.key])
+        return (breakpoint > 0 && breakpoint <= 90 ? breakpoint : 20)
+    }
+
+    setExtendMinimumMonitor = (value, monitor) => {
+        const extendMinimumDisplays = Object.assign({}, this.state.rawSettings?.extendMinimumDisplays)
+        extendMinimumDisplays[monitor.key] = value
+        this.setSetting("extendMinimumDisplays", extendMinimumDisplays)
+    }
+
+    setExtendMinimumBreakpoint = (value, monitor) => {
+        const extendMinimumBreakpoints = Object.assign({}, this.state.rawSettings?.extendMinimumBreakpoints)
+        extendMinimumBreakpoints[monitor.key] = Math.min(90, Math.max(5, parseInt(value) || 20))
+        this.setSetting("extendMinimumBreakpoints", extendMinimumBreakpoints)
     }
 
     setGammaMonitor = (value, monitor) => {
@@ -1408,6 +1451,9 @@ export default class SettingsWindow extends PureComponent {
                                     </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_GAMMA_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION")} expandable={true}>
                                         {this.getGammaMonitorsSettings()}
+                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE")} description={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION")} expandable={true}>
+                                        {this.getExtendMinimumMonitorsSettings()}
                                     </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_SDR_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION")} expandable={true}>
                                         {this.getSDRMonitorsSettings()}

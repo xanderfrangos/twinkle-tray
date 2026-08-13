@@ -625,21 +625,13 @@ async function readKnownBrightness() {
         console.log("\x1b[41mgetKnownBrightnessDDC() failed!\x1b[0m", e)
     }
 
-    if (!wmicUnavailable) {
+    // Internal display brightness (native WMI preferred, WMIC fallback)
+    if (canUseInternalBrightness()) {
         try {
-            const wmiBrightness = await getBrightnessWMIC()
+            const wmiBrightness = await getBrightnessInternal()
             if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
         } catch (e) {
-            console.log("\x1b[41mgetKnownBrightnessWMIC() failed!\x1b[0m", e)
-        }
-    }
-
-    if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
-        try {
-            const wmiBrightness = await getBrightnessWMI()
-            if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
-        } catch (e) {
-            console.log("\x1b[41mgetKnownBrightnessWMI() failed!\x1b[0m", e)
+            console.log("\x1b[41mgetKnownBrightnessInternal() failed!\x1b[0m", e)
         }
     }
 
@@ -1216,6 +1208,12 @@ getMonitorsWMI = () => {
             if (wmiMonitors.failed) {
                 // Something went wrong
                 console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
+                // The bridge is the primary source for the internal display, so a hard
+                // failure here must flip wmiFailed. Otherwise the WMIC fallback is never
+                // reached, since the 4s timeout above can't fire during the blocking
+                // native call. getBrightnessWMI() deliberately does NOT do this: a failed
+                // response there is normal on desktops with no internal panel.
+                wmiFailed = true
                 clearTimeout(timeout)
                 resolve(foundMonitors)
             } else {
@@ -1883,11 +1881,18 @@ function getDDCCI() {
 
 let wmicUnavailable = false 
 let wmi = false
+// WMIC.exe lives in the Wbem folder under System32. It is absent on Windows 11
+// builds where the deprecated feature is removed, or turned off as an optional feature.
+function wmicExists() {
+    const systemRoot = process.env.SystemRoot || process.env.windir || "C:\\Windows"
+    return require('fs').existsSync(systemRoot + "\\System32\\Wbem\\WMIC.exe")
+}
+
 // WMIC
 function getWMIC() {
     if (wmi) return true;
     let WmiClient = false
-    if (!require('fs').existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
+    if (!wmicExists()) {
         console.log("\x1b[41mWARNING: WMIC unavailable! Using WMI Bridge instead.\x1b[0m")
         wmicUnavailable = true
         return false;
@@ -1912,7 +1917,7 @@ function getWMIC() {
 }
 // Check WMIC availability up front (without loading the client) so the
 // preferred-method selection works before the first WMIC query.
-if (!require('fs').existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
+if (!wmicExists()) {
     console.log("\x1b[41mWARNING: WMIC unavailable! Using WMI Bridge instead.\x1b[0m")
     wmicUnavailable = true
 }

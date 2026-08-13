@@ -1175,6 +1175,16 @@ function canUseInternalBrightness() {
     return canUseWmiBridgeNow() || !wmicUnavailable
 }
 
+// win32-displayconfig reports the output technology behind each display.
+// These are the values Windows uses for a built-in panel, so they identify a
+// laptop without depending on a brightness read having already succeeded.
+// Note: "ldvs" is how win32-displayconfig spells LVDS. That typo is in the
+// library, so match both spellings in case it is ever corrected upstream.
+const INTERNAL_CONNECTORS = ["internal", "displayport_embedded", "udi_embedded", "ldvs", "lvds"]
+function hasInternalPanel() {
+    return Object.values(monitorsWin32 || {}).some(monitor => INTERNAL_CONNECTORS.indexOf(monitor?.connector) >= 0)
+}
+
 // Lists internal displays via the preferred available WMI method.
 getMonitorsInternal = async () => {
     if (canUseWmiBridgeNow()) {
@@ -1187,9 +1197,30 @@ getMonitorsInternal = async () => {
 }
 
 // Reads internal display brightness via the preferred available WMI method.
+// The bridge reports the same failure for a broken WMI stack, a machine with no
+// internal panel, and a query that simply timed out, so a single failure isn't
+// enough to demote it. WMIC is tried on every failed read for a real internal
+// panel, but the bridge is only given up on after repeated failures, and only
+// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
+// so latching it without a fallback would trade a fast write path for nothing.
+let bridgeBrightnessFailures = 0
+const BRIDGE_BRIGHTNESS_FAILURE_LIMIT = 3
 getBrightnessInternal = async () => {
     if (canUseWmiBridgeNow()) {
-        return await getBrightnessWMI()
+        const brightness = await getBrightnessWMI()
+        if (brightness) {
+            bridgeBrightnessFailures = 0
+            return brightness
+        }
+
+        // No internal panel to read. Expected on desktops, so leave WMIC alone.
+        if (!hasInternalPanel()) return brightness
+
+        bridgeBrightnessFailures++
+        if (bridgeBrightnessFailures >= BRIDGE_BRIGHTNESS_FAILURE_LIMIT && !wmicUnavailable) {
+            wmiFailed = true
+            console.log(`getBrightnessWMI() failed ${bridgeBrightnessFailures} times for an internal panel. Falling back to WMIC.`)
+        }
     }
     if (!wmicUnavailable) {
         return await getBrightnessWMIC()

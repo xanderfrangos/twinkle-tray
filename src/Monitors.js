@@ -50,10 +50,19 @@ function getSoftwareBrightness(monitor) {
     }
 }
 
+// Reading a ramp means opening a device context per display, so it's only
+// worth doing when something actually uses the result.
+function gammaFeaturesActive() {
+    if (settings?.useSoftwareBrightnessFallback) return true
+    if (Object.values(settings?.gammaAsMainSliderDisplays || {}).some(enabled => enabled)) return true
+    if (Object.values(settings?.extendMinimumDisplays || {}).some(enabled => enabled)) return true
+    return false
+}
+
 // Gamma ramps are owned by Windows, not by us, so the level is read back on
 // every refresh instead of being assumed from the last value set.
 function readGammaBrightness(monitors) {
-    if (!getSoftwareBrightnessAPI()) return;
+    if (!gammaFeaturesActive() || !getSoftwareBrightnessAPI()) return;
 
     const readPaths = {}
     for (const hwid2 in monitors) {
@@ -943,12 +952,14 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
     }
 
     // Gamma
-    try {
-        startTime = process.hrtime.bigint()
-        readGammaBrightness(foundMonitors)
-        console.log(`readGammaBrightness() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
-    } catch (e) {
-        console.log("\x1b[41m" + "readGammaBrightness() failed!" + "\x1b[0m", e)
+    if (gammaFeaturesActive()) {
+        try {
+            startTime = process.hrtime.bigint()
+            readGammaBrightness(foundMonitors)
+            console.log(`readGammaBrightness() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+        } catch (e) {
+            console.log("\x1b[41m" + "readGammaBrightness() failed!" + "\x1b[0m", e)
+        }
     }
 
     applySoftwareBrightness(foundMonitors)

@@ -148,7 +148,7 @@
     "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Gamma Ramp Replaces Primary Slider",
     "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "If your display does not support standard brightness control, you can use this as an alternative.",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Extend Minimum Brightness",
-    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Reduce the brightness lower than the standard minimum levels by adjusting the gamma ramp in software",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Reduce the brightness lower than the standard minimum levels by adjusting the gamma ramp in software. Optionally set a percentage of the slider to use software dimming instead of hardware dimming.",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Percentage of the slider that uses software dimming",
     "SETTINGS_MONITORS_SDR_SLIDER_TITLE": "SDR Replaces Primary Slider",
     "SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION": "Control SDR brightness from main brightness slider while HDR is active.",

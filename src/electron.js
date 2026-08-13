@@ -1269,12 +1269,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       shouldRefreshMonitors = true
     }
 
-    if (newSettings.gammaAsMainSliderDisplays !== undefined) {
-      shouldRefreshMonitors = true
-    }
-
-    if (newSettings.extendMinimumDisplays !== undefined || newSettings.extendMinimumBreakpoints !== undefined) {
-      restoreExtendedMinimumGamma()
+    if (newSettings.gammaAsMainSliderDisplays !== undefined
+      || newSettings.extendMinimumDisplays !== undefined
+      || newSettings.extendMinimumBreakpoints !== undefined) {
+      restoreUnusedGammaRamps()
       shouldRefreshMonitors = true
     }
 
@@ -1373,8 +1371,9 @@ function getExtendedMinimumLevel(monitor, hardwareLevel = 0) {
   return Math.round(breakpoint + (hardwareLevel * (100 - breakpoint) / 100))
 }
 
-// Ramp writes are coalesced, so transitions can't outrun SetDeviceGammaRamp
-function setExtendedMinimumGamma(monitor, level) {
+// Set the ramp and track the level. Writes are coalesced, so transitions
+// can't outrun SetDeviceGammaRamp.
+function setTrackedGammaLevel(monitor, level) {
   const gammaLevel = Math.round(minMax(level, GAMMA_BRIGHTNESS_MIN, 100))
   if (monitor.gammaBrightness === gammaLevel) return false
 
@@ -1421,13 +1420,13 @@ function reapplyGammaRamps() {
   }
 }
 
-// Undo software dimming for displays no longer using the extended range
-function restoreExtendedMinimumGamma() {
+// Undo software dimming for displays that no longer use their gamma ramp
+function restoreUnusedGammaRamps() {
   for (const key in monitors) {
     const monitor = monitors[key]
     if (usesExtendedMinimum(monitor) || usesGammaSlider(monitor)) continue
     if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
-    setExtendedMinimumGamma(monitor, 100)
+    setTrackedGammaLevel(monitor, 100)
   }
 }
 
@@ -2572,6 +2571,8 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
 
     // Replace detected brightness with the gamma ramp level
     if(usesGammaSlider(monitor)) {
+      monitor.min = GAMMA_BRIGHTNESS_MIN
+      monitor.max = 100
       monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
       monitor.brightnessRaw = monitor.gammaBrightness
     }
@@ -2951,7 +2952,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     if (extendedMinimum) {
       const breakpoint = getExtendedMinimumBreakpoint(monitor)
       hardwareLevel = (level >= breakpoint ? (level - breakpoint) * 100 / (100 - breakpoint) : 0)
-      setExtendedMinimumGamma(monitor, (level >= breakpoint
+      setTrackedGammaLevel(monitor, (level >= breakpoint
         ? 100
         : GAMMA_BRIGHTNESS_MIN + (level * (100 - GAMMA_BRIGHTNESS_MIN) / breakpoint)))
     }
@@ -2973,12 +2974,13 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         monitor.brightnessRaw = normalized
       }
     } else if (vcp === "gamma") {
+      const gammaLevel = Math.round(minMax(normalized, GAMMA_BRIGHTNESS_MIN, 100))
       monitor.brightness = level
-      monitor.brightnessRaw = normalized
-      monitor.gammaBrightness = normalized
+      monitor.brightnessRaw = gammaLevel
+      monitor.gammaBrightness = gammaLevel
       monitorsThread.send({
         type: "gamma",
-        brightness: normalized,
+        brightness: gammaLevel,
         id: monitor.id
       })
     } else if (monitor.type == "ddcci") {

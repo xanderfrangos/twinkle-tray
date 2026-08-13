@@ -13,6 +13,156 @@ let lastRefresh = {}
 let lastWin32 = {}
 let lastWMI = {}
 let lastHDR = {}
+let softwareBrightnessAPI
+let softwareBrightnessUnavailable = false
+const SOFTWARE_BRIGHTNESS_MIN = 20
+
+function getSoftwareBrightnessAPI() {
+    if (softwareBrightnessAPI) return softwareBrightnessAPI
+    if (softwareBrightnessUnavailable) return false
+
+    try {
+        const windowsUtils = require("tt-windows-utils")
+        if (!windowsUtils?.DisplayBrightness?.getBrightness || !windowsUtils?.DisplayBrightness?.setBrightness) {
+            throw new Error("Display brightness native module is unavailable.")
+        }
+        softwareBrightnessAPI = windowsUtils.DisplayBrightness
+        return softwareBrightnessAPI
+    } catch (e) {
+        softwareBrightnessUnavailable = true
+        console.log("Software display brightness is unavailable.", e)
+        return false
+    }
+}
+
+function getSoftwareBrightness(monitor) {
+    const api = getSoftwareBrightnessAPI()
+    const path = monitor?.softwarePath || monitor?.path
+    if (!api || typeof path !== "string" || path.length === 0) return false
+
+    try {
+        const brightness = api.getBrightness(path)
+        if (typeof brightness !== "number" || !Number.isFinite(brightness) || brightness < 0) return false
+        return Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(brightness)))
+    } catch (e) {
+        console.log(`Couldn't read software brightness for ${path}`, e)
+        return false
+    }
+}
+
+// Reading a ramp means opening a device context per display, so it's only
+// worth doing when something actually uses the result.
+function gammaFeaturesActive() {
+    if (settings?.useSoftwareBrightnessFallback) return true
+    if (Object.values(settings?.gammaAsMainSliderDisplays || {}).some(enabled => enabled)) return true
+    if (Object.values(settings?.extendMinimumDisplays || {}).some(enabled => enabled)) return true
+    return false
+}
+
+// Gamma ramps are owned by Windows, not by us, so the level is read back on
+// every refresh instead of being assumed from the last value set.
+function readGammaBrightness(monitors) {
+    if (!gammaFeaturesActive() || !getSoftwareBrightnessAPI()) return;
+
+    const readPaths = {}
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        const path = monitor?.softwarePath || monitor?.path
+        if (typeof path !== "string" || path.length === 0) continue
+
+        // Displays can share a path (and therefore a gamma ramp)
+        const brightness = (readPaths[path] === undefined ? getSoftwareBrightness(monitor) : readPaths[path])
+        readPaths[path] = brightness
+        if (brightness === false) continue
+
+        updateDisplay(monitors, hwid2, {
+            softwarePath: path,
+            gammaBrightness: brightness
+        })
+    }
+}
+
+function applySoftwareBrightness(monitors) {
+    if (!settings?.useSoftwareBrightnessFallback) return;
+
+    const usedPaths = new Set()
+
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        const path = monitor?.softwarePath || monitor?.path
+        if (monitor?.type !== "none" || monitor?.hdr === "active" || typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
+
+        const brightness = (monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : getSoftwareBrightness(monitor))
+        if (brightness === false) continue
+
+        usedPaths.add(path)
+        updateDisplay(monitors, hwid2, {
+            type: "software",
+            softwarePath: path,
+            brightness,
+            brightnessRaw: brightness,
+            brightnessMax: 100,
+            brightnessValues: [brightness, 100],
+            brightnessType: false,
+            min: SOFTWARE_BRIGHTNESS_MIN,
+            max: 100
+        })
+    }
+}
+
+// Returns the level that was applied, or false if it couldn't be.
+function setSoftwareBrightness(monitor, brightness) {
+    const api = getSoftwareBrightnessAPI()
+    const path = monitor?.softwarePath || monitor?.path
+    const requested = Math.max(SOFTWARE_BRIGHTNESS_MIN, Math.min(100, Math.round(Number(brightness))))
+    if (!api || typeof path !== "string" || path.length === 0 || !Number.isFinite(requested)) return false
+
+    try {
+        if (!api.setBrightness(path, requested)) return false
+    } catch (e) {
+        console.log(`Couldn't set software brightness for ${path}`, e)
+        return false
+    }
+
+    // Track the level against every display sharing this ramp
+    for (const hwid2 in monitors) {
+        const other = monitors[hwid2]
+        if ((other?.softwarePath || other?.path) === path) other.gammaBrightness = requested
+    }
+    return requested
+}
+
+// Debug tool. Applies a gamma ramp to any display with a known path, even when
+// the fallback is disabled or the display has hardware brightness control.
+function setGammaBrightness(brightness, id) {
+    if (!monitors || !id) return false
+
+    const monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
+    if (!monitor) return false
+
+    const applied = setSoftwareBrightness(monitor, brightness)
+    if (applied === false) {
+        console.log(`Couldn't set gamma brightness for monitor ${monitor.id}`)
+        return false
+    }
+    return applied
+}
+
+// Reset gamma ramps when the fallback is turned off, so displays don't stay dimmed.
+function restoreSoftwareBrightness() {
+    if (!softwareBrightnessAPI || !monitors) return;
+
+    const usedPaths = new Set()
+    for (const hwid2 in monitors) {
+        const monitor = monitors[hwid2]
+        if (monitor?.type !== "software") continue
+        const path = monitor.softwarePath || monitor.path
+        if (typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
+
+        usedPaths.add(path)
+        setSoftwareBrightness(monitor, 100)
+    }
+}
 
 function deepCopy(obj) {
     try {
@@ -60,10 +210,15 @@ async function handleMonitorMessage(data) {
             setBrightness(data.brightness, data.id)
         }  else if (data.type === "sdr") {
             setSDRBrightness(data.brightness, data.id)
+        } else if (data.type === "gamma") {
+            setGammaBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
             const changedMonitors = changedFeatureMonitorIds(settings, data.settings || {})
+            const hadSoftwareBrightness = (settings?.useSoftwareBrightnessFallback ? true : false)
             settings = data.settings
             invalidateFeatureSnapshots(changedMonitors)
+
+            if (hadSoftwareBrightness && !settings?.useSoftwareBrightnessFallback) restoreSoftwareBrightness();
 
             // Overrides
             if (settings?.disableAppleStudio) appleStudioUnavailable = true;
@@ -533,14 +688,18 @@ async function readKnownBrightness() {
         }
     }
 
+    readGammaBrightness(monitors)
+    applySoftwareBrightness(monitors)
+
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        if (!monitor?.id || monitor.type === "none") continue
+        if (!monitor?.id || (monitor.type === "none" && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
         if (unreadableMonitorIds.has(monitor.id)) continue
         result[monitor.id] = {
             brightness: monitor.brightness,
             brightnessRaw: monitor.brightnessRaw,
             brightnessMax: monitor.brightnessMax,
+            gammaBrightness: monitor.gammaBrightness,
             sdrLevel: monitor.sdrLevel,
             hdr: monitor.hdr
         }
@@ -791,6 +950,19 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
             console.log("\x1b[41m" + "getHDRDisplays() failed!" + "\x1b[0m", e)
         }
     }
+
+    // Gamma
+    if (gammaFeaturesActive()) {
+        try {
+            startTime = process.hrtime.bigint()
+            readGammaBrightness(foundMonitors)
+            console.log(`readGammaBrightness() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+        } catch (e) {
+            console.log("\x1b[41m" + "readGammaBrightness() failed!" + "\x1b[0m", e)
+        }
+    }
+
+    applySoftwareBrightness(foundMonitors)
 
     // Hide internal
     if (settings?.hideClosedLid) {
@@ -1493,18 +1665,24 @@ function setBrightness(brightness, id) {
         if (id) {
             let monitor = Object.values(monitors).find(mon => mon.id?.indexOf(id) >= 0)
             if(monitor) {
-                monitor.brightness = brightness
                 // Check if user has set a custom brightness VCP code for this monitor
                 const hasCustomBrightnessVCP = monitor.hwid && ddcBrightnessVCPs[monitor.hwid[1]]
                 if (monitor.type == "studio-display") {
                     setStudioDisplayBrightness(monitor.serial, brightness)
+                } else if (monitor.type === "software") {
+                    if (setSoftwareBrightness(monitor, brightness) === false) {
+                        console.log(`Couldn't set software brightness for monitor ${monitor.id}`)
+                        return false
+                    }
                 } else if(!settings.disableHighLevel && monitor.highLevelSupported?.brightness && !hasCustomBrightnessVCP) {
                     setHighLevelBrightness(monitor.hwid.join("#"), brightness)
                 } else {
                     setVCP(monitor.hwid.join("#"), monitor.brightnessType, brightness)
                 }
                 // Update tracked brightness values
-                const brightnessRaw = parseInt(brightness)
+                const brightnessRaw = monitor.type === "software"
+                    ? Math.max(SOFTWARE_BRIGHTNESS_MIN, parseInt(brightness))
+                    : parseInt(brightness)
                 monitor.brightness = brightnessRaw * (100 / (monitor.brightnessMax || 100))
                 monitor.brightnessRaw = brightnessRaw
                 if(monitor.brightnessValues) monitor.brightnessValues[0] = brightnessRaw;

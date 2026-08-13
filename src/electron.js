@@ -155,7 +155,7 @@ function vcpStr(code) {
 // Handles WMI + DDC/CI activity
 
 const monitorCommandsThatMutateWorkerState = new Set([
-  "brightness", "sdr", "vcp", "getVCP", "flushvcp", "settings",
+  "brightness", "sdr", "gamma", "vcp", "getVCP", "flushvcp", "settings",
   "ddcBrightnessVCPs", "localization", "wmi-bridge-ok"
 ])
 const monitorCommandsRequiredBeforeRefresh = new Set([
@@ -219,7 +219,7 @@ async function flushQueuedMonitorCommands(beforeRefresh = false) {
 }
 
 function queuedCommandTargetsCurrentMonitor(data) {
-  if (data.type === "brightness" || data.type === "sdr") {
+  if (data.type === "brightness" || data.type === "sdr" || data.type === "gamma") {
     if (!data.id) return true
     return Object.values(monitors || {}).some(monitor =>
       monitor?.id === data.id || monitor?.id?.indexOf(data.id) >= 0
@@ -842,6 +842,12 @@ if (!fs.existsSync(configFilesDir)) {
   }
 }
 
+// The native gamma module won't go below this level, and Windows rejects
+// ramps much darker than it produces.
+const GAMMA_BRIGHTNESS_MIN = 20
+const EXTENDED_MINIMUM_BREAKPOINT_DEFAULT = 20
+const EXTENDED_MINIMUM_BREAKPOINT_MAX = 90
+
 const defaultSettings = {
   isDev,
   settingsVer: "v" + appVersion,
@@ -868,6 +874,9 @@ const defaultSettings = {
   monitorFeaturesSettings: {},
   hideDisplays: {},
   hdrDisplays: {},
+  gammaAsMainSliderDisplays: {},
+  extendMinimumDisplays: {},
+  extendMinimumBreakpoints: {},
   sdrAsMainSliderDisplays: {},
   sdrAsMainSlider: false,
   checkForUpdates: !isDev,
@@ -906,6 +915,7 @@ const defaultSettings = {
   disableWMI: false,
   disableWin32: false,
   disableHDR: false,
+  useSoftwareBrightnessFallback: false,
   autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
@@ -1331,6 +1341,17 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       rebuildTray = true
     }
 
+    if (newSettings.useSoftwareBrightnessFallback !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
+    if (newSettings.gammaAsMainSliderDisplays !== undefined
+      || newSettings.extendMinimumDisplays !== undefined
+      || newSettings.extendMinimumBreakpoints !== undefined) {
+      restoreUnusedGammaRamps()
+      shouldRefreshMonitors = true
+    }
+
     if (settings.profiles) {
       rebuildTray = true
       if(settings.profiles?.length > 0) {
@@ -1388,6 +1409,100 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   if (sendUpdate) sendToAllWindows('settings-updated', settings);
   if (shouldRefreshMonitors) {
     refreshMonitors(true, true)
+  }
+}
+
+// Per-display opt-in: the primary slider drives the display's gamma ramp
+// instead of the brightness control that was detected for it.
+function usesGammaSlider(monitor) {
+  if (!settings.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+  return (monitor?.gammaBrightness >= 0)
+}
+
+// Per-display opt-in: the bottom of the slider range keeps hardware brightness
+// at its minimum and dims further with the gamma ramp.
+function usesExtendedMinimum(monitor) {
+  if (!settings.extendMinimumDisplays?.[monitor?.key]) return false
+  if (usesGammaSlider(monitor)) return false // Gamma is already the primary control
+  if (!(monitor?.gammaBrightness >= 0)) return false
+  return (monitor?.type === "ddcci" || monitor?.type === "wmi" || monitor?.type === "studio-display")
+}
+
+// Where the slider hands off from the gamma ramp to hardware brightness
+function getExtendedMinimumBreakpoint(monitor) {
+  const breakpoint = parseInt(settings.extendMinimumBreakpoints?.[monitor?.key])
+  if (!(breakpoint > 0) || breakpoint > EXTENDED_MINIMUM_BREAKPOINT_MAX) return EXTENDED_MINIMUM_BREAKPOINT_DEFAULT
+  return breakpoint
+}
+
+// Slider space value for a display using the extended range
+function getExtendedMinimumLevel(monitor, hardwareLevel = 0) {
+  const breakpoint = getExtendedMinimumBreakpoint(monitor)
+
+  // The ramp is only meaningful while hardware sits at its floor. Anything else
+  // means another app (or a display event) changed it, so report the hardware.
+  if (monitor.gammaBrightness < 100 && hardwareLevel <= 0) {
+    return Math.round((monitor.gammaBrightness - GAMMA_BRIGHTNESS_MIN) * breakpoint / (100 - GAMMA_BRIGHTNESS_MIN))
+  }
+  return Math.round(breakpoint + (hardwareLevel * (100 - breakpoint) / 100))
+}
+
+// Set the ramp and track the level. Writes are coalesced, so transitions
+// can't outrun SetDeviceGammaRamp.
+function setTrackedGammaLevel(monitor, level) {
+  const gammaLevel = Math.round(minMax(level, GAMMA_BRIGHTNESS_MIN, 100))
+  if (monitor.gammaBrightness === gammaLevel) return false
+
+  monitor.gammaBrightness = gammaLevel
+  setGammaBrightnessThrottle(monitor.id, gammaLevel)
+  return true
+}
+
+// Does this display's brightness depend on its gamma ramp?
+function usesGammaRamp(monitor) {
+  return (usesExtendedMinimum(monitor) || usesGammaSlider(monitor) || monitor?.type === "software")
+}
+
+// Windows resets gamma ramps on most display events (monitor connect/disconnect,
+// resolution changes), so a display can come back brighter than it was left at.
+// Only an exact return to the default ramp reads as a reset -- any other value
+// means another application has taken over the ramp, so we leave it alone.
+function restoreGammaAfterReset(monitor, previous) {
+  if (!(previous?.gammaBrightness >= 0) || previous.gammaBrightness >= 100) return false
+  if (!(monitor?.gammaBrightness >= 100) || !usesGammaRamp(monitor)) return false
+
+  console.log(`\x1b[36mGamma ramp was reset for ${monitor.id}. Restoring ${previous.gammaBrightness}.\x1b[0m`)
+  monitor.gammaBrightness = previous.gammaBrightness
+
+  // Displays driven entirely by gamma report it as their brightness
+  if (monitor.type === "software") {
+    monitor.brightness = previous.gammaBrightness
+    monitor.brightnessRaw = previous.gammaBrightness
+  }
+
+  setGammaBrightnessThrottle(monitor.id, previous.gammaBrightness)
+  return true
+}
+
+// Write the ramp out again without checking the tracked value first. Used when
+// restoring displays after an event that may have cleared it behind our back.
+function reapplyGammaRamps() {
+  for (const key in monitors) {
+    const monitor = monitors[key]
+    if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
+    if (!usesGammaRamp(monitor)) continue
+
+    setGammaBrightnessThrottle(monitor.id, monitor.gammaBrightness)
+  }
+}
+
+// Undo software dimming for displays that no longer use their gamma ramp
+function restoreUnusedGammaRamps() {
+  for (const key in monitors) {
+    const monitor = monitors[key]
+    if (usesExtendedMinimum(monitor) || usesGammaSlider(monitor)) continue
+    if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
+    setTrackedGammaLevel(monitor, 100)
   }
 }
 
@@ -1497,6 +1612,10 @@ function setKnownBrightness(useCurrentMonitors = false, useTransition = false, t
 
   const known = getKnownDisplays(useCurrentMonitors)
   applyProfile(known, useTransition, transitionSpeed)
+
+  // Brightness alone won't restore a ramp that an event cleared, since the
+  // tracked level still matches what we last set.
+  reapplyGammaRamps()
 }
 
 function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, skipBadDisplays = false) {
@@ -1523,7 +1642,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
         if(shouldSkipDisplay(monitor)) continue;
 
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || monitor.type == "studio-display" || (monitor.type == "ddcci" && monitor.brightnessType)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesGammaSlider(monitor)) {
           // Replace DDC/CI brightness with SDR
           if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
             monitor.brightness = monitor.sdrLevel
@@ -1775,7 +1894,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi") && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software" || usesGammaSlider(monitor)) && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -2529,11 +2648,25 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
   // Normalize values
   for (let id in newMonitors) {
     const monitor = newMonitors[id]
+    restoreGammaAfterReset(monitor, oldMonitors[id])
     monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
 
     // Replace DDC/CI brightness with SDR
     if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
       monitor.brightness = monitor.sdrLevel
+    }
+
+    // Replace detected brightness with the gamma ramp level
+    if(usesGammaSlider(monitor)) {
+      monitor.min = GAMMA_BRIGHTNESS_MIN
+      monitor.max = 100
+      monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+      monitor.brightnessRaw = monitor.gammaBrightness
+    }
+
+    // Fold the gamma ramp into the bottom of the slider range
+    if(usesExtendedMinimum(monitor)) {
+      monitor.brightness = getExtendedMinimumLevel(monitor, monitor.brightness)
     }
 
     // Other DDC/CI normalizations
@@ -2742,6 +2875,33 @@ function pauseMonitorUpdates() {
 //
 
 
+// Debug gamma ramp control. Sent straight to the monitor worker, since it
+// bypasses the tracked brightness that normal updates maintain.
+let gammaBrightnessTimeout = false
+let gammaBrightnessQueue = {}
+function setGammaBrightnessThrottle(id, level) {
+  gammaBrightnessQueue[id] = level
+  if (gammaBrightnessTimeout) return false
+  flushGammaBrightness()
+  return true
+}
+
+function flushGammaBrightness() {
+  const queue = gammaBrightnessQueue
+  gammaBrightnessQueue = {}
+  for (const id in queue) {
+    monitorsThread.send({
+      type: "gamma",
+      brightness: queue[id],
+      id
+    })
+  }
+  gammaBrightnessTimeout = setTimeout(() => {
+    gammaBrightnessTimeout = false
+    if (Object.keys(gammaBrightnessQueue).length) flushGammaBrightness()
+  }, settings.updateInterval || 100)
+}
+
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
 let lastBrightnessTimes = []
@@ -2850,9 +3010,13 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       useCap = false
     }
 
+    if(vcp == "brightness" && usesGammaSlider(monitor)) {
+      vcp = "gamma"
+    }
+
     // Feature VCPs need the enriched monitor map. A Fast-only result can be
     // used for brightness, but queue feature work until it is safe to run.
-    if ((monitor.featuresPending || monitor.featuresRefreshing)
+    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma"
       && ((vcp !== "brightness" && vcp !== "sdr") || monitor.type === "none")) {
       deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
       return true
@@ -2868,7 +3032,22 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       return false
     }
 
-    const normalized = normalizeBrightness(level, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
+    // Split the slider range: above the breakpoint drives hardware brightness,
+    // below it pins hardware at its minimum and dims with the gamma ramp.
+    const extendedMinimum = (vcp === "brightness" && usesExtendedMinimum(monitor))
+    let hardwareLevel = level
+    if (extendedMinimum) {
+      const breakpoint = getExtendedMinimumBreakpoint(monitor)
+      hardwareLevel = (level >= breakpoint ? (level - breakpoint) * 100 / (100 - breakpoint) : 0)
+      setTrackedGammaLevel(monitor, (level >= breakpoint
+        ? 100
+        : GAMMA_BRIGHTNESS_MIN + (level * (100 - GAMMA_BRIGHTNESS_MIN) / breakpoint)))
+    }
+
+    const normalized = normalizeBrightness(hardwareLevel, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
+
+    // Moving within the extended range leaves hardware where it already is
+    const skipHardware = (extendedMinimum && monitor.brightnessRaw === normalized)
 
     if (vcp === "sdr") {
       monitorsThread.send({
@@ -2881,15 +3060,35 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         monitor.brightness = level
         monitor.brightnessRaw = normalized
       }
+    } else if (vcp === "gamma") {
+      const gammaLevel = Math.round(minMax(normalized, GAMMA_BRIGHTNESS_MIN, 100))
+      monitor.brightness = level
+      monitor.brightnessRaw = gammaLevel
+      monitor.gammaBrightness = gammaLevel
+      monitorsThread.send({
+        type: "gamma",
+        brightness: gammaLevel,
+        id: monitor.id
+      })
+
+      // The ramp replaced this display's brightness control, but its other
+      // DDC/CI features still follow the slider.
+      if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
+        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
+      } else {
+        applyLinkedFeatures(monitor, newLevel, useCap)
+      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
         monitor.brightnessRaw = normalized
-        monitorsThread.send({
-          type: "brightness",
-          brightness: normalized * ((monitor.brightnessMax || 100) / 100),
-          id: monitor.id
-        })
+        if (!skipHardware) {
+          monitorsThread.send({
+            type: "brightness",
+            brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+            id: monitor.id
+          })
+        }
 
         // Replace DDC/CI brightness with SDR
         if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
@@ -2932,19 +3131,31 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     } else if (monitor.type === "studio-display") {
       monitor.brightness = level
       monitor.brightnessRaw = normalized
+      if (!skipHardware) {
+        monitorsThread.send({
+          type: "brightness",
+          brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+          id: monitor.id
+        })
+      }
+    } else if (monitor.type === "software") {
+      monitor.brightness = level
+      monitor.brightnessRaw = normalized
       monitorsThread.send({
         type: "brightness",
-        brightness: normalized * ((monitor.brightnessMax || 100) / 100),
+        brightness: normalized,
         id: monitor.id
       })
     } else if (monitor.type == "wmi") {
       ignoreBrightnessEvent = true // Don't listen for Windows brightness events
       monitor.brightness = level
       monitor.brightnessRaw = normalized
-      monitorsThread.send({
-        type: "brightness",
-        brightness: normalized
-      })
+      if (!skipHardware) {
+        monitorsThread.send({
+          type: "brightness",
+          brightness: normalized
+        })
+      }
       if(ignoreBrightnessEventTimeout) clearTimeout(ignoreBrightnessEventTimeout);
       ignoreBrightnessEventTimeout = setTimeout(() => {
         ignoreBrightnessEvent = false
@@ -2967,7 +3178,7 @@ function updateAllBrightness(brightness, mode = "offset") {
   // Update internal brightness values
   for (let key in monitors) {
     const monitor = monitors[key]
-    if (monitor.type !== "none") {
+    if (monitor.type !== "none" || usesGammaSlider(monitor)) {
 
       // Replace DDC/CI brightness with SDR
       if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
@@ -3323,6 +3534,10 @@ ipcMain.on('set-vcp', (e, values) => {
 ipcMain.on('set-sdr-brightness', (e, values) => {
   setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, "sdr")
+})
+ipcMain.on('set-gamma-brightness', (e, values) => {
+  setRecentlyInteracted(true)
+  setGammaBrightnessThrottle(values.monitor, values.value)
 })
 
 ipcMain.on('get-window-history', () => sendToAllWindows('window-history', windowHistory))
@@ -4289,7 +4504,7 @@ function setTrayPercent() {
       let averagePerc = 0
       let i = 0
       for (let key in monitors) {
-        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi") {
+        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software" || usesGammaSlider(monitors[key])) {
           i++
           averagePerc += monitors[key].brightness
         }
@@ -5384,6 +5599,12 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                 Object.assign(monitor, current)
                 if (settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
                   monitor.brightness = monitor.sdrLevel
+                }
+                if (usesGammaSlider(monitor)) {
+                  monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+                }
+                if (usesExtendedMinimum(monitor)) {
+                  monitor.brightness = getExtendedMinimumLevel(monitor, normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration))
                 }
               }
               applyAdjustment(new Set(Object.keys(knownBrightness)))

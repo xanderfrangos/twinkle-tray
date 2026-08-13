@@ -132,6 +132,11 @@ body[data-is-win11="true"], body[data-is-win11="false"] {
     
     .settings-child-elem {
         margin-top: 1px;
+
+        &.breakpoint-child > .child-panel > .input-area {
+            display: flex;
+            align-items: center;
+        }
     
         &:last-of-type {
             & > .child-panel {
@@ -174,6 +179,30 @@ body[data-is-win11="true"], body[data-is-win11="false"] {
     
                 input[type="text"], input[type="number"] {
                     margin: 0;
+                }
+
+                // Rows that pair a value with its toggle
+                .breakpoint-field {
+                    display: flex;
+                    align-items: center;
+                    margin-right: 12px;
+                    transition: opacity 0.166s;
+
+                    &[data-enabled="false"] {
+                        opacity: 0.4;
+                        pointer-events: none;
+                    }
+
+                    input[type="number"] {
+                        width: 74px;
+                        text-align: center;
+                    }
+
+                    .suffix {
+                        font-size: 14px;
+                        margin-left: 4px;
+                        opacity: 0.75;
+                    }
                 }
     
                 .inputToggle-generic {

@@ -5,6 +5,7 @@ const PowerEvents = require("bindings")("windows_power_events");
 const MediaStatus = require("bindings")("windows_media_status");
 const AppStartup = require("bindings")("windows_app_startup");
 const WindowMaterial = require("bindings")("windows_window_material");
+const DisplayBrightness = require("bindings")("windows_display_brightness");
 
 module.exports = {
     BrightnessKeys: {
@@ -33,6 +34,10 @@ module.exports = {
     AppStartup: {
         enable: AppStartup.enable,
         disable: AppStartup.disable
+    },
+    DisplayBrightness: {
+        getBrightness: DisplayBrightness.getBrightness,
+        setBrightness: DisplayBrightness.setBrightness
     },
     WindowMaterial: {
         setWindowMaterial: (hwnd, materialType = 1, cornersType = 2, darkModeSupported = true) => {

@@ -9,6 +9,7 @@ export default function MonitorInfo(props) {
     const [volume, setVolume] = useState(monitor?.features?.["0x62"] ? monitor?.features?.["0x62"][0] : 50)
     const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
     const [sdr, setSDR] = useState(monitor.sdrLevel >= 0 ? monitor.sdrLevel : 50)
+    const [gamma, setGamma] = useState(monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : 100)
     const [manualVCP, setManualVCP] = useState("")
     const [manualValue, setManualValue] = useState("")
     const [T] = useState(new TranslateReact({}, {}))
@@ -21,6 +22,11 @@ export default function MonitorInfo(props) {
         return () => { }
     }, [])
 
+    useEffect(() => {
+        if (monitor.gammaBrightness >= 0) setGamma(monitor.gammaBrightness)
+        return () => { }
+    }, [monitor.gammaBrightness])
+
     if (props.debug === true) {
         extraHTML.push(
             <div key="debug">
@@ -30,6 +36,7 @@ export default function MonitorInfo(props) {
                 <br />Key: <b>{monitor.key}</b>
                 <br />ID: <b>{monitor.id}</b>
                 <br />Connection Type: <b>{monitor.connector}</b>
+                <br />Gamma Level: <b>{getGammaLevel(monitor)}</b>
                 <br /><br />
             </div>
         )
@@ -84,6 +91,16 @@ export default function MonitorInfo(props) {
         </div>
     )
 
+    // Gamma ramp test. Only displays with a known device path can be adjusted.
+    if (props.debug === true && (monitor.softwarePath || monitor.path)) {
+        extraHTML.push(
+            <div className="feature-row" key="gamma">
+                <div className="feature-icon">&#x3B3;</div>
+                <Slider type="gamma" monitorID={monitor.id} level={gamma} monitorName={monitor.name} min={20} max={100} monitortype={monitor.type} onChange={val => { setGamma(val); setGammaBrightness(monitor.id, val) }} scrolling={false} />
+            </div>
+        )
+    }
+
     // SDR test
     extraHTML.push(
         <div className="feature-row" key="sdrLevel">
@@ -100,7 +117,7 @@ export default function MonitorInfo(props) {
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightness)}</b>
-                <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
             </p>
@@ -128,6 +145,29 @@ function setSDRBrightness(monitor, value) {
     }))
 }
 
+function setGammaBrightness(monitor, value) {
+    window.ipc.send("set-gamma-brightness", { monitor, value })
+}
+
+// Mirrors gammaFeaturesActive() in Monitors.js, which decides whether ramps
+// are read at all. Without it, a display that was never queried looks broken.
+function gammaFeaturesActive() {
+    if (window.settings?.useSoftwareBrightnessFallback) return true
+    if (Object.values(window.settings?.gammaAsMainSliderDisplays || {}).some(enabled => enabled)) return true
+    if (Object.values(window.settings?.extendMinimumDisplays || {}).some(enabled => enabled)) return true
+    return false
+}
+
+function getGammaLevel(monitor) {
+    if (monitor.gammaBrightness >= 0) return monitor.gammaBrightness
+
+    // No device path means the ramp can't be reached at all
+    if (!(monitor.softwarePath || monitor.path)) return "Unsupported"
+
+    // Ramps are only read while a gamma feature is switched on
+    return (gammaFeaturesActive() ? "Read failed" : "Not read")
+}
+
 function getDebugMonitorType(type) {
     if (type == "none") {
         return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
@@ -137,6 +177,8 @@ function getDebugMonitorType(type) {
         return (<><b>DDC/CI (HL)</b> <span className="icon green vfix">&#xE73D;</span></>)
     } else if (type == "wmi") {
         return (<><b>WMI</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else if (type == "software") {
+        return (<><b>Software (Gamma)</b> <span className="icon green vfix">&#xE73D;</span></>)
     } else if (type == "studio-display") {
         return (<><b>Studio Display</b> <span className="icon green vfix">&#xE73D;</span></>)
     } else {

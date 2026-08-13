@@ -25,6 +25,7 @@
     "windows_power_events.cc",
     "windows_window_utils.cc",
     "windows_window_material.cc",
-    "windows_app_startup.cc"
+    "windows_app_startup.cc",
+    "windows_display_brightness.cc"
   ]
 }

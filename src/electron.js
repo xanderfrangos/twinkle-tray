@@ -916,7 +916,6 @@ const defaultSettings = {
   disableWin32: false,
   disableHDR: false,
   useSoftwareBrightnessFallback: false,
-  autoDisabledWMI: false,
   useWin32Event: true,
   useElectronEvents: true,
   useWmDisplayChangeEvent: true,
@@ -1145,6 +1144,19 @@ function readSettings(doProcessSettings = true) {
         profile.uuid = uuid()
       }
     }
+  }
+
+  // v1.18.0: wmi-bridge used to be disabled permanently after a single monitor
+  // thread timeout, which was often caused by something other than WMI. The bridge
+  // is stable enough now that the auto-disable is gone, so clear it for anyone still
+  // carrying it. autoDisabledWMI marked that it was set automatically rather than by
+  // the user, so only those installs are touched.
+  if (settings.autoDisabledWMI) {
+    if (settings.disableWMI) {
+      settings.disableWMI = false
+      console.log("Re-enabled WMI-Bridge, which had been disabled automatically.")
+    }
+    delete settings.autoDisabledWMI
   }
 
   // Fix rawSettings bug
@@ -2392,13 +2404,6 @@ refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
       const timeout = setTimeout(() => {
         cleanup()
         reject("Monitor thread timed out.")
-
-        // Attempt to fix common issue with wmi-bridge by relying only on Win32
-        // However, if user re-enables WMI, don't disable it again
-        if (!settings.autoDisabledWMI && !recentlyWokeUp) {
-          settings.autoDisabledWMI = true
-          settings.disableWMI = true
-        }
       }, 60000)
       monitorsEventEmitter.on("refreshMonitors", listener)
 

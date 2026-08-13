@@ -542,12 +542,12 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                 console.log("\x1b[41m" + "getBrightnessDDC() failed!" + "\x1b[0m", e)
             }
 
-            // WMIC (Windows 10)
-            if (!wmicUnavailable) {
+            // Internal display brightness (native WMI preferred, WMIC fallback)
+            if (canUseInternalBrightness()) {
                 try {
                     startTime = process.hrtime.bigint()
-                    const wmiBrightness = await getBrightnessWMIC()
-                    console.log(`getBrightnessWMIC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+                    const wmiBrightness = await getBrightnessInternal()
+                    console.log(`getBrightnessInternal() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
                     if (wmiBrightness) {
                         updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
@@ -558,26 +558,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                         }
                     }
                 } catch (e) {
-                    console.log("\x1b[41m" + "getBrightnessWMIC() failed!" + "\x1b[0m", e)
-                }
-            }
-
-            // WMI
-            if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
-                try {
-                    startTime = process.hrtime.bigint()
-                    const wmiBrightness = await getBrightnessWMI()
-                    if (wmiBrightness) {
-                        updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
-
-                        // If Win32 doesn't find the internal display, hide it.
-                        if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
-                            updateDisplay(monitors, wmiBrightness.hwid[2], { type: "none" })
-                        }
-                    }
-                    console.log(`getBrightnessWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
-                } catch (e) {
-                    console.log("\x1b[41m" + "getBrightnessWMI() failed!" + "\x1b[0m", e)
+                    console.log("\x1b[41m" + "getBrightnessInternal() failed!" + "\x1b[0m", e)
                 }
             }
 
@@ -644,21 +625,13 @@ async function readKnownBrightness() {
         console.log("\x1b[41mgetKnownBrightnessDDC() failed!\x1b[0m", e)
     }
 
-    if (!wmicUnavailable) {
+    // Internal display brightness (native WMI preferred, WMIC fallback)
+    if (canUseInternalBrightness()) {
         try {
-            const wmiBrightness = await getBrightnessWMIC()
+            const wmiBrightness = await getBrightnessInternal()
             if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
         } catch (e) {
-            console.log("\x1b[41mgetKnownBrightnessWMIC() failed!\x1b[0m", e)
-        }
-    }
-
-    if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
-        try {
-            const wmiBrightness = await getBrightnessWMI()
-            if (wmiBrightness) updateDisplay(monitors, wmiBrightness.hwid[2], wmiBrightness)
-        } catch (e) {
-            console.log("\x1b[41mgetKnownBrightnessWMI() failed!\x1b[0m", e)
+            console.log("\x1b[41mgetKnownBrightnessInternal() failed!\x1b[0m", e)
         }
     }
 
@@ -761,34 +734,20 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
     let startTime = process.hrtime.bigint()
     let fullStartTime = process.hrtime.bigint()
 
-    // List via WMIC (Windows 10)
-    if (!wmicUnavailable) {
+    // List via WMI (native bridge preferred, WMIC fallback)
+    if (canUseInternalBrightness()) {
         try {
-            const monitorsWMIC = await getMonitorsWMIC()
-            console.log(`getMonitorsWMIC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
-            for (const hwid2 in monitorsWMIC) {
-                const monitor = monitorsWMIC[hwid2]
-                updateDisplay(foundMonitors, hwid2, monitor)
-            }
-        } catch (e) {
-            console.log("\x1b[41m" + "getMonitorsWMIC() failed!" + "\x1b[0m", e)
-        }
-    }
-
-    // List via WMI
-    if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
-        try {
-            const monitorsWMI = await getMonitorsWMI()
-            console.log(`getMonitorsWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+            const monitorsWMI = await getMonitorsInternal()
+            console.log(`getMonitorsInternal() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
             for (const hwid2 in monitorsWMI) {
                 const monitor = monitorsWMI[hwid2]
                 updateDisplay(foundMonitors, hwid2, monitor)
             }
         } catch (e) {
-            console.log("\x1b[41m" + "getMonitorsWMI() failed!" + "\x1b[0m", e)
+            console.log("\x1b[41m" + "getMonitorsInternal() failed!" + "\x1b[0m", e)
         }
-    } else if (wmiFailed) {
-        console.log("getMonitorsWMI() skipped due to previous failure.")
+    } else {
+        console.log("getMonitorsInternal() skipped. No WMI method available.")
     }
 
     // List via Win32 (more details)
@@ -899,11 +858,12 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
         }
     }
 
-    if (!wmicUnavailable) {
+    // Internal display brightness (native WMI preferred, WMIC fallback)
+    if (canUseInternalBrightness()) {
         try {
             startTime = process.hrtime.bigint()
-            const wmiBrightness = await getBrightnessWMIC()
-            console.log(`getBrightnessWMIC() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
+            const wmiBrightness = await getBrightnessInternal()
+            console.log(`getBrightnessInternal() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
 
             if (wmiBrightness) {
                 updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
@@ -914,30 +874,10 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
                 }
             }
         } catch (e) {
-            console.log("\x1b[41m" + "getBrightnessWMIC() failed!" + "\x1b[0m", e)
+            console.log("\x1b[41m" + "getBrightnessInternal() failed!" + "\x1b[0m", e)
         }
-    }
-
-    // WMI Brightness
-    if (canUseWmiBridge && !wmiFailed && wmicUnavailable) {
-        try {
-            startTime = process.hrtime.bigint()
-            const wmiBrightness = await getBrightnessWMI()
-            console.log(`getBrightnessWMI() Total: ${(startTime - process.hrtime.bigint()) / BigInt(-1000000)}ms`)
-
-            if (wmiBrightness) {
-                updateDisplay(foundMonitors, wmiBrightness.hwid[2], wmiBrightness)
-
-                // If Win32 doesn't find the internal display, hide it.
-                if (settings?.hideClosedLid && Object.keys(monitorsWin32).indexOf(wmiBrightness.hwid[2]) < 0) {
-                    updateDisplay(foundMonitors, wmiBrightness.hwid[2], { type: "none" })
-                }
-            }
-        } catch (e) {
-            console.log("\x1b[41m" + "getBrightnessWMI() failed!" + "\x1b[0m", e)
-        }
-    } else if (wmiFailed) {
-        console.log("getBrightnessWMI() skipped due to previous failure.")
+    } else {
+        console.log("getBrightnessInternal() skipped. No WMI method available.")
     }
 
     // HDR
@@ -1224,6 +1164,70 @@ getHDRDisplays = async (monitors) => {
     return monitors
 }
 
+// The native WMI bridge is preferred for the internal display. WMIC is
+// kept as a fallback for systems where the bridge is unavailable, and
+// doesn't exist at all on current Windows 11 builds.
+function canUseWmiBridgeNow() {
+    return canUseWmiBridge && !wmiFailed
+}
+
+function canUseInternalBrightness() {
+    return canUseWmiBridgeNow() || !wmicUnavailable
+}
+
+// win32-displayconfig reports the output technology behind each display.
+// These are the values Windows uses for a built-in panel, so they identify a
+// laptop without depending on a brightness read having already succeeded.
+// Note: "ldvs" is how win32-displayconfig spells LVDS. That typo is in the
+// library, so match both spellings in case it is ever corrected upstream.
+const INTERNAL_CONNECTORS = ["internal", "displayport_embedded", "udi_embedded", "ldvs", "lvds"]
+function hasInternalPanel() {
+    return Object.values(monitorsWin32 || {}).some(monitor => INTERNAL_CONNECTORS.indexOf(monitor?.connector) >= 0)
+}
+
+// Lists internal displays via the preferred available WMI method.
+getMonitorsInternal = async () => {
+    if (canUseWmiBridgeNow()) {
+        return await getMonitorsWMI()
+    }
+    if (!wmicUnavailable) {
+        return await getMonitorsWMIC()
+    }
+    return false
+}
+
+// Reads internal display brightness via the preferred available WMI method.
+// The bridge reports the same failure for a broken WMI stack, a machine with no
+// internal panel, and a query that simply timed out, so a single failure isn't
+// enough to demote it. WMIC is tried on every failed read for a real internal
+// panel, but the bridge is only given up on after repeated failures, and only
+// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
+// so latching it without a fallback would trade a fast write path for nothing.
+let bridgeBrightnessFailures = 0
+const BRIDGE_BRIGHTNESS_FAILURE_LIMIT = 3
+getBrightnessInternal = async () => {
+    if (canUseWmiBridgeNow()) {
+        const brightness = await getBrightnessWMI()
+        if (brightness) {
+            bridgeBrightnessFailures = 0
+            return brightness
+        }
+
+        // No internal panel to read. Expected on desktops, so leave WMIC alone.
+        if (!hasInternalPanel()) return brightness
+
+        bridgeBrightnessFailures++
+        if (bridgeBrightnessFailures >= BRIDGE_BRIGHTNESS_FAILURE_LIMIT && !wmicUnavailable) {
+            wmiFailed = true
+            console.log(`getBrightnessWMI() failed ${bridgeBrightnessFailures} times for an internal panel. Falling back to WMIC.`)
+        }
+    }
+    if (!wmicUnavailable) {
+        return await getBrightnessWMIC()
+    }
+    return false
+}
+
 let wmiFailed = false
 getMonitorsWMI = () => {
     return new Promise(async (resolve, reject) => {
@@ -1235,6 +1239,12 @@ getMonitorsWMI = () => {
             if (wmiMonitors.failed) {
                 // Something went wrong
                 console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
+                // The bridge is the primary source for the internal display, so a hard
+                // failure here must flip wmiFailed. Otherwise the WMIC fallback is never
+                // reached, since the 4s timeout above can't fire during the blocking
+                // native call. getBrightnessWMI() deliberately does NOT do this: a failed
+                // response there is normal on desktops with no internal panel.
+                wmiFailed = true
                 clearTimeout(timeout)
                 resolve(foundMonitors)
             } else {
@@ -1691,12 +1701,12 @@ function setBrightness(brightness, id) {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
-            if (!canUseWmiBridge || wmiFailed) {
-                // If native WMI is disabled, fall back to old method
-                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})"`)
-            } else {
+            if (canUseWmiBridgeNow()) {
                 // Set brightness via native WMI
                 wmibridge.setBrightness(brightness);
+            } else {
+                // If native WMI is unavailable, fall back to old method
+                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})`)
             }
         }
     } catch (e) {
@@ -1902,11 +1912,18 @@ function getDDCCI() {
 
 let wmicUnavailable = false 
 let wmi = false
+// WMIC.exe lives in the Wbem folder under System32. It is absent on Windows 11
+// builds where the deprecated feature is removed, or turned off as an optional feature.
+function wmicExists() {
+    const systemRoot = process.env.SystemRoot || process.env.windir || "C:\\Windows"
+    return require('fs').existsSync(systemRoot + "\\System32\\Wbem\\WMIC.exe")
+}
+
 // WMIC
 function getWMIC() {
     if (wmi) return true;
     let WmiClient = false
-    if (!require('fs').existsSync(process.env.SystemRoot + "\\System32\\Wbem\\WMIC.exe")) {
+    if (!wmicExists()) {
         console.log("\x1b[41mWARNING: WMIC unavailable! Using WMI Bridge instead.\x1b[0m")
         wmicUnavailable = true
         return false;
@@ -1929,7 +1946,12 @@ function getWMIC() {
         return false;
     }
 }
-getWMIC();
+// Check WMIC availability up front (without loading the client) so the
+// preferred-method selection works before the first WMIC query.
+if (!wmicExists()) {
+    console.log("\x1b[41mWARNING: WMIC unavailable! Using WMI Bridge instead.\x1b[0m")
+    wmicUnavailable = true
+}
 
 // Request Monitors via WMIC. (Windows 10 only)
 getMonitorsWMIC = () => {

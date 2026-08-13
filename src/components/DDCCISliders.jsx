@@ -109,8 +109,6 @@ export default function DDCCISliders(props) {
 
     return (
         <>
-            {monitor.featuresPending ? (<div className="feature-row feature-pending">Detecting display features…</div>) : null}
-            {monitor.featuresRefreshing ? (<div className="feature-row feature-pending">Refreshing display features…</div>) : null}
             {extraHTML}
         </>
     )

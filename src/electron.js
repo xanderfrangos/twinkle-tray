@@ -2983,6 +2983,14 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         brightness: gammaLevel,
         id: monitor.id
       })
+
+      // The ramp replaced this display's brightness control, but its other
+      // DDC/CI features still follow the slider.
+      if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
+        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
+      } else {
+        applyLinkedFeatures(monitor, newLevel, useCap)
+      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level

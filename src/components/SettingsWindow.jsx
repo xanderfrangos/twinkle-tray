@@ -112,6 +112,11 @@ const defaultAction = {
 
 let T = new TranslateReact({}, {})
 
+// Portion of the slider handed to the gamma ramp by Extend Minimum Brightness
+const EXTEND_MINIMUM_BREAKPOINT_DEFAULT = 20
+const EXTEND_MINIMUM_BREAKPOINT_MIN = 5
+const EXTEND_MINIMUM_BREAKPOINT_MAX = 90
+
 export default class SettingsWindow extends PureComponent {
 
     constructor(props) {
@@ -924,7 +929,7 @@ export default class SettingsWindow extends PureComponent {
                     return (
                         <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
                             <>
-                                <input type="number" min="5" max="90" title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT")} disabled={!enabled} value={this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} style={{display: "none"}} />
+                                <input type="number" min={EXTEND_MINIMUM_BREAKPOINT_MIN} max={EXTEND_MINIMUM_BREAKPOINT_MAX} title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT")} disabled={!enabled} value={this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} onBlur={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor, true) }} style={{display: "none"}} />
                                 <div className="inputToggle-generic">
                                     <input onChange={(e) => { this.setExtendMinimumMonitor(e.target.checked, monitor) }} checked={enabled} data-checked={enabled} type="checkbox" />
                                 </div>
@@ -990,8 +995,8 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getExtendMinimumBreakpoint = (monitor) => {
-        const breakpoint = parseInt(this.state.rawSettings?.extendMinimumBreakpoints?.[monitor.key])
-        return (breakpoint > 0 && breakpoint <= 90 ? breakpoint : 20)
+        const breakpoint = this.state.rawSettings?.extendMinimumBreakpoints?.[monitor.key]
+        return (breakpoint === undefined ? EXTEND_MINIMUM_BREAKPOINT_DEFAULT : breakpoint)
     }
 
     setExtendMinimumMonitor = (value, monitor) => {
@@ -1000,9 +1005,15 @@ export default class SettingsWindow extends PureComponent {
         this.setSetting("extendMinimumDisplays", extendMinimumDisplays)
     }
 
-    setExtendMinimumBreakpoint = (value, monitor) => {
+    setExtendMinimumBreakpoint = (value, monitor, clamp = false) => {
         const extendMinimumBreakpoints = Object.assign({}, this.state.rawSettings?.extendMinimumBreakpoints)
-        extendMinimumBreakpoints[monitor.key] = Math.min(90, Math.max(5, parseInt(value) || 20))
+
+        // Only settle on a usable value once the field is done being edited,
+        // otherwise a partly typed number gets clamped out from under the user.
+        const breakpoint = parseInt(value)
+        extendMinimumBreakpoints[monitor.key] = (clamp
+            ? Math.min(EXTEND_MINIMUM_BREAKPOINT_MAX, Math.max(EXTEND_MINIMUM_BREAKPOINT_MIN, (breakpoint > 0 ? breakpoint : EXTEND_MINIMUM_BREAKPOINT_DEFAULT)))
+            : value)
         this.setSetting("extendMinimumBreakpoints", extendMinimumBreakpoints)
     }
 

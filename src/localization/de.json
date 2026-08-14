@@ -290,5 +290,11 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Sieh \"-ich : Installation da eine Bedienung\" hier",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
     "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "#Zusammenhangslos",
-    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitor-Einstellungen"
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Monitor-Einstellungen",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "#Gamma #Nepp Tauscht aus Primären Schieber",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Ob eure Display unterstützt nicht tarifliche Helligkeit Aufsicht, du kannst benutzen dies da eine Alternative.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Erweiter Minimale Helligkeit",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Setz herunter die Helligkeit senkt als das tarifliche Minimum Levels anpassen mal den #Gamma #Nepp in Software. Gegebenenfalls #setzen einen Prozentsatz von dem Schieber zu benutzen Software dimmen statt Hardware dimmend.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Prozentsatz von dem Schieber jene Nutzungen Software dimmend",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Fenster wollen noch das #errichtet anpassen-in zeigen als ist gedrückt einen Helligkeit Schlüssel. Benutz nicht ein BrightnessUp oder BrightnessDown hotkey zu anpassen das #errichtet-in DisplaysHelligkeit."
 }

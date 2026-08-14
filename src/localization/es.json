@@ -290,5 +290,11 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Ver \"-i : Instalación como servicio\" aquí",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "URL de VirtualHub:",
     "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Desconectado",
-    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Ajustes de pantalla"
+    "SETTINGS_LIGHT_SENSOR_MONITORS_TITLE": "Ajustes de pantalla",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Gamma La rampa Reemplaza Primaria Slider",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Si vuestra exposición no apoya control de brillo estándar,  puedes utilizar esto como una alternativa.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Extiende Brillo Mínimo",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Reducir el brillo más bajo que los niveles mínimos estándares por ajustar el gamma rampa en software. Opcionalmente puesto un porcentaje del slider para utilizar software dimming en vez de hardware dimming.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Porcentaje del slider que software de usos dimming",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Las ventanas todavía ajustarán el construidos-en mostrar cuándo un tono de brillo está pulsado. No utiliza un BrightnessUp o BrightnessDown hotkey para ajustar el construido-en el brillo de la exposición."
 }

@@ -288,5 +288,11 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
     "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Szétkapcsolva",
     "GENERIC_LUX": "lux",
-    "SETTINGS_SIDEBAR_LIGHT_SENSOR": "Fényérzékelő"
+    "SETTINGS_SIDEBAR_LIGHT_SENSOR": "Fényérzékelő",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Gamma szintszabályzó helyettesíti az elsődleges csúszkát",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Ha a kijelző nem támogatja a szabványos fényerő-szabályozást, akkor ez alternatívaként használható.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "A minimális fényerő kiterjesztése",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Csökkenthető a fényerő a szabványos minimum szint alá a szoftveres gamma szint beállításával. Opcionálisan beállítható egy százalék a csúszkán szoftveres halványítás használatához a hardveres fényerő-szabályozás helyett.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "A csúszka százalékos értéke szoftveres halványítás használatához",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "A Windows továbbra is módosítja a beépített kijelző fényerejét, amikor megnyomja a fényerő-szabályozó gombot. Ne használjon Fényerő növelése vagy Fényerő csökkentése gyorsbillentyűket a beépített kijelző fényerejének beállításához."
 }

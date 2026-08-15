@@ -1933,7 +1933,7 @@ function getWMIC() {
             WmiClient = require('wmi-client');
         } else {
             let path = process.argv.find((val) => { return (val.indexOf("--apppath=") >= 0) }).substring(10)
-            WmiClient = require(require('path').join(path, '../node_modules/wmi-client'));
+            WmiClient = require(require('path').join(path, '../app.asar.unpacked/node_modules/wmi-client'));
         }
         wmi = new WmiClient({
             host: 'localhost',

@@ -3533,6 +3533,12 @@ ipcMain.on('get-refreshing', () => {
   sendToAllWindows('isRefreshing', isRefreshing)
 })
 
+// Trigger a hotkey by id (used by hotkey-as-button clicks in the tray panel)
+ipcMain.on('trigger-hotkey', (e, id) => {
+  const hotkey = settings.hotkeys?.find(hotkey => hotkey.id === id)
+  if (hotkey) doHotkey(hotkey)
+})
+
 ipcMain.on('open-settings', createSettings)
 
 function getSenderLogTag(sender) {

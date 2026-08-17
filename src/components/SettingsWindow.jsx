@@ -786,6 +786,23 @@ export default class SettingsWindow extends PureComponent {
                 } expandable={true} input={
                     <a className="button button-primary" onClick={() => this.deleteHotkey(idx)}>{ deleteIcon } <span>{T.t("GENERIC_DELETE")}</span></a>
                 }>
+                    <SettingsChild>
+                        <div>
+                            <div className="row hotkey-name-input">
+                                <input placeholder={T.t("SETTINGS_HOTKEYS_NAME_PLACEHOLDER")} value={hotkey.name || ""} type="text" onChange={e => {
+                                    hotkey.name = e.target.value
+                                    this.updateHotkey(hotkey, idx)
+                                }} />
+                            </div>
+                            <div className="feature-toggle-row">
+                                <input onChange={e => {
+                                    hotkey.showInPanel = e.target.checked
+                                    this.updateHotkey(hotkey, idx)
+                                }} checked={(hotkey.showInPanel ? true : false)} data-checked={(hotkey.showInPanel ? true : false)} type="checkbox" />
+                                <div className="feature-toggle-label">{T.t("SETTINGS_HOTKEYS_SHOW_IN_PANEL")}</div>
+                            </div>
+                        </div>
+                    </SettingsChild>
                     { hotkey.actions?.map((action, actionIdx) => {
                         return (
                             <SettingsChild key={`${idx}-${actionIdx}`}>
@@ -1548,6 +1565,8 @@ export default class SettingsWindow extends PureComponent {
                                         <p><a className="button" onClick={() => {
                                             this.state.hotkeys.push({
                                                 accelerator: "",
+                                                name: "",
+                                                showInPanel: false,
                                                 actions: [
                                                     Object.assign({}, defaultAction)
                                                 ],

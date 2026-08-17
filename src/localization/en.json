@@ -207,6 +207,8 @@
     "SETTINGS_HOTKEYS_INCREASE": "Increase Brightness",
     "SETTINGS_HOTKEYS_DECREASE": "Decrease Brightness",
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "Press keys here",
+    "SETTINGS_HOTKEYS_NAME_PLACEHOLDER": "Hotkey name (shown on panel button)",
+    "SETTINGS_HOTKEYS_SHOW_IN_PANEL": "Show as button in panel",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "Brightness level adjustment",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "How much the brightness should be adjusted when using hotkeys.",
     "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "Amount to scroll",

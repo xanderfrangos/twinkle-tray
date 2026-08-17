@@ -122,6 +122,8 @@
     "SETTINGS_HOTKEYS_INCREASE": "提高亮度",
     "SETTINGS_HOTKEYS_DECREASE": "降低亮度",
     "SETTINGS_HOTKEYS_PRESS_KEYS_HINT": "在此处输入快捷键",
+    "SETTINGS_HOTKEYS_NAME_PLACEHOLDER": "热键名称（面板按钮上显示）",
+    "SETTINGS_HOTKEYS_SHOW_IN_PANEL": "在面板中显示为按钮",
     "SETTINGS_HOTKEYS_LEVEL_TITLE": "亮度级别调整",
     "SETTINGS_HOTKEYS_LEVEL_DESC": "修改每次按下快捷键时调整亮度的数值。",
     "SETTINGS_HOTKEYS_TOD_TITLE": "关闭显示器功能的行为",

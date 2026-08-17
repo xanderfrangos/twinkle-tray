@@ -107,6 +107,7 @@ const defaultAction = {
     allMonitors: false,
     value: 0,
     values: [0],
+    wait: 0,
     id: uuid()
 }
 
@@ -1900,6 +1901,21 @@ function ActionItem(props) {
             return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_OFF_WARN")}</p></div>)
         } else if (action.type === "refresh") {
             return null
+        } else if (action.type === "hdr") {
+            return (
+                <div className="input-row hotkey-action-hdr">
+                    <div className="field">
+                        <label>{T.t("SETTINGS_HOTKEY_HDR_STATE")}</label>
+                        <select value={(action.value == 1 ? 1 : 0)} onChange={e => {
+                            action.value = (e.target.value == "1" ? 1 : 0)
+                            props.onChange?.(action)
+                        }}>
+                            <option value="1">{T.t("SETTINGS_HOTKEY_HDR_ON")}</option>
+                            <option value="0">{T.t("SETTINGS_HOTKEY_HDR_OFF")}</option>
+                        </select>
+                    </div>
+                </div>
+            )
         } else {
             let selectBoxValue = action.target
             if (!(selectBoxValue === "brightness" || selectBoxValue === "sdr" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
@@ -2021,12 +2037,22 @@ function ActionItem(props) {
                                 <option value="set">{T.t("SETTINGS_HOTKEY_ACTION_SET")}</option>
                                 <option value="offset">{T.t("SETTINGS_HOTKEY_ACTION_OFFSET")}</option>
                                 <option value="cycle">{T.t("SETTINGS_HOTKEY_ACTION_CYCLE")}</option>
+                                <option value="hdr">{T.t("SETTINGS_HOTKEY_ACTION_HDR")}</option>
                                 <option value="off">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</option>
                                 <option value="refresh">{T.t("GENERIC_REFRESH_DISPLAYS")}</option>
                             </select>
                         </div>
                     </div>
                     {getHotkeyInput()}
+                    <div className="input-row hotkey-action-wait">
+                        <div className="field">
+                            <label>{T.t("SETTINGS_HOTKEY_WAIT")}</label>
+                            <input type="number" min="0" max="60000" step="100" value={action.wait ?? 0} onChange={e => {
+                                action.wait = parseInt(e.target.value || 0)
+                                props.onChange?.(action)
+                            }} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

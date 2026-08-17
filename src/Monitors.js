@@ -210,6 +210,8 @@ async function handleMonitorMessage(data) {
             setBrightness(data.brightness, data.id)
         }  else if (data.type === "sdr") {
             setSDRBrightness(data.brightness, data.id)
+        } else if (data.type === "hdr") {
+            setAdvancedColor(data.path, data.enabled)
         } else if (data.type === "gamma") {
             setGammaBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
@@ -1668,6 +1670,32 @@ function setSDRBrightness(brightness, id) {
         console.log(`Couldn't update SDR brightness! [${id}]`, e);
         return false
     }
+}
+
+function setAdvancedColor(path, enabled) {
+    return new Promise(async (resolve) => {
+        try {
+            const ok = hdr.setAdvancedColor(path, !!enabled)
+            const deadline = Date.now() + 5000
+            while (Date.now() < deadline) {
+                const displays = hdr.getDisplays()
+                const display = Object.values(displays).find(d => d.path === path)
+                if (display && display.hdrActive === !!enabled) {
+                    process.send({ type: `hdr-applied::${path}`, ok: true })
+                    resolve(true)
+                    return
+                }
+                await new Promise(r => setTimeout(r, 200))
+            }
+            console.log(`Advanced Color for ${path} did not confirm within 5s`)
+            process.send({ type: `hdr-applied::${path}`, ok })
+            resolve(ok)
+        } catch (e) {
+            console.log(`Couldn't set Advanced Color! [${path}]`, e)
+            process.send({ type: `hdr-applied::${path}`, ok: false })
+            resolve(false)
+        }
+    })
 }
 
 function setBrightness(brightness, id) {

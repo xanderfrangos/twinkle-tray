@@ -260,7 +260,7 @@
     "SETTINGS_LIGHT_SENSOR_TYPE_FAKE": "Falso",
     "SETTINGS_LIGHT_SENSOR_TYPE_WINDOWS": "Windows Ambient",
     "SETTINGS_LIGHT_SENSOR_POLLING_TITLE": "Intervalo de sondeo del sensor (segundos)",
-    "SETTINGS_LIGHT_SENSOR_POLLING_DESC": "Establece el intervale al que el sensor sondea los datos de luz.",
+    "SETTINGS_LIGHT_SENSOR_POLLING_DESC": "Establece el intervalo al que el sensor sondea los datos de luz.",
     "SETTINGS_LIGHT_SENSOR_MONITORS_DESC": "Esto asigna el brillo de cada monitor (0%-100%) a los niveles de luz ambientales en lux. Por ejemplo, configurar el rango a 5 y 250 significa:",
     "SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MIN": "Cuando el sensor lee 5 lux o menos, el brillo se establece al 0%.",
     "SETTINGS_LIGHT_SENSOR_MONITORS_DESC_MAX": "Cuando el sensor lee 250 lux o más, el brillo se establece al 100%.",

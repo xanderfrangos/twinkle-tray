@@ -1704,6 +1704,30 @@ let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
 const hotkeyCycleIndexes = []
+
+function waitForHdrApplied(path, timeout = 8000) {
+    return new Promise(resolve => {
+        let settled = false
+        const onApplied = (data) => {
+            if (settled) return
+            settled = true
+            cleanup()
+            resolve(data?.ok !== false)
+        }
+        const timer = setTimeout(() => {
+            if (settled) return
+            settled = true
+            cleanup()
+            resolve(false)
+        }, timeout)
+        const cleanup = () => {
+            clearTimeout(timer)
+            monitorsEventEmitter.removeListener(`hdr-applied::${path}`, onApplied)
+        }
+        monitorsEventEmitter.once(`hdr-applied::${path}`, onApplied)
+    })
+}
+
 async function doHotkey(hotkey, options = {}) {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
@@ -1714,6 +1738,7 @@ async function doHotkey(hotkey, options = {}) {
     let showOverlay = false
     doingHotkey = true
     setRecentlyInteracted(true)
+    let refreshAfterActions = false
 
     // First let's figure out where we're at in the cycle, if applicable
 
@@ -1733,6 +1758,34 @@ async function doHotkey(hotkey, options = {}) {
         } else if (action.type === "refresh") {
           showOverlay = false
           await refreshMonitors(true, true)
+        } else if (action.type === "hdr") {
+          showOverlay = false
+          const hotkeyMonitors = []
+          for (const monitor of Object.values(monitors)) {
+            let applicable = false
+            if (action.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
+              applicable = true
+            } else if (Object.keys(action.monitors)?.length && action.monitors[monitor.id]) {
+              applicable = true
+            }
+            if (applicable) hotkeyMonitors.push(monitor)
+          }
+          if (hotkeyMonitors.length) {
+            const confirmations = []
+            for (const monitor of hotkeyMonitors) {
+              if (!monitor?.hwid?.length) continue
+              const hwidString = monitor.hwid.join("#")
+              const path = (hwidString.indexOf("\\\\?\\") === 0 ? hwidString : "\\\\?\\" + hwidString)
+              confirmations.push(waitForHdrApplied(path))
+              monitorsThread.send({
+                type: "hdr",
+                path,
+                enabled: (parseInt(action.value) == 1)
+              })
+            }
+            if (confirmations.length) await Promise.all(confirmations)
+            refreshAfterActions = true
+          }
         } else if (action.type === "set" || action.type === "offset" || action.type === "cycle") {
 
           // Build list of all applicable monitors
@@ -1874,6 +1927,21 @@ async function doHotkey(hotkey, options = {}) {
 
       } catch (e) {
         console.log("HOTKEY ERROR:", e)
+      }
+      await Utils.wait(action.wait || 0)
+    }
+
+    if (refreshAfterActions) {
+      // Clear any update pause left by prior actions (e.g. brightness sets)
+      // so the deferred refresh actually runs.
+      if (pausedMonitorUpdates) {
+        clearTimeout(pausedMonitorUpdates)
+        pausedMonitorUpdates = false
+      }
+      try {
+        await refreshMonitors(false, true)
+      } catch (e) {
+        console.log("HOTKEY REFRESH ERROR:", e)
       }
     }
 
@@ -3463,6 +3531,12 @@ ipcMain.on('flush-vcp-cache', function (event) {
 
 ipcMain.on('get-refreshing', () => {
   sendToAllWindows('isRefreshing', isRefreshing)
+})
+
+// Trigger a hotkey by id (used by hotkey-as-button clicks in the tray panel)
+ipcMain.on('trigger-hotkey', (e, id) => {
+  const hotkey = settings.hotkeys?.find(hotkey => hotkey.id === id)
+  if (hotkey) doHotkey(hotkey)
 })
 
 ipcMain.on('open-settings', createSettings)

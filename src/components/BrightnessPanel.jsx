@@ -403,6 +403,14 @@ const BrightnessPanel = memo(function BrightnessPanel() {
           <div title={T.t("GENERIC_SETTINGS")} className="settings" onClick={window.openSettings}>&#xE713;</div>
         </div>
       </div>
+      {
+        !state.sleeping && (window.settings?.hotkeys || []).some(hk => hk.showInPanel && hk.name) &&
+        <div className="hotkey-buttons">
+          {(window.settings?.hotkeys || []).filter(hk => hk.showInPanel && hk.name).map(hk =>
+            <button key={hk.id} className="hotkey-button" onClick={() => window.triggerHotkey(hk.id)}>{hk.name}</button>
+          )}
+        </div>
+      }
       {state.sleeping ? (<div></div>) : getMonitors()}
       {
         (state.update && state.update.show)

@@ -17,16 +17,16 @@ module.exports = {
     , _clearDisplayCache: ddcci.clearDisplayCache
     , _setLogLevel: ddcci.setLogLevel
     , _parseCapabilitiesString: parseCapabilitiesString
-    , _refresh: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => ddcci.refresh(method, usePreviousResults, checkHighLevel)
-    , getMonitorList: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => {
-        ddcci.refresh(method, usePreviousResults, checkHighLevel);
+    , _refresh: (method = "accurate", usePreviousResults = true, checkHighLevel = true, excludedKeys = []) => ddcci.refresh(method, usePreviousResults, checkHighLevel, excludedKeys)
+    , getMonitorList: (method = "accurate", usePreviousResults = true, checkHighLevel = true, excludedKeys = []) => {
+        ddcci.refresh(method, usePreviousResults, checkHighLevel, excludedKeys);
         return ddcci.getMonitorList();
     }
-    , getAllMonitors: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => {
-        ddcci.refresh(method, usePreviousResults, checkHighLevel);
+    , getAllMonitors: (method = "accurate", usePreviousResults = true, checkHighLevel = true, excludedKeys = []) => {
+        ddcci.refresh(method, usePreviousResults, checkHighLevel, excludedKeys);
         const monitors = ddcci.getAllMonitors();
         for (const monitor of monitors) {
-            if (monitor.result && monitor.result != "ok" && monitor.result != "invalid") {
+            if (monitor.result && monitor.result != "ok" && monitor.result != "invalid" && monitor.result != "blocked") {
                 monitor.capabilities = parseCapabilitiesString(monitor.result);
                 monitor.capabilitiesRaw = monitor.result;
             }
@@ -34,8 +34,8 @@ module.exports = {
         }
         return monitors;
     }
-    , getMonitorInputs: (monitorFullName) => {
-        ddcci.refresh("accurate", true, true)
+    , getMonitorInputs: (monitorFullName, excludedKeys = []) => {
+        ddcci.refresh("accurate", true, true, excludedKeys)
         return ddcci.getMonitorInputs(monitorFullName)
     }
 

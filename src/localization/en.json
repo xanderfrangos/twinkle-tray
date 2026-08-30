@@ -143,6 +143,8 @@
     "SETTINGS_MONITORS_HIDE_INTERNAL_DESC": "When the lid is closed or the internal display has been disabled in Windows, hide the brightness slider in the panel.",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE": "Hide Displays",
     "SETTINGS_MONITORS_HIDE_DISPLAYS_DESC": "If you would like to hide specific displays from the flyout, you can toggle them off here.",
+    "SETTINGS_MONITORS_DDC_BLOCK_TITLE": "Block DDC/CI communication",
+    "SETTINGS_MONITORS_DDC_BLOCK_DESC": "Stop Twinkle Tray from sending any DDC/CI commands to specific displays. Use this for displays that slow down or freeze your system when probed, such as those connected through one-way optical HDMI cables, or adapters that don't pass DDC/CI through. Blocked displays can't be controlled by Twinkle Tray.",
     "SETTINGS_MONITORS_HDR_DISPLAYS_TITLE": "HDR Display Settings",
     "SETTINGS_MONITORS_HDR_DISPLAYS_DESC": "Enable SDR brightness sliders for specific monitors. The monitors must have HDR enabled in Windows for this to work.",
     "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Gamma Ramp Replaces Primary Slider",

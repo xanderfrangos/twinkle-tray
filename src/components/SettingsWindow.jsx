@@ -1083,6 +1083,34 @@ export default class SettingsWindow extends PureComponent {
         this.setSetting("hideDisplays", hideDisplays)
     }
 
+    getDDCBlockedMonitors = () => {
+        try {
+            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
+            } else {
+                return Object.values(this.state.monitors).map((monitor, index) => {
+
+                    return (
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                            <div className="inputToggle-generic">
+                                <input onChange={(e) => { this.setDDCBlockedMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                            </div>
+                        } />
+                    )
+
+                })
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    setDDCBlockedMonitor = (value, monitor) => {
+        const disableDDCDisplays = Object.assign({}, this.state.rawSettings?.disableDDCDisplays)
+        disableDDCDisplays[monitor.key] = value
+        this.setSetting("disableDDCDisplays", disableDDCDisplays)
+    }
+
     toggleFeature = (monitor, featureRaw) => {
         const feature = `0x${parseInt(featureRaw).toString(16).toUpperCase()}`
 
@@ -1478,6 +1506,9 @@ export default class SettingsWindow extends PureComponent {
                                     )} />
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHideMonitors()}
+                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_DDC_BLOCK_TITLE")} description={T.t("SETTINGS_MONITORS_DDC_BLOCK_DESC")} expandable={true}>
+                                        {this.getDDCBlockedMonitors()}
                                     </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_INTERNAL_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_INTERNAL_DESC")} input={this.renderToggle("hideClosedLid")} />
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_RENAME_TITLE")} description={T.t("SETTINGS_MONITORS_RENAME_DESC")} expandable={true}>

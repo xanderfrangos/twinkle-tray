@@ -248,6 +248,24 @@ tryDdcCiOperation(F operation, DWORD& errorCode)
     return FALSE;
 }
 
+// True when a display's device key matches an entry in the caller's
+// exclusion list. Entries match as substrings so callers can pass either
+// a full device key or just its instance portion (e.g. "4&6ef48c&0&UID29000").
+bool
+isExcludedDeviceKey(const std::string& deviceKey,
+                    const std::vector<std::string>& excludedKeys)
+{
+    if (deviceKey.empty()) {
+        return false;
+    }
+    for (auto const& key : excludedKeys) {
+        if (!key.empty() && deviceKey.find(key) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Throws a JS error carrying the Win32 error code, so callers can
 // classify failures without parsing localized message strings.
 void
@@ -738,7 +756,7 @@ populateHandlesMapLegacy()
 }
 
 void
-populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
+populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, bool checkHighLevel, const std::vector<std::string>& excludedKeys)
 {
     std::map<std::string, HANDLE> newHandles;
     std::map<std::string, PhysicalMonitor> newPhysicalHandles;
@@ -907,8 +925,21 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                 continue;
             }
 
+            // Skip all DDC/CI and high-level probing for displays excluded
+            // by the caller. A display whose DDC channel never responds
+            // (e.g. behind a one-way optical HDMI link or a DDC-stripping
+            // adapter) can stall each request for seconds in the graphics
+            // driver and drag down the whole shared I2C/AUX bus.
+            const bool ddcBlocked =
+              isExcludedDeviceKey(newMonitor.deviceKey, excludedKeys);
+            if (ddcBlocked) {
+                newMonitor.ddcciSupported = false;
+                newMonitor.result = "blocked";
+                p("-- -- DDC/CI: blocked (excluded by caller)");
+            }
+
             // Check if monitor was previously tested and supported
-            if(usePreviousResults) {
+            if(usePreviousResults && !ddcBlocked) {
                 for (auto const& previousDisplay : physicalMonitorHandles) {
                     if(previousDisplay.second.fullName == newMonitor.fullName && previousDisplay.second.deviceID == newMonitor.deviceID && previousDisplay.second.ddcciSupported && previousDisplay.second.result != "invalid") {
                         newMonitor.result = previousDisplay.second.result;
@@ -932,7 +963,7 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
             }
 
             // Test high level capabilities
-            if((newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
+            if(!ddcBlocked && (newMonitor.hlCapabilities.brightnessOK || newMonitor.hlCapabilities.contrastOK) == false) {
                 if(checkHighLevel) {
                     p("-- -- High Level: Checking...");
                     newMonitor.hlCapabilities = getHighLevelCapabilities(newMonitor.handle);
@@ -946,7 +977,9 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 
             // Test DDC/CI
             bool saveCapabilities = false;
-            if (newMonitor.ddcciSupported == false) {
+            if (ddcBlocked) {
+                // Nothing to test; the display must not be communicated with.
+            } else if (newMonitor.ddcciSupported == false) {
                 std::string result = "invalid";
                 if (capabilities.find(newMonitor.deviceKey) == capabilities.end()) {
                     // Capabilities string not found, read it
@@ -1031,16 +1064,16 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
 }
 
 void
-populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool checkHighLevel)
+populateHandlesMap(std::string validationMethod, bool usePreviousResults, bool checkHighLevel, const std::vector<std::string>& excludedKeys)
 {
     try {
         if (validationMethod == "legacy")
             return populateHandlesMapLegacy();
 
         if (validationMethod == "accurate" || validationMethod == "no-validation")
-            return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel);
+            return populateHandlesMapNormal(validationMethod, usePreviousResults, checkHighLevel, excludedKeys);
 
-        return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel);
+        return populateHandlesMapNormal("fast", usePreviousResults, checkHighLevel, excludedKeys);
     } catch (...) {
         p("populateHandlesMap: refresh failed. Keeping previous monitor data.");
     }
@@ -1058,8 +1091,20 @@ refresh(const Napi::CallbackInfo& info)
         throw Napi::TypeError::New(env, "Invalid arguments");
     }
 
+    // Optional: device keys (or key substrings) that must not be probed.
+    std::vector<std::string> excludedKeys;
+    if (info.Length() >= 4 && info[3].IsArray()) {
+        Napi::Array keys = info[3].As<Napi::Array>();
+        for (uint32_t i = 0; i < keys.Length(); i++) {
+            Napi::Value key = keys.Get(i);
+            if (key.IsString()) {
+                excludedKeys.push_back(key.As<Napi::String>().Utf8Value());
+            }
+        }
+    }
+
     try {
-        populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean(), info[2].As<Napi::Boolean>().ToBoolean());
+        populateHandlesMap(info[0].As<Napi::String>().Utf8Value(), info[1].As<Napi::Boolean>().ToBoolean(), info[2].As<Napi::Boolean>().ToBoolean(), excludedKeys);
     } catch (...) {
         throw Napi::Error::New(env, "Error refreshing DDC/CI displays!");
     }

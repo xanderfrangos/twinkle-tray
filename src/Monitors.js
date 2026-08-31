@@ -425,6 +425,28 @@ let canUseWmiBridge = false
 
 let ddcBrightnessVCPs = {}
 
+// Displays the user excluded from DDC/CI entirely. A display whose DDC
+// channel never responds (e.g. behind a one-way optical HDMI cable or a
+// DDC-stripping adapter) stalls every request for seconds inside the
+// graphics driver and degrades the shared I2C/AUX bus for all displays,
+// so these must never be probed at all.
+function getDDCBlockedKeys() {
+    const disableDDCDisplays = settings?.disableDDCDisplays || {}
+    return Object.keys(disableDDCDisplays).filter(key => disableDDCDisplays[key])
+}
+
+// Accepts a monitor id/path string, or a monitor object with id/hwid.
+// Settings keys are instance IDs (e.g. "4&abc123&0&UID1234"), which appear
+// verbatim inside every form of display id used here.
+function isDDCBlocked(monitor) {
+    if (!monitor) return false
+    const monitorString = (typeof monitor === "string"
+        ? monitor
+        : (monitor.id || (Array.isArray(monitor.hwid) ? monitor.hwid.join("#") : "")))
+    if (!monitorString) return false
+    return getDDCBlockedKeys().some(key => monitorString.indexOf(key) >= 0)
+}
+
 function featureSnapshotKey(monitor) {
     return Array.isArray(monitor?.hwid) ? monitor.hwid.join("#") : false
 }
@@ -527,7 +549,8 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
                         ddcci._refresh(
                             (shouldEnrichCapabilities() ? "fast" : determineDDCCIMethod()),
                             true,
-                            !settings.disableHighLevel
+                            !settings.disableHighLevel,
+                            getDDCBlockedKeys()
                         )
                     }
                     for (const hwid2 in monitors) {
@@ -696,7 +719,7 @@ async function enrichMonitorCapabilities() {
 
         for (const monitor of monitorsToEnrich) {
             const id = monitor?.deviceKey
-            if (!id || monitorReports[id] || unstableDDC[id]) continue
+            if (!id || monitorReports[id] || unstableDDC[id] || isDDCBlocked(id)) continue
 
             try {
                 const reportRaw = withDDCSentinel("capabilities", id, () =>
@@ -794,9 +817,12 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
             // A timed-out DDC scan must not trigger another DDC probe. Use the
             // standard luminance VCP as the high-level API's placeholder so
             // downstream feature and display-type handling remains valid.
-            const brightnessType = featureScanTimedOut
-                ? (canUseHighLevelBrightness ? 0x10 : false)
-                : await determineBrightnessVCPCode(id)
+            // A DDC-blocked display must not be probed for one either.
+            const brightnessType = isDDCBlocked(id)
+                ? false
+                : featureScanTimedOut
+                    ? (canUseHighLevelBrightness ? 0x10 : false)
+                    : await determineBrightnessVCPCode(id)
 
             let ddcciInfo = {
                 id: id,
@@ -1348,7 +1374,7 @@ getFeaturesDDC = (ddcciMethod = "accurate", coreOnly = false) => {
 
             // Sometimes the handles returned are NULL, so we should try again.
             let tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
-                ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+                ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel, getDDCBlockedKeys())
             )
             if(tmpDdcciMonitors) {
                 let doRetry = false
@@ -1362,7 +1388,7 @@ getFeaturesDDC = (ddcciMethod = "accurate", coreOnly = false) => {
                     console.log(`DDC/CI results contain a null handle (${doRetry?.deviceKey}). Trying again.`)
                     await wait(200)
                     tmpDdcciMonitors = withDDCSentinel("refresh", false, () =>
-                        ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel)
+                        ddcci.getAllMonitors(ddcciMethod, true, !settings.disableHighLevel, getDDCBlockedKeys())
                     )
                     for(const monitor of tmpDdcciMonitors) {
                         if(monitor.handleIsValid === false) {
@@ -1435,6 +1461,7 @@ getFeaturesDDC = (ddcciMethod = "accurate", coreOnly = false) => {
 
 checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurate", shouldAbort = () => false) => {
     const features = {}
+    if (isDDCBlocked(monitor)) return features;
     try {
         const hwid = monitor.split("#")
 
@@ -1508,6 +1535,7 @@ checkMonitorFeatures = async (monitor, skipCache = false, ddcciMethod = "accurat
 }
 
 determineBrightnessVCPCode = async (monitor) => {
+    if(isDDCBlocked(monitor)) return false;
     const hwid = monitor.split("#")
     if(ddcBrightnessVCPs?.[hwid[1]]) {
         return parseInt(ddcBrightnessVCPs[hwid[1]])
@@ -1576,8 +1604,8 @@ getBrightnessDDC = (monitorObj, includeFeatures = true, reportReadFailure = fals
             const timeout = setTimeout(() => { console.log("getBrightnessDDC Timed out."); reject({}) }, 8000)
             const ddcciPath = monitor.hwid.join("#")
 
-            // If brightness is not supported, stop
-            if (!monitor?.brightnessType) {
+            // If brightness is not supported, or DDC/CI is blocked, stop
+            if (!monitor?.brightnessType || isDDCBlocked(ddcciPath)) {
                 clearTimeout(timeout)
                 resolve(monitor)
                 return false
@@ -1769,9 +1797,10 @@ async function checkIfVCPSupported(monitor, code) {
 async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError = true) {
     const vcpString = vcpStr(code)
     if(!code || code == "0x0") return false;
+    if(isDDCBlocked(monitor)) return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
-        if (code === 96) return ddcci.getMonitorInputs(monitor)
+        if (code === 96) return ddcci.getMonitorInputs(monitor, getDDCBlockedKeys())
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
@@ -1793,6 +1822,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError 
 }
 
 async function setVCP(monitor, code, value) {
+    if(isDDCBlocked(monitor)) return false;
     if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy
     try {
         const vcpString = vcpStr(code)
@@ -1814,7 +1844,8 @@ async function setVCP(monitor, code, value) {
     }
 }
 
-async function getHighLevelBrightness(monitor) {   
+async function getHighLevelBrightness(monitor) {
+    if(isDDCBlocked(monitor)) return false;
     try {
         let result = ddcci._getHighLevelBrightness(monitor)
         return result
@@ -1825,7 +1856,8 @@ async function getHighLevelBrightness(monitor) {
 }
 
 async function setHighLevelBrightness(monitor, value) {
-    if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy   
+    if(isDDCBlocked(monitor)) return false;
+    if(busyLevel > 0) while(busyLevel > 0) { await wait(100) } // Wait until no longer busy
     try {
         let result = ddcci._setHighLevelBrightness(monitor, value)
         return result
@@ -2112,7 +2144,7 @@ testDDCCIMethods = async () => {
 
         let startTime = process.hrtime.bigint()
         const accurateResults = withDDCSentinel("method-test", false, () =>
-            ddcci.getAllMonitors("accurate", false)
+            ddcci.getAllMonitors("accurate", false, true, getDDCBlockedKeys())
         )
         const accurateIDs = []
         const accurateFeatures = []
@@ -2132,7 +2164,7 @@ testDDCCIMethods = async () => {
     
         startTime = process.hrtime.bigint()
         const fastResults = withDDCSentinel("method-test", false, () =>
-            ddcci.getAllMonitors("fast", false)
+            ddcci.getAllMonitors("fast", false, true, getDDCBlockedKeys())
         )
         const fastIDs = []
         const fastFeatures = []

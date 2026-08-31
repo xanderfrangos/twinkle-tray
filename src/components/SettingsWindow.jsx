@@ -1093,7 +1093,7 @@ export default class SettingsWindow extends PureComponent {
                     return (
                         <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
                             <div className="inputToggle-generic">
-                                <input onChange={(e) => { this.setDDCBlockedMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.key] ? true : false)} type="checkbox" />
+                                <input onChange={(e) => { this.setDDCBlockedMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.hwid?.[1]] ? true : false)} data-checked={(this.state.rawSettings?.disableDDCDisplays?.[monitor.hwid?.[1]] ? true : false)} type="checkbox" />
                             </div>
                         } />
                     )
@@ -1106,8 +1106,13 @@ export default class SettingsWindow extends PureComponent {
     }
 
     setDDCBlockedMonitor = (value, monitor) => {
+        // Keyed by the display's model ID (like monitorFeatures and
+        // userSkipReapply), not the connection instance UID: docks and MST
+        // hubs can assign a different UID on every reconnect, which would
+        // silently disarm the block. Matching is by substring against the
+        // device path, so hand-entered instance keys also still work.
         const disableDDCDisplays = Object.assign({}, this.state.rawSettings?.disableDDCDisplays)
-        disableDDCDisplays[monitor.key] = value
+        disableDDCDisplays[monitor.hwid?.[1]] = value
         this.setSetting("disableDDCDisplays", disableDDCDisplays)
     }
 

@@ -2909,37 +2909,46 @@ function flushGammaBrightness() {
 
 let updateBrightnessTimeout = false
 let updateBrightnessQueue = []
-let lastBrightnessTimes = []
+let lastBrightnessTimes = {}
 function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
+  // A monitor can receive its brightness update and several linked feature
+  // updates at once. Keep each VCP target separate so one linked feature does
+  // not replace another feature (or the brightness update) in the queue.
+  const target = `${id}::${vcp}`
   let idx = updateBrightnessQueue.length
-  const found = updateBrightnessQueue.findIndex(item => item.id === id)
+  const found = updateBrightnessQueue.findIndex(item => item.target === target)
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
     useCap,
-    vcp
+    vcp,
+    target,
+    sendUpdate
   }
   const now = Date.now()
-  if (lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
-    lastBrightnessTimes[id] = now
+  if (lastBrightnessTimes[target] === undefined || now >= lastBrightnessTimes[target] + settings.updateInterval) {
+    lastBrightnessTimes[target] = now
+    updateBrightnessQueue.splice((found > -1 ? found : idx), 1)
     updateBrightness(id, level, useCap, vcp)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
   } else if (!updateBrightnessTimeout) {
-    lastBrightnessTimes[id] = now
     updateBrightnessTimeout = setTimeout(() => {
       const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
+      updateBrightnessTimeout = false
+      let shouldSendUpdate = false
       for (let bUpdate of updateBrightnessQueueCopy) {
         if (bUpdate) {
           try {
+            lastBrightnessTimes[bUpdate.target] = Date.now()
             updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
+            shouldSendUpdate ||= bUpdate.sendUpdate
           } catch (e) {
             console.error(e)
           }
         }
       }
-      updateBrightnessTimeout = false
-      if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
+      if (shouldSendUpdate) sendToAllWindows('monitors-updated', monitors);
     }, settings.updateInterval)
   }
   return false

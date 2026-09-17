@@ -36,7 +36,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
+      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active" || usesGammaSlider(state.monitors[key])) && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
   }, [state.monitors, state.hideDisplays])
@@ -157,7 +157,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       setLevelsChanged(false)
       try {
         for (let idx in monitors) {
-          if (monitors[idx].type != "none" && monitors[idx].brightness != lastLevels[idx]) {
+          if ((monitors[idx].type != "none" || usesGammaSlider(monitors[idx])) && monitors[idx].brightness != lastLevels[idx]) {
             window.updateBrightness(monitors[idx].id, monitors[idx].brightness)
           }
         }

@@ -82,7 +82,7 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} reportedMaximum={monitor.features[vcp]?.[1]} />
                     </SettingsChild>
                 </SettingsOption>
             )
@@ -206,7 +206,7 @@ export default function MonitorFeatures(props) {
 }
 
 function MonitorFeaturesSettings(props) {
-    const { enabled, settings, hwid, vcp, onChange, T } = props
+    const { enabled, settings, hwid, vcp, onChange, T, reportedMaximum } = props
     //if(!enabled) return (<></>);
 
     const [settingsObj, updateSettings] = useObject(Object.assign({
@@ -219,6 +219,11 @@ function MonitorFeaturesSettings(props) {
         maxVisual: 100,
         linked: false
     }, settings))
+    const [maxRawValueInput, setMaxRawValueInput] = useState(settings?.maxRawValue ?? "")
+
+    useEffect(() => {
+        setMaxRawValueInput(settings?.maxRawValue ?? "")
+    }, [settings?.maxRawValue])
 
     const onChangeHandler = (settingName, value) => {
         try {
@@ -229,11 +234,30 @@ function MonitorFeaturesSettings(props) {
             if (!window.settings.monitorFeaturesSettings[hwid][vcp]) {
                 window.settings.monitorFeaturesSettings[hwid][vcp] = {}
             }
-            window.settings.monitorFeaturesSettings[hwid][vcp][settingName] = value
+            if (value === undefined) {
+                delete window.settings.monitorFeaturesSettings[hwid][vcp][settingName]
+            } else {
+                window.settings.monitorFeaturesSettings[hwid][vcp][settingName] = value
+            }
             if (onChange) onChange(settingName, value);
         } catch (e) {
             console.log(e)
         }
+    }
+
+    const commitMaxRawValue = () => {
+        const input = String(maxRawValueInput).trim()
+        const parsed = (/^\d+$/.test(input) ? Number(input) : NaN)
+
+        if (input !== "" && (!Number.isInteger(parsed) || parsed < 1 || parsed > 0xFFFF)) {
+            setMaxRawValueInput(settingsObj.maxRawValue ?? "")
+            return
+        }
+
+        const value = (input === "" ? undefined : parsed)
+        if (value === settingsObj.maxRawValue) return
+        setMaxRawValueInput(value ?? "")
+        onChangeHandler("maxRawValue", value)
     }
 
     const iconType = (
@@ -277,6 +301,17 @@ function MonitorFeaturesSettings(props) {
                 <Slider min={0} max={100} name={T.t("GENERIC_MINIMUM")} onChange={value => onChangeHandler("min", value)} level={settingsObj.min} scrolling={false} height={"short"} icon={false} />
                 <Slider min={0} max={100} name={T.t("GENERIC_MAXIMUM")} onChange={value => onChangeHandler("max", value)} level={settingsObj.max} scrolling={false} height={"short"} icon={false} />
             </div>
+            {vcp === "0x62" && <>
+                <div className="input-row">
+                    <div className="field" style={{ flex: 1 }}>
+                        <label>{T.t("SETTINGS_FEATURES_DDC_MAXIMUM")}</label>
+                        <input type="number" min="1" max="65535" step="1" value={maxRawValueInput} onChange={e => setMaxRawValueInput(e.target.value)} onBlur={commitMaxRawValue} onKeyDown={e => { if (e.key === "Enter") e.target.blur() }} placeholder={reportedMaximum ?? T.t("SETTINGS_FEATURES_DDC_MAXIMUM_PLACEHOLDER")} style={{ maxWidth: "120px" }} />
+                    </div>
+                </div>
+                <p className="description" style={{ marginTop: "8px", opacity: 0.7, fontSize: "12px" }}>
+                    {T.t("SETTINGS_FEATURES_DDC_MAXIMUM_DESC")}
+                </p>
+            </>}
             <div className="input-row">
                 <div className="feature-toggle-row">
                     <input onChange={e => onChangeHandler("linked", e.target.checked)} checked={(settingsObj.linked ? true : false)} data-checked={(settingsObj.linked ? true : false)} type="checkbox" />

@@ -451,3 +451,9 @@ window.settings = {}
 window.jsVars = getArgumentVars()
 window.isRefreshing = getArgumentVars().isRefreshing
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
+
+window.addEventListener("set-volume", e => {
+    if (!window.showPanel) return;
+    const { monitor, value } = e.detail
+    ipc.send("set-volume", { monitor, value })
+})

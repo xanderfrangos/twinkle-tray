@@ -5943,8 +5943,45 @@ ipcMain.on('get-mica-wallpaper', sendMicaWallpaper)
 //
 
 
+const hasClientApiVersion = data =>
+  data && Object.prototype.hasOwnProperty.call(data, "version")
+
+const isClientApiV1 = data => data?.version === 1
+
+const createClientApiError = (code, message) => ({
+  clientApiError: true,
+  code,
+  message
+})
+
+const formatClientSuccess = (data, result, ...legacyResults) => {
+  if (!isClientApiV1(data)) return legacyResults.length ? legacyResults[0] : result
+
+  return JSON.stringify({
+    version: 1,
+    id: data.id ?? null,
+    ok: true,
+    result: result === undefined ? null : result
+  })
+}
+
+const formatClientError = (data, code, error) => {
+  if (!isClientApiV1(data)) return undefined
+
+  return JSON.stringify({
+    version: 1,
+    id: data.id ?? null,
+    ok: false,
+    error: {
+      code,
+      message: error instanceof Error ? error.message : String(error)
+    }
+  })
+}
+
 const handleClientMessage = async (message, remote) => {
   const type = (remote ? `UDP` : `PIPE`)
+  let data
 
   try {
     if(remote) {
@@ -5953,15 +5990,34 @@ const handleClientMessage = async (message, remote) => {
       console.log(`[${type}] Got: ${message}`)
     }
     
-    const data = JSON.parse(message)
-    if (typeof data !== "object" || !data?.type) {
-      throw(`[${type}] Invalid command`)
+    data = JSON.parse(message)
+
+    if (typeof data !== "object" || data === null) {
+      throw createClientApiError(
+        "INVALID_REQUEST",
+        `[${type}] Invalid command`
+      )
     }
 
-    console.log(data.key, settings.udpKey)
     if (remote && data.key !== settings.udpKey) {
       throw("[UDP] Missing or invalid key")
     }
+
+    if (hasClientApiVersion(data) && !isClientApiV1(data)) {
+      throw createClientApiError(
+        "UNSUPPORTED_VERSION",
+        `Unsupported API version: ${data.version}`
+      )
+    }
+
+    if (!data.type) {
+      throw createClientApiError(
+        "INVALID_REQUEST",
+        `[${type}] Invalid command`
+      )
+    }
+
+    console.log(data.key, settings.udpKey)
 
     const findMonitor = monitor => {
       try {
@@ -5989,16 +6045,23 @@ const handleClientMessage = async (message, remote) => {
     if (data.type === "list") {
       // data.type === "list"
       // List all current monitors
-      return JSON.stringify(monitors)
+      return formatClientSuccess(
+        data,
+        monitors,
+        JSON.stringify(monitors)
+      )
     } else if (data.type === "get") {
       // data.type === "get"
       // Get property of specific monitor
 
-      if (!(data.monitor && data.property)) throw("Missing parameter!");
+      if (!(data.monitor && data.property)) {
+        throw createClientApiError("INVALID_REQUEST", "Missing parameter!")
+      }
 
       const monitor = findMonitor(data.monitor)
-      if (!monitor) throw("Couldn't find monitor!")
+      if (!monitor) throw createClientApiError("MONITOR_NOT_FOUND", "Couldn't find monitor!")
 
+      const invalidProperty = Symbol("invalidProperty")
       const getMonitorProperty = (monitor, property) => {
         try {
           const { features } = monitor
@@ -6022,7 +6085,7 @@ const handleClientMessage = async (message, remote) => {
             case "maxpowerstate": return (features.powerState ? features.powerState[1] : -1);
             case "volume": return (features.volume ? features.volume[0] : -1);
             case "maxvolume": return (features.volume ? features.volume[1] : -1);
-            default: throw("Invalid property!");
+            default: return invalidProperty;
           }
         } catch (e) {
           throw(`[${type}]  Error getting monitor property`, e)
@@ -6030,26 +6093,36 @@ const handleClientMessage = async (message, remote) => {
       }
 
       if (data.property === "vcp") {
-        return await getVCP(monitor, data.code)
+        const result = await getVCP(monitor, data.code)
+        return formatClientSuccess(data, result)
       } else {
-        return getMonitorProperty(monitor, data.property)
+        const result = getMonitorProperty(monitor, data.property)
+        if (result === invalidProperty) {
+          throw createClientApiError("INVALID_REQUEST", "Invalid property!")
+        }
+        return formatClientSuccess(
+          data,
+          result
+        )
       }
 
     } else if (data.type === "set" || data.type === "setvcp") {
       // data.type === "set"
       // Set property of specific monitor
 
-      if (!(data.monitor && data.vcp)) throw("Missing parameters!");
+      if (!(data.monitor && data.vcp)) {
+        throw createClientApiError("INVALID_REQUEST", "Missing parameters!")
+      }
 
       const value = parseInt(data.value)
 
       if (data.monitor === "all") {
         updateAllBrightness(value, (data.mode ?? "set"))
-        return true
+        return formatClientSuccess(data, true)
       }
 
       const monitor = findMonitor(data.monitor)
-      if (!monitor) throw("Couldn't find monitor!");
+      if (!monitor) throw createClientApiError("MONITOR_NOT_FOUND", "Couldn't find monitor!")
 
       if (data.vcp === "brightness") {
         const newBrightness = minMax(data.mode !== "offset" ? value : monitor.brightness + value)
@@ -6063,18 +6136,45 @@ const handleClientMessage = async (message, remote) => {
         })
       }
 
+      return formatClientSuccess(data, true, undefined)
+
     } else if (data.type === "checktime") {
       // data.type === "checktime"
       // Use time adjustments
       applyCurrentAdjustmentEvent(true, false)
+      return formatClientSuccess(data, true, undefined)
     } else if (data.type === "refresh") {
       // data.type === "refresh"
       // Force refresh monitors
       refreshMonitors(true, true)
+      return formatClientSuccess(data, true, undefined)
     }
 
+    throw createClientApiError("INVALID_COMMAND", "Invalid command")
+
   } catch (e) {
-    console.log(`[${type}] Error:`, e)
+    console.log(
+      `[${type}] Error:`,
+      e?.clientApiError ? e.message : e
+    )
+
+    if (e?.clientApiError) {
+      if (e.code === "UNSUPPORTED_VERSION") {
+        return JSON.stringify({
+          version: 1,
+          id: data?.id ?? null,
+          ok: false,
+          error: {
+            code: e.code,
+            message: e.message
+          }
+        })
+      }
+
+      return formatClientError(data, e.code, e.message)
+    }
+
+    return formatClientError(data, "REQUEST_FAILED", e)
   }
 }
 

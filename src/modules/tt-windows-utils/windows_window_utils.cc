@@ -150,6 +150,47 @@ Napi::Number GetWinLong(const Napi::CallbackInfo& info)
     return Napi::Number::New(info.Env(), static_cast<double>(result));
 }
 
+// Windows applies light/dark theme changes by broadcasting WM_SETTINGCHANGE
+// with lParam "ImmersiveColorSet" (this is what the Settings app does). Writing
+// the Personalize registry values on their own is not enough.
+//
+// The broadcast is sent to HWND_BROADCAST, where every top-level window can
+// consume up to the timeout, so it must never run on Electron's main thread.
+// It is queued on a libuv worker thread instead. We intentionally do not send
+// WM_DWMCOLORIZATIONCOLORCHANGED: that message carries an ARGB colorization
+// value + opacity in its parameters, and a malformed one is worse than none.
+// WM_SETTINGCHANGE/"ImmersiveColorSet" is sufficient for a light/dark switch.
+class ThemeBroadcastWorker : public Napi::AsyncWorker {
+ public:
+  explicit ThemeBroadcastWorker(Napi::Env env) : Napi::AsyncWorker(env) {}
+
+  void Execute() override
+  {
+    DWORD_PTR result = 0;
+    SendMessageTimeoutW(
+      HWND_BROADCAST,
+      WM_SETTINGCHANGE,
+      0,
+      reinterpret_cast<LPARAM>(L"ImmersiveColorSet"),
+      SMTO_ABORTIFHUNG,
+      kBroadcastTimeoutMs,
+      &result);
+  }
+
+  void OnOK() override {}
+  void OnError(const Napi::Error& /* e */) override {}
+
+ private:
+  static constexpr UINT kBroadcastTimeoutMs = 250;
+};
+
+Napi::Value BroadcastThemeChange(const Napi::CallbackInfo& info)
+{
+  auto* worker = new ThemeBroadcastWorker(info.Env());
+  worker->Queue();
+  return info.Env().Undefined();
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     exports.Set("setWindowPos", Napi::Function::New(env, SetWindowPosition));
@@ -159,6 +200,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
     exports.Set("setForegroundWindow", Napi::Function::New(env, SetForegroundWin));
     exports.Set("getWindowLong", Napi::Function::New(env, GetWinLong));
     exports.Set("getWindowFullscreen", Napi::Function::New(env, GetWindowFullscreen));
+    exports.Set("broadcastThemeChange", Napi::Function::New(env, BroadcastThemeChange));
     return exports;
 }
 

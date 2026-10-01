@@ -38,6 +38,9 @@ function setPanelVisibility(visible) {
     if (visible) {
         setPriority(0, priority.PRIORITY_ABOVE_NORMAL)
         window.document.body.dataset["visible"] = true
+        // Night Light lives in Windows, so refresh it whenever the panel opens.
+        requestNightLight()
+        requestDarkMode()
         window.dispatchEvent(new CustomEvent('sleepUpdated', {
             detail: false
         }))
@@ -131,6 +134,28 @@ function sendSettings(newSettings) {
 
 function requestSettings() {
     ipc.send('request-settings')
+}
+
+// Night Light state is stored by Windows, not in Twinkle Tray's settings.
+function requestNightLight() {
+    ipc.send('request-night-light')
+}
+
+function setNightLight(level, options) {
+    ipc.send('set-night-light', { level, preview: !!(options && options.preview) })
+}
+
+// Dark mode override for the Windows system/app theme values.
+function requestDarkMode() {
+    ipc.send('request-dark-mode')
+}
+
+function setDarkMode(enabled) {
+    ipc.send('set-dark-mode', { enabled })
+}
+
+function openNightLightSettings() {
+    ipc.send('open-night-light-settings')
 }
 
 function sendHeight(height) {
@@ -268,6 +293,22 @@ ipc.on('settings-updated', (event, settings) => {
     detectSunValley()
     window.dispatchEvent(new CustomEvent('settingsUpdated', {
         detail: settings
+    }))
+})
+
+// Night Light status recieved
+ipc.on('night-light-updated', (event, status) => {
+    window.nightLight = status
+    window.dispatchEvent(new CustomEvent('nightLightUpdated', {
+        detail: status
+    }))
+})
+
+// Dark mode override status recieved
+ipc.on('dark-mode-updated', (event, status) => {
+    window.darkMode = status
+    window.dispatchEvent(new CustomEvent('darkModeUpdated', {
+        detail: status
     }))
 })
 
@@ -434,6 +475,11 @@ window.requestMonitors = requestMonitors
 window.openSettings = openSettings
 window.sendSettings = sendSettings
 window.requestSettings = requestSettings
+window.requestNightLight = requestNightLight
+window.setNightLight = setNightLight
+window.requestDarkMode = requestDarkMode
+window.setDarkMode = setDarkMode
+window.openNightLightSettings = openNightLightSettings
 window.pauseMonitorUpdates = pauseMonitorUpdates
 window.installUpdate = installUpdate
 window.dismissUpdate = dismissUpdate

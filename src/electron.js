@@ -80,7 +80,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
+const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup, RegistryWatcher} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -89,6 +89,7 @@ const ActiveWindow = require('@paymoapp/active-window').default;
 ActiveWindow.initialize()
 
 const reg = require('native-reg');
+const NightLight = require('./NightLight');
 const Color = require('color')
 const Translate = require('./Translate');
 const { EventEmitter } = require("events");
@@ -947,6 +948,8 @@ const defaultSettings = {
   uuid: uuid(),
   branch: (appVersionTag?.indexOf?.("beta") === 0 ? "beta" : "master"),
   lightSensor: defaultLightSensorSettings,
+  showNightLight: false,
+  showDarkMode: false,
 }
 
 const tempSettings = {
@@ -2245,6 +2248,52 @@ ipcMain.on('request-settings', (event) => {
   getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of
 })
 
+// Night Light status is owned by Windows, so the panel asks for it separately
+// from Twinkle Tray's own settings.
+//
+// Our own writes trigger the registry watcher too, and Windows rewrites the
+// CloudStore on its own schedule. Deduplicating watcher-driven sends keeps those
+// echoes from racing the direct response to a user action.
+let lastNightLightStatus = null
+function sendNightLightStatus(status, force = false) {
+  const key = JSON.stringify(status)
+  if (!force && key === lastNightLightStatus) return
+  lastNightLightStatus = key
+  sendToAllWindows('night-light-updated', status)
+}
+
+// While the user is dragging, the panel sends transient "preview" writes. The
+// watcher would echo each one, so status broadcasts are suppressed briefly.
+let nightLightPreviewUntil = 0
+
+ipcMain.on('request-night-light', () => {
+  sendNightLightStatus(NightLight.getStatus(), true)
+})
+
+ipcMain.on('set-night-light', async (event, data) => {
+  const preview = !!data?.preview
+  const status = await NightLight.setLevel(data?.level, { preview })
+  if (preview) {
+    nightLightPreviewUntil = Date.now() + 1500
+    return
+  }
+  nightLightPreviewUntil = 0
+  NightLight.invalidateDiagnostics()
+  sendNightLightStatus(status, true)
+})
+
+ipcMain.on('open-night-light-settings', () => {
+  shell.openExternal('ms-settings:nightlight')
+})
+
+ipcMain.on('request-dark-mode', () => {
+  sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+})
+
+ipcMain.on('set-dark-mode', (event, data) => {
+  setDarkMode(data?.enabled)
+})
+
 ipcMain.on('reset-settings', () => {
   settings = Object.assign({}, defaultSettings)
   console.log("Resetting settings")
@@ -2257,6 +2306,82 @@ ipcMain.on('open-settings-file', () => {
   console.log("Opening settings file in default editor")
   exec(`notepad.exe "${settingsPath}"`)
 })
+
+//
+// Dark mode override
+//
+
+const personalizeRegistryKey = 'Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+
+function getThemeRegistryValue(name) {
+  try {
+    const key = reg.openKey(reg.HKCU, personalizeRegistryKey, reg.Access.READ)
+    if (!key) return null
+    try {
+      const value = reg.getValue(key, null, name)
+      return (typeof value === 'number' ? value : null)
+    } finally {
+      reg.closeKey(key)
+    }
+  } catch (e) {
+    return null
+  }
+}
+
+function setThemeRegistryValue(name, value) {
+  try {
+    const key = reg.openKey(reg.HKCU, personalizeRegistryKey, reg.Access.ALL_ACCESS)
+    if (!key) return false
+    try {
+      reg.setValueDWORD(key, name, value)
+      return true
+    } finally {
+      reg.closeKey(key)
+    }
+  } catch (e) {
+    console.log("Couldn't write theme registry", e)
+    return false
+  }
+}
+
+function getDarkModeStatus() {
+  const apps = getThemeRegistryValue('AppsUseLightTheme')
+  const system = getThemeRegistryValue('SystemUsesLightTheme')
+
+  // Windows stores these as 0 for dark and 1 for light. Both values are
+  // reported so the panel can distinguish Light / Dark / Custom, rather than
+  // collapsing a mixed theme to a boolean.
+  let mode = 'custom'
+  if (apps === 1 && system === 1) mode = 'light'
+  else if (apps === 0 && system === 0) mode = 'dark'
+
+  return {
+    active: mode === 'dark',
+    mode,
+    apps,
+    system
+  }
+}
+
+// Ask Windows to re-read its theme. Without this the registry values below are
+// written but nothing visibly changes until something else triggers a refresh.
+function broadcastThemeChange() {
+  try {
+    WindowUtils.broadcastThemeChange?.()
+  } catch (e) {
+    console.log("Couldn't broadcast theme change", e)
+  }
+}
+
+// Sets the Windows light/dark mode for both apps and the shell. Windows keeps
+// separate values for each, so both are written to keep the toggle unambiguous.
+function setDarkMode(enabled) {
+  setThemeRegistryValue('AppsUseLightTheme', enabled ? 0 : 1)
+  setThemeRegistryValue('SystemUsesLightTheme', enabled ? 0 : 1)
+  broadcastThemeChange()
+  getThemeRegistry()
+  return sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+}
 
 // Get the user's Windows Personalization settings
 async function getThemeRegistry() {
@@ -5010,11 +5135,82 @@ ipcMain.on('clear-update', (event, dismissedUpdate) => {
 //
 //
 
+//
+// Registry change watchers
+//
+// Night Light and the Windows theme are owned by Windows, so external changes
+// (Quick Settings, the Settings app, scheduled transitions, other tools) must
+// be picked up while the panel is open. RegNotifyChangeKeyValue-driven native
+// watchers signal us; notifications are coalesced before we re-read state.
+//
+
+const registryWatcherIds = []
+const pendingRegistryRefresh = { darkMode: false, nightLight: false }
+let registryRefreshTimer = null
+
+function refreshFromRegistryWatchers() {
+  registryRefreshTimer = null
+  const pending = { ...pendingRegistryRefresh }
+  pendingRegistryRefresh.darkMode = false
+  pendingRegistryRefresh.nightLight = false
+
+  if (pending.darkMode) {
+    getThemeRegistry()
+    sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+  }
+  if (pending.nightLight) {
+    NightLight.invalidateDiagnostics()
+    // Suppress echoes of the panel's own transient preview writes.
+    if (Date.now() >= nightLightPreviewUntil) {
+      sendNightLightStatus(NightLight.getStatus())
+    }
+  }
+}
+
+function onRegistryChanged(kind) {
+  pendingRegistryRefresh[kind] = true
+  if (registryRefreshTimer) clearTimeout(registryRefreshTimer)
+  registryRefreshTimer = setTimeout(refreshFromRegistryWatchers, 75)
+}
+
+function startRegistryWatchers() {
+  if (!RegistryWatcher?.watch) return
+  try {
+    const themeId = RegistryWatcher.watch([personalizeRegistryKey], () => onRegistryChanged('darkMode'))
+    if (themeId) registryWatcherIds.push(themeId)
+
+    const nightLightId = RegistryWatcher.watch(NightLight.getWatchPaths(), () => onRegistryChanged('nightLight'))
+    if (nightLightId) registryWatcherIds.push(nightLightId)
+  } catch (e) {
+    console.log("Couldn't start registry watchers", e)
+  }
+}
+
+// Windows can change these while the machine is asleep or locked; re-read on
+// resume/unlock so the UI is correct the moment it is seen.
+function resyncSystemState() {
+  getThemeRegistry()
+  NightLight.clearPreview()
+  NightLight.invalidateDiagnostics()
+  sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+  sendNightLightStatus(NightLight.getStatus(), true)
+}
+
 let backgroundInterval = null
 function addEventListeners() {
   systemPreferences.on('accent-color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
   systemPreferences.on('color-changed', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
   nativeTheme.on('updated', () => { if(!settings.disableThemeChanges) handleAccentChange(); })
+
+  // Keep the panel's dark mode toggle in sync with changes made in Windows
+  // Settings (or by another app), independently of Twinkle Tray's own toggle.
+  nativeTheme.on('updated', () => { sendToAllWindows('dark-mode-updated', getDarkModeStatus()) })
+  systemPreferences.on('color-changed', () => { sendToAllWindows('dark-mode-updated', getDarkModeStatus()) })
+
+  startRegistryWatchers()
+  NightLight.clearPreview()
+  powerMonitor.on('resume', () => resyncSystemState())
+  powerMonitor.on('unlock-screen', () => resyncSystemState())
 
   addDisplayChangeListener(() => { if(settings.useWin32Event) handleMonitorChange("win32") })
   screen.addListener("display-added", () => { if(settings.useElectronEvents) handleMonitorChange("display-added") })

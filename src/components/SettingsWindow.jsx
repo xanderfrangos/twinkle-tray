@@ -1317,6 +1317,12 @@ export default class SettingsWindow extends PureComponent {
                                         </select>
                                     )} />
 
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_NIGHT_LIGHT_TITLE")} description={T.t("SETTINGS_GENERAL_NIGHT_LIGHT_DESC")} input={this.renderToggle("showNightLight")}>
+                                        { this.state.rawSettings?.showNightLight ? <SettingsChild description={<>⚠️ <em>{T.t("SETTINGS_GENERAL_NIGHT_LIGHT_WARNING")}</em></>} /> : null }
+                                    </SettingsOption>
+
+                                    <SettingsOption title={T.t("SETTINGS_GENERAL_DARK_MODE_TITLE")} description={T.t("SETTINGS_GENERAL_DARK_MODE_DESC")} input={this.renderToggle("showDarkMode")} />
+
                                     <div className="win10only">
                                         <SettingsOption title={T.t("SETTINGS_GENERAL_ACRYLIC_TITLE")} description={T.t("SETTINGS_GENERAL_ACRYLIC_DESC")} input={this.renderToggle("useAcrylic")} />
                                     </div>

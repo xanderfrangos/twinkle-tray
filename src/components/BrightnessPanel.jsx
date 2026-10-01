@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
 import HDRSliders from "./HDRSliders";
@@ -24,7 +24,16 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     update: false,
     sleeping: false,
     updateProgress: 0,
-    isRefreshing: window.isRefreshing
+    isRefreshing: window.isRefreshing,
+    // null until Windows Night Light status is known (or unsupported)
+    nightLight: null,
+    nightLightSupported: false,
+    nightLightScheduleEnabled: false,
+    nightLightReason: null,
+    nightLightWarning: null,
+    nightLightKnown: false,
+    darkMode: false,
+    darkModeMode: "light"
   })
   const [doBackgroundEvent, setDoBackgroundEvent] = useState(false)
   const [levelsChanged, setLevelsChanged] = useState(false)
@@ -175,6 +184,163 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const handleIsRefreshingUpdate = (e) => setState(prev => ({ ...prev, isRefreshing: e.detail }))
   const handleUpdateProgress = (e) => setState(prev => ({ ...prev, updateProgress: e.detail.progress }))
 
+  // Night Light is a global blue-light filter stored by Windows. The 0-100
+  // slider maps 1-100 to "on at this warmth" and 0 to releasing the manual
+  // override: Off when scheduling is disabled, Auto when it is enabled.
+  //
+  // Windows only re-applies a temperature change to the active filter while the
+  // `previewColorTemperatureChanges` field is set (this is what Microsoft's own
+  // slider does while dragging). So while the user adjusts we send throttled
+  // "preview" writes, then a single committed write on release.
+  const nightLightDesired = useRef(0)
+  const nightLightPending = useRef(false)
+  const nightLightDirty = useRef(false)
+  const nightLightSettleTimer = useRef(null)
+  const nightLightPreviewTimer = useRef(null)
+  const nightLightFinalizeTimer = useRef(null)
+  const nightLightCommitTimer = useRef(null)
+  const nightLightLastPreviewAt = useRef(0)
+
+  const NIGHT_LIGHT_PREVIEW_MS = 100
+  const NIGHT_LIGHT_IDLE_COMMIT_MS = 600
+  // Windows needs to observe the preview flag long enough to apply the new
+  // temperature. On commit we re-assert a fresh preview and hold it for this
+  // long before clearing the flag, so even a fast click gets a full apply frame.
+  const NIGHT_LIGHT_MIN_PREVIEW_MS = 350
+
+  const sendNightLight = (level, preview = false) => {
+    window.setNightLight(level, { preview })
+  }
+
+  // Marks the start of a user-initiated change. Until a status matching the
+  // requested value arrives (or the settle window expires), other statuses are
+  // treated as stale echoes. This stops external/CloudStore updates from
+  // yanking the thumb while the user is adjusting the slider.
+  const beginNightLightChange = (value) => {
+    nightLightDesired.current = value
+    nightLightPending.current = true
+    if (nightLightSettleTimer.current) clearTimeout(nightLightSettleTimer.current)
+    nightLightSettleTimer.current = setTimeout(() => {
+      nightLightSettleTimer.current = null
+      nightLightPending.current = false
+    }, 2000)
+  }
+
+  // Throttled transient preview: leading edge fires immediately, and a trailing
+  // timer captures the newest value if changes are arriving faster than the cap.
+  const scheduleNightLightPreview = (value) => {
+    const elapsed = Date.now() - nightLightLastPreviewAt.current
+    if (elapsed >= NIGHT_LIGHT_PREVIEW_MS) {
+      if (nightLightPreviewTimer.current) {
+        clearTimeout(nightLightPreviewTimer.current)
+        nightLightPreviewTimer.current = null
+      }
+      nightLightLastPreviewAt.current = Date.now()
+      sendNightLight(value, true)
+    } else if (!nightLightPreviewTimer.current) {
+      nightLightPreviewTimer.current = setTimeout(() => {
+        nightLightPreviewTimer.current = null
+        nightLightLastPreviewAt.current = Date.now()
+        sendNightLight(nightLightDesired.current, true)
+      }, NIGHT_LIGHT_PREVIEW_MS - elapsed)
+    }
+  }
+
+  // Final, verified write. Called on release and by the idle safety timer.
+  const sendNightLightFinal = () => {
+    nightLightCommitTimer.current = null
+    if (!nightLightDirty.current) return
+    nightLightDirty.current = false
+    sendNightLight(nightLightDesired.current, false)
+  }
+
+  const commitNightLight = () => {
+    if (nightLightPreviewTimer.current) {
+      clearTimeout(nightLightPreviewTimer.current)
+      nightLightPreviewTimer.current = null
+    }
+    if (nightLightFinalizeTimer.current) {
+      clearTimeout(nightLightFinalizeTimer.current)
+      nightLightFinalizeTimer.current = null
+    }
+    if (!nightLightDirty.current) return
+
+    // Re-assert the preview right now, then hold it before clearing so Windows
+    // reliably applies the temperature (a click's original preview can be too
+    // short-lived for the OS to act on).
+    nightLightLastPreviewAt.current = Date.now()
+    sendNightLight(nightLightDesired.current, true)
+
+    if (nightLightCommitTimer.current) clearTimeout(nightLightCommitTimer.current)
+    nightLightCommitTimer.current = setTimeout(sendNightLightFinal, NIGHT_LIGHT_MIN_PREVIEW_MS)
+  }
+
+  const handleNightLightChange = (level) => {
+    const value = level * 1
+    if (nightLightCommitTimer.current) {
+      clearTimeout(nightLightCommitTimer.current)
+      nightLightCommitTimer.current = null
+    }
+    beginNightLightChange(value)
+    nightLightDirty.current = true
+    setState(prev => ({ ...prev, nightLight: value }))
+    scheduleNightLightPreview(value)
+    // Safety net for input methods without a clean "release" (wheel/keyboard).
+    if (nightLightFinalizeTimer.current) clearTimeout(nightLightFinalizeTimer.current)
+    nightLightFinalizeTimer.current = setTimeout(() => {
+      nightLightFinalizeTimer.current = null
+      commitNightLight()
+    }, NIGHT_LIGHT_IDLE_COMMIT_MS)
+  }
+
+  const recievedNightLight = (e) => {
+    const status = e.detail || {}
+    if (!status.supported) {
+      nightLightPending.current = false
+      setState(prev => ({
+        ...prev,
+        nightLightKnown: true,
+        nightLightSupported: false,
+        nightLight: null,
+        nightLightScheduleEnabled: !!status.scheduleEnabled,
+        nightLightReason: status.reason || "missing",
+        nightLightWarning: status.warning || null
+      }))
+      return
+    }
+    const level = status.level ?? 0
+    // Ignore stale echoes that don't match the value the user just requested.
+    if (nightLightPending.current && level !== nightLightDesired.current) return
+    nightLightPending.current = false
+    if (nightLightSettleTimer.current) {
+      clearTimeout(nightLightSettleTimer.current)
+      nightLightSettleTimer.current = null
+    }
+    setState(prev => ({
+      ...prev,
+      nightLightKnown: true,
+      nightLightSupported: true,
+      nightLight: level,
+      nightLightScheduleEnabled: !!status.scheduleEnabled,
+      nightLightReason: null,
+      nightLightWarning: status.warning || null
+    }))
+  }
+
+  // Dark mode is a true Windows-backed switch. A mixed Apps/System theme is a
+  // distinct "Custom" state; clicking it (or Light) turns everything dark.
+  const toggleDarkMode = () => {
+    const darkMode = state.darkModeMode !== "dark"
+    setState(prev => ({ ...prev, darkMode, darkModeMode: darkMode ? "dark" : "light" }))
+    window.setDarkMode(darkMode)
+  }
+
+  const recievedDarkMode = (e) => {
+    const status = e.detail || {}
+    const mode = status.mode || (status.active ? "dark" : "light")
+    setState(prev => ({ ...prev, darkMode: mode === "dark", darkModeMode: mode }))
+  }
+
   useEffect(() => {
     resetBrightnessInterval()
     return () => {
@@ -194,6 +360,8 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     const handleSleepUpdated = (e) => recievedSleep(e)
     const handleRefreshingUpdated = (e) => handleIsRefreshingUpdate(e)
     const handleProgressUpdated = (e) => handleUpdateProgress(e)
+    const handleNightLightUpdated = (e) => recievedNightLight(e)
+    const handleDarkModeUpdated = (e) => recievedDarkMode(e)
 
     window.addEventListener("monitorsUpdated", handleMonitorsUpdated)
     window.addEventListener("settingsUpdated", handleSettingsUpdated)
@@ -201,6 +369,8 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     window.addEventListener("updateUpdated", handleUpdateUpdated)
     window.addEventListener("sleepUpdated", handleSleepUpdated)
     window.addEventListener("isRefreshing", handleRefreshingUpdated)
+    window.addEventListener("nightLightUpdated", handleNightLightUpdated)
+    window.addEventListener("darkModeUpdated", handleDarkModeUpdated)
 
     if (window.isAppX === false) {
       window.addEventListener("updateProgress", handleProgressUpdated)
@@ -209,6 +379,8 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     // Update brightness every interval, if changed
     window.requestSettings()
     window.requestMonitors()
+    window.requestNightLight()
+    window.requestDarkMode()
     window.ipc.send('request-localization')
     window.reactReady = true
 
@@ -220,6 +392,12 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       window.removeEventListener("sleepUpdated", handleSleepUpdated)
       window.removeEventListener("isRefreshing", handleRefreshingUpdated)
       window.removeEventListener("updateProgress", handleProgressUpdated)
+      window.removeEventListener("nightLightUpdated", handleNightLightUpdated)
+      window.removeEventListener("darkModeUpdated", handleDarkModeUpdated)
+      if (nightLightPreviewTimer.current) clearTimeout(nightLightPreviewTimer.current)
+      if (nightLightFinalizeTimer.current) clearTimeout(nightLightFinalizeTimer.current)
+      if (nightLightCommitTimer.current) clearTimeout(nightLightCommitTimer.current)
+      if (nightLightSettleTimer.current) clearTimeout(nightLightSettleTimer.current)
     }
   }, [])
 
@@ -376,6 +554,67 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     }
   }
 
+  // Global Windows controls (Night Light / dark mode) shown below the monitors.
+  const nightLightAfterName = () => {
+    const items = []
+    if (state.nightLightWarning) {
+      const warningKey = state.nightLightWarning === "per-device"
+        ? "PANEL_NIGHT_LIGHT_WARNING_PER_DEVICE"
+        : "PANEL_NIGHT_LIGHT_WARNING_SERVICES"
+      items.push(<div key="warning" className="inline-warning" title={T.t(warningKey)}>{"\u26A0"}</div>)
+    }
+    if (state.nightLight === 0) {
+      items.push(
+        <div key="state" className="inline-state">
+          {state.nightLightScheduleEnabled ? T.t("PANEL_LABEL_NIGHT_LIGHT_AUTO") : T.t("GENERIC_OFF")}
+        </div>
+      )
+    }
+    return items.length ? <>{items}</> : null
+  }
+
+  const getGlobalControls = () => {
+    const wantNightLight = window.settings?.showNightLight
+    const nightLightAvailable = state.nightLightSupported && state.nightLight !== null
+    const showNightLight = wantNightLight && nightLightAvailable
+    const showNightLightUnavailable = wantNightLight && state.nightLightKnown && !nightLightAvailable
+    const showDarkMode = window.settings?.showDarkMode
+    if (!showNightLight && !showNightLightUnavailable && !showDarkMode) return null
+
+    const darkModeLabel = state.darkModeMode === "dark"
+      ? T.t("GENERIC_ON")
+      : (state.darkModeMode === "custom" ? T.t("GENERIC_CUSTOM") : T.t("GENERIC_OFF"))
+
+    return (
+      <div className="global-controls">
+        {showNightLight && (
+          <div className="monitor-sliders">
+            <Slider name={T.t("PANEL_LABEL_NIGHT_LIGHT")} id="night-light" level={state.nightLight} min={0} max={100} num={0} hwid="night-light" key="night-light" onChange={handleNightLightChange} onCommit={commitNightLight} iconText={"\uE708"} syncLevel={true} afterName={nightLightAfterName()} scrollAmount={window.settings?.scrollFlyoutAmount} />
+          </div>
+        )}
+        {showNightLightUnavailable && (
+          <div className="global-toggle unavailable">
+            <div className="name-row">
+              <div className="icon"><span>&#xE708;</span></div>
+              <div className="title">{T.t("PANEL_LABEL_NIGHT_LIGHT")}</div>
+              <div className="state">{T.t("GENERIC_UNAVAILABLE")}</div>
+              <div className="open-settings" title={T.t("PANEL_BUTTON_OPEN_NIGHT_LIGHT_SETTINGS")} onClick={window.openNightLightSettings}>&#xE713;</div>
+            </div>
+          </div>
+        )}
+        {showDarkMode && (
+          <div className="global-toggle" data-active={state.darkModeMode} onClick={toggleDarkMode}>
+            <div className="name-row">
+              <div className="icon"><span>&#xE708;</span></div>
+              <div className="title">{T.t("PANEL_LABEL_DARK_MODE")}</div>
+              <div className="state">{darkModeLabel}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="window-base" data-theme={window.settings.theme || "default"} id="panel" data-refreshing={state.isRefreshing}>
       <div className="titlebar">
@@ -404,6 +643,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         </div>
       </div>
       {state.sleeping ? (<div></div>) : getMonitors()}
+      {!state.sleeping && getGlobalControls()}
       {
         (state.update && state.update.show)
           ?

@@ -6,6 +6,7 @@ const MediaStatus = require("bindings")("windows_media_status");
 const AppStartup = require("bindings")("windows_app_startup");
 const WindowMaterial = require("bindings")("windows_window_material");
 const DisplayBrightness = require("bindings")("windows_display_brightness");
+const RegistryWatch = require("bindings")("windows_registry_watch");
 
 module.exports = {
     BrightnessKeys: {
@@ -20,7 +21,8 @@ module.exports = {
         setForegroundWindow: WindowUtils.setForegroundWindow,
         getForegroundWindow: WindowUtils.getForegroundWindow,
         getWindowLong: WindowUtils.getWindowLong,
-        getWindowFullscreen: WindowUtils.getWindowFullscreen
+        getWindowFullscreen: WindowUtils.getWindowFullscreen,
+        broadcastThemeChange: WindowUtils.broadcastThemeChange
     },
     PowerEvents: {
         registerPowerSettingNotifications: PowerEvents.registerPowerSettingNotifications,
@@ -38,6 +40,10 @@ module.exports = {
     DisplayBrightness: {
         getBrightness: DisplayBrightness.getBrightness,
         setBrightness: DisplayBrightness.setBrightness
+    },
+    RegistryWatcher: {
+        watch: RegistryWatch.watch,
+        stop: RegistryWatch.stop
     },
     WindowMaterial: {
         setWindowMaterial: (hwnd, materialType = 1, cornersType = 2, darkModeSupported = true) => {

@@ -1707,11 +1707,13 @@ function setBrightness(brightness, id) {
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
             if (canUseWmiBridgeNow()) {
-                // Set brightness via native WMI
-                wmibridge.setBrightness(brightness);
+                // Set brightness via native WMI. The bridge only accepts whole
+                // numbers, and features like the extended minimum can hand us
+                // fractional levels, so round before sending.
+                wmibridge.setBrightness(Math.round(brightness));
             } else {
                 // If native WMI is unavailable, fall back to old method
-                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})`)
+                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${Math.round(brightness)})`)
             }
         }
     } catch (e) {

@@ -796,7 +796,12 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
             // downstream feature and display-type handling remains valid.
             const brightnessType = featureScanTimedOut
                 ? (canUseHighLevelBrightness ? 0x10 : false)
-                : await determineBrightnessVCPCode(id)
+                : (ddcciSupported || ddcBrightnessVCPs?.[monitor.hwid?.[1]]
+                    ? await determineBrightnessVCPCode(id)
+                    // DDC/CI validation already failed for this display (e.g. an
+                    // internal panel), so probing brightness VCPs only produces
+                    // device errors. Fall back to the high-level placeholder.
+                    : (canUseHighLevelBrightness ? 0x10 : false))
 
             let ddcciInfo = {
                 id: id,

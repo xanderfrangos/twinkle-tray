@@ -2216,12 +2216,21 @@ function getSettings() {
   sendToAllWindows('settings-updated', settings)
 }
 
+// Read overrides the way the settings field does: as hex, with or without "0x",
+// so a saved "13" is 0x13 rather than 13. Numbers (from monitor-rules.json) are
+// used as-is.
+function parseBrightnessVCP(value) {
+  const code = (typeof value === "string" ? parseInt(value, 16) : value)
+  return (Number.isInteger(code) && code >= 0x01 && code <= 0xFF ? code : false)
+}
+
 function getDDCBrightnessVCPs() {
   try {
     // Create a new object to avoid mutating knownDDCBrightnessVCPs
     let ids = Object.assign({}, knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
     for (let mon in ids) {
-      ids[mon] = parseInt(ids[mon])
+      ids[mon] = parseBrightnessVCP(ids[mon])
+      if (ids[mon] === false) delete ids[mon]; // Not a usable code, so no override
     }
     return ids
   } catch (e) {

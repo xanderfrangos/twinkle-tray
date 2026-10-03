@@ -1931,9 +1931,13 @@ let wmicUnavailable = false
 let wmi = false
 // WMIC.exe lives in the Wbem folder under System32. It is absent on Windows 11
 // builds where the deprecated feature is removed, or turned off as an optional feature.
-function wmicExists() {
+function getWMICPath() {
     const systemRoot = process.env.SystemRoot || process.env.windir || "C:\\Windows"
-    return require('fs').existsSync(systemRoot + "\\System32\\Wbem\\WMIC.exe")
+    return systemRoot + "\\System32\\Wbem\\WMIC.exe"
+}
+
+function wmicExists() {
+    return require('fs').existsSync(getWMICPath())
 }
 
 // WMIC
@@ -1954,7 +1958,8 @@ function getWMIC() {
         }
         wmi = new WmiClient({
             host: 'localhost',
-            namespace: '\\\\root\\WMI'
+            namespace: '\\\\root\\WMI',
+            wmic: getWMICPath() // Run the file that was checked, not whichever "wmic" is on PATH
         });
         return true;
     } catch (e) {

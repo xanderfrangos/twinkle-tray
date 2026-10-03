@@ -1893,7 +1893,9 @@ async function doHotkey(hotkey, options = {}) {
                 }
                 newValue = currentValue + parseInt(action.value);
               } else if (action.type === "cycle") {
-                if (!action.values?.length) return -1;
+                // Nothing to cycle through. Returning here would leave doingHotkey
+                // set, which blocks every hotkey until restart.
+                if (!action.values?.length) continue;
                 if (!hotkeyCycleIndexes[hotkey.id]) {
                   hotkeyCycleIndexes[hotkey.id] = 0
                 }

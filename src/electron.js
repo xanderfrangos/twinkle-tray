@@ -3015,6 +3015,11 @@ function applyLinkedFeatures(monitor, newLevel, useCap = true) {
 
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   if(isWindowsUserIdle) return false; // Skip if displays are off
+  // NaN reaches the worker as null, which the VCP path writes as 0
+  if (!Number.isFinite(parseFloat(newLevel))) {
+    console.log(`updateBrightness: Ignoring invalid level for ${index}:`, newLevel)
+    return false
+  }
   try {
     let level = newLevel
     let vcp = "brightness"
@@ -3326,7 +3331,10 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
           }
         }
       }
-      if (monitor.brightness < normalized + (step + 1) && monitor.brightness > normalized - (step + 1)) {
+      if (!Number.isFinite(monitor.brightness) || !Number.isFinite(parseFloat(normalized))) {
+        // Nothing to step from or to, so don't hold the transition open
+        numDone++
+      } else if (monitor.brightness < normalized + (step + 1) && monitor.brightness > normalized - (step + 1)) {
         updateBrightness(monitor.id, normalized, undefined, undefined, false)
         numDone++
       } else {
@@ -4118,7 +4126,10 @@ function windowMatchesProfile(window) {
 function applyProfileBrightness(profile) {
   try {
     Object.values(monitors)?.forEach(monitor => {
-      updateBrightness(monitor.id, profile.monitors[monitor.id], true, "brightness")
+      // Displays whose slider was never moved have no stored level. Leave them as they are.
+      const level = profile.monitors?.[monitor.id]
+      if (!Number.isFinite(level)) return
+      updateBrightness(monitor.id, level, true, "brightness")
     })
     sendToAllWindows('monitors-updated', monitors)
   } catch (e) {

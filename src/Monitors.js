@@ -221,10 +221,10 @@ async function handleMonitorMessage(data) {
             if (hadSoftwareBrightness && !settings?.useSoftwareBrightnessFallback) restoreSoftwareBrightness();
 
             // Overrides
-            if (settings?.disableAppleStudio) appleStudioUnavailable = true;
-            if (settings?.disableWMIC) wmicUnavailable = true;
-            if (settings?.disableWMI) wmiFailed = true;
-            if (settings?.disableWin32) win32Failed = true;
+            applyMethodOverride("disableAppleStudio", value => appleStudioUnavailable = value)
+            applyMethodOverride("disableWMIC", value => wmicUnavailable = (value || !wmicExists()))
+            applyMethodOverride("disableWMI", value => wmiFailed = value)
+            applyMethodOverride("disableWin32", value => win32Failed = value)
 
         } else if (data.type === "ddcBrightnessVCPs") {
             const changedMonitors = changedFeatureMonitorIds(
@@ -471,6 +471,18 @@ function applyFeatureSnapshots(foundMonitors) {
         monitor.vcpCodes = Object.assign({}, snapshotVcpCodes, monitor.vcpCodes || {})
         monitor.featuresPending = false
         monitor.featuresRefreshing = true
+    }
+}
+
+// Each method's flag is also set when the method fails or is missing, so turning
+// a setting back off only clears the flag if the setting is what set it.
+const userDisabledMethods = new Set()
+function applyMethodOverride(setting, setDisabled) {
+    if (settings?.[setting]) {
+        userDisabledMethods.add(setting)
+        setDisabled(true)
+    } else if (userDisabledMethods.delete(setting)) {
+        setDisabled(false)
     }
 }
 

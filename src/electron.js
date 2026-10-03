@@ -1383,6 +1383,12 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       shouldRefreshMonitors = true
     }
 
+    // Detection method overrides only apply to the next scan
+    if (newSettings.disableWMI !== undefined || newSettings.disableWMIC !== undefined
+      || newSettings.disableWin32 !== undefined || newSettings.disableAppleStudio !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
     if (newSettings.gammaAsMainSliderDisplays !== undefined
       || newSettings.extendMinimumDisplays !== undefined) {
       restoreUnusedGammaRamps(lastGammaOptIns)

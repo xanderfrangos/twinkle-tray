@@ -632,6 +632,7 @@ let nativeHotkeyRecording = false
 let nativeBrightnessKey = false
 let nativeBrightnessKeyRepeatDelay = false
 let nativeBrightnessKeyRepeat = false
+const NATIVE_BRIGHTNESS_KEY_REPEAT_LIMIT = 10000 // Holding the key longer than this needs a fresh press
 
 function stopNativeBrightnessKeyRepeat() {
   nativeBrightnessKey = false
@@ -672,8 +673,12 @@ function handleNativeBrightnessKey(key) {
     nativeBrightnessKey = false
     return
   }
+  // The release report can go missing (a Bluetooth keyboard sleeping or
+  // disconnecting while the key is held), so a repeat stops on its own.
+  const repeatUntil = Date.now() + NATIVE_BRIGHTNESS_KEY_REPEAT_LIMIT
   nativeBrightnessKeyRepeatDelay = setTimeout(() => {
     nativeBrightnessKeyRepeat = setInterval(() => {
+      if(Date.now() > repeatUntil) return stopNativeBrightnessKeyRepeat();
       if(nativeBrightnessKey) triggerNativeBrightnessHotkey(nativeBrightnessKey)
     }, 100)
   }, 400)

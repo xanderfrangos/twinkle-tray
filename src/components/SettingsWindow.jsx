@@ -123,6 +123,7 @@ export default class SettingsWindow extends PureComponent {
         super(props)
         this.state = {
             rawSettings: {},
+            breakpointDrafts: {},
             activePage: "general",
             theme: 'default',
             openAtLogin: false,
@@ -953,7 +954,7 @@ export default class SettingsWindow extends PureComponent {
                         <SettingsChild key={monitor.key} className="breakpoint-child" icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
                             <>
                                 <div className="breakpoint-field" data-enabled={enabled} title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT")}>
-                                    <input type="number" min={EXTEND_MINIMUM_BREAKPOINT_MIN} max={EXTEND_MINIMUM_BREAKPOINT_MAX} disabled={!enabled} value={this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} onBlur={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor, true) }} />
+                                    <input type="number" min={EXTEND_MINIMUM_BREAKPOINT_MIN} max={EXTEND_MINIMUM_BREAKPOINT_MAX} disabled={!enabled} value={this.state.breakpointDrafts[monitor.key] ?? this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpointDraft(e.target.value, monitor) }} onBlur={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} onKeyDown={(e) => { if (e.key === "Enter") e.target.blur() }} />
                                     <div className="suffix">%</div>
                                 </div>
                                 <div className="inputToggle-generic">
@@ -1031,15 +1032,24 @@ export default class SettingsWindow extends PureComponent {
         this.setSetting("extendMinimumDisplays", extendMinimumDisplays)
     }
 
-    setExtendMinimumBreakpoint = (value, monitor, clamp = false) => {
-        const extendMinimumBreakpoints = Object.assign({}, this.state.rawSettings?.extendMinimumBreakpoints)
+    // Keep what's being typed local. Saving remaps the display's slider, so a
+    // partly typed number shouldn't be applied or clamped out from under the user.
+    setExtendMinimumBreakpointDraft = (value, monitor) => {
+        this.setState({ breakpointDrafts: { ...this.state.breakpointDrafts, [monitor.key]: value } })
+    }
 
-        // Only settle on a usable value once the field is done being edited,
-        // otherwise a partly typed number gets clamped out from under the user.
-        const breakpoint = parseInt(value)
-        extendMinimumBreakpoints[monitor.key] = (clamp
-            ? Math.min(EXTEND_MINIMUM_BREAKPOINT_MAX, Math.max(EXTEND_MINIMUM_BREAKPOINT_MIN, (breakpoint > 0 ? breakpoint : EXTEND_MINIMUM_BREAKPOINT_DEFAULT)))
-            : value)
+    // Commit once the user is done editing
+    setExtendMinimumBreakpoint = (value, monitor) => {
+        const breakpointDrafts = { ...this.state.breakpointDrafts }
+        delete breakpointDrafts[monitor.key]
+        this.setState({ breakpointDrafts })
+
+        const parsed = parseInt(value)
+        const breakpoint = Math.min(EXTEND_MINIMUM_BREAKPOINT_MAX, Math.max(EXTEND_MINIMUM_BREAKPOINT_MIN, (parsed > 0 ? parsed : EXTEND_MINIMUM_BREAKPOINT_DEFAULT)))
+        if (breakpoint === parseInt(this.getExtendMinimumBreakpoint(monitor))) return // Unchanged, so avoid a pointless refresh
+
+        const extendMinimumBreakpoints = Object.assign({}, this.state.rawSettings?.extendMinimumBreakpoints)
+        extendMinimumBreakpoints[monitor.key] = breakpoint
         this.setSetting("extendMinimumBreakpoints", extendMinimumBreakpoints)
     }
 

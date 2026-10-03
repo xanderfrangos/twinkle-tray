@@ -1214,6 +1214,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   let doRestartPanel = false
   let rebuildTray = false
   let shouldRefreshMonitors = false
+  let shouldReadBrightness = false
 
   try {
 
@@ -1358,10 +1359,13 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     }
 
     if (newSettings.gammaAsMainSliderDisplays !== undefined
-      || newSettings.extendMinimumDisplays !== undefined
-      || newSettings.extendMinimumBreakpoints !== undefined) {
+      || newSettings.extendMinimumDisplays !== undefined) {
       restoreUnusedGammaRamps(lastGammaOptIns)
       shouldRefreshMonitors = true
+    } else if (newSettings.extendMinimumBreakpoints !== undefined) {
+      // Only the slider mapping changed, so reading brightness is enough to
+      // remap the slider. The displays themselves don't need a rescan.
+      shouldReadBrightness = true
     }
     lastGammaOptIns = getGammaOptIns()
 
@@ -1422,6 +1426,8 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   if (sendUpdate) sendToAllWindows('settings-updated', settings);
   if (shouldRefreshMonitors) {
     refreshMonitors(true, true)
+  } else if (shouldReadBrightness) {
+    refreshMonitors(false, true)
   }
 }
 

@@ -327,12 +327,11 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     }))
   }
 
-  // Dark mode is a true Windows-backed switch. A mixed Apps/System theme is a
-  // distinct "Custom" state; clicking it (or Light) turns everything dark.
+  // Dark mode is a true Windows-backed switch. The main process owns the cycle
+  // (Custom -> Dark -> Custom -> Light) and remembers the Apps/System split, so
+  // the panel just asks for the next state and waits for the update.
   const toggleDarkMode = () => {
-    const darkMode = state.darkModeMode !== "dark"
-    setState(prev => ({ ...prev, darkMode, darkModeMode: darkMode ? "dark" : "light" }))
-    window.setDarkMode(darkMode)
+    window.toggleDarkMode()
   }
 
   const recievedDarkMode = (e) => {

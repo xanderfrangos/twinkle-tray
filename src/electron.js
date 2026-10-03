@@ -2294,6 +2294,10 @@ ipcMain.on('set-dark-mode', (event, data) => {
   setDarkMode(data?.enabled)
 })
 
+ipcMain.on('toggle-dark-mode', () => {
+  toggleDarkMode()
+})
+
 ipcMain.on('reset-settings', () => {
   settings = Object.assign({}, defaultSettings)
   console.log("Resetting settings")
@@ -2373,14 +2377,103 @@ function broadcastThemeChange() {
   }
 }
 
-// Sets the Windows light/dark mode for both apps and the shell. Windows keeps
-// separate values for each, so both are written to keep the toggle unambiguous.
-function setDarkMode(enabled) {
-  setThemeRegistryValue('AppsUseLightTheme', enabled ? 0 : 1)
-  setThemeRegistryValue('SystemUsesLightTheme', enabled ? 0 : 1)
-  broadcastThemeChange()
+//
+// Dark mode cycle
+//
+// The toggle cycles Custom -> Dark -> Custom -> Light. To do that we remember
+// the user's custom Apps/System split before overriding it, and restore it on
+// the way back. The memory is only trusted while no theme change happens
+// outside this app, so any OS/Settings change clears it.
+//
+
+const THEME_DARK = 0
+const THEME_LIGHT = 1
+
+// The Apps/System split (one dark, one light) captured just before we forced
+// everything dark. Null when there is no custom state to restore.
+let savedCustomTheme = null
+// True when the current "custom" state was restored by us (rather than being
+// the user's original split), which tells the toggle to continue on to light.
+let restoredCustomByApp = false
+// The values we last wrote ourselves. Watcher/native echoes that match these
+// are not treated as external changes, so the remembered split survives them.
+let expectedThemeEcho = null
+
+function rememberExpectedTheme(apps, system) {
+  expectedThemeEcho = { apps, system }
+}
+
+// Called whenever Windows reports a theme change. Anything that does not match
+// our own last write is treated as an external change: the remembered custom
+// split is no longer trustworthy and the cycle restarts.
+function noteThemeChangeFromSystem() {
+  const status = getDarkModeStatus()
+  const isOurEcho = expectedThemeEcho
+    && status.apps === expectedThemeEcho.apps
+    && status.system === expectedThemeEcho.system
+  if (!isOurEcho) {
+    savedCustomTheme = null
+    restoredCustomByApp = false
+    expectedThemeEcho = null
+  }
+  return status
+}
+
+// Writes an explicit Apps/System pair and notifies every window.
+function applyThemeState(apps, system) {
+  const wroteApps = setThemeRegistryValue('AppsUseLightTheme', apps)
+  const wroteSystem = setThemeRegistryValue('SystemUsesLightTheme', system)
+  if (wroteApps || wroteSystem) {
+    rememberExpectedTheme(apps, system)
+    broadcastThemeChange()
+  }
   getThemeRegistry()
-  return sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+  const status = getDarkModeStatus()
+  sendToAllWindows('dark-mode-updated', status)
+  return status
+}
+
+// Explicit light/dark set (used outside the toggle cycle). Clears any
+// remembered custom split since the user asked for an unambiguous state.
+function setDarkMode(enabled) {
+  savedCustomTheme = null
+  restoredCustomByApp = false
+  const value = enabled ? THEME_DARK : THEME_LIGHT
+  return applyThemeState(value, value)
+}
+
+// Cycles Custom -> Dark -> Custom -> Light. The main process owns the cycle
+// because it is the only place that knows both the live registry state and the
+// remembered custom split.
+function toggleDarkMode() {
+  const status = getDarkModeStatus()
+
+  if (status.mode === 'custom') {
+    // Couldn't read a usable split; fall back to turning everything dark.
+    if (status.apps == null || status.system == null) {
+      return applyThemeState(THEME_DARK, THEME_DARK)
+    }
+    if (restoredCustomByApp) {
+      // This custom state is the one we restored; continue the cycle to light.
+      restoredCustomByApp = false
+      return applyThemeState(THEME_LIGHT, THEME_LIGHT)
+    }
+    // Remember the user's split, then force everything dark.
+    savedCustomTheme = { apps: status.apps, system: status.system }
+    return applyThemeState(THEME_DARK, THEME_DARK)
+  }
+
+  if (status.mode === 'dark') {
+    if (savedCustomTheme) {
+      // Restore the remembered split instead of flattening to light.
+      restoredCustomByApp = true
+      return applyThemeState(savedCustomTheme.apps, savedCustomTheme.system)
+    }
+    return applyThemeState(THEME_LIGHT, THEME_LIGHT)
+  }
+
+  // light
+  return applyThemeState(THEME_DARK, THEME_DARK)
 }
 
 // Get the user's Windows Personalization settings
@@ -5156,7 +5249,7 @@ function refreshFromRegistryWatchers() {
 
   if (pending.darkMode) {
     getThemeRegistry()
-    sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+    sendToAllWindows('dark-mode-updated', noteThemeChangeFromSystem())
   }
   if (pending.nightLight) {
     NightLight.invalidateDiagnostics()
@@ -5192,7 +5285,7 @@ function resyncSystemState() {
   getThemeRegistry()
   NightLight.clearPreview()
   NightLight.invalidateDiagnostics()
-  sendToAllWindows('dark-mode-updated', getDarkModeStatus())
+  sendToAllWindows('dark-mode-updated', noteThemeChangeFromSystem())
   sendNightLightStatus(NightLight.getStatus(), true)
 }
 
@@ -5204,8 +5297,8 @@ function addEventListeners() {
 
   // Keep the panel's dark mode toggle in sync with changes made in Windows
   // Settings (or by another app), independently of Twinkle Tray's own toggle.
-  nativeTheme.on('updated', () => { sendToAllWindows('dark-mode-updated', getDarkModeStatus()) })
-  systemPreferences.on('color-changed', () => { sendToAllWindows('dark-mode-updated', getDarkModeStatus()) })
+  nativeTheme.on('updated', () => { sendToAllWindows('dark-mode-updated', noteThemeChangeFromSystem()) })
+  systemPreferences.on('color-changed', () => { sendToAllWindows('dark-mode-updated', noteThemeChangeFromSystem()) })
 
   startRegistryWatchers()
   NightLight.clearPreview()

@@ -154,6 +154,10 @@ function setDarkMode(enabled) {
     ipc.send('set-dark-mode', { enabled })
 }
 
+function toggleDarkMode() {
+    ipc.send('toggle-dark-mode')
+}
+
 function openNightLightSettings() {
     ipc.send('open-night-light-settings')
 }
@@ -479,6 +483,7 @@ window.requestNightLight = requestNightLight
 window.setNightLight = setNightLight
 window.requestDarkMode = requestDarkMode
 window.setDarkMode = setDarkMode
+window.toggleDarkMode = toggleDarkMode
 window.openNightLightSettings = openNightLightSettings
 window.pauseMonitorUpdates = pauseMonitorUpdates
 window.installUpdate = installUpdate

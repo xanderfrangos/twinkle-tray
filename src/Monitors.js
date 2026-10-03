@@ -1185,10 +1185,30 @@ function hasInternalPanel() {
     return Object.values(monitorsWin32 || {}).some(monitor => INTERNAL_CONNECTORS.indexOf(monitor?.connector) >= 0)
 }
 
-// Lists internal displays via the preferred available WMI method.
+// A failed bridge call is often temporary (WMI busy at logon or after an
+// update), so the bridge is only given up on after repeated failures, and only
+// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
+// so latching it without a fallback would trade a fast write path for nothing.
+const BRIDGE_FAILURE_LIMIT = 3
+function noteBridgeFailure(what, failures) {
+    if (failures >= BRIDGE_FAILURE_LIMIT && !wmicUnavailable && !wmiFailed) {
+        wmiFailed = true
+        console.log(`${what} failed ${failures} times. Falling back to WMIC.`)
+    }
+}
+
+// Lists internal displays via the preferred available WMI method. WMIC is
+// tried on every failed bridge listing, so a fallback doesn't have to wait
+// for the bridge to be given up on.
+let bridgeListingFailures = 0
 getMonitorsInternal = async () => {
     if (canUseWmiBridgeNow()) {
-        return await getMonitorsWMI()
+        const monitors = await getMonitorsWMI()
+        if (monitors) {
+            bridgeListingFailures = 0
+            return monitors
+        }
+        noteBridgeFailure("getMonitorsWMI()", ++bridgeListingFailures)
     }
     if (!wmicUnavailable) {
         return await getMonitorsWMIC()
@@ -1198,13 +1218,10 @@ getMonitorsInternal = async () => {
 
 // Reads internal display brightness via the preferred available WMI method.
 // The bridge reports the same failure for a broken WMI stack, a machine with no
-// internal panel, and a query that simply timed out, so a single failure isn't
-// enough to demote it. WMIC is tried on every failed read for a real internal
-// panel, but the bridge is only given up on after repeated failures, and only
-// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
-// so latching it without a fallback would trade a fast write path for nothing.
+// internal panel, and a query that simply timed out, so only failures for a
+// real internal panel count towards giving up on it. WMIC is tried on every
+// failed read for one.
 let bridgeBrightnessFailures = 0
-const BRIDGE_BRIGHTNESS_FAILURE_LIMIT = 3
 getBrightnessInternal = async () => {
     if (canUseWmiBridgeNow()) {
         const brightness = await getBrightnessWMI()
@@ -1216,11 +1233,7 @@ getBrightnessInternal = async () => {
         // No internal panel to read. Expected on desktops, so leave WMIC alone.
         if (!hasInternalPanel()) return brightness
 
-        bridgeBrightnessFailures++
-        if (bridgeBrightnessFailures >= BRIDGE_BRIGHTNESS_FAILURE_LIMIT && !wmicUnavailable) {
-            wmiFailed = true
-            console.log(`getBrightnessWMI() failed ${bridgeBrightnessFailures} times for an internal panel. Falling back to WMIC.`)
-        }
+        noteBridgeFailure("getBrightnessWMI() for an internal panel", ++bridgeBrightnessFailures)
     }
     if (!wmicUnavailable) {
         return await getBrightnessWMIC()
@@ -1229,24 +1242,21 @@ getBrightnessInternal = async () => {
 }
 
 let wmiFailed = false
+// Resolves false when the bridge couldn't list displays at all, so
+// getMonitorsInternal() can fall back. An empty object is a successful listing.
+// There is no timeout: the native call blocks, so one could never fire before
+// it returns.
 getMonitorsWMI = () => {
     return new Promise(async (resolve, reject) => {
         const foundMonitors = {}
         try {
-            const timeout = setTimeout(() => { wmiFailed = true; console.log("getMonitorsWMI Timed out."); reject({}) }, 4000)
             const wmiMonitors = await wmibridge.getMonitors();
 
             if (wmiMonitors.failed) {
                 // Something went wrong
                 console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
-                // The bridge is the primary source for the internal display, so a hard
-                // failure here must flip wmiFailed. Otherwise the WMIC fallback is never
-                // reached, since the 4s timeout above can't fire during the blocking
-                // native call. getBrightnessWMI() deliberately does NOT do this: a failed
-                // response there is normal on desktops with no internal panel.
-                wmiFailed = true
-                clearTimeout(timeout)
-                resolve(foundMonitors)
+                resolve(false)
+                return
             } else {
                 // Sort through results
                 for (let monitorHWID in wmiMonitors) {
@@ -1270,7 +1280,6 @@ getMonitorsWMI = () => {
 
                     foundMonitors[hwid[2]] = wmiInfo
                 }
-                clearTimeout(timeout)
             }
         } catch (e) {
             console.log(`getMonitorsWMI: Failed to get all monitors.`)

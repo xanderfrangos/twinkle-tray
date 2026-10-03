@@ -23,11 +23,23 @@ export default class Slider extends Component {
         }
     }
 
+    // Opt-in: fired when the user finishes adjusting, so sliders with a
+    // debounced/queued write can flush the final value immediately.
+    commit = () => {
+        if (this.props.onCommit && typeof this.props.onCommit == "function") {
+            this.props.onCommit(this.cap(this.state.level) * 1, this)
+        }
+    }
+
     getName = () => {
         if (this.props.name) {
             return (
                 <div className="name-row">
-                    <div className="icon" style={{display: (this.props.icon === false ? "none" : "block")}}>{(this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}</div>
+                    <div className="icon" style={{display: (this.props.icon === false ? "none" : "block")}}>
+                        {this.props.iconText
+                            ? <span>{this.props.iconText}</span>
+                            : (this.props.monitortype == "wmi" ? <span>&#xE770;</span> : <span>&#xE7F4;</span>)}
+                    </div>
                     <div className="title">{this.props.name}</div>
                     {this.props.afterName}
                 </div>
@@ -67,6 +79,10 @@ export default class Slider extends Component {
             this.setState({
                 level: this.cap(this.props.level)
             }, this.fireChange())
+        } else if (this.props.syncLevel && oldProps.level != this.props.level) {
+            // Opt-in prop for sliders whose value is owned outside the panel,
+            // such as Windows Night Light.
+            this.setState({ level: this.cap(this.props.level) })
         }
     }
 
@@ -79,10 +95,10 @@ export default class Slider extends Component {
                 {this.getName()}
                 <div className="input--range" data-height={this.props.height}>
                     <div className="rangeGroup">
-                        <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} className="range" />
+                        <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} onMouseUp={this.commit} onTouchEnd={this.commit} onKeyUp={this.commit} className="range" />
                         <div className="progress" style={this.progressStyle()}></div>
                     </div>
-                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} className="val" />
+                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} onMouseUp={this.commit} onTouchEnd={this.commit} onKeyUp={this.commit} onBlur={this.commit} className="val" />
                 </div>
             </div>
         );

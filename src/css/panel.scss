@@ -482,6 +482,145 @@ body[data-is-win11="false"] #root {
     height: 42px;
 }
 
+//
+// Global Windows controls (Night Light / dark mode)
+//
+
+.global-controls {
+    // Night Light and dark mode are Windows controls, so keep them a fixed blue
+    // instead of following the OS accent color (which can be pink, purple, etc.).
+    // These variables are inherited by the Night Light slider and the dark mode
+    // toggle, so both use the same shade without affecting the other sliders.
+    --system-accent-color: #0078d7;
+    --system-accent-light: #3399e6;
+    --system-accent-medium: #0078d7;
+    --system-accent-dark1: #0078d7;
+    --system-accent-light2: #4da3e0;
+
+    @media screen and (prefers-color-scheme: dark) {
+        // Windows 11 dark styling uses the light2 shade for slider contrast.
+        --system-accent-dark1: #4da3e0;
+        --system-accent-light2: #4da3e0;
+    }
+
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--tray-border);
+
+    & > .monitor-sliders + .global-toggle {
+        margin-top: 12px;
+    }
+}
+
+.global-toggle {
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 12px;
+
+    .name-row {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+
+        .title {
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .icon {
+            font-family: "Segoe MDL2 Assets";
+            font-size: 22px;
+            margin-right: 10px;
+            margin-bottom: -3px;
+        }
+
+        .state {
+            font-size: 13px;
+            opacity: 1;
+            padding: 4px 10px;
+            border-radius: 20px;
+            // "Off" uses a light blue from the same fixed scheme as the "On"
+            // state, instead of the translucent gray that picks up the accent.
+            background: var(--system-accent-light2);
+            color: #08375c;
+        }
+    }
+
+    &:hover .name-row .state {
+        filter: brightness(1.05);
+    }
+
+    &[data-active="dark"] .name-row .state {
+        background: var(--system-accent-medium);
+        color: white;
+    }
+
+    // Apps and shell are set differently in Windows ("Custom" mode).
+    // Inherits the fixed blue from .global-controls above, like the "On" state.
+    &[data-active="custom"] .name-row .state {
+        border: 1px dashed var(--system-accent-medium);
+    }
+
+    &.unavailable {
+        cursor: default;
+        opacity: 0.7;
+
+        .name-row .state {
+            background: var(--input-active-background);
+            color: inherit;
+        }
+    }
+
+    .open-settings {
+        font-family: "Segoe MDL2 Assets";
+        font-size: 18px;
+        margin-left: 10px;
+        opacity: 0.7;
+        cursor: pointer;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+// Inline value pills used by the Night Light slider (Auto / Off) and warnings.
+.inline-state,
+.inline-warning {
+    font-size: 13px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+// Night Light "Off"/"Auto": same light-blue scheme as the Off toggles.
+.inline-state {
+    background: var(--system-accent-light2);
+    color: #08375c;
+}
+
+.inline-warning {
+    opacity: 0.7;
+    padding: 2px 7px;
+    cursor: default;
+    background: var(--input-active-background);
+}
+
+#root[data-fluent-icons="true"] .global-toggle .open-settings {
+    font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+}
+
+#root[data-fluent-icons="true"] .global-toggle .name-row .icon {
+    font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets";
+}
+
+// Keep the minimal Windows 11 overlay free of the global controls.
+#root[data-mode="overlay"] .global-controls {
+    display: none;
+}
+
 
 
 // Windows 11 style

@@ -1217,10 +1217,9 @@ getMonitorsInternal = async () => {
 }
 
 // Reads internal display brightness via the preferred available WMI method.
-// The bridge reports the same failure for a broken WMI stack, a machine with no
-// internal panel, and a query that simply timed out, so only failures for a
-// real internal panel count towards giving up on it. WMIC is tried on every
-// failed read for one.
+// Only failures for a real internal panel count towards giving up on the
+// bridge, since desktops have nothing to read. WMIC is tried on every failed
+// read for one.
 let bridgeBrightnessFailures = 0
 getBrightnessInternal = async () => {
     if (canUseWmiBridgeNow()) {
@@ -1228,6 +1227,13 @@ getBrightnessInternal = async () => {
         if (brightness) {
             bridgeBrightnessFailures = 0
             return brightness
+        }
+
+        // Nothing reports brightness through WMI (OEM-controlled or OLED panels,
+        // desktops). Not a failure, and WMIC would query the same class.
+        if (brightness === null) {
+            bridgeBrightnessFailures = 0
+            return false
         }
 
         // No internal panel to read. Expected on desktops, so leave WMIC alone.
@@ -1536,6 +1542,8 @@ determineBrightnessVCPCode = async (monitor) => {
     return false
 }
 
+// Resolves false when the read failed, and null when it worked but no display
+// reports brightness through WMI.
 getBrightnessWMI = () => {
     // Request WMI monitors.
     return new Promise(async (resolve, reject) => {
@@ -1545,7 +1553,7 @@ getBrightnessWMI = () => {
             if (monitor.failed) {
                 // Something went wrong
                 clearTimeout(timeout)
-                resolve(false)
+                resolve(monitor.unsupported ? null : false)
             } else {
                 let hwid = readInstanceName(monitor.InstanceName)
                 hwid[2] = hwid[2].split("_")[0]

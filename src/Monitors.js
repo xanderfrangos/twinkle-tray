@@ -233,12 +233,14 @@ async function handleMonitorMessage(data) {
             )
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
             invalidateFeatureSnapshots(changedMonitors)
-            // Update brightnessType for all monitors when user changes VCP settings
-            if (monitors) {
+            // Update brightnessType for monitors whose VCP override changed. This
+            // message is sent on every settings change, and everything else keeps
+            // the code detected for it (0x13, 0x6B, ...) rather than 0x10.
+            if (monitors && changedMonitors.size) {
                 for (const hwid2 in monitors) {
                     if (monitors[hwid2].type === "ddcci") {
                         const hwid = monitors[hwid2].hwid
-                        if (hwid) {
+                        if (hwid && changedMonitors.has(hwid[1])) {
                             if (ddcBrightnessVCPs[hwid[1]]) {
                                 // Custom VCP code set - use it (already parsed as int in electron.js)
                                 const vcpCode = ddcBrightnessVCPs[hwid[1]]
@@ -249,7 +251,8 @@ async function handleMonitorMessage(data) {
                                     monitors[hwid2].brightnessType = 0x10
                                 }
                             } else {
-                                // No custom VCP - reset to default (0x10 = 16)
+                                // Override removed - reset to default (0x10 = 16)
+                                // until the refresh that follows detects it again
                                 monitors[hwid2].brightnessType = 0x10
                             }
                         }

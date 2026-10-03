@@ -871,6 +871,7 @@ if (!fs.existsSync(configFilesDir)) {
 const GAMMA_BRIGHTNESS_MIN = 20
 const EXTENDED_MINIMUM_BREAKPOINT_DEFAULT = 20
 const EXTENDED_MINIMUM_BREAKPOINT_MAX = 90
+const EXTENDED_MINIMUM_FLOOR_TOLERANCE = 4 // Hardware percent; below the usual 5-10% brightness key step
 
 const defaultSettings = {
   isDev,
@@ -1385,6 +1386,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     if (newSettings.gammaAsMainSliderDisplays !== undefined
       || newSettings.extendMinimumDisplays !== undefined) {
       restoreUnusedGammaRamps(lastGammaOptIns)
+      extendedMinimumPinned.clear() // The next slider move writes hardware again
       shouldRefreshMonitors = true
     } else if (newSettings.extendMinimumBreakpoints !== undefined) {
       // Only the slider mapping changed, so reading brightness is enough to
@@ -1487,23 +1489,38 @@ function getExtendedMinimumBreakpoint(monitor) {
   return breakpoint
 }
 
+// Displays whose hardware we pinned at its floor for the extended range
+const extendedMinimumPinned = new Set()
+
+// Some panels read back a little above 0 at their floor (quantized WMI levels,
+// DDC/CI monitors that clamp to 1, calibration that doesn't map the raw floor
+// to 0). Readings this close count as the floor while it's ours: we pinned it,
+// or the ramp is dimmed (which only happens with hardware at its floor).
+function isAtExtendedMinimumFloor(monitor, hardwareLevel) {
+  if (hardwareLevel <= 0) return true
+  if (!(hardwareLevel <= EXTENDED_MINIMUM_FLOOR_TOLERANCE)) return false
+  return (extendedMinimumPinned.has(monitor.id) || monitor.gammaBrightness < 100)
+}
+
 // Slider space value for a display using the extended range
 function getExtendedMinimumLevel(monitor, hardwareLevel = 0) {
   const breakpoint = getExtendedMinimumBreakpoint(monitor)
+  const atFloor = isAtExtendedMinimumFloor(monitor, hardwareLevel)
 
   // The ramp is only meaningful while hardware sits at its floor. Anything else
   // means another app (or a display event) changed it, so report the hardware.
-  if (monitor.gammaBrightness < 100 && hardwareLevel <= 0) {
+  if (monitor.gammaBrightness < 100 && atFloor) {
     return Math.round((monitor.gammaBrightness - GAMMA_BRIGHTNESS_MIN) * breakpoint / (100 - GAMMA_BRIGHTNESS_MIN))
   }
-  return Math.round(breakpoint + (hardwareLevel * (100 - breakpoint) / 100))
+  return Math.round(breakpoint + ((atFloor ? 0 : hardwareLevel) * (100 - breakpoint) / 100))
 }
 
 // Hardware left its floor while the ramp was dimmed (brightness keys, Quick
 // Settings, another app). The ramp only belongs below the breakpoint, so drop
 // it instead of leaving the display dimmer than its slider says.
 function releaseExtendedMinimumRamp(monitor, hardwareLevel) {
-  if (!usesExtendedMinimum(monitor) || !(hardwareLevel > 0)) return false
+  if (!usesExtendedMinimum(monitor) || isAtExtendedMinimumFloor(monitor, hardwareLevel)) return false
+  extendedMinimumPinned.delete(monitor.id)
   return setTrackedGammaLevel(monitor, 100)
 }
 
@@ -3134,8 +3151,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
 
     const normalized = normalizeBrightness(hardwareLevel, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
 
-    // Moving within the extended range leaves hardware where it already is
-    const skipHardware = (extendedMinimum && monitor.brightnessRaw === normalized)
+    // Moving within the extended range leaves hardware where it already is.
+    // A pinned floor may read back above the value written, so it's tracked
+    // separately instead of compared.
+    const skipHardware = (extendedMinimum && (monitor.brightnessRaw === normalized
+      || (hardwareLevel <= 0 && extendedMinimumPinned.has(monitor.id))))
+    if (extendedMinimum) {
+      if (hardwareLevel <= 0) extendedMinimumPinned.add(monitor.id)
+      else extendedMinimumPinned.delete(monitor.id)
+    }
 
     if (vcp === "sdr") {
       monitorsThread.send({

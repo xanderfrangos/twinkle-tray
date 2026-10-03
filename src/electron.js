@@ -4126,10 +4126,9 @@ function windowMatchesProfile(window) {
 function applyProfileBrightness(profile) {
   try {
     Object.values(monitors)?.forEach(monitor => {
-      // Displays whose slider was never moved have no stored level. Leave them as they are.
+      // Displays whose slider was never moved have no stored level. Use the 50 the settings slider shows.
       const level = profile.monitors?.[monitor.id]
-      if (!Number.isFinite(level)) return
-      updateBrightness(monitor.id, level, true, "brightness")
+      updateBrightness(monitor.id, (Number.isFinite(level) ? level : 50), true, "brightness")
     })
     sendToAllWindows('monitors-updated', monitors)
   } catch (e) {

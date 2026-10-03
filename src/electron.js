@@ -80,7 +80,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
+const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup, DisplayBrightness} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -1599,6 +1599,28 @@ function restoreUnusedGammaRamps(previousOptIns) {
     if (!canUseGammaRamp(monitor)) continue
     if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
     setTrackedGammaLevel(monitor, 100)
+  }
+}
+
+// Gamma dimming outlives the app, and unlike hardware brightness, there's no
+// way to undo it without the app. So the ramps we dimmed are handed back on quit.
+function restoreGammaRampsOnQuit() {
+  try {
+    // Stop the worker first, so a queued ramp write can't land after the restore
+    if (gammaBrightnessTimeout) clearTimeout(gammaBrightnessTimeout)
+    gammaBrightnessQueue = {}
+    if (monitorsThreadReal?.exitCode === null) monitorsThreadReal.kill()
+
+    const restored = new Set()
+    for (const monitor of Object.values(monitors)) {
+      if (!usesGammaRamp(monitor) || !(monitor?.gammaBrightness < 100)) continue
+      const path = monitor.softwarePath || monitor.path
+      if (typeof path !== "string" || path.length === 0 || restored.has(path)) continue
+      restored.add(path) // Displays can share a ramp
+      console.log(`Restoring gamma ramp for ${monitor.id}: ${DisplayBrightness.setBrightness(path, 100) ? "ok" : "failed"}`)
+    }
+  } catch (e) {
+    console.log("Couldn't restore gamma ramps on quit:", e)
   }
 }
 
@@ -4490,6 +4512,7 @@ app.on("activate", () => {
 });
 
 app.on('quit', () => {
+  restoreGammaRampsOnQuit()
   try {
     PowerEvents.unregisterPowerSettingNotifications()
     BrightnessKeys.unregister()

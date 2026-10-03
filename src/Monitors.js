@@ -1731,6 +1731,9 @@ function setBrightness(brightness, id) {
             }
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
+            // WMI only takes whole levels, and the bridge rejects anything else.
+            // Normalization and calibration usually produce fractions.
+            brightness = Math.round(Math.max(0, Math.min(100, Number(brightness))))
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
             if (canUseWmiBridgeNow()) {

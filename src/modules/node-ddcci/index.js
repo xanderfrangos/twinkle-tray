@@ -34,9 +34,10 @@ module.exports = {
         }
         return monitors;
     }
-    , getMonitorInputs: (monitorFullName) => {
-        ddcci.refresh("accurate", true, true)
-        return ddcci.getMonitorInputs(monitorFullName)
+    // Uses the monitor list and capabilities string from the last refresh.
+    // Pass the current 0x60 value when it was just read to skip another read.
+    , getMonitorInputs: (monitorFullName, currentInput) => {
+        return ddcci.getMonitorInputs(monitorFullName, currentInput)
     }
 
     , getVCP: ddcci.getVCP

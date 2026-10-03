@@ -1806,7 +1806,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError 
     if(!code || code == "0x0") return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
-        if (code === 96) return ddcci.getMonitorInputs(monitor)
+        if (code === 96) return getMonitorInputs(monitor, result[0])
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
@@ -1825,6 +1825,25 @@ async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError 
         // Cached value can't be used, so we return false
         return false
     }
+}
+
+// Input lists come from the capabilities string the last refresh left in the
+// native cache, so no refresh is needed for a monitor it found. The list is only
+// rebuilt when flushvcp cleared it after the handles were opened.
+function getMonitorInputs(monitor, currentInput) {
+    try {
+        return ddcci.getMonitorInputs(monitor, currentInput)
+    } catch (e) {
+        if (!e?.message?.startsWith("Monitor not found")) throw e
+    }
+    withDDCSentinel("refresh", false, () =>
+        ddcci._refresh(
+            (shouldEnrichCapabilities() ? "accurate" : determineDDCCIMethod()),
+            true,
+            !settings.disableHighLevel
+        )
+    )
+    return ddcci.getMonitorInputs(monitor, currentInput)
 }
 
 async function setVCP(monitor, code, value) {

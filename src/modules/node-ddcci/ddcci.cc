@@ -1525,16 +1525,23 @@ getMonitorInputs(const Napi::CallbackInfo& info)
             return resultArray;
         }
         
-        // Read the monitor's current input source
+        // Read the monitor's current input source, unless the caller just
+        // read it and passed it in.
         DWORD currentInput = 0;
         DWORD inputs = 0;
-        BOOL success = GetVCPFeatureAndVCPFeatureReply(
-            monitor.handle,
-            (BYTE)0x60,
-            NULL,
-            &currentInput,
-            &inputs
-        );
+        BOOL success = FALSE;
+        if (info.Length() > 1 && info[1].IsNumber()) {
+            currentInput = info[1].As<Napi::Number>().Uint32Value();
+            success = TRUE;
+        } else {
+            success = GetVCPFeatureAndVCPFeatureReply(
+                monitor.handle,
+                (BYTE)0x60,
+                NULL,
+                &currentInput,
+                &inputs
+            );
+        }
 
         // Convert the current input to a number
         unsigned int currentCodeValue = 0;

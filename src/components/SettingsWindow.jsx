@@ -953,7 +953,7 @@ export default class SettingsWindow extends PureComponent {
                     const enabled = (this.state.rawSettings?.extendMinimumDisplays?.[monitor.key] ? true : false)
 
                     return (
-                        <SettingsChild key={monitor.key} className="breakpoint-child" icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                        <SettingsChild key={monitor.key} className="breakpoint-child" icon="E7F4" title={getMonitorName(monitor, this.state.names)} description={this.getGammaHDRNotice(monitor)} input={
                             <>
                                 <div className="breakpoint-field" data-enabled={enabled} title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT")}>
                                     <input type="number" min={EXTEND_MINIMUM_BREAKPOINT_MIN} max={EXTEND_MINIMUM_BREAKPOINT_MAX} disabled={!enabled} value={this.state.breakpointDrafts[monitor.key] ?? this.getExtendMinimumBreakpoint(monitor)} onChange={(e) => { this.setExtendMinimumBreakpointDraft(e.target.value, monitor) }} onBlur={(e) => { this.setExtendMinimumBreakpoint(e.target.value, monitor) }} onKeyDown={(e) => { if (e.key === "Enter") e.target.blur() }} />
@@ -973,6 +973,12 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
+    // Gamma ramps don't apply in HDR, so main skips these features until it's off.
+    // The toggle stays usable so the setting can still be changed.
+    getGammaHDRNotice = (monitor) => {
+        return (monitor?.hdr === "active" ? T.t("SETTINGS_MONITORS_GAMMA_HDR_UNAVAILABLE") : undefined)
+    }
+
     getGammaMonitorsSettings = () => {
         try {
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
@@ -981,7 +987,7 @@ export default class SettingsWindow extends PureComponent {
                 return Object.values(this.state.monitors).map((monitor, index) => {
 
                     return (
-                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
+                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} description={this.getGammaHDRNotice(monitor)} input={
                             <div className="inputToggle-generic">
                                 <input onChange={(e) => { this.setGammaMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.gammaAsMainSliderDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.gammaAsMainSliderDisplays?.[monitor.key] ? true : false)} type="checkbox" />
                             </div>

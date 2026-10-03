@@ -10,6 +10,7 @@ export function getMonitorName(monitor, renames) {
 // instead of the brightness control that was detected for it.
 export function usesGammaSlider(monitor) {
     if (!window.settings?.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+    if (monitor?.hdr === "active") return false // Mirrors canUseGammaRamp() in electron.js
     return (monitor?.gammaBrightness >= 0)
 }
 

@@ -1459,13 +1459,22 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 // instead of the brightness control that was detected for it.
 function usesGammaSlider(monitor) {
   if (!settings.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+  if (!canUseGammaRamp(monitor)) return false
   return (monitor?.gammaBrightness >= 0)
+}
+
+// Windows ignores gamma ramps while HDR is on, and writing one fails its
+// read-back check (with retries) every time. The display's other controls,
+// such as the SDR slider, stay in charge until HDR is turned off.
+function canUseGammaRamp(monitor) {
+  return (monitor?.hdr !== "active")
 }
 
 // Per-display opt-in: the bottom of the slider range keeps hardware brightness
 // at its minimum and dims further with the gamma ramp.
 function usesExtendedMinimum(monitor) {
   if (!settings.extendMinimumDisplays?.[monitor?.key]) return false
+  if (!canUseGammaRamp(monitor)) return false
   if (usesGammaSlider(monitor)) return false // Gamma is already the primary control
   if (!(monitor?.gammaBrightness >= 0)) return false
   return (monitor?.type === "ddcci" || monitor?.type === "wmi" || monitor?.type === "studio-display")
@@ -1570,6 +1579,7 @@ function restoreUnusedGammaRamps(previousOptIns) {
     const monitor = monitors[key]
     if (!hasGammaOptIn(monitor, previousOptIns) || hasGammaOptIn(monitor)) continue
     if (usesGammaRamp(monitor)) continue // Still dimmed by the software fallback
+    if (!canUseGammaRamp(monitor)) continue
     if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
     setTrackedGammaLevel(monitor, 100)
   }

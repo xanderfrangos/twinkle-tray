@@ -1460,6 +1460,14 @@ function getExtendedMinimumLevel(monitor, hardwareLevel = 0) {
   return Math.round(breakpoint + (hardwareLevel * (100 - breakpoint) / 100))
 }
 
+// Hardware left its floor while the ramp was dimmed (brightness keys, Quick
+// Settings, another app). The ramp only belongs below the breakpoint, so drop
+// it instead of leaving the display dimmer than its slider says.
+function releaseExtendedMinimumRamp(monitor, hardwareLevel) {
+  if (!usesExtendedMinimum(monitor) || !(hardwareLevel > 0)) return false
+  return setTrackedGammaLevel(monitor, 100)
+}
+
 // Set the ramp and track the level. Writes are coalesced, so transitions
 // can't outrun SetDeviceGammaRamp.
 function setTrackedGammaLevel(monitor, level) {
@@ -2699,6 +2707,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
 
     // Fold the gamma ramp into the bottom of the slider range
     if(usesExtendedMinimum(monitor)) {
+      releaseExtendedMinimumRamp(monitor, monitor.brightness)
       monitor.brightness = getExtendedMinimumLevel(monitor, monitor.brightness)
     }
 
@@ -3787,13 +3796,21 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
       if(!ignoreBrightnessEvent) {
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
-          if(monitor.type === "wmi") {
+          // The slider drives the ramp on these, so the backlight isn't its value
+          if(monitor.type === "wmi" && !usesGammaSlider(monitor)) {
             const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max, monitor.calibration)
             monitor.brightness = normalized
             monitor.brightnessRaw = setting.data
+
+            // Map hardware back into the extended slider range
+            if(usesExtendedMinimum(monitor)) {
+              releaseExtendedMinimumRamp(monitor, normalized)
+              monitor.brightness = getExtendedMinimumLevel(monitor, normalized)
+            }
           }
-          sendToAllWindows('monitors-updated', monitors)
         }
+        setTrayPercent()
+        sendToAllWindows('monitors-updated', monitors)
       }
     }
   })
@@ -5637,7 +5654,9 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                   monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
                 }
                 if (usesExtendedMinimum(monitor)) {
-                  monitor.brightness = getExtendedMinimumLevel(monitor, normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration))
+                  const hardwareLevel = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
+                  releaseExtendedMinimumRamp(monitor, hardwareLevel)
+                  monitor.brightness = getExtendedMinimumLevel(monitor, hardwareLevel)
                 }
               }
               applyAdjustment(new Set(Object.keys(knownBrightness)))

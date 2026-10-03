@@ -1465,6 +1465,16 @@ function usesGammaSlider(monitor) {
   return (monitor?.gammaBrightness >= 0)
 }
 
+// The gamma slider spans the ramp's usable range. It's mapped here, after the
+// display's own normalization, so the user's min/max and calibration still apply.
+function sliderLevelToGammaLevel(level) {
+  return Math.round(minMax(GAMMA_BRIGHTNESS_MIN + (level * (100 - GAMMA_BRIGHTNESS_MIN) / 100), GAMMA_BRIGHTNESS_MIN, 100))
+}
+
+function gammaLevelToSliderLevel(gammaLevel) {
+  return minMax((gammaLevel - GAMMA_BRIGHTNESS_MIN) * 100 / (100 - GAMMA_BRIGHTNESS_MIN), 0, 100)
+}
+
 // Windows ignores gamma ramps while HDR is on, and writing one fails its
 // read-back check (with retries) every time. The display's other controls,
 // such as the SDR slider, stay in charge until HDR is turned off.
@@ -2779,9 +2789,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
 
     // Replace detected brightness with the gamma ramp level
     if(usesGammaSlider(monitor)) {
-      monitor.min = GAMMA_BRIGHTNESS_MIN
-      monitor.max = 100
-      monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+      monitor.brightness = normalizeBrightness(gammaLevelToSliderLevel(monitor.gammaBrightness), true, monitor.min, monitor.max, monitor.calibration)
       monitor.brightnessRaw = monitor.gammaBrightness
     }
 
@@ -3195,7 +3203,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         monitor.brightnessRaw = normalized
       }
     } else if (vcp === "gamma") {
-      const gammaLevel = Math.round(minMax(normalized, GAMMA_BRIGHTNESS_MIN, 100))
+      const gammaLevel = sliderLevelToGammaLevel(normalized)
       monitor.brightness = level
       monitor.brightnessRaw = gammaLevel
       monitor.gammaBrightness = gammaLevel
@@ -5751,7 +5759,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                   monitor.brightness = monitor.sdrLevel
                 }
                 if (usesGammaSlider(monitor)) {
-                  monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+                  monitor.brightness = normalizeBrightness(gammaLevelToSliderLevel(monitor.gammaBrightness), true, monitor.min, monitor.max, monitor.calibration)
                 }
                 if (usesExtendedMinimum(monitor)) {
                   const hardwareLevel = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)

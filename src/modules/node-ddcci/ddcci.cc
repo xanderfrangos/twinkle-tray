@@ -442,24 +442,39 @@ getAllHandles() {
     EnumDisplayMonitors(
       NULL, NULL, monitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
 
-    // Get physical monitor handles
+    // Get physical monitor handles. Some displays (virtual, remote, and some
+    // USB displays) have none to give, so they're skipped rather than failing
+    // every other display with them.
     try {
     for (auto& monitor : monitors) {
-        DWORD numPhysicalMonitors;
+        monitor.monitorName = getPhysicalMonitorName(monitor.handle);
+
+        DWORD numPhysicalMonitors = 0;
         if (!GetNumberOfPhysicalMonitorsFromHMONITOR(monitor.handle,
                                                      &numPhysicalMonitors)) {
-            throw std::runtime_error("Failed to get physical monitor count.");
+            const DWORD errorCode = GetLastError();
+            p("Skipping " + monitor.monitorName
+              + ": couldn't get its physical monitor count. "
+              + getLastErrorString(errorCode));
+            continue;
+        }
+        if (numPhysicalMonitors == 0) {
+            p("Skipping " + monitor.monitorName + ": no physical monitors.");
+            continue;
         }
 
-        // unique_ptr guarantees the array is freed even if the calls below
-        // throw, instead of leaking it on the GetPhysicalMonitorsFromHMONITOR
-        // failure path.
+        // unique_ptr guarantees the array is freed on every path out of
+        // this iteration.
         std::unique_ptr<PHYSICAL_MONITOR[]> physicalMonitors(
           new PHYSICAL_MONITOR[numPhysicalMonitors]);
 
         if (!GetPhysicalMonitorsFromHMONITOR(
               monitor.handle, numPhysicalMonitors, physicalMonitors.get())) {
-            throw std::runtime_error("Failed to get physical monitors.");
+            const DWORD errorCode = GetLastError();
+            p("Skipping " + monitor.monitorName
+              + ": couldn't get its physical monitors. "
+              + getLastErrorString(errorCode));
+            continue;
         }
 
         for (DWORD i = 0; i < numPhysicalMonitors; i++) {
@@ -468,13 +483,18 @@ getAllHandles() {
             monitor.physicalDescriptions.push_back(
               wideToString(physicalMonitors[i].szPhysicalMonitorDescription));
         }
-
-        monitor.monitorName = getPhysicalMonitorName(monitor.handle);
     }
     } catch (...) {
         destroyPhysicalMonitorHandles(monitors);
         throw;
     }
+
+    // Skipped displays own no handles, so dropping them leaks nothing
+    monitors.erase(std::remove_if(monitors.begin(), monitors.end(),
+                                  [](const struct Monitor& monitor) {
+                                      return monitor.physicalHandles.empty();
+                                  }),
+                   monitors.end());
 
     return monitors;
 }

@@ -1360,9 +1360,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     if (newSettings.gammaAsMainSliderDisplays !== undefined
       || newSettings.extendMinimumDisplays !== undefined
       || newSettings.extendMinimumBreakpoints !== undefined) {
-      restoreUnusedGammaRamps()
+      restoreUnusedGammaRamps(lastGammaOptIns)
       shouldRefreshMonitors = true
     }
+    lastGammaOptIns = getGammaOptIns()
 
     if (settings.profiles) {
       rebuildTray = true
@@ -1508,11 +1509,29 @@ function reapplyGammaRamps() {
   }
 }
 
-// Undo software dimming for displays that no longer use their gamma ramp
-function restoreUnusedGammaRamps() {
+// Gamma opt-ins as of the last processed settings, so the next change can tell
+// which displays just lost theirs.
+let lastGammaOptIns = false
+
+function getGammaOptIns() {
+  return {
+    gammaAsMainSliderDisplays: Object.assign({}, settings.gammaAsMainSliderDisplays),
+    extendMinimumDisplays: Object.assign({}, settings.extendMinimumDisplays)
+  }
+}
+
+function hasGammaOptIn(monitor, optIns = settings) {
+  return !!(optIns?.gammaAsMainSliderDisplays?.[monitor?.key] || optIns?.extendMinimumDisplays?.[monitor?.key])
+}
+
+// Undo our software dimming on displays that just lost their gamma opt-in. A
+// dimmed ramp on any other display isn't ours to reset (the fallback,
+// calibration, f.lux), so it's left alone.
+function restoreUnusedGammaRamps(previousOptIns) {
   for (const key in monitors) {
     const monitor = monitors[key]
-    if (usesExtendedMinimum(monitor) || usesGammaSlider(monitor)) continue
+    if (!hasGammaOptIn(monitor, previousOptIns) || hasGammaOptIn(monitor)) continue
+    if (usesGammaRamp(monitor)) continue // Still dimmed by the software fallback
     if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
     setTrackedGammaLevel(monitor, 100)
   }

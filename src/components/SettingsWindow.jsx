@@ -18,7 +18,7 @@ import MonitorInfo from "./MonitorInfo"
 import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
-import { getMonitorName } from './utilts/monitor.util';
+import { getMonitorName, isAdjustableDisplay } from './utilts/monitor.util';
 import { LightSensorSettings } from "./light-sensor/LightSensorSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
@@ -232,7 +232,7 @@ export default class SettingsWindow extends PureComponent {
         // the panel. Unsupported monitors can have a null `key`, while this
         // collection itself is keyed independently of that value.
         const sorted = Object.values(this.state.monitors)
-            .filter(monitor => monitor.type != "none")
+            .filter(monitor => isAdjustableDisplay(monitor))
             .sort(monitorSort)
         const items = reorder(
             sorted,
@@ -573,7 +573,7 @@ export default class SettingsWindow extends PureComponent {
             return (<SettingsChild content={<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>} />)
         } else {
             return Object.values(this.state.monitors).map((monitor, index) => {
-                if (monitor.type == "none") {
+                if (!isAdjustableDisplay(monitor)) {
                     return null
                 } else {
                     return (
@@ -592,7 +592,7 @@ export default class SettingsWindow extends PureComponent {
             return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}<br /><br /></div>)
         } else {
             const sorted = Object.values(this.state.monitors)
-                .filter(monitor => monitor.type != "none")
+                .filter(monitor => isAdjustableDisplay(monitor))
                 .sort(monitorSort)
             return (
                 <DragDropContext onDragEnd={this.onDragEnd}>
@@ -701,7 +701,7 @@ export default class SettingsWindow extends PureComponent {
     getAdjustmentTimesMonitors = (time, index) => {
         if (this.state.adjustmentTimeIndividualDisplays) {
             return Object.values(this.state.monitors).map((monitor, idx) => {
-                if (monitor.type == "none") {
+                if (!isAdjustableDisplay(monitor)) {
                     return (<div key={monitor.id + ".brightness"}></div>)
                 } else {
                     let level = time.brightness
@@ -1158,7 +1158,7 @@ export default class SettingsWindow extends PureComponent {
         this.lastLevels = []
         let numMonitors = 0
         for (let key in newMonitors) {
-            if (newMonitors[key].type != "none") numMonitors++;
+            if (isAdjustableDisplay(newMonitors[key])) numMonitors++;
         }
         this.numMonitors = numMonitors
         this.setState({
@@ -1797,7 +1797,7 @@ function addNewProfile(state) {
 
 function getProfileMonitors(monitors, profile, onChange) {
     return Object.values(monitors).map((monitor, idx) => {
-        if (monitor.type == "none") {
+        if (!isAdjustableDisplay(monitor)) {
             return (null)
         } else {
             let level = (profile.monitors?.[monitor.id] ?? 50)
@@ -1876,7 +1876,7 @@ function ActionItem(props) {
                 return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
             } else {
                 return Object.values(monitors).map((monitor, index) => {
-                    if(monitor.type === "none") return null;
+                    if(!isAdjustableDisplay(monitor)) return null;
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {

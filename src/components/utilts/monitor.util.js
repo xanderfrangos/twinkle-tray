@@ -5,3 +5,16 @@ export function getMonitorName(monitor, renames) {
         return monitor.name
     }
 }
+
+// Per-display opt-in: the primary slider drives the display's gamma ramp
+// instead of the brightness control that was detected for it.
+export function usesGammaSlider(monitor) {
+    if (!window.settings?.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+    return (monitor?.gammaBrightness >= 0)
+}
+
+// Displays without a detected brightness control are typed "none", but the
+// gamma slider still gives them a primary slider.
+export function isAdjustableDisplay(monitor) {
+    return (monitor?.type !== "none" || usesGammaSlider(monitor))
+}

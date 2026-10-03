@@ -679,18 +679,34 @@ function handleNativeBrightnessKey(key) {
   }, 400)
 }
 
-function applyNativeBrightnessKeys() {
+// Registering sends every Consumer Control report (media keys, some mice's
+// horizontal scrolling) through the main thread, so only listen while a
+// BrightnessUp/Down hotkey exists or a hotkey field is recording.
+let nativeBrightnessKeysWanted = false
+function syncNativeBrightnessKeys(force = false) {
+  const wanted = !!mainWindow && (nativeHotkeyRecording || !!settings.hotkeys?.some?.(hotkey => (
+    Object.values(nativeBrightnessAccelerators).includes(hotkey?.accelerator)
+  )))
+  if(!force && wanted === nativeBrightnessKeysWanted) return nativeBrightnessKeysRegistered;
+  nativeBrightnessKeysWanted = wanted
+
   try {
     stopNativeBrightnessKeyRepeat()
     BrightnessKeys.unregister()
     nativeBrightnessKeysRegistered = false
-    if(mainWindow) {
+    if(wanted) {
       nativeBrightnessKeysRegistered = BrightnessKeys.register(getMainWindowHandle())
       console.log(`Native brightness keys: ${nativeBrightnessKeysRegistered ? "enabled" : "unavailable"}`)
     }
   } catch(e) {
     console.log("Couldn't apply native brightness keys:", e)
   }
+  return nativeBrightnessKeysRegistered
+}
+
+// The panel window was (re)created, so register against its new handle
+function applyNativeBrightnessKeys() {
+  syncNativeBrightnessKeys(true)
   applyHotkeys()
   return nativeBrightnessKeysRegistered
 }
@@ -1704,6 +1720,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
 
 function applyHotkeys(monitorList = monitors) {
   try {
+    syncNativeBrightnessKeys()
     globalShortcut.unregisterAll()
     const claimedNativeAccelerators = new Set()
     if (settings.hotkeys !== undefined && settings.hotkeys?.length) {
@@ -4733,6 +4750,7 @@ let settingsWindow
 ipcMain.on("set-native-hotkey-recording", (event, recording) => {
   if(settingsWindow?.webContents.id !== event.sender.id) return;
   nativeHotkeyRecording = Boolean(recording)
+  syncNativeBrightnessKeys()
 })
 
 function createSettings() {
@@ -4811,6 +4829,7 @@ function createSettings() {
 
   settingsWindow.on("closed", () => {
     nativeHotkeyRecording = false
+    syncNativeBrightnessKeys()
     settingsWindow = null
   });
 

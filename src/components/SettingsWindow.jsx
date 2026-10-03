@@ -818,7 +818,9 @@ export default class SettingsWindow extends PureComponent {
 
     getHotkeyStatusIcon = hotkey => {
         if (hotkey?.active) {
-            return (<div className="status icon active">&#xE73E;</div>)
+            // Registration succeeding doesn't mean the keyboard sends these keys
+            const isNativeBrightnessKey = (hotkey.accelerator === "BrightnessUp" || hotkey.accelerator === "BrightnessDown")
+            return (<div className="status icon active" title={isNativeBrightnessKey ? T.t("SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK") : undefined}>&#xE73E;</div>)
         } else {
             return (<div className="status icon inactive"></div>)
         }
@@ -1550,7 +1552,10 @@ export default class SettingsWindow extends PureComponent {
                                     <div className="sectionTitle">{T.t("SETTINGS_HOTKEYS_TITLE")}</div>
                                     <p>{T.t("SETTINGS_HOTKEYS_DESC")}</p>
                                     {hasNativeBrightnessHotkey ? (
-                                        <p>⚠️ <em>{T.t("SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN")}</em></p>
+                                        <>
+                                            <p>⚠️ <em>{T.t("SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN")}</em></p>
+                                            <p><em>{T.t("SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK")}</em></p>
+                                        </>
                                     ) : null}
                                     <div className="hotkey-monitors">
                                         {this.getHotkeyList()}

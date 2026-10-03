@@ -4674,7 +4674,7 @@ function setTrayPercent() {
         }
       }
       if (i > 0) {
-        averagePerc = Math.floor(averagePerc / i)
+        averagePerc = Math.round(averagePerc / i)
         tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
       }
     }

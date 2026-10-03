@@ -6,6 +6,14 @@ export function getMonitorName(monitor, renames) {
     }
 }
 
+// Normalization, calibration and read-back ramps can all produce fractional
+// levels. Users only ever see whole numbers. Anything that isn't a number
+// (like a placeholder) is shown as is.
+export function displayLevel(value) {
+    const number = Number(value)
+    return (value !== "" && value !== null && Number.isFinite(number) ? Math.round(number) : value)
+}
+
 // Per-display opt-in: the primary slider drives the display's gamma ramp
 // instead of the brightness control that was detected for it.
 export function usesGammaSlider(monitor) {

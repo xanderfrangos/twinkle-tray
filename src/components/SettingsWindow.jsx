@@ -18,7 +18,7 @@ import MonitorInfo from "./MonitorInfo"
 import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
-import { getMonitorName, isAdjustableDisplay } from './utilts/monitor.util';
+import { getMonitorName, isAdjustableDisplay, displayLevel } from './utilts/monitor.util';
 import { LightSensorSettings } from "./light-sensor/LightSensorSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
@@ -851,7 +851,7 @@ export default class SettingsWindow extends PureComponent {
         } else {
             return Object.values(this.state.monitors).map((monitor, index) => {
 
-                let brightness = monitor.brightness
+                let brightness = displayLevel(monitor.brightness)
                 let brightnessMax = monitor.brightnessMax
 
                 if (monitor.type == "ddcci" && !monitor.brightnessType) {

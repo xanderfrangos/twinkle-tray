@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, Component } from "react"
 import PropTypes from 'prop-types';
+import { displayLevel } from "./utilts/monitor.util";
 
 export default class Slider extends Component {
 
@@ -79,10 +80,10 @@ export default class Slider extends Component {
                 {this.getName()}
                 <div className="input--range" data-height={this.props.height}>
                     <div className="rangeGroup">
-                        <input type="range" min={min} max={max} value={level} data-percent={level + "%"} onChange={this.handleChange} className="range" />
+                        <input type="range" min={min} max={max} value={level} data-percent={displayLevel(level) + "%"} onChange={this.handleChange} className="range" />
                         <div className="progress" style={this.progressStyle()}></div>
                     </div>
-                    <input type="number" min={min} max={max} value={Math.floor(level)} onChange={this.handleChange} className="val" />
+                    <input type="number" min={min} max={max} value={displayLevel(level)} onChange={this.handleChange} className="val" />
                 </div>
             </div>
         );

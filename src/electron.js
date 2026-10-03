@@ -633,6 +633,9 @@ let nativeBrightnessKey = false
 let nativeBrightnessKeyRepeatDelay = false
 let nativeBrightnessKeyRepeat = false
 const NATIVE_BRIGHTNESS_KEY_REPEAT_LIMIT = 10000 // Holding the key longer than this needs a fresh press
+// Kept clear of doHotkey's 100 ms throttle. At exactly 100 ms, timer jitter
+// decides whether a repeat is dropped, so the rate wobbles between 100-200 ms.
+const NATIVE_BRIGHTNESS_KEY_REPEAT_INTERVAL = 120
 
 function stopNativeBrightnessKeyRepeat() {
   nativeBrightnessKey = false
@@ -680,7 +683,7 @@ function handleNativeBrightnessKey(key) {
     nativeBrightnessKeyRepeat = setInterval(() => {
       if(Date.now() > repeatUntil) return stopNativeBrightnessKeyRepeat();
       if(nativeBrightnessKey) triggerNativeBrightnessHotkey(nativeBrightnessKey)
-    }, 100)
+    }, NATIVE_BRIGHTNESS_KEY_REPEAT_INTERVAL)
   }, 400)
 }
 

@@ -868,30 +868,11 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                 }
             }
 
-            // QueryDisplayConfig provides the target DevicePath, but no
-            // documented ordering relation with physical-monitor handles.
-            // Keep its positional match as a best-effort fallback only.
-            if (!foundMatchingDisplay) {
-                size_t foundCount = 0;
-                for (auto const& target : targets) {
-                    if (target.gdiDeviceName == monitor.monitorName) {
-                        if (foundCount == i) {
-                            if (claimedDeviceKeys.find(target.deviceKey)
-                                == claimedDeviceKeys.end()) {
-                                useTarget(target, "QDC index fallback");
-                            } else {
-                                p("-- -- QDC target is already claimed. Using fallback.");
-                            }
-                            break;
-                        }
-                        foundCount++;
-                    }
-                }
-            }
-
             /**
              * Fall back to matching against the DISPLAY_DEVICE list by
-             * enumeration order, e.g. if QueryDisplayConfig failed.
+             * enumeration order. Physical monitors have been observed to
+             * follow this order; QueryDisplayConfig paths may not (e.g.
+             * duplicated displays).
              * For example, if all DISPLAY_DEVICE includes:
              * - \\.\DISPLAY1\Monitor1
              * - \\.\DISPLAY2\Monitor0
@@ -913,6 +894,27 @@ populateHandlesMapNormal(std::string validationMethod, bool usePreviousResults, 
                             claimedDeviceKeys.insert(display.deviceKey);
                             foundMatchingDisplay = true;
                             p("-- -- Matched with (fallback): " + display.deviceKey);
+                            break;
+                        }
+                        foundCount++;
+                    }
+                }
+            }
+
+            // QueryDisplayConfig provides the target DevicePath, but no
+            // documented ordering relation with physical-monitor handles.
+            // Keep its positional match as a best-effort fallback only.
+            if (!foundMatchingDisplay) {
+                size_t foundCount = 0;
+                for (auto const& target : targets) {
+                    if (target.gdiDeviceName == monitor.monitorName) {
+                        if (foundCount == i) {
+                            if (claimedDeviceKeys.find(target.deviceKey)
+                                == claimedDeviceKeys.end()) {
+                                useTarget(target, "QDC index fallback");
+                            } else {
+                                p("-- -- QDC target is already claimed.");
+                            }
                             break;
                         }
                         foundCount++;

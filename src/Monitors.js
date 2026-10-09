@@ -56,6 +56,7 @@ function gammaFeaturesActive() {
     if (settings?.useSoftwareBrightnessFallback) return true
     if (Object.values(settings?.gammaAsMainSliderDisplays || {}).some(enabled => enabled)) return true
     if (Object.values(settings?.extendMinimumDisplays || {}).some(enabled => enabled)) return true
+    if (Object.values(monitors || {}).some(m => m?.isVirtual)) return true
     return false
 }
 
@@ -67,11 +68,14 @@ function readGammaBrightness(monitors) {
     const readPaths = {}
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        const path = monitor?.softwarePath || monitor?.path
+        let path = monitor?.softwarePath || monitor?.path
+        if (!path && (monitor?.isVirtual || settings?.useSoftwareBrightnessFallback)) {
+            path = "\\\\.\\DISPLAY1"
+        }
         if (typeof path !== "string" || path.length === 0) continue
 
         // Displays can share a path (and therefore a gamma ramp)
-        const brightness = (readPaths[path] === undefined ? getSoftwareBrightness(monitor) : readPaths[path])
+        const brightness = (readPaths[path] === undefined ? getSoftwareBrightness({ ...monitor, softwarePath: path }) : readPaths[path])
         readPaths[path] = brightness
         if (brightness === false) continue
 
@@ -83,16 +87,19 @@ function readGammaBrightness(monitors) {
 }
 
 function applySoftwareBrightness(monitors) {
-    if (!settings?.useSoftwareBrightnessFallback) return;
-
     const usedPaths = new Set()
 
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        const path = monitor?.softwarePath || monitor?.path
+        let path = monitor?.softwarePath || monitor?.path
+        if (!path && (monitor?.isVirtual || settings?.useSoftwareBrightnessFallback)) {
+            path = "\\\\.\\DISPLAY1"
+        }
+        const allowForMonitor = settings?.useSoftwareBrightnessFallback || monitor?.isVirtual
+        if (!allowForMonitor) continue
         if (monitor?.type !== "none" || monitor?.hdr === "active" || typeof path !== "string" || path.length === 0 || usedPaths.has(path)) continue
 
-        const brightness = (monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : getSoftwareBrightness(monitor))
+        const brightness = (monitor.gammaBrightness >= 0 ? monitor.gammaBrightness : getSoftwareBrightness({ ...monitor, softwarePath: path }))
         if (brightness === false) continue
 
         usedPaths.add(path)
@@ -1315,8 +1322,9 @@ let win32Failed = false
 getMonitorsWin32 = () => {
     let foundDisplays = {}
     return new Promise(async (resolve, reject) => {
+        let timeout
         try {
-            const timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 4000)
+            timeout = setTimeout(() => { win32Failed = true; console.log("getMonitorsWin32 Timed out."); reject({}) }, 4000)
             let displays = []
             const displayConfig = await w32disp.extractDisplayConfig()
 
@@ -1330,8 +1338,19 @@ getMonitorsWin32 = () => {
 
             // Prepare results
             for (const monitor of displays) {
-                const hwid = monitor.devicePath.split("#")
-                hwid[2] = hwid[2].split("_")[0]
+                if (!monitor.devicePath) continue
+                const rawHwid = monitor.devicePath.split("#")
+                const p0 = rawHwid[0] || "\\\\?\\DISPLAY"
+                const p1 = rawHwid[1] || "UNKNOWN"
+                let p2 = rawHwid[2] || `${monitor.sourceConfigId?.id || 0}`
+                if (p2.indexOf("_") >= 0) {
+                    p2 = p2.split("_")[0]
+                }
+                const hwid = [p0, p1, p2]
+
+                const isVirtual = monitor.outputTechnology === "indirect_virtual" ||
+                    (monitor.displayName && (monitor.displayName.toLowerCase().includes("virtual") || monitor.displayName.toLowerCase().includes("vdd"))) ||
+                    (monitor.devicePath && (monitor.devicePath.toLowerCase().includes("idd") || monitor.devicePath.toLowerCase().includes("mtt")));
 
                 const win32Info = {
                     id: `${hwid[0]}#${hwid[1]}#${hwid[2]}`,
@@ -1340,7 +1359,8 @@ getMonitorsWin32 = () => {
                     hwid: hwid,
                     sourceID: monitor.sourceConfigId?.id,
                     scaling: monitor.scaling,
-                    bounds: monitor.sourceMode
+                    bounds: monitor.sourceMode,
+                    isVirtual: !!isVirtual
                 }
                 if (monitor.displayName?.length > 0) {
                     win32Info.name = monitor.displayName;
@@ -1348,11 +1368,10 @@ getMonitorsWin32 = () => {
 
                 foundDisplays[hwid[2]] = win32Info
             }
-
-            // Return prepared results
-            clearTimeout(timeout)
         } catch (e) {
             console.log(`getMonitorsWin32: Failed to get all monitors. (L2)`, e)
+        } finally {
+            if (timeout) clearTimeout(timeout)
         }
         lastWin32 = deepCopy(foundDisplays)
         resolve(foundDisplays)

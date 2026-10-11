@@ -1,10 +1,12 @@
-import React, { useState } from "react"
-import { useObject } from "../hooks/useObject"
+import React, { useEffect, useState } from "react"
 import Slider from "./Slider"
 
 export default function HDRSliders(props) {
-    const { monitor, name, hdrFeatures } = props
+    const { monitor } = props
     const [sdrLevel, setSDRLevel] = useState(monitor?.sdrLevel)
+    useEffect(() => { setSDRLevel(monitor?.sdrLevel) }, [monitor?.sdrLevel])
+
+    if (monitor?.hdr !== "active") return null;
 
     let extraHTML = []
 

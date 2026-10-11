@@ -25,5 +25,5 @@ export function usesGammaSlider(monitor) {
 // Displays without a detected brightness control are typed "none", but the
 // gamma slider still gives them a primary slider.
 export function isAdjustableDisplay(monitor) {
-    return (monitor?.type !== "none" || usesGammaSlider(monitor))
+    return (monitor?.type !== "none" || usesGammaSlider(monitor) || (!window.settings?.disableHDR && monitor?.hdr === "active"))
 }

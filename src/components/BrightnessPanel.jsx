@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
 import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
-import HDRSliders from "./HDRSliders";
 import TranslateReact from "../TranslateReact"
 import getMonitorName from "../utils/BrightnessPanel/getMonitorName";
 import { usesGammaSlider, isAdjustableDisplay } from "./utilts/monitor.util";
@@ -299,13 +298,6 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                   }
                 })
               }
-              let showHDRSliders = false
-              if((monitor.hdr === "active" || window.settings?.hdrDisplays?.[monitor.key]) && !(window.settings?.sdrAsMainSliderDisplays?.[monitor.key])) {
-                // Has HDR slider enabled
-                hasFeatures = true
-                useFeatures = true
-                showHDRSliders = true
-              }
               const powerOff = () => {
                 window.ipc.send("sleep-display", monitor.hwid.join("#"))
                 monitor.features["0xD6"][0] = (monitor.features["0xD6"][0] >= 4 ? 1 : settings.ddcPowerOffValue)
@@ -317,25 +309,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                 }
               }
 
-              // Check if it's an HDR display and only supports SDR brightness adjustment.
-              const isHDROnlySDR = (monitor.hdr === "active" || monitor.hdr === "supported") && monitor.type === "none" && !usesGammaSlider(monitor);
-              
               if (!useFeatures || !hasFeatures) {
-                // For HDR displays that only support SDR, the HDR slider is displayed directly instead of the regular brightness slider.
-                if (isHDROnlySDR) {
-                  return (
-                    <div className="monitor-sliders extended" key={monitor.key}>
-                      <div className="monitor-item" style={{ height: "auto", paddingBottom: "18px" }}>
-                        <div className="name-row">
-                          <div className="icon"><span>&#xE7F4;</span></div>
-                          <div className="title">{getMonitorName(monitor, state.names)}</div>
-                          { showPowerButton() }
-                        </div>
-                      </div>
-                      <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                    </div>
-                  )
-                }
                 return (
                   <div className="monitor-sliders" key={monitor.key}>
                     <Slider name={getMonitorName(monitor, state.names)} id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} afterName={showPowerButton()} scrollAmount={window.settings?.scrollFlyoutAmount} />
@@ -351,15 +325,11 @@ const BrightnessPanel = memo(function BrightnessPanel() {
                         {showPowerButton()}
                       </div>
                     </div>
-                    {/* For HDR displays that only support SDR, hide the regular brightness slider. */}
-                    { !isHDROnlySDR && (
-                      <div className="feature-row feature-brightness">
+                    <div className="feature-row feature-brightness">
                         <div className="feature-icon"><span className="icon vfix">&#xE706;</span></div>
                         <Slider id={monitor.id} level={monitor.brightness} min={0} max={100} num={monitor.num} monitortype={monitor.type} hwid={monitor.key} key={monitor.key} onChange={handleChange} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                      </div>
-                    )}
+                    </div>
                     <DDCCISliders monitor={monitor} monitorFeatures={monitorFeatures} scrollAmount={window.settings?.scrollFlyoutAmount} />
-                    {showHDRSliders ? <HDRSliders monitor={monitor} scrollAmount={window.settings?.scrollFlyoutAmount} /> : null}
                   </div>
                 )
               }

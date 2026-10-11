@@ -1514,9 +1514,7 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE")} description={T.t("SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION")} expandable={true}>
                                         {this.getExtendMinimumMonitorsSettings()}
                                     </SettingsOption>
-                                    <SettingsOption title={T.t("SETTINGS_MONITORS_SDR_SLIDER_TITLE")} description={T.t("SETTINGS_MONITORS_SDR_SLIDER_DESCRIPTION")} expandable={true}>
-                                        {this.getSDRMonitorsSettings()}
-                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_AUTO_HDR_TITLE")} description={T.t("SETTINGS_MONITORS_AUTO_HDR_DESC")} />
                                 </div>
 
                                 <div className="pageSection">
@@ -1715,9 +1713,6 @@ export default class SettingsWindow extends PureComponent {
 
                                     <SettingsOption title="Gamma ramp fallback" description="Adjust brightness with the display's gamma ramp when no hardware brightness control (DDC/CI, WMI) is available. This dims the image instead of the backlight." input={this.renderToggle("useSoftwareBrightnessFallback")} />
 
-                                    <SettingsOption title={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HDR_DISPLAYS_DESC")} expandable={true}>
-                                        {this.getHDRMonitors()}
-                                    </SettingsOption>
 
                                     <SettingsOption title="Idle restore time" description="How long (in seconds) after going idle to rescan displays and apply last known brightness." input={<input type="number" min="0" max="60" value={this.state.rawSettings.idleRestoreSeconds * 1} onChange={(e) => this.setSetting("idleRestoreSeconds", e.target.value)} /> } />
 
@@ -1897,7 +1892,9 @@ function ActionItem(props) {
                 return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
             } else {
                 return Object.values(monitors).map((monitor, index) => {
-                    if(!isAdjustableDisplay(monitor)) return null;
+                    const isHDRAction = ["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)
+                    const needsHDR = isHDRAction || action.target === "sdr"
+                    if (needsHDR ? !monitor.hdrSupported : !isAdjustableDisplay(monitor)) return null;
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {
@@ -1921,6 +1918,8 @@ function ActionItem(props) {
             return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_OFF_WARN")}</p></div>)
         } else if (action.type === "refresh") {
             return null
+        } else if (["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)) {
+            return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_HDR_DESC")}</p></div>)
         } else {
             let selectBoxValue = action.target
             if (!(selectBoxValue === "brightness" || selectBoxValue === "sdr" || selectBoxValue === "contrast" || selectBoxValue === "volume" || selectBoxValue === "powerState")) {
@@ -1938,7 +1937,7 @@ function ActionItem(props) {
                         }
                         props.onChange?.(action)
                     }}>
-                        <option value="brightness">{T.t("PANEL_LABEL_BRIGHTNESS")}</option>
+                        <option value="brightness">{T.t("SETTINGS_HOTKEY_AUTO_BRIGHTNESS")}</option>
                         <option value="contrast">{T.t("PANEL_LABEL_CONTRAST")}</option>
                         <option value="volume">{T.t("PANEL_LABEL_VOLUME")}</option>
                         <option value="vcp">{T.t("SETTINGS_FEATURES_ADD_VCP")}</option>
@@ -2042,6 +2041,9 @@ function ActionItem(props) {
                                 <option value="set">{T.t("SETTINGS_HOTKEY_ACTION_SET")}</option>
                                 <option value="offset">{T.t("SETTINGS_HOTKEY_ACTION_OFFSET")}</option>
                                 <option value="cycle">{T.t("SETTINGS_HOTKEY_ACTION_CYCLE")}</option>
+                                <option value="hdr-toggle">{T.t("SETTINGS_HOTKEY_ACTION_HDR_TOGGLE")}</option>
+                                <option value="hdr-on">{T.t("SETTINGS_HOTKEY_ACTION_HDR_ON")}</option>
+                                <option value="hdr-off">{T.t("SETTINGS_HOTKEY_ACTION_HDR_OFF")}</option>
                                 <option value="off">{T.t("PANEL_BUTTON_TURN_OFF_DISPLAYS")}</option>
                                 <option value="refresh">{T.t("GENERIC_REFRESH_DISPLAYS")}</option>
                             </select>

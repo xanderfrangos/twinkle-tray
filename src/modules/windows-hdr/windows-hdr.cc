@@ -3,7 +3,7 @@
 #include <napi.h>
 #include <windows.h>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include <map>
 #include <vector>
 
@@ -18,7 +18,8 @@ enum DISPLAYCONFIG_DEVICE_INFO_TYPE_INTERNAL {
 // this builds with older SDKs; on older Windows the call simply fails and
 // the legacy path is used.
 enum {
-    TT_DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO_2 = 15
+    TT_DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO_2 = 15,
+    TT_DISPLAYCONFIG_DEVICE_INFO_SET_HDR_STATE = 16
 };
 
 typedef enum _TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE {
@@ -48,6 +49,12 @@ typedef struct _TT_DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 {
     TT_DISPLAYCONFIG_ADVANCED_COLOR_MODE activeColorMode;
 } TT_DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2;
 
+// Same ABI as DISPLAYCONFIG_SET_HDR_STATE, usable with older Windows SDKs.
+struct TT_DISPLAYCONFIG_SET_HDR_STATE {
+    DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+    UINT32 value; // enableHdr is bit 0; all reserved bits must be zero.
+};
+
 typedef struct _DISPLAYCONFIG_SET_SDR_WHITE_LEVEL {
     DISPLAYCONFIG_DEVICE_INFO_HEADER header;
     unsigned int SDRWhiteLevel;
@@ -74,6 +81,7 @@ struct Display {
     boolean hdrSupported;
     boolean hdrEnabled;
     boolean hdrActive;
+    boolean usesAdvancedColorInfo2;
     DISPLAYCONFIG_PATH_INFO target;
     int bits;
 };
@@ -179,17 +187,13 @@ std::map<std::string, Display> getDisplays() {
 
       result = DisplayConfigGetDeviceInfo(&displayInfo.header);
 
-      if (result != ERROR_SUCCESS) {
-        fprintf(stderr,
-                "Error on DisplayConfigGetDeviceInfo for SDR white level\n");
-        continue;
-      }
-
-      int nits = (int)displayInfo.SDRWhiteLevel * 80 / 1000;
+      // HDR capability must still be discovered when HDR is off and the
+      // driver doesn't expose an SDR white level yet.
+      int nits = result == ERROR_SUCCESS ? (int)displayInfo.SDRWhiteLevel * 80 / 1000 : 80;
       std::string monitorDevicePath =
           wcharToString(targetName.monitorDevicePath);
 
-      Display newDisplay;
+      Display newDisplay = {};
       newDisplay.name =
           wcharToString(targetName.monitorFriendlyDeviceName);
       newDisplay.path =
@@ -209,6 +213,7 @@ std::map<std::string, Display> getDisplays() {
       result = DisplayConfigGetDeviceInfo(&hdrInfo2.header);
 
       if (result == ERROR_SUCCESS) {
+        newDisplay.usesAdvancedColorInfo2 = true;
         newDisplay.hdrSupported = hdrInfo2.highDynamicRangeSupported;
         newDisplay.hdrEnabled = hdrInfo2.highDynamicRangeUserEnabled;
         newDisplay.bits = hdrInfo2.bitsPerColorChannel;
@@ -230,7 +235,7 @@ std::map<std::string, Display> getDisplays() {
           continue;
         }
 
-        newDisplay.hdrSupported = hdrInfo.advancedColorSupported;
+        newDisplay.hdrSupported = hdrInfo.advancedColorSupported && !hdrInfo.advancedColorForceDisabled;
         newDisplay.hdrEnabled = hdrInfo.advancedColorEnabled;
         newDisplay.bits = hdrInfo.bitsPerColorChannel;
 
@@ -280,7 +285,8 @@ Napi::Array nodeGetDisplays(const Napi::CallbackInfo& info) {
 }
 
 Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
-    if(info.Length() != 2) {
+    if(info.Length() != 2 || !info[0].IsString() || !info[1].IsNumber()
+        || !std::isfinite(info[1].As<Napi::Number>().DoubleValue())) {
         fprintf(stderr, "Invalid number of parameters.\n");
         return Napi::Boolean::New(info.Env(), false);
     }
@@ -291,7 +297,7 @@ Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
 
     boolean result = false;
     for (auto& display : displays) {
-        if(display.second.path == (std::string)path) {
+        if(display.second.path == (std::string)path && display.second.hdrActive) {
             result = setSDRBrightness(display.second.target, nits, false);
             break;
         }
@@ -300,9 +306,54 @@ Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), result);
 }
 
+Napi::Boolean nodeSetHDRState(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    if (info.Length() != 2 || !info[0].IsString() || !info[1].IsBoolean()) {
+        Napi::TypeError::New(env, "Expected a display path and a boolean HDR state").ThrowAsJavaScriptException();
+        return Napi::Boolean::New(env, false);
+    }
+
+    const std::string devicePath = info[0].As<Napi::String>().Utf8Value();
+    const bool enabled = info[1].As<Napi::Boolean>().Value();
+    const auto displays = getDisplays();
+    const auto found = displays.find(devicePath);
+    if (found == displays.end() || !found->second.hdrSupported) {
+        return Napi::Boolean::New(env, false);
+    }
+
+    const Display& display = found->second;
+    if (display.hdrEnabled == enabled) return Napi::Boolean::New(env, true);
+
+    LONG result;
+    if (display.usesAdvancedColorInfo2) {
+        TT_DISPLAYCONFIG_SET_HDR_STATE state = {};
+        state.header.type = (DISPLAYCONFIG_DEVICE_INFO_TYPE)TT_DISPLAYCONFIG_DEVICE_INFO_SET_HDR_STATE;
+        state.header.size = sizeof(state);
+        state.header.adapterId = display.target.targetInfo.adapterId;
+        state.header.id = display.target.targetInfo.id;
+        state.value = enabled ? 1 : 0;
+        result = DisplayConfigSetDeviceInfo(&state.header);
+    } else {
+        DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE state = {};
+        state.header.type = DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE;
+        state.header.size = sizeof(state);
+        state.header.adapterId = display.target.targetInfo.adapterId;
+        state.header.id = display.target.targetInfo.id;
+        state.enableAdvancedColor = enabled;
+        result = DisplayConfigSetDeviceInfo(&state.header);
+    }
+
+    if (result != ERROR_SUCCESS) {
+        Napi::Error::New(env, "Unable to change Windows HDR state (error " + std::to_string(result) + ")").ThrowAsJavaScriptException();
+        return Napi::Boolean::New(env, false);
+    }
+    return Napi::Boolean::New(env, true);
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "getDisplays"), Napi::Function::New(env, nodeGetDisplays));
     exports.Set(Napi::String::New(env, "setSDRBrightness"), Napi::Function::New(env, nodeSetSDRBrightness));
+    exports.Set(Napi::String::New(env, "setHDRState"), Napi::Function::New(env, nodeSetHDRState));
     return exports;
 }
 

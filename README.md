@@ -14,22 +14,9 @@ Twinkle Tray enables brightness control on external displays in Windows 10 & 11.
 - Seamlessly blends in with Windows 10 and Windows 11. Uses your Personalization settings to match your taskbar.
 - Can automatically change monitor brightness depending on the time of day or when idle.
 - Bind hotkeys to adjust the brightness of specific or all displays.
-- Toggle, enable, or disable Windows HDR with hotkeys, and adjust SDR content brightness in HDR mode.
 - Normalize backlight across different monitors.
 - Control DDC/CI features such as contrast.
 - Starts up with Windows.
-
-### Windows HDR
-
-In **Settings → Hotkeys**, add a shortcut and select **Toggle Windows HDR**, **Enable Windows HDR**, or **Disable Windows HDR**. Choose individual HDR-capable monitors or all displays. Unsupported displays are skipped. Toggles use the current Windows state, including changes made outside Twinkle Tray.
-
-Each monitor has one brightness slider. When Windows HDR is active, it automatically controls the Windows SDR content brightness level (0–100%). When HDR is off, it controls the monitor's regular brightness. The HDR control adjusts the desktop and SDR content inside HDR mode; it does not change peak luminance in HDR games or videos.
-
-The default shortcuts **Ctrl+]** and **Ctrl+[** increase and decrease brightness by 10 percentage points on all displays, automatically choosing HDR or regular brightness for each monitor. Customize them in **Settings → Hotkeys**, using **Brightness (automatic HDR/SDR)**. Existing installations receive these defaults once; existing bindings on those keys are preserved, and deleted shortcuts stay deleted. Older HDR-only brightness actions on those two keys are migrated to automatic brightness while retaining their step and selected monitors. **Set value**, **Adjust value**, and **Cycle list of values** actions targeting automatic brightness follow the same mode selection. The explicit **SDR content brightness (HDR only)** target operates only while HDR is active.
-
-HDR support must be enabled in Twinkle Tray's detection settings. The native module uses the HDR-specific Windows API on recent Windows versions and the advanced color API on older versions. After changing native code, rebuild it with `npm rebuild windows-hdr`, then build the interface with `npm run parcel-build`.
-
-Run the HDR regression checks with `node --test tests/hdr.test.cjs`. They mock Windows and IPC without changing display settings.
 
 ### Design & Personalization
 

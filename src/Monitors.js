@@ -210,6 +210,9 @@ async function handleMonitorMessage(data) {
             setBrightness(data.brightness, data.id)
         }  else if (data.type === "sdr") {
             setSDRBrightness(data.brightness, data.id)
+        } else if (data.type === "hdr") {
+            const success = setHDRState(data.enabled, data.id)
+            process.send({ type: "hdrStateChanged", requestId: data.requestId, success })
         } else if (data.type === "gamma") {
             setGammaBrightness(data.brightness, data.id)
         } else if (data.type === "settings") {
@@ -681,8 +684,10 @@ async function readKnownBrightness() {
 
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        if (!monitor?.id || (monitor.type === "none" && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
-        if (unreadableMonitorIds.has(monitor.id)) continue
+        const usesHDR = !settings?.disableHDR && monitor.hdr === "active"
+        if (!monitor?.id || (monitor.type === "none" && !usesHDR && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
+        // A failed hardware brightness read does not invalidate the Windows white level.
+        if (!usesHDR && unreadableMonitorIds.has(monitor.id)) continue
         result[monitor.id] = {
             brightness: monitor.brightness,
             brightnessRaw: monitor.brightnessRaw,
@@ -1161,8 +1166,10 @@ getHDRDisplays = async (monitors) => {
                 id: display.path,
                 hwid,
                 sdrNits: display.nits,
-                sdrLevel: parseInt((display.nits - 80) / 4),
-                hdr: (display.hdrActive ? "active" : display.hdrEnabled ? "supported" : "unsupported")
+                sdrLevel: Math.max(0, Math.min(100, Math.round((display.nits - 80) / 4))),
+                hdrSupported: display.hdrSupported,
+                hdrEnabled: display.hdrEnabled,
+                hdr: (display.hdrActive ? "active" : display.hdrSupported ? "supported" : "unsupported")
             }
 
             if(display.name) {
@@ -1693,11 +1700,27 @@ updateDisplay = (monitors, hwid2, info = {}) => {
 
 function setSDRBrightness(brightness, id) {
     if(settings.disableHDR) return false;
+    if (!Number.isFinite(brightness)) return false;
     try {
-        console.log("sdr", brightness, id)
-        return hdr.setSDRBrightness(id, (brightness * 0.01 * 400) + 80)
+        return hdr.setSDRBrightness(id, (Math.max(0, Math.min(100, brightness)) * 4) + 80)
     } catch(e) {
         console.log(`Couldn't update SDR brightness! [${id}]`, e);
+        return false
+    }
+}
+
+function setHDRState(enabled, id) {
+    if (settings.disableHDR || (typeof enabled !== "boolean" && enabled !== null) || typeof id !== "string") return false;
+    try {
+        if (enabled === null) {
+            // Toggle the live Windows value, even if panel updates are paused.
+            const display = hdr.getDisplays().find(display => display.path === id && display.hdrSupported)
+            if (!display) return false;
+            enabled = !display.hdrEnabled
+        }
+        return hdr.setHDRState(id, enabled)
+    } catch (e) {
+        console.log(`Couldn't update Windows HDR state! [${id}]`, e)
         return false
     }
 }

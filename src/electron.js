@@ -18,6 +18,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
+const { getHDRStatus } = require("./utils/hdr")
 const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
@@ -155,7 +156,7 @@ function vcpStr(code) {
 // Handles WMI + DDC/CI activity
 
 const monitorCommandsThatMutateWorkerState = new Set([
-  "brightness", "sdr", "gamma", "vcp", "getVCP", "flushvcp", "settings",
+  "brightness", "sdr", "hdr", "gamma", "vcp", "getVCP", "flushvcp", "settings",
   "ddcBrightnessVCPs", "localization", "wmi-bridge-ok"
 ])
 const monitorCommandsRequiredBeforeRefresh = new Set([
@@ -219,7 +220,7 @@ async function flushQueuedMonitorCommands(beforeRefresh = false) {
 }
 
 function queuedCommandTargetsCurrentMonitor(data) {
-  if (data.type === "brightness" || data.type === "sdr" || data.type === "gamma") {
+  if (data.type === "brightness" || data.type === "sdr" || data.type === "hdr" || data.type === "gamma") {
     if (!data.id) return true
     return Object.values(monitors || {}).some(monitor =>
       monitor?.id === data.id || monitor?.id?.indexOf(data.id) >= 0
@@ -873,6 +874,43 @@ const EXTENDED_MINIMUM_BREAKPOINT_DEFAULT = 20
 const EXTENDED_MINIMUM_BREAKPOINT_MAX = 90
 const EXTENDED_MINIMUM_FLOOR_TOLERANCE = 4 // Hardware percent; below the usual 5-10% brightness key step
 
+function createDefaultBrightnessHotkeys() {
+  return [
+    { id: "default-brightness-up", accelerator: "Ctrl+]", value: 10 },
+    { id: "default-brightness-down", accelerator: "Ctrl+[", value: -10 }
+  ].map(({ id, accelerator, value }) => ({
+    id, accelerator,
+    actions: [{ type: "offset", target: "brightness", value, allMonitors: true, monitors: {} }]
+  }))
+}
+
+function installDefaultBrightnessHotkeys(targetSettings) {
+  if (targetSettings.defaultBrightnessHotkeysVersion >= 2) return false;
+  const hotkeys = Array.isArray(targetSettings.hotkeys) ? targetSettings.hotkeys.slice() : []
+  const normalizeAccelerator = value => (value || "").toLowerCase().replace(/control/g, "ctrl").split("+").sort().join("+")
+  const defaults = createDefaultBrightnessHotkeys()
+  // Older HDR setups assigned these keys to the HDR-only SDR white level.
+  // Keep their step/monitor selection, but follow the current HDR/SDR mode.
+  const brightnessKeys = new Set(defaults.map(hotkey => normalizeAccelerator(hotkey.accelerator)))
+  for (const hotkey of hotkeys) {
+    if (!brightnessKeys.has(normalizeAccelerator(hotkey.accelerator))) continue;
+    for (const action of hotkey.actions || []) {
+      if (action.target === "sdr" && ["set", "offset", "cycle"].includes(action.type)) action.target = "brightness";
+    }
+  }
+  // A second migration must not reinstall defaults deleted after version 1.
+  if (!(targetSettings.defaultBrightnessHotkeysVersion >= 1)) {
+    for (const hotkey of defaults) {
+      if (!hotkeys.some(existing => normalizeAccelerator(existing.accelerator) === normalizeAccelerator(hotkey.accelerator) || existing.id === hotkey.id)) {
+        hotkeys.push(hotkey)
+      }
+    }
+  }
+  targetSettings.hotkeys = hotkeys
+  targetSettings.defaultBrightnessHotkeysVersion = 2
+  return true
+}
+
 const defaultSettings = {
   isDev,
   settingsVer: "v" + appVersion,
@@ -886,6 +924,7 @@ const defaultSettings = {
   killWhenIdle: false,
   remaps: {},
   hotkeys: [],
+  defaultBrightnessHotkeysVersion: 0,
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
@@ -1192,6 +1231,16 @@ function readSettings(doProcessSettings = true) {
     if(settings.hdrDisplays) delete settings.hdrDisplays;
   }
 
+  // Add defaults once to existing installations, preserving custom bindings
+  // and later user edits or deletion of these shortcuts.
+  if (installDefaultBrightnessHotkeys(settings)) {
+    try {
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, '\t'))
+    } catch (e) {
+      debug.error("Couldn't save default brightness hotkeys", e)
+    }
+  }
+
   if (doProcessSettings) processSettings({ isReadSettings: true });
 }
 
@@ -1463,8 +1512,12 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   }
 }
 
-// Per-display opt-in: the primary slider drives the display's gamma ramp
-// instead of the brightness control that was detected for it.
+// The main slider follows the current Windows HDR mode automatically.
+function usesHDRBrightness(monitor) {
+  return !settings.disableHDR && monitor?.hdr === "active"
+}
+
+// Per-display opt-in: the primary slider drives the display's gamma ramp.
 function usesGammaSlider(monitor) {
   if (!settings.gammaAsMainSliderDisplays?.[monitor?.key]) return false
   if (!canUseGammaRamp(monitor)) return false
@@ -1776,9 +1829,9 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
         if(shouldSkipDisplay(monitor)) continue;
 
         // Apply brightness to valid display types
-        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesGammaSlider(monitor)) {
+        if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesGammaSlider(monitor) || usesHDRBrightness(monitor)) {
           // Replace DDC/CI brightness with SDR
-          if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+          if(usesHDRBrightness(monitor)) {
             monitor.brightness = monitor.sdrLevel
           }
           updateBrightness(monitor.id, monitor.brightness)
@@ -1827,6 +1880,27 @@ let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
 const hotkeyCycleIndexes = []
+async function updateHDRState(monitor, enabled) {
+  if (settings.disableHDR || isWindowsUserIdle || !monitor?.hdrSupported) return false;
+  await waitForMonitorWorkerIdle()
+  const requestId = `${Date.now()}-${Math.random()}`
+  return new Promise(resolve => {
+    const finish = success => {
+      clearTimeout(timeout)
+      monitorsEventEmitter.removeListener("hdrStateChanged", listener)
+      resolve(success)
+    }
+    const listener = data => {
+      if (data.requestId === requestId) finish(data.success === true)
+    }
+    const timeout = setTimeout(() => finish(false), 10000)
+    monitorsEventEmitter.on("hdrStateChanged", listener)
+    monitorsThread.send({ type: "hdr", id: monitor.id, enabled, requestId })
+      .then(sent => { if (!sent) finish(false) })
+      .catch(() => finish(false))
+  })
+}
+
 async function doHotkey(hotkey, options = {}) {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
@@ -1856,6 +1930,23 @@ async function doHotkey(hotkey, options = {}) {
         } else if (action.type === "refresh") {
           showOverlay = false
           await refreshMonitors(true, true)
+        } else if (["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)) {
+          if (settings.disableHDR || isWindowsUserIdle) continue;
+          // Read Windows state before toggling; it can also change outside the app.
+          await refreshMonitors(false, true)
+          let changed = false
+          for (const monitor of Object.values(monitors)) {
+            if (!monitor.hdrSupported || settings.hideDisplays?.[monitor.key]) continue;
+            if (!action.allMonitors && !action.monitors?.[monitor.id]) continue;
+            const enabled = action.type === "hdr-toggle" ? null : action.type === "hdr-on"
+            if (await updateHDRState(monitor, enabled)) changed = true;
+          }
+          if (changed) {
+            // Switching HDR can change the available brightness controls.
+            // A preceding brightness action can briefly pause panel updates.
+            while (pausedMonitorUpdates) await Utils.wait(50)
+            await refreshMonitors(true, true)
+          }
         } else if (action.type === "set" || action.type === "offset" || action.type === "cycle") {
 
           // Build list of all applicable monitors
@@ -1868,23 +1959,25 @@ async function doHotkey(hotkey, options = {}) {
             if (action.allMonitors || (settings.linkedLevelsActive && !settings.hotkeysBreakLinkedLevels)) {
               // Target all monitors
               applicable = true
-            } else if (Object.keys(action.monitors)?.length && action.monitors[monitor.id]) {
+            } else if (action.monitors?.[monitor.id]) {
               // Target specified monitors
               applicable = true
             }
 
-            if(options.skipInternalBrightnessOffset && action.type === "offset" && action.target === "brightness" && monitor.type === "wmi") {
+            if(options.skipInternalBrightnessOffset && action.type === "offset" && action.target === "brightness" && monitor.type === "wmi" && !usesHDRBrightness(monitor)) {
               applicable = false
             }
 
             if (applicable) {
+              if (settings.hideDisplays?.[monitor.key]) continue;
+              if (action.target === "sdr" && (settings.disableHDR || monitor.hdr !== "active")) continue;
               // Determine new value
-              newValue = 0
+              let newValue = 0
 
               if (action.type === "offset") {
                 let currentValue = 0
                 if (action.target === "brightness") {
-                  currentValue = monitor.brightness
+                  currentValue = usesHDRBrightness(monitor) ? monitor.sdrLevel : monitor.brightness
                 } else if (action.target === "sdr") {
                   currentValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
@@ -1908,7 +2001,7 @@ async function doHotkey(hotkey, options = {}) {
 
                 let currentCycleValue = 0
                 if (action.target === "brightness") {
-                  currentCycleValue = monitor.brightness
+                  currentCycleValue = usesHDRBrightness(monitor) ? monitor.sdrLevel : monitor.brightness
                 } else if (action.target === "sdr") {
                   currentCycleValue = monitor.sdrLevel ?? 0
                 } else if (action.target === "contrast") {
@@ -1958,11 +2051,13 @@ async function doHotkey(hotkey, options = {}) {
           if (hotkeyMonitors?.length) {
             for (const hotkeyMonitor of hotkeyMonitors) {
               const { monitor, value } = hotkeyMonitor
-              if (action.target === "brightness") {
+              if (!Number.isFinite(parseFloat(value))) continue;
+              if (action.target === "brightness" || action.target === "sdr") {
                 const normalizedAdjust = minMax(value)
                 monitors[monitor.key].brightness = normalizedAdjust
+                if (usesHDRBrightness(monitor)) monitors[monitor.key].sdrLevel = normalizedAdjust;
                 sendToAllWindows('monitors-updated', monitors);
-                updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
+                updateBrightnessThrottle(monitor.id, normalizedAdjust, action.target === "brightness", false, action.target)
                 pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
 
                 // Break linked levels
@@ -1971,8 +2066,6 @@ async function doHotkey(hotkey, options = {}) {
                   writeSettings({ linkedLevelsActive: false })
                 }
                 showOverlay = true
-              } else if(action.target === "sdr") {
-                updateBrightnessThrottle(monitor.id, parseInt(value), false, true, "sdr")
               } else {
                 let vcpCode = action.target
                 if (action.target === "contrast") {
@@ -2031,7 +2124,7 @@ async function hotkeyOverlayShow() {
   panelState = "overlay"
   let monitorCount = 0
   Object.values(monitors).forEach((monitor) => {
-    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software" || usesGammaSlider(monitor)) && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
+    if ((monitor.type === "ddcci" || monitor.type === "studio-display" || monitor.type === "wmi" || monitor.type === "software" || usesGammaSlider(monitor) || usesHDRBrightness(monitor)) && (settings?.hideDisplays?.[monitor.key] !== true)) monitorCount++;
   })
 
   if (monitorCount && settings.linkedLevelsActive) {
@@ -2271,6 +2364,7 @@ function getLocalization() {
 
   T = new Translate(localization.desired, localization.default)
   sendToAllWindows("localization-updated", localization)
+  setTrayPercent()
 
   if(monitorsThreadReady) {
     monitorsThread.send({
@@ -2381,6 +2475,7 @@ ipcMain.on('request-settings', (event) => {
 
 ipcMain.on('reset-settings', () => {
   settings = Object.assign({}, defaultSettings)
+  installDefaultBrightnessHotkeys(settings)
   console.log("Resetting settings")
   lastKnownDisplays = {}
   fs.writeFileSync(knownDisplaysPath, JSON.stringify(lastKnownDisplays))
@@ -2791,7 +2886,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
     monitor.brightness = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
 
     // Replace DDC/CI brightness with SDR
-    if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+    if(usesHDRBrightness(monitor)) {
       monitor.brightness = monitor.sdrLevel
     }
 
@@ -3045,7 +3140,8 @@ let updateBrightnessQueue = []
 let lastBrightnessTimes = []
 function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
   let idx = updateBrightnessQueue.length
-  const found = updateBrightnessQueue.findIndex(item => item.id === id)
+  const featureCode = parseInt(vcp)
+  const found = updateBrightnessQueue.findIndex(item => item.id === id && (item.vcp === vcp || parseInt(item.vcp) === featureCode))
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
@@ -3061,10 +3157,12 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   } else if (!updateBrightnessTimeout) {
     lastBrightnessTimes[id] = now
     updateBrightnessTimeout = setTimeout(() => {
-      const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
-      for (let bUpdate of updateBrightnessQueueCopy) {
+      // Brightness writes can update linked features still in this queue.
+      while (updateBrightnessQueue.length) {
+        const bUpdate = updateBrightnessQueue.shift()
         if (bUpdate) {
           try {
+            lastBrightnessTimes[bUpdate.id] = Date.now()
             updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
           } catch (e) {
             console.error(e)
@@ -3148,19 +3246,23 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     }
     
 
-    if(vcp == "brightness" && monitor.hdr === "active" && settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+    if(vcp == "brightness" && usesHDRBrightness(monitor)) {
       vcp = "sdr"
       useCap = false
+    }
+
+    if (vcp === "sdr") {
+      if (settings.disableHDR || monitor.hdr !== "active") return false;
+      level = minMax(parseFloat(level))
     }
 
     if(vcp == "brightness" && usesGammaSlider(monitor)) {
       vcp = "gamma"
     }
 
-    // Feature VCPs need the enriched monitor map. A Fast-only result can be
-    // used for brightness, but queue feature work until it is safe to run.
-    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma"
-      && ((vcp !== "brightness" && vcp !== "sdr") || monitor.type === "none")) {
+    // HDR and gamma brightness do not depend on DDC/CI capabilities.
+    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma" && vcp !== "sdr"
+      && (vcp !== "brightness" || monitor.type === "none")) {
       deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
       return true
     }
@@ -3206,7 +3308,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         id: monitor.id
       })
       monitor.sdrLevel = level
-      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) {
+      if(usesHDRBrightness(monitor)) {
         monitor.brightness = level
         monitor.brightnessRaw = normalized
       }
@@ -3220,14 +3322,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         brightness: gammaLevel,
         id: monitor.id
       })
-
-      // The ramp replaced this display's brightness control, but its other
-      // DDC/CI features still follow the slider.
-      if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
-        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
-      } else {
-        applyLinkedFeatures(monitor, newLevel, useCap)
-      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
@@ -3238,18 +3332,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
             brightness: normalized * ((monitor.brightnessMax || 100) / 100),
             id: monitor.id
           })
-        }
-
-        // Replace DDC/CI brightness with SDR
-        if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
-          monitor.brightness = monitor.sdrLevel
-        }
-
-        // Apply linked DDC/CI features now, or replay them after enrichment.
-        if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
-          deferLinkedFeatureUpdate(monitor, newLevel, useCap)
-        } else {
-          applyLinkedFeatures(monitor, newLevel, useCap)
         }
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
@@ -3313,6 +3395,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       }, 500)
     }
 
+    // Linked DDC/CI features follow the main slider in hardware, HDR and gamma modes.
+    if (vcp === "gamma" || (monitor.type === "ddcci" && (vcp === "brightness" || vcp === "sdr"))) {
+      if ((monitor.featuresPending || monitor.featuresRefreshing) && hasEnabledLinkedFeaturesForMonitor(monitor)) {
+        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
+      } else {
+        applyLinkedFeatures(monitor, newLevel, useCap)
+      }
+    }
+
     setTrayPercent()
     updateKnownDisplays()
   } catch (e) {
@@ -3328,10 +3419,10 @@ function updateAllBrightness(brightness, mode = "offset") {
   // Update internal brightness values
   for (let key in monitors) {
     const monitor = monitors[key]
-    if (monitor.type !== "none" || usesGammaSlider(monitor)) {
+    if (monitor.type !== "none" || usesGammaSlider(monitor) || usesHDRBrightness(monitor)) {
 
       // Replace DDC/CI brightness with SDR
-      if(settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+      if(usesHDRBrightness(monitor)) {
         monitor.brightness = monitor.sdrLevel
       }
 
@@ -3348,7 +3439,7 @@ function updateAllBrightness(brightness, mode = "offset") {
       }
 
       monitors[key].brightness = normalizedAdjust
-      if(settings.sdrAsMainSliderDisplays?.[monitor.key]) monitors[key].sdrLevel = normalizedAdjust;
+      if(usesHDRBrightness(monitor)) monitors[key].sdrLevel = normalizedAdjust;
     }
   }
 
@@ -3908,7 +3999,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
           // The slider drives the ramp on these, so the backlight isn't its value
-          if(monitor.type === "wmi" && !usesGammaSlider(monitor)) {
+          if(monitor.type === "wmi" && !usesGammaSlider(monitor) && !usesHDRBrightness(monitor)) {
             const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max, monitor.calibration)
             monitor.brightness = normalized
             monitor.brightnessRaw = setting.data
@@ -4554,7 +4645,7 @@ function createTray() {
 
   const { Tray } = require('electron')
   tray = new Tray(getTrayIconPath())
-  tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
+  setTrayPercent()
   setTrayMenu()
   tray.on("click", async () => toggleTray(true))
 
@@ -4665,18 +4756,22 @@ function getDebugTrayMenuItems() {
 function setTrayPercent() {
   try {
     if (tray) {
+      let tooltip = 'Twinkle Tray' + (isDev ? " (Dev)" : "")
       let averagePerc = 0
       let i = 0
       for (let key in monitors) {
-        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software" || usesGammaSlider(monitors[key])) {
+        if (monitors[key].type === "ddcci" || monitors[key].type === "wmi" || monitors[key].type === "software" || usesGammaSlider(monitors[key]) || usesHDRBrightness(monitors[key])) {
           i++
           averagePerc += monitors[key].brightness
         }
       }
       if (i > 0) {
         averagePerc = Math.round(averagePerc / i)
-        tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
+        tooltip += ' (' + averagePerc + '%)'
       }
+      const hdrStatus = getHDRStatus(Object.values(monitors).filter(monitor => !settings.hideDisplays?.[monitor.key]))
+      if (hdrStatus) tooltip += '\nHDR: ' + T.t('GENERIC_' + hdrStatus)
+      tray.setToolTip(tooltip)
     }
   } catch (e) {
     console.log(e)
@@ -5763,7 +5858,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                 const current = knownBrightness[monitor.id]
                 if (!current) continue
                 Object.assign(monitor, current)
-                if (settings.sdrAsMainSliderDisplays?.[monitor.key] && monitor.hdr === "active") {
+                if (usesHDRBrightness(monitor)) {
                   monitor.brightness = monitor.sdrLevel
                 }
                 if (usesGammaSlider(monitor)) {

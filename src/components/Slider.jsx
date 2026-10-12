@@ -64,10 +64,10 @@ export default class Slider extends Component {
     }
 
     componentDidUpdate(oldProps) {
-        if (oldProps.max != this.props.max || oldProps.min != this.props.min) {
+        if (oldProps.level != this.props.level || oldProps.max != this.props.max || oldProps.min != this.props.min) {
             this.setState({
                 level: this.cap(this.props.level)
-            }, this.fireChange())
+            })
         }
     }
 

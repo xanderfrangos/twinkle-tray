@@ -922,7 +922,7 @@ const defaultSettings = {
   brightnessAtStartup: true,
   killWhenIdle: false,
   remaps: {},
-  hotkeys: createDefaultBrightnessHotkeys(),
+  hotkeys: [],
   defaultBrightnessHotkeysVersion: 0,
   hotkeyPercent: 10,
   adjustmentTimes: [],
@@ -2050,12 +2050,13 @@ async function doHotkey(hotkey, options = {}) {
           if (hotkeyMonitors?.length) {
             for (const hotkeyMonitor of hotkeyMonitors) {
               const { monitor, value } = hotkeyMonitor
-              if (action.target === "brightness") {
+              if (!Number.isFinite(parseFloat(value))) continue;
+              if (action.target === "brightness" || action.target === "sdr") {
                 const normalizedAdjust = minMax(value)
                 monitors[monitor.key].brightness = normalizedAdjust
                 if (usesHDRBrightness(monitor)) monitors[monitor.key].sdrLevel = normalizedAdjust;
                 sendToAllWindows('monitors-updated', monitors);
-                updateBrightnessThrottle(monitor.id, monitors[monitor.key].brightness, true, false)
+                updateBrightnessThrottle(monitor.id, normalizedAdjust, action.target === "brightness", false, action.target)
                 pauseMonitorUpdates() // Stop incoming updates for a moment to prevent judder
 
                 // Break linked levels
@@ -2063,9 +2064,6 @@ async function doHotkey(hotkey, options = {}) {
                   console.log("Breaking linked levels due to hotkey.")
                   writeSettings({ linkedLevelsActive: false })
                 }
-                showOverlay = true
-              } else if(action.target === "sdr") {
-                updateBrightnessThrottle(monitor.id, minMax(parseInt(value)), false, true, "sdr")
                 showOverlay = true
               } else {
                 let vcpCode = action.target
@@ -3140,7 +3138,8 @@ let updateBrightnessQueue = []
 let lastBrightnessTimes = []
 function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
   let idx = updateBrightnessQueue.length
-  const found = updateBrightnessQueue.findIndex(item => item.id === id)
+  const featureCode = parseInt(vcp)
+  const found = updateBrightnessQueue.findIndex(item => item.id === id && (item.vcp === vcp || parseInt(item.vcp) === featureCode))
   updateBrightnessQueue[(found > -1 ? found : idx)] = {
     id,
     level,
@@ -3156,10 +3155,12 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   } else if (!updateBrightnessTimeout) {
     lastBrightnessTimes[id] = now
     updateBrightnessTimeout = setTimeout(() => {
-      const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
-      for (let bUpdate of updateBrightnessQueueCopy) {
+      // Brightness writes can update linked features still in this queue.
+      while (updateBrightnessQueue.length) {
+        const bUpdate = updateBrightnessQueue.shift()
         if (bUpdate) {
           try {
+            lastBrightnessTimes[bUpdate.id] = Date.now()
             updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
           } catch (e) {
             console.error(e)
@@ -3257,10 +3258,9 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
       vcp = "gamma"
     }
 
-    // Feature VCPs need the enriched monitor map. A Fast-only result can be
-    // used for brightness, but queue feature work until it is safe to run.
-    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma"
-      && ((vcp !== "brightness" && vcp !== "sdr") || (monitor.type === "none" && vcp !== "sdr"))) {
+    // HDR and gamma brightness do not depend on DDC/CI capabilities.
+    if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma" && vcp !== "sdr"
+      && (vcp !== "brightness" || monitor.type === "none")) {
       deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
       return true
     }
@@ -3320,14 +3320,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         brightness: gammaLevel,
         id: monitor.id
       })
-
-      // The ramp replaced this display's brightness control, but its other
-      // DDC/CI features still follow the slider.
-      if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
-        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
-      } else {
-        applyLinkedFeatures(monitor, newLevel, useCap)
-      }
     } else if (monitor.type == "ddcci") {
       if (vcp === "brightness") {
         monitor.brightness = level
@@ -3338,18 +3330,6 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
             brightness: normalized * ((monitor.brightnessMax || 100) / 100),
             id: monitor.id
           })
-        }
-
-        // Replace DDC/CI brightness with SDR
-        if(usesHDRBrightness(monitor)) {
-          monitor.brightness = monitor.sdrLevel
-        }
-
-        // Apply linked DDC/CI features now, or replay them after enrichment.
-        if (monitor.featuresPending && hasEnabledLinkedFeaturesForMonitor(monitor)) {
-          deferLinkedFeatureUpdate(monitor, newLevel, useCap)
-        } else {
-          applyLinkedFeatures(monitor, newLevel, useCap)
         }
       } else {
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
@@ -3411,6 +3391,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         ignoreBrightnessEvent = false
         ignoreBrightnessEventTimeout = false
       }, 500)
+    }
+
+    // Linked DDC/CI features follow the main slider in hardware, HDR and gamma modes.
+    if (vcp === "gamma" || (monitor.type === "ddcci" && (vcp === "brightness" || vcp === "sdr"))) {
+      if ((monitor.featuresPending || monitor.featuresRefreshing) && hasEnabledLinkedFeaturesForMonitor(monitor)) {
+        deferLinkedFeatureUpdate(monitor, newLevel, useCap)
+      } else {
+        applyLinkedFeatures(monitor, newLevel, useCap)
+      }
     }
 
     setTrayPercent()

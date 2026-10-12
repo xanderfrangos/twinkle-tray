@@ -684,8 +684,10 @@ async function readKnownBrightness() {
 
     for (const hwid2 in monitors) {
         const monitor = monitors[hwid2]
-        if (!monitor?.id || (monitor.type === "none" && monitor.hdr !== "active" && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
-        if (unreadableMonitorIds.has(monitor.id)) continue
+        const usesHDR = !settings?.disableHDR && monitor.hdr === "active"
+        if (!monitor?.id || (monitor.type === "none" && !usesHDR && !settings?.gammaAsMainSliderDisplays?.[hwid2])) continue
+        // A failed hardware brightness read does not invalidate the Windows white level.
+        if (!usesHDR && unreadableMonitorIds.has(monitor.id)) continue
         result[monitor.id] = {
             brightness: monitor.brightness,
             brightnessRaw: monitor.brightnessRaw,

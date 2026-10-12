@@ -922,28 +922,6 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
-    getHDRMonitors = () => {
-        try {
-            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
-                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
-            } else {
-                return Object.values(this.state.monitors).map((monitor, index) => {
-
-                    return (
-                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
-                            <div className="inputToggle-generic">
-                                <input onChange={(e) => { this.setHDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.hdrDisplays?.[monitor.key] ? true : false)} type="checkbox" />
-                            </div>
-                        } />
-                    )
-
-                })
-            }
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
     getExtendMinimumMonitorsSettings = () => {
         try {
             if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
@@ -1001,34 +979,6 @@ export default class SettingsWindow extends PureComponent {
         }
     }
 
-    getSDRMonitorsSettings = () => {
-                try {
-            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
-                return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
-            } else {
-                return Object.values(this.state.monitors).map((monitor, index) => {
-
-                    return (
-                        <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
-                            <div className="inputToggle-generic">
-                                <input onChange={(e) => { this.setSDRMonitor(e.target.checked, monitor) }} checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} data-checked={(this.state.rawSettings?.sdrAsMainSliderDisplays?.[monitor.key] ? true : false)} type="checkbox" />
-                            </div>
-                        } />
-                    )
-
-                })
-            }
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
-    setHDRMonitor = (value, monitor) => {
-        const hdrDisplays = Object.assign({}, this.state.rawSettings?.hdrDisplays)
-        hdrDisplays[monitor.key] = value
-        this.setSetting("hdrDisplays", hdrDisplays)
-    }
-
     getExtendMinimumBreakpoint = (monitor) => {
         const breakpoint = this.state.rawSettings?.extendMinimumBreakpoints?.[monitor.key]
         return (breakpoint === undefined ? EXTEND_MINIMUM_BREAKPOINT_DEFAULT : breakpoint)
@@ -1065,12 +1015,6 @@ export default class SettingsWindow extends PureComponent {
         const gammaDisplays = Object.assign({}, this.state.rawSettings?.gammaAsMainSliderDisplays)
         gammaDisplays[monitor.key] = value
         this.setSetting("gammaAsMainSliderDisplays", gammaDisplays)
-    }
-
-    setSDRMonitor = (value, monitor) => {
-        const sdrDisplays = Object.assign({}, this.state.rawSettings?.sdrAsMainSliderDisplays)
-        sdrDisplays[monitor.key] = value
-        this.setSetting("sdrAsMainSliderDisplays", sdrDisplays)
     }
 
     getHideMonitors = () => {
@@ -1884,6 +1828,8 @@ function SettingsPage(props) {
 function ActionItem(props) {
     const { action, monitors, monitorNames } = props
     const showDisplaysList = (action.type != "off" && action.type != "refresh")
+    const isHDRAction = ["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)
+    const needsHDR = isHDRAction || action.target === "sdr"
 
     const getHotkeyMonitors = () => {
         try {
@@ -1892,9 +1838,10 @@ function ActionItem(props) {
                 return (<div className="no-displays-message option-description" style={{lineHeight:1.35}}>{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
             } else {
                 return Object.values(monitors).map((monitor, index) => {
-                    const isHDRAction = ["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)
-                    const needsHDR = isHDRAction || action.target === "sdr"
-                    if (needsHDR ? !monitor.hdrSupported : !isAdjustableDisplay(monitor)) return null;
+                    // Keep HDR-only monitors selectable while HDR is off, so a
+                    // shortcut can enable HDR and then adjust their brightness.
+                    const canAdjust = isAdjustableDisplay(monitor) || (action.target === "brightness" && monitor.hdrSupported)
+                    if (needsHDR ? !monitor.hdrSupported : !canAdjust) return null;
                     return (
                         <div key={monitor.key} className="feature-toggle-row">
                             <input onChange={e => {
@@ -1918,7 +1865,7 @@ function ActionItem(props) {
             return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_OFF_WARN")}</p></div>)
         } else if (action.type === "refresh") {
             return null
-        } else if (["hdr-toggle", "hdr-on", "hdr-off"].includes(action.type)) {
+        } else if (isHDRAction) {
             return (<div className="input-row"><p style={{lineHeight: 1.2}}>{T.t("SETTINGS_HOTKEY_HDR_DESC")}</p></div>)
         } else {
             let selectBoxValue = action.target

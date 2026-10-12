@@ -3,7 +3,7 @@ import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
 import TranslateReact from "../TranslateReact"
 import getMonitorName from "../utils/BrightnessPanel/getMonitorName";
-import { usesGammaSlider, isAdjustableDisplay } from "./utilts/monitor.util";
+import { usesGammaSlider, usesHDRBrightness, isAdjustableDisplay } from "./utilts/monitor.util";
 
 const BrightnessPanel = memo(function BrightnessPanel() {
 
@@ -29,7 +29,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if ((isAdjustableDisplay(state.monitors[key]) || state.monitors[key].hdr === "active") && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
+      if (isAdjustableDisplay(state.monitors[key]) && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
   }, [state.monitors, state.hideDisplays])
@@ -236,7 +236,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         let lastValidMonitor
         for(const key in state.monitors) {
           const monitor = state.monitors[key]
-          if(monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active" || usesGammaSlider(monitor)) {
+          if(monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesHDRBrightness(monitor) || usesGammaSlider(monitor)) {
            lastValidMonitor = monitor 
           }
         }
@@ -276,10 +276,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         }
 
         return sorted.map((monitor) => {
-          if ((!isAdjustableDisplay(monitor) && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
+          if (!isAdjustableDisplay(monitor) || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
-            if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active" || usesGammaSlider(monitor)) {
+            if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || usesHDRBrightness(monitor) || usesGammaSlider(monitor)) {
 
               let hasFeatures = true
               let featureCount = 0

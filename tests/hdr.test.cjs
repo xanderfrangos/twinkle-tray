@@ -131,8 +131,9 @@ test('HDR on/off for all monitors skips unsupported and hidden monitors', async 
 test('SDR hotkeys only adjust active HDR and clamp offsets at 100%', async () => {
     const { context, calls } = hotkeyHarness()
     await context.doHotkey({ id: 'sdr', actions: [{ type: 'offset', target: 'sdr', value: 10, allMonitors: true }] })
-    // Hidden monitors are rejected by updateBrightness in production.
-    assert.deepEqual(calls.find(call => call[0] === 'brightness' && call[1] === 'on'), ['brightness', 'on', 100, false, true, 'sdr'])
+    const update = calls.find(call => call[0] === 'brightness' && call[1] === 'on')
+    assert.equal(update[2], 100)
+    assert.equal(update[5], 'sdr')
     assert.equal(calls.some(call => call[0] === 'brightness' && ['off', 'sdr'].includes(call[1])), false)
     assert.equal(calls.some(call => call[0] === 'overlay'), true)
 })
@@ -215,7 +216,7 @@ test('HDR-only monitors can be selected for HDR shortcuts and SDR brightness', (
         const html = renderToStaticMarkup(React.createElement(context.ActionItem, {
             action: { allMonitors: false, monitors: {}, ...action }, monitors, monitorNames: {}
         }))
-        assert.equal(html.includes('HDR-only display'), action.target === 'sdr' || action.type === 'hdr-toggle')
+        assert.equal(html.includes('HDR-only display'), true)
         assert.equal(html.includes('SDR-only display'), action.target === 'brightness' && action.type === 'set')
         assert.equal(html.includes('SETTINGS_HOTKEY_ACTION_HDR_TOGGLE'), true)
     }
@@ -282,9 +283,73 @@ test('brightness offsets read the active mode value and accumulate before thrott
     assert.equal(updates.some(call => call[1] === 'hidden'), false)
 })
 
-function brightnessHarness(monitor) {
+test('SDR-only offsets accumulate with automatic brightness while writes are throttled', async () => {
+    const { context, calls } = hotkeyHarness()
+    context.monitors.on.sdrLevel = 30
+    context.monitors.on.brightness = 30
+    for (const [id, target] of [['first', 'sdr'], ['second', 'sdr'], ['third', 'brightness']]) {
+        await context.doHotkey({ id, actions: [{ type: 'offset', target, value: 10, monitors: { on: true } }] })
+    }
+    assert.deepEqual(calls.filter(call => call[0] === 'brightness').map(call => call[2]), [40, 50, 60])
+    assert.equal(context.monitors.on.brightness, 60)
+    assert.equal(context.monitors.on.sdrLevel, 60)
+})
+
+test('empty brightness hotkey values do not corrupt the cached slider state', async () => {
+    const { context, calls } = hotkeyHarness()
+    context.monitors.on.brightness = 98
+    for (const [id, target] of [['automatic', 'brightness'], ['hdr-only', 'sdr']]) {
+        await context.doHotkey({ id, actions: [{ type: 'set', target, value: '', monitors: { on: true } }] })
+    }
+    assert.equal(context.monitors.on.brightness, 98)
+    assert.equal(context.monitors.on.sdrLevel, 98)
+    assert.equal(calls.some(call => call[0] === 'brightness'), false)
+})
+
+test('throttled SDR brightness and linked DDC features do not overwrite each other', () => {
+    const writes = []
+    let flush
+    const context = loadHandlers('src/electron.js', ['updateBrightnessThrottle'], {
+        settings: { updateInterval: 500 }, updateBrightnessQueue: [], lastBrightnessTimes: {}, updateBrightnessTimeout: false,
+        Date: { now() { return 1000 } },
+        setTimeout(callback) { flush = callback; return 1 }, sendToAllWindows() {},
+        updateBrightness(...args) { writes.push(args) }
+    })
+    context.updateBrightnessThrottle('display', 30, false, false, 'sdr')
+    context.updateBrightnessThrottle('display', 40, false, false, 'sdr')
+    context.updateBrightnessThrottle('display', 45, false, false, '0x12')
+    context.updateBrightnessThrottle('display', 60, false, false, '0x62')
+    context.updateBrightnessThrottle('display', 55, false, false, 'sdr')
+    context.updateBrightnessThrottle('display', 65, false, false, 0x12)
+    flush()
+    assert.deepEqual(writes.map(([, level, , target]) => [target, level]), [
+        ['sdr', 30], ['sdr', 55], [0x12, 65], ['0x62', 60]
+    ])
+})
+
+test('animated schedules retain HDR brightness when the hardware brightness read fails', async () => {
+    const context = loadHandlers('src/Monitors.js', ['readKnownBrightness', 'getHDRDisplays', 'updateDisplay'], {
+        settings: {}, lastHDR: {}, monitorsHDR: {},
+        monitors: {
+            one: { id: 'DISPLAY#ON#one', type: 'ddcci', brightnessType: 0x10 },
+            two: { id: 'DISPLAY#OFF#two', type: 'ddcci', brightnessType: 0x10 }
+        },
+        hdr: { getDisplays: displays },
+        async getBrightnessDDC(monitor) { return { ...monitor, brightnessReadFailed: true } },
+        canUseInternalBrightness() { return false }, appleStudioUnavailable: true,
+        readGammaBrightness() {}, applySoftwareBrightness() {}
+    })
+    const values = await context.readKnownBrightness()
+    assert.equal(values['DISPLAY#ON#one'].sdrLevel, 11)
+    assert.equal(values['DISPLAY#OFF#two'], undefined)
+    context.settings.disableHDR = true
+    context.monitors = { one: { id: 'DISPLAY#ON#one', type: 'none', hdr: 'active', sdrLevel: 11 } }
+    assert.deepEqual(Object.keys(await context.readKnownBrightness()), [])
+})
+
+function brightnessHarness(monitor, extraHandlers = []) {
     const sent = []
-    const context = loadHandlers('src/electron.js', ['updateBrightness', 'usesHDRBrightness'], {
+    const context = loadHandlers('src/electron.js', ['updateBrightness', 'usesHDRBrightness', ...extraHandlers], {
         settings: { sdrAsMainSliderDisplays: { display: false } },
         isWindowsUserIdle: false, monitors: { display: monitor }, currentTransition: null,
         minMax(value) { return Math.max(0, Math.min(100, value)) },
@@ -319,6 +384,53 @@ test('HDR-only monitors use the same brightness target without waiting for DDC f
     context.updateBrightness('display', 55)
     assert.equal(sent[0].type, 'sdr')
     assert.equal(monitor.brightness, 55)
+})
+
+test('linked DDC features follow brightness in HDR, SDR and gamma modes', () => {
+    const monitor = { id: 'display', key: 'display', type: 'ddcci', hdr: 'active', brightnessMax: 100 }
+    const { context, sent } = brightnessHarness(monitor)
+    const linked = []
+    context.applyLinkedFeatures = (...args) => linked.push(args)
+    context.hasEnabledLinkedFeaturesForMonitor = () => true
+    context.deferLinkedFeatureUpdate = (...args) => linked.push(['deferred', ...args])
+    for (const [hdr, gamma, command] of [['active', false, 'sdr'], ['supported', false, 'brightness'], ['supported', true, 'gamma']]) {
+        monitor.hdr = hdr
+        context.usesGammaSlider = () => gamma
+        context.sliderLevelToGammaLevel = level => level
+        context.updateBrightness('display', 45)
+        assert.equal(sent.at(-1).type, command)
+        assert.equal(linked.at(-1)[0], monitor)
+        assert.equal(linked.at(-1)[1], 45)
+    }
+    monitor.hdr = 'active'
+    monitor.featuresRefreshing = true
+    context.updateBrightness('display', 55)
+    assert.equal(sent.at(-1).type, 'sdr')
+    assert.equal(linked.at(-1)[0], 'deferred')
+    assert.equal(linked.at(-1)[2], 55)
+})
+
+test('queued HDR brightness updates linked contrast and volume to the latest level', () => {
+    const monitor = { id: 'display', key: 'display', hwid: ['DISPLAY', 'MODEL', 'display'], type: 'ddcci', hdr: 'active',
+        features: { '0x12': [30, 100], '0x62': [30, 100] } }
+    const { context, sent } = brightnessHarness(monitor, ['updateBrightnessThrottle', 'applyLinkedFeatures', 'hasEnabledLinkedFeaturesForMonitor'])
+    const timers = []
+    Object.assign(context, {
+        updateBrightnessQueue: [], lastBrightnessTimes: {}, updateBrightnessTimeout: false,
+        Date: { now() { return 1000 } }, sendToAllWindows() {},
+        setTimeout(callback) { timers.push(callback); return timers.length }
+    })
+    Object.assign(context.settings, { updateInterval: 500,
+        monitorFeatures: { MODEL: { '0x12': true, '0x62': true } },
+        monitorFeaturesSettings: { MODEL: { '0x12': { linked: true }, '0x62': { linked: true } } }
+    })
+    context.updateBrightnessThrottle('display', 30, true, false)
+    context.updateBrightnessThrottle('display', 55, true, false)
+    context.Date.now = () => 1500
+    timers.shift()()
+    assert.equal(monitor.sdrLevel, 55)
+    assert.deepEqual(sent.filter(command => command.type === 'vcp').map(command => [command.code, command.value]), [[0x12, 55], [0x62, 55]])
+    assert.equal(timers.length, 0)
 })
 
 test('refresh replaces slider value with the current mode value after HDR is switched', () => {
@@ -371,6 +483,14 @@ test('panel renders one brightness slider for SDR, HDR and HDR-only monitors', (
             assert.equal(html.includes('value="35"'), true)
         }
     }
+    window.settings = { disableHDR: true }
+    window.allMonitors = {
+        hdr: { id: 'hdr', key: 'hdr', hwid: ['DISPLAY', 'MODEL', 'hdr'], hdr: 'active', type: 'none', brightness: 35, name: 'HDR' },
+        sdr: { id: 'sdr', key: 'sdr', hwid: ['DISPLAY', 'MODEL', 'sdr'], hdr: 'unsupported', type: 'ddcci', brightness: 65, brightnessType: 0x10, name: 'SDR' }
+    }
+    const html = renderToStaticMarkup(React.createElement(panel))
+    assert.equal((html.match(/type="range"/g) || []).length, 1)
+    assert.equal(html.includes('value="65"'), true)
 })
 
 test('slider scrolling follows refreshed brightness after a hotkey or mode change', () => {

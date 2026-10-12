@@ -642,7 +642,6 @@ export default class SettingsWindow extends PureComponent {
         if (this.state.adjustmentTimes == undefined || this.state.adjustmentTimes.length == 0) {
             return (<div></div>)
         } else {
-            const times = window.getSunCalcTimes(window.settings.adjustmentTimeLatitude, window.settings.adjustmentTimeLongitude)
             const lat = parseFloat(window.settings.adjustmentTimeLatitude) ?? 0
             const long = parseFloat(window.settings.adjustmentTimeLongitude) ?? 0
             const canShowSunCalc = ((lat > 0 || lat < 0) && (long > 0 || long < 0))
@@ -654,27 +653,37 @@ export default class SettingsWindow extends PureComponent {
                     }} value={time.time}></input>
                 )
                 if (time.useSunCalc) {
+                    const times = window.getSunCalcTimes(lat, long, time.offset)
                     timeElem = (
-                        <select value={time.sunCalc ?? "solarNoon"} onChange={e => {
-                            time.sunCalc = e.target.value
-                            this.updateAdjustmentTime(time, index)
-                        }}>
-                            <option value="dawn">Dawn ({times.dawn})</option>
-                            <option value="sunrise">Sunrise ({times.sunrise})</option>
-                            <option value="solarNoon">Solar Noon ({times.solarNoon})</option>
-                            <option value="goldenHour">Golden Hour ({times.goldenHour})</option>
-                            <option value="sunsetStart">Sunset Start ({times.sunsetStart})</option>
-                            <option value="sunset">Sunset ({times.sunset})</option>
-                            <option value="dusk">Dusk ({times.dusk})</option>
-                            <option value="night">Night ({times.night})</option>
-                        </select>
+                        <div style={{display: "flex", alignItems: "flex-end", gap: "10px", flex: 1}}>
+                            <select style={{flex: 1}} value={time.sunCalc ?? "solarNoon"} onChange={e => {
+                                time.sunCalc = e.target.value
+                                this.updateAdjustmentTime(time, index)
+                            }}>
+                                <option value="dawn">Dawn ({times.dawn})</option>
+                                <option value="sunrise">Sunrise ({times.sunrise})</option>
+                                <option value="solarNoon">Solar Noon ({times.solarNoon})</option>
+                                <option value="goldenHour">Golden Hour ({times.goldenHour})</option>
+                                <option value="sunsetStart">Sunset Start ({times.sunsetStart})</option>
+                                <option value="sunset">Sunset ({times.sunset})</option>
+                                <option value="dusk">Dusk ({times.dusk})</option>
+                                <option value="night">Night ({times.night})</option>
+                            </select>
+                            <div style={{flexShrink: 0}}>
+                                <label style={{textTransform: "capitalize"}}>{T.t("SETTINGS_TIME_SUN_OFFSET")}</label>
+                                <input type="number" min="-1440" max="1440" step="1" value={time.offset ?? 0} onChange={e => {
+                                    time.offset = e.target.value
+                                    this.updateAdjustmentTime(time, index)
+                                }} />
+                            </div>
+                        </div>
                     )
                 }
                 return (
                     <SettingsOption className="win10-has-background" key={index + "_" + time.time} content={
                         <div className="input-row">
                             {timeElem}
-                            <input type="button" className="button button-primary" value={T.t("SETTINGS_TIME_REMOVE")} onClick={() => {
+                            <input type="button" className="button button-primary" style={{alignSelf: "flex-end"}} value={T.t("SETTINGS_TIME_REMOVE")} onClick={() => {
                                 this.state.adjustmentTimes.splice(index, 1)
                                 this.forceUpdate()
                                 this.adjustmentTimesUpdated()
@@ -1251,7 +1260,8 @@ export default class SettingsWindow extends PureComponent {
             time: "12:30",
             monitors: {},
             useSunCalc: false,
-            sunCalc: "sunrise"
+            sunCalc: "sunrise",
+            offset: 0
         })
         this.forceUpdate()
         this.adjustmentTimesUpdated()

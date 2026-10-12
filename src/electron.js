@@ -18,6 +18,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
+const { getHDRStatus } = require("./utils/hdr")
 const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
@@ -2363,6 +2364,7 @@ function getLocalization() {
 
   T = new Translate(localization.desired, localization.default)
   sendToAllWindows("localization-updated", localization)
+  setTrayPercent()
 
   if(monitorsThreadReady) {
     monitorsThread.send({
@@ -4643,7 +4645,7 @@ function createTray() {
 
   const { Tray } = require('electron')
   tray = new Tray(getTrayIconPath())
-  tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : ""))
+  setTrayPercent()
   setTrayMenu()
   tray.on("click", async () => toggleTray(true))
 
@@ -4754,6 +4756,7 @@ function getDebugTrayMenuItems() {
 function setTrayPercent() {
   try {
     if (tray) {
+      let tooltip = 'Twinkle Tray' + (isDev ? " (Dev)" : "")
       let averagePerc = 0
       let i = 0
       for (let key in monitors) {
@@ -4764,8 +4767,11 @@ function setTrayPercent() {
       }
       if (i > 0) {
         averagePerc = Math.round(averagePerc / i)
-        tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
+        tooltip += ' (' + averagePerc + '%)'
       }
+      const hdrStatus = getHDRStatus(Object.values(monitors).filter(monitor => !settings.hideDisplays?.[monitor.key]))
+      if (hdrStatus) tooltip += '\nHDR: ' + T.t('GENERIC_' + hdrStatus)
+      tray.setToolTip(tooltip)
     }
   } catch (e) {
     console.log(e)

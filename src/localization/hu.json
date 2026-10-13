@@ -209,9 +209,9 @@
     "SETTINGS_TIME_LAT": "Szélesség",
     "SETTINGS_TIME_LONG": "Hosszúság",
     "SETTINGS_TIME_SUN_GET": "Koordináták lekérése",
-    "SETTINGS_TIME_IDLE_FS_TITLE": "A teljes képernyős alkalmazások blokkolják a tétlenség érzékelést",
+    "SETTINGS_TIME_IDLE_FS_TITLE": "Tétlenség érzékelés blokkolása teljes képernyős módban",
     "SETTINGS_TIME_IDLE_FS_DESC": "Teljes képernyős alkalmazások blokkolják a tétlenség érzékelést. Ez csak fókuszban lévő ablakokra alkalmazható.",
-    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Média blokkolja a tétlenség érzékelést",
+    "SETTINGS_TIME_IDLE_MEDIA_TITLE": "Tétlenség érzékelés blokkolása média lejátszásakor",
     "SETTINGS_TIME_IDLE_MEDIA_DESC": "A tétlenség érzékelés le lesz tiltva médialejátszás közben. Ez magában foglalja mind a videót, mind a hangot. Csak akkor érvényes, ha a Windows jelzi, hogy médialejátszás van folyamatban.",
     "SETTINGS_HOTKEYS_SCROLL_AMOUNT": "Görgetendő mennyiség",
     "SETTINGS_HOTKEYS_INVERT_SCROLL_TITLE": "Görgetés megfordítása",
@@ -271,7 +271,7 @@
     "SETTINGS_LIGHT_SENSOR_FAKE_LUX_LABEL": "Szimulált fényerő:",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_TITLE": "Windows környezeti fényérzékelő",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_DESC": "A Windows beépített környezeti fényérzékelőjét használja a fényerő automatikus beállításához.",
-    "SETTINGS_LIGHT_SENSOR_WINDOWS_NOT_FOUND": "Nem található Windows környezeti fényérzékelők",
+    "SETTINGS_LIGHT_SENSOR_WINDOWS_NOT_FOUND": "Nem található Windows környezeti fényérzékelő",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_FOUND": "Windows környezeti fényérzékelő található",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_AVAILABLE": "Elérhető érzékelők:",
     "SETTINGS_LIGHT_SENSOR_WINDOWS_SENSOR_INDEX": "Érzékelő {{1}}",
@@ -288,5 +288,11 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "VirtualHub URL:",
     "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Szétkapcsolva",
     "GENERIC_LUX": "lux",
-    "SETTINGS_SIDEBAR_LIGHT_SENSOR": "Fényérzékelő"
+    "SETTINGS_SIDEBAR_LIGHT_SENSOR": "Fényérzékelő",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Gamma szintszabályzó helyettesíti az elsődleges csúszkát",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Ha a kijelző nem támogatja a szabványos fényerő-szabályozást, akkor ez alternatívaként használható.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "A minimális fényerő kiterjesztése",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Csökkenthető a fényerő a szabványos minimum szint alá a szoftveres gamma szint beállításával. Opcionálisan beállítható egy százalék a csúszkán szoftveres halványítás használatához a hardveres fényerő-szabályozás helyett.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "A csúszka százalékos értéke szoftveres halványítás használatához",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "A Windows továbbra is módosítja a beépített kijelző fényerejét, amikor megnyomja a fényerő-szabályozó gombot. Ne használjon Fényerő növelése vagy Fényerő csökkentése gyorsbillentyűket a beépített kijelző fényerejének beállításához."
 }

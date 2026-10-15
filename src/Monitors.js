@@ -811,7 +811,12 @@ getAllMonitors = async (ddcciMethod = "default", coreOnly = false) => {
             // downstream feature and display-type handling remains valid.
             const brightnessType = featureScanTimedOut
                 ? (canUseHighLevelBrightness ? 0x10 : false)
-                : await determineBrightnessVCPCode(id)
+                : (ddcciSupported || ddcBrightnessVCPs?.[monitor.hwid?.[1]]
+                    ? await determineBrightnessVCPCode(id)
+                    // DDC/CI validation already failed for this display (e.g. an
+                    // internal panel), so probing brightness VCPs only produces
+                    // device errors. Fall back to the high-level placeholder.
+                    : (canUseHighLevelBrightness ? 0x10 : false))
 
             let ddcciInfo = {
                 id: id,
@@ -1737,11 +1742,13 @@ function setBrightness(brightness, id) {
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
             if (canUseWmiBridgeNow()) {
-                // Set brightness via native WMI
-                wmibridge.setBrightness(brightness);
+                // Set brightness via native WMI. The bridge only accepts whole
+                // numbers, and features like the extended minimum can hand us
+                // fractional levels, so round before sending.
+                wmibridge.setBrightness(Math.round(brightness));
             } else {
                 // If native WMI is unavailable, fall back to old method
-                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${brightness})`)
+                exec(`powershell.exe -NoProfile (Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).wmisetbrightness(0, ${Math.round(brightness)})`)
             }
         }
     } catch (e) {

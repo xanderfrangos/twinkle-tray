@@ -67,6 +67,7 @@ namespace PaymoActiveWindow {
 		std::wstring getUWPLargestIconPath(std::wstring iconPath);
 		std::string encodeImageStream(IStream* pngStream);
 		void runWatchThread();
+		void stopWatchThread();
 		static BOOL CALLBACK EnumChildWindowsCb(HWND hWindow, LPARAM param);
 		static VOID CALLBACK WinEventProcCb(HWINEVENTHOOK hHook, DWORD event, HWND hWindow, LONG idObject, LONG idChild, DWORD eventThread, DWORD eventTime);
 	};

@@ -3041,9 +3041,9 @@ function flushGammaBrightness() {
   }, settings.updateInterval || 100)
 }
 
-let updateBrightnessTimeout = false
-let updateBrightnessQueue = []
-let lastBrightnessTimes = {}
+// Throttle state per monitor + VCP target: when it was last written, the
+// latest update waiting to be written, and the timer that will write it.
+const brightnessThrottleTargets = new Map()
 function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
   // A monitor can receive its brightness update and several linked feature
   // updates at once. Keep each VCP target separate so one linked feature does
@@ -3051,43 +3051,43 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   // VCP codes arrive as "0x12" or 18, so normalize them like updateBrightness does.
   const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp : `0x${parseInt(vcp).toString(16)}`)
   const target = `${id}::${vcpKey}`
-  let idx = updateBrightnessQueue.length
-  const found = updateBrightnessQueue.findIndex(item => item.target === target)
-  updateBrightnessQueue[(found > -1 ? found : idx)] = {
-    id,
-    level,
-    useCap,
-    vcp,
-    target,
-    sendUpdate
+  let state = brightnessThrottleTargets.get(target)
+  if (!state) {
+    state = { lastTime: 0, pending: null, timeout: false }
+    brightnessThrottleTargets.set(target, state)
   }
+
+  // While a write is pending, always go through it so updates stay in order
   const now = Date.now()
-  if (lastBrightnessTimes[target] === undefined || now >= lastBrightnessTimes[target] + settings.updateInterval) {
-    lastBrightnessTimes[target] = now
-    updateBrightnessQueue.splice((found > -1 ? found : idx), 1)
+  if (!state.timeout && now >= state.lastTime + settings.updateInterval) {
+    state.lastTime = now
     updateBrightness(id, level, useCap, vcp)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
-  } else if (!updateBrightnessTimeout) {
-    updateBrightnessTimeout = setTimeout(() => {
-      const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
-      updateBrightnessTimeout = false
-      let shouldSendUpdate = false
-      for (let bUpdate of updateBrightnessQueueCopy) {
-        if (bUpdate) {
-          try {
-            lastBrightnessTimes[bUpdate.target] = Date.now()
-            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
-            shouldSendUpdate ||= bUpdate.sendUpdate
-          } catch (e) {
-            console.error(e)
-          }
-        }
-      }
-      if (shouldSendUpdate) sendToAllWindows('monitors-updated', monitors);
-    }, settings.updateInterval)
+  }
+
+  // Keep only the latest level, but still notify windows if any skipped update asked to
+  state.pending = { id, level, useCap, vcp, sendUpdate: (sendUpdate || state.pending?.sendUpdate) }
+  if (!state.timeout) {
+    // Each target has its own timer, so it's never written sooner than
+    // updateInterval after its own last write
+    state.timeout = setTimeout(() => flushBrightnessThrottle(state), Math.max(0, state.lastTime + settings.updateInterval - now))
   }
   return false
+}
+
+function flushBrightnessThrottle(state) {
+  const update = state.pending
+  state.pending = null
+  state.timeout = false
+  if (!update) return
+  state.lastTime = Date.now()
+  try {
+    updateBrightness(update.id, update.level, update.useCap, update.vcp)
+  } catch (e) {
+    console.error(e)
+  }
+  if (update.sendUpdate) sendToAllWindows('monitors-updated', monitors);
 }
 
 

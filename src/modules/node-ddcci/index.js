@@ -6,57 +6,105 @@ const vcp = require("./vcp");
 module.exports = {
     vcp
 
-    , _getVCP: ddcci.getVCP
-    , _setVCP: ddcci.setVCP
+    , _getVCP: (monitorId, code) => {
+        correctVirtualDisplayMappings();
+        return ddcci.getVCP(resolveTargetId(monitorId), code);
+    }
+    , _setVCP: (monitorId, code, value) => {
+        correctVirtualDisplayMappings();
+        return ddcci.setVCP(resolveTargetId(monitorId), code, value);
+    }
     , _saveCurrentSettings: ddcci.saveCurrentSettings
-    , _getHighLevelBrightness: ddcci.getHighLevelBrightness
-    , _setHighLevelBrightness: ddcci.setHighLevelBrightness
-    , _getHighLevelContrast: ddcci.getHighLevelContrast
-    , _setHighLevelContrast: ddcci.setHighLevelContrast
+    , _getHighLevelBrightness: (monitorId) => {
+        correctVirtualDisplayMappings();
+        return ddcci.getHighLevelBrightness(resolveTargetId(monitorId));
+    }
+    , _setHighLevelBrightness: (monitorId, value) => {
+        correctVirtualDisplayMappings();
+        return ddcci.setHighLevelBrightness(resolveTargetId(monitorId), value);
+    }
+    , _getHighLevelContrast: (monitorId) => {
+        correctVirtualDisplayMappings();
+        return ddcci.getHighLevelContrast(resolveTargetId(monitorId));
+    }
+    , _setHighLevelContrast: (monitorId, value) => {
+        correctVirtualDisplayMappings();
+        return ddcci.setHighLevelContrast(resolveTargetId(monitorId), value);
+    }
     , _getAllMonitors: ddcci.getAllMonitors
     , _clearDisplayCache: ddcci.clearDisplayCache
     , _setLogLevel: ddcci.setLogLevel
     , _parseCapabilitiesString: parseCapabilitiesString
-    , _refresh: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => ddcci.refresh(method, usePreviousResults, checkHighLevel)
+    , _refresh: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => {
+        ddcci.refresh(method, usePreviousResults, checkHighLevel);
+        correctVirtualDisplayMappings();
+    }
     , getMonitorList: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => {
         ddcci.refresh(method, usePreviousResults, checkHighLevel);
+        correctVirtualDisplayMappings();
         return ddcci.getMonitorList();
     }
     , getAllMonitors: (method = "accurate", usePreviousResults = true, checkHighLevel = true) => {
         ddcci.refresh(method, usePreviousResults, checkHighLevel);
-        const monitors = ddcci.getAllMonitors();
-        for (const monitor of monitors) {
+        correctVirtualDisplayMappings();
+        const rawMonitors = ddcci.getAllMonitors();
+        const snapshot = rawMonitors.map(m => ({ ...m }));
+        for (const monitor of rawMonitors) {
+            // Apply alias routing if target was remapped
+            const effectiveKey = keyAliasMap[monitor.deviceKey] || monitor.deviceKey;
+            if (keyAliasMap[monitor.deviceKey]) {
+                const sourceMon = snapshot.find(m => m.deviceKey === effectiveKey);
+                if (sourceMon) {
+                    monitor.ddcciSupported = sourceMon.ddcciSupported;
+                    monitor.hlBrightnessSupported = sourceMon.hlBrightnessSupported;
+                    monitor.hlContrastSupported = sourceMon.hlContrastSupported;
+                    monitor.handleIsValid = sourceMon.handleIsValid;
+                    if (sourceMon.capabilities) monitor.capabilities = sourceMon.capabilities;
+                    if (sourceMon.capabilitiesRaw) monitor.capabilitiesRaw = sourceMon.capabilitiesRaw;
+                }
+            }
+            if (isVirtualKey(monitor.deviceKey)) {
+                monitor.ddcciSupported = false;
+                monitor.hlBrightnessSupported = false;
+                monitor.hlContrastSupported = false;
+            }
             if (monitor.result && monitor.result != "ok" && monitor.result != "invalid") {
                 monitor.capabilities = parseCapabilitiesString(monitor.result);
                 monitor.capabilitiesRaw = monitor.result;
             }
             delete monitor.result;
         }
-        return monitors;
+        return rawMonitors;
     }
-    // Uses the monitor list and capabilities string from the last refresh.
-    // Pass the current 0x60 value when it was just read to skip another read.
-    , getMonitorInputs: (monitorFullName, currentInput) => {
-        return ddcci.getMonitorInputs(monitorFullName, currentInput)
+    , getMonitorInputs: (monitorFullName) => {
+        ddcci.refresh("accurate", true, true)
+        correctVirtualDisplayMappings();
+        return ddcci.getMonitorInputs(monitorFullName)
     }
 
-    , getVCP: ddcci.getVCP
-    , setVCP: ddcci.setVCP
+    , getVCP: (monitorId, code) => {
+        const targetId = resolveTargetId(monitorId);
+        return ddcci.getVCP(targetId, code);
+    }
+    , setVCP: (monitorId, code, value) => {
+        const targetId = resolveTargetId(monitorId);
+        return ddcci.setVCP(targetId, code, value);
+    }
 
     , getBrightness(monitorId) {
-        return ddcci.getVCP(monitorId, vcp.LUMINANCE)[0];
+        return module.exports.getVCP(monitorId, vcp.LUMINANCE)[0];
     }
 
     , getMaxBrightness(monitorId) {
-        return ddcci.getVCP(monitorId, vcp.LUMINANCE)[1];
+        return module.exports.getVCP(monitorId, vcp.LUMINANCE)[1];
     }
 
     , getContrast(monitorId) {
-        return ddcci.getVCP(monitorId, vcp.CONTRAST)[0];
+        return module.exports.getVCP(monitorId, vcp.CONTRAST)[0];
     }
 
     , getMaxContrast(monitorId) {
-        return ddcci.getVCP(monitorId, vcp.CONTRAST)[1];
+        return module.exports.getVCP(monitorId, vcp.CONTRAST)[1];
     }
 
     , setBrightness(monitorId, level) {
@@ -64,7 +112,7 @@ module.exports = {
             throw RangeError("Brightness level not within valid range");
         }
 
-        ddcci.setVCP(monitorId, vcp.LUMINANCE, level);
+        module.exports.setVCP(monitorId, vcp.LUMINANCE, level);
     }
 
     , setContrast(monitorId, level) {
@@ -72,19 +120,53 @@ module.exports = {
             throw RangeError("Contrast level not within valid range");
         }
 
-        ddcci.setVCP(monitorId, vcp.CONTRAST, level);
+        module.exports.setVCP(monitorId, vcp.CONTRAST, level);
     }
 
     // Returns an array where keys are valid VCP codes and the keys are an array of accepted values.
     // If the array of accepted values is empty, the VCP code either accepts a range of values or no values. Use getVCP to determine the range, if any.
     , getCapabilities(monitorId) {
-        let report = ddcci.getCapabilitiesString(monitorId);
+        const targetId = resolveTargetId(monitorId);
+        let report = ddcci.getCapabilitiesString(targetId);
         return parseCapabilitiesString(report);
     }
     , getCapabilitiesRaw(monitorId) {
-        return ddcci.getCapabilitiesString(monitorId);
+        const targetId = resolveTargetId(monitorId);
+        return ddcci.getCapabilitiesString(targetId);
     }
 };
+
+const keyAliasMap = {};
+
+function isVirtualKey(key = "") {
+    const l = key.toLowerCase();
+    return l.includes("mtt1337") || l.includes("idd") || l.includes("virtual") || l.includes("vdd") || l.includes("parsec");
+}
+
+function resolveTargetId(monitorId) {
+    if (!monitorId) return monitorId;
+    return keyAliasMap[monitorId] || monitorId;
+}
+
+function correctVirtualDisplayMappings() {
+    try {
+        const rawMonitors = ddcci.getAllMonitors();
+        if (!Array.isArray(rawMonitors) || rawMonitors.length < 2) return;
+
+        const virtualCandidate = rawMonitors.find(m => isVirtualKey(m.deviceKey));
+        const physicalCandidate = rawMonitors.find(m => !isVirtualKey(m.deviceKey));
+
+        if (virtualCandidate && physicalCandidate) {
+            // If the virtual candidate was mistakenly assigned the working DDC/CI handle
+            if (virtualCandidate.ddcciSupported && !physicalCandidate.ddcciSupported) {
+                keyAliasMap[physicalCandidate.deviceKey] = virtualCandidate.deviceKey;
+                keyAliasMap[virtualCandidate.deviceKey] = physicalCandidate.deviceKey;
+            }
+        }
+    } catch (e) {
+        // Safe fallback
+    }
+}
 
 function parseCapabilitiesString(report = "") {
     // Find where VCP list starts. Some monitors report "VCP(" or "vcp (",

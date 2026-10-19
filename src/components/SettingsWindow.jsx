@@ -671,7 +671,7 @@ export default class SettingsWindow extends PureComponent {
                             </select>
                             <div style={{flexShrink: 0}}>
                                 <label style={{textTransform: "capitalize"}}>{T.t("SETTINGS_TIME_SUN_OFFSET")}</label>
-                                <input type="number" min="-1440" max="1440" step="1" value={time.offset ?? 0} onChange={e => {
+                                <input type="number" min="-1440" max="1440" step="1" style={{width: "120px"}} value={time.offset ?? 0} onChange={e => {
                                     time.offset = e.target.value
                                     this.updateAdjustmentTime(time, index)
                                 }} />
@@ -690,7 +690,7 @@ export default class SettingsWindow extends PureComponent {
                             }} />
                         </div>
                     } input={
-                        <div className="inputToggle-generic" style={{display: (canShowSunCalc ? "flex" : "none")}}>
+                        <div className="inputToggle-generic" style={{display: (canShowSunCalc ? "flex" : "none"), marginTop: time.useSunCalc ? "27px" : "0px"}}>
                             <input onChange={e => {
                                 time.useSunCalc = e.target.checked
                                 this.updateAdjustmentTime(time, index)

@@ -18,6 +18,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
+const { scaleVolume } = require("./volume-utils")
 const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
@@ -2817,7 +2818,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
     const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
     if(featuresSettings) {
       for(const vcp in monitor.features) {
-        if(featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+        if(vcp !== "0x62" && featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
           monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
         }
       }
@@ -3054,7 +3055,10 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   // updates at once. Keep each VCP target separate so one linked feature does
   // not replace another feature (or the brightness update) in the queue.
   // VCP codes arrive as "0x12" or 18, so normalize them like updateBrightness does.
-  const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp : `0x${parseInt(vcp).toString(16)}`)
+  // Raw volume from the sliders shares 0x62's target with linked volume updates.
+  const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp
+    : vcp === "volume-raw" ? "0x62"
+    : `0x${parseInt(vcp).toString(16)}`)
   const target = `${id}::${vcpKey}`
   let state = brightnessThrottleTargets.get(target)
   if (!state) {
@@ -3121,7 +3125,12 @@ function applyLinkedFeatures(monitor, newLevel, useCap = true) {
       }
 
       const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
-      updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+      if (vcp === "0x62") {
+        // Scale volume the same way the volume sliders do, so it respects the maximum override
+        updateBrightnessThrottle(monitor.id, scaleVolume(capped, monitor.features[vcp], featuresSettings[vcp]), useCap, false, "volume-raw")
+      } else {
+        updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+      }
     }
   }
 }
@@ -3136,7 +3145,10 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
   try {
     let level = newLevel
     let vcp = "brightness"
+    // Volume sliders have already converted percentages to raw DDC units.
+    const rawVolume = vcpValue === "volume-raw"
     switch(vcpValue) {
+      case "volume-raw": vcp = "0x62"; break;
       case "brightness": vcp = "brightness"; break;
       case "sdr": vcp = "sdr"; break;
       default: vcp = `0x${parseInt(vcpValue).toString(16)}`;
@@ -3274,7 +3286,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
           
           // Normalize VCP value, if applicable
           const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-          if(featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+          if(!rawVolume && featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
             level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
           }
           
@@ -3697,6 +3709,12 @@ ipcMain.on('apply-last-known-monitors', () => { setKnownBrightness() })
 
 ipcMain.on('sleep-displays', () => sleepDisplays(settings.sleepAction, 1000))
 ipcMain.on('sleep-display', (e, hwid) => turnOffDisplayDDC(hwid, true))
+ipcMain.on('set-volume', (e, values) => {
+  if (!Number.isInteger(values.value) || values.value < 0 || values.value > 0xFFFF) return
+  setRecentlyInteracted(true)
+  updateBrightnessThrottle(values.monitor, values.value, false, true, "volume-raw")
+})
+
 ipcMain.on('set-vcp', (e, values) => {
   setRecentlyInteracted(true)
   updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)

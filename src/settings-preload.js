@@ -299,3 +299,8 @@ window.versionTag = getArgumentVars().appVersionTag
 window.versionBuild = getArgumentVars().appBuild
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
 window.settingsPath = getArgumentVars().settingsPath
+
+window.addEventListener("set-volume", e => {
+    const { monitor, value } = e.detail
+    ipc.send("set-volume", { monitor, value })
+})

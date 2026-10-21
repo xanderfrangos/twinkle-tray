@@ -221,10 +221,10 @@ async function handleMonitorMessage(data) {
             if (hadSoftwareBrightness && !settings?.useSoftwareBrightnessFallback) restoreSoftwareBrightness();
 
             // Overrides
-            if (settings?.disableAppleStudio) appleStudioUnavailable = true;
-            if (settings?.disableWMIC) wmicUnavailable = true;
-            if (settings?.disableWMI) wmiFailed = true;
-            if (settings?.disableWin32) win32Failed = true;
+            applyMethodOverride("disableAppleStudio", value => appleStudioUnavailable = value)
+            applyMethodOverride("disableWMIC", value => wmicUnavailable = (value || !wmicExists()))
+            applyMethodOverride("disableWMI", value => wmiFailed = value)
+            applyMethodOverride("disableWin32", value => win32Failed = value)
 
         } else if (data.type === "ddcBrightnessVCPs") {
             const changedMonitors = changedFeatureMonitorIds(
@@ -233,12 +233,14 @@ async function handleMonitorMessage(data) {
             )
             ddcBrightnessVCPs = data.ddcBrightnessVCPs
             invalidateFeatureSnapshots(changedMonitors)
-            // Update brightnessType for all monitors when user changes VCP settings
-            if (monitors) {
+            // Update brightnessType for monitors whose VCP override changed. This
+            // message is sent on every settings change, and everything else keeps
+            // the code detected for it (0x13, 0x6B, ...) rather than 0x10.
+            if (monitors && changedMonitors.size) {
                 for (const hwid2 in monitors) {
                     if (monitors[hwid2].type === "ddcci") {
                         const hwid = monitors[hwid2].hwid
-                        if (hwid) {
+                        if (hwid && changedMonitors.has(hwid[1])) {
                             if (ddcBrightnessVCPs[hwid[1]]) {
                                 // Custom VCP code set - use it (already parsed as int in electron.js)
                                 const vcpCode = ddcBrightnessVCPs[hwid[1]]
@@ -249,7 +251,8 @@ async function handleMonitorMessage(data) {
                                     monitors[hwid2].brightnessType = 0x10
                                 }
                             } else {
-                                // No custom VCP - reset to default (0x10 = 16)
+                                // Override removed - reset to default (0x10 = 16)
+                                // until the refresh that follows detects it again
                                 monitors[hwid2].brightnessType = 0x10
                             }
                         }
@@ -490,6 +493,18 @@ function applyFeatureSnapshots(foundMonitors) {
         monitor.vcpCodes = Object.assign({}, snapshotVcpCodes, monitor.vcpCodes || {})
         monitor.featuresPending = false
         monitor.featuresRefreshing = true
+    }
+}
+
+// Each method's flag is also set when the method fails or is missing, so turning
+// a setting back off only clears the flag if the setting is what set it.
+const userDisabledMethods = new Set()
+function applyMethodOverride(setting, setDisabled) {
+    if (settings?.[setting]) {
+        userDisabledMethods.add(setting)
+        setDisabled(true)
+    } else if (userDisabledMethods.delete(setting)) {
+        setDisabled(false)
     }
 }
 
@@ -1211,10 +1226,30 @@ function hasInternalPanel() {
     return Object.values(monitorsWin32 || {}).some(monitor => INTERNAL_CONNECTORS.indexOf(monitor?.connector) >= 0)
 }
 
-// Lists internal displays via the preferred available WMI method.
+// A failed bridge call is often temporary (WMI busy at logon or after an
+// update), so the bridge is only given up on after repeated failures, and only
+// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
+// so latching it without a fallback would trade a fast write path for nothing.
+const BRIDGE_FAILURE_LIMIT = 3
+function noteBridgeFailure(what, failures) {
+    if (failures >= BRIDGE_FAILURE_LIMIT && !wmicUnavailable && !wmiFailed) {
+        wmiFailed = true
+        console.log(`${what} failed ${failures} times. Falling back to WMIC.`)
+    }
+}
+
+// Lists internal displays via the preferred available WMI method. WMIC is
+// tried on every failed bridge listing, so a fallback doesn't have to wait
+// for the bridge to be given up on.
+let bridgeListingFailures = 0
 getMonitorsInternal = async () => {
     if (canUseWmiBridgeNow()) {
-        return await getMonitorsWMI()
+        const monitors = await getMonitorsWMI()
+        if (monitors) {
+            bridgeListingFailures = 0
+            return monitors
+        }
+        noteBridgeFailure("getMonitorsWMI()", ++bridgeListingFailures)
     }
     if (!wmicUnavailable) {
         return await getMonitorsWMIC()
@@ -1223,14 +1258,10 @@ getMonitorsInternal = async () => {
 }
 
 // Reads internal display brightness via the preferred available WMI method.
-// The bridge reports the same failure for a broken WMI stack, a machine with no
-// internal panel, and a query that simply timed out, so a single failure isn't
-// enough to demote it. WMIC is tried on every failed read for a real internal
-// panel, but the bridge is only given up on after repeated failures, and only
-// when WMIC is actually there to take over. wmiFailed also gates setBrightness,
-// so latching it without a fallback would trade a fast write path for nothing.
+// Only failures for a real internal panel count towards giving up on the
+// bridge, since desktops have nothing to read. WMIC is tried on every failed
+// read for one.
 let bridgeBrightnessFailures = 0
-const BRIDGE_BRIGHTNESS_FAILURE_LIMIT = 3
 getBrightnessInternal = async () => {
     if (canUseWmiBridgeNow()) {
         const brightness = await getBrightnessWMI()
@@ -1239,14 +1270,17 @@ getBrightnessInternal = async () => {
             return brightness
         }
 
+        // Nothing reports brightness through WMI (OEM-controlled or OLED panels,
+        // desktops). Not a failure, and WMIC would query the same class.
+        if (brightness === null) {
+            bridgeBrightnessFailures = 0
+            return false
+        }
+
         // No internal panel to read. Expected on desktops, so leave WMIC alone.
         if (!hasInternalPanel()) return brightness
 
-        bridgeBrightnessFailures++
-        if (bridgeBrightnessFailures >= BRIDGE_BRIGHTNESS_FAILURE_LIMIT && !wmicUnavailable) {
-            wmiFailed = true
-            console.log(`getBrightnessWMI() failed ${bridgeBrightnessFailures} times for an internal panel. Falling back to WMIC.`)
-        }
+        noteBridgeFailure("getBrightnessWMI() for an internal panel", ++bridgeBrightnessFailures)
     }
     if (!wmicUnavailable) {
         return await getBrightnessWMIC()
@@ -1255,24 +1289,21 @@ getBrightnessInternal = async () => {
 }
 
 let wmiFailed = false
+// Resolves false when the bridge couldn't list displays at all, so
+// getMonitorsInternal() can fall back. An empty object is a successful listing.
+// There is no timeout: the native call blocks, so one could never fire before
+// it returns.
 getMonitorsWMI = () => {
     return new Promise(async (resolve, reject) => {
         const foundMonitors = {}
         try {
-            const timeout = setTimeout(() => { wmiFailed = true; console.log("getMonitorsWMI Timed out."); reject({}) }, 4000)
             const wmiMonitors = await wmibridge.getMonitors();
 
             if (wmiMonitors.failed) {
                 // Something went wrong
                 console.log("\x1b[41m" + "Recieved FAILED response from getMonitors()" + "\x1b[0m")
-                // The bridge is the primary source for the internal display, so a hard
-                // failure here must flip wmiFailed. Otherwise the WMIC fallback is never
-                // reached, since the 4s timeout above can't fire during the blocking
-                // native call. getBrightnessWMI() deliberately does NOT do this: a failed
-                // response there is normal on desktops with no internal panel.
-                wmiFailed = true
-                clearTimeout(timeout)
-                resolve(foundMonitors)
+                resolve(false)
+                return
             } else {
                 // Sort through results
                 for (let monitorHWID in wmiMonitors) {
@@ -1296,7 +1327,6 @@ getMonitorsWMI = () => {
 
                     foundMonitors[hwid[2]] = wmiInfo
                 }
-                clearTimeout(timeout)
             }
         } catch (e) {
             console.log(`getMonitorsWMI: Failed to get all monitors.`)
@@ -1555,6 +1585,8 @@ determineBrightnessVCPCode = async (monitor) => {
     return false
 }
 
+// Resolves false when the read failed, and null when it worked but no display
+// reports brightness through WMI.
 getBrightnessWMI = () => {
     // Request WMI monitors.
     return new Promise(async (resolve, reject) => {
@@ -1564,7 +1596,7 @@ getBrightnessWMI = () => {
             if (monitor.failed) {
                 // Something went wrong
                 clearTimeout(timeout)
-                resolve(false)
+                resolve(monitor.unsupported ? null : false)
             } else {
                 let hwid = readInstanceName(monitor.InstanceName)
                 hwid[2] = hwid[2].split("_")[0]
@@ -1727,6 +1759,9 @@ function setBrightness(brightness, id) {
             }
         } else {
             let monitor = Object.values(monitors).find(mon => mon.type == "wmi")
+            // WMI only takes whole levels, and the bridge rejects anything else.
+            // Normalization and calibration usually produce fractions.
+            brightness = Math.round(Math.max(0, Math.min(100, Number(brightness))))
             monitor.brightness = brightness
             monitor.brightnessRaw = brightness
             if (canUseWmiBridgeNow()) {
@@ -1800,7 +1835,7 @@ async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError 
     if(isDDCBlocked(monitor)) return false;
     try {
         let result = ddcci._getVCP(monitor, parseInt(vcpString))
-        if (code === 96) return ddcci.getMonitorInputs(monitor, getDDCBlockedKeys())
+        if (code === 96) return getMonitorInputs(monitor, result[0])
         if (!skipCacheWrite) {
             if (!vcpCache[monitor]) vcpCache[monitor] = {};
             vcpCache[monitor]["vcp_" + vcpString] = result
@@ -1819,6 +1854,26 @@ async function checkVCP(monitor, code, skipCacheWrite = false, useCachedOnError 
         // Cached value can't be used, so we return false
         return false
     }
+}
+
+// Input lists come from the capabilities string the last refresh left in the
+// native cache, so no refresh is needed for a monitor it found. The list is only
+// rebuilt when flushvcp cleared it after the handles were opened.
+function getMonitorInputs(monitor, currentInput) {
+    try {
+        return ddcci.getMonitorInputs(monitor, currentInput)
+    } catch (e) {
+        if (!e?.message?.startsWith("Monitor not found")) throw e
+    }
+    withDDCSentinel("refresh", false, () =>
+        ddcci._refresh(
+            (shouldEnrichCapabilities() ? "accurate" : determineDDCCIMethod()),
+            true,
+            !settings.disableHighLevel,
+            getDDCBlockedKeys()
+        )
+    )
+    return ddcci.getMonitorInputs(monitor, currentInput)
 }
 
 async function setVCP(monitor, code, value) {
@@ -1946,9 +2001,13 @@ let wmicUnavailable = false
 let wmi = false
 // WMIC.exe lives in the Wbem folder under System32. It is absent on Windows 11
 // builds where the deprecated feature is removed, or turned off as an optional feature.
-function wmicExists() {
+function getWMICPath() {
     const systemRoot = process.env.SystemRoot || process.env.windir || "C:\\Windows"
-    return require('fs').existsSync(systemRoot + "\\System32\\Wbem\\WMIC.exe")
+    return systemRoot + "\\System32\\Wbem\\WMIC.exe"
+}
+
+function wmicExists() {
+    return require('fs').existsSync(getWMICPath())
 }
 
 // WMIC
@@ -1969,7 +2028,8 @@ function getWMIC() {
         }
         wmi = new WmiClient({
             host: 'localhost',
-            namespace: '\\\\root\\WMI'
+            namespace: '\\\\root\\WMI',
+            wmic: getWMICPath() // Run the file that was checked, not whichever "wmic" is on PATH
         });
         return true;
     } catch (e) {

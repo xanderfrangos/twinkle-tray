@@ -163,13 +163,6 @@
       "!node_modules/usb/prebuilds/*",
       "node_modules/usb/prebuilds/${platform}-${arch}/*"
     ],
-    "extraResources": [
-      "node_modules\\wmi-client\\lib\\*",
-      "node_modules\\wmi-client\\scripts\\*",
-      "node_modules\\wmi-client\\index.js",
-      "node_modules\\wmi-client\\package.json",
-      "node_modules\\wmi-client\\.jscsrc"
-    ],
     "asar": true,
     "asarUnpack": [
       "node_modules\\wmi-client\\**\\*",

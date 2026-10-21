@@ -1112,10 +1112,15 @@ export default class SettingsWindow extends PureComponent {
 
     getDDCBlockedMonitors = () => {
         try {
-            if (this.state.monitors == undefined || Object.keys(this.state.monitors).length == 0) {
+            // Internal panels and Studio Displays aren't controlled over DDC/CI,
+            // so blocking does nothing for them. Blocked displays show up as
+            // "none" (or "software"), so those must stay listed. The block is
+            // keyed by model ID, so displays without one can't be blocked.
+            const monitors = Object.values(this.state.monitors ?? {}).filter(monitor => monitor.type !== "wmi" && monitor.type !== "studio-display" && monitor.hwid?.[1])
+            if (monitors.length == 0) {
                 return (<SettingsChild title={T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")} />)
             } else {
-                return Object.values(this.state.monitors).map((monitor, index) => {
+                return monitors.map((monitor, index) => {
 
                     return (
                         <SettingsChild key={monitor.key} icon="E7F4" title={getMonitorName(monitor, this.state.names)} input={
@@ -1138,6 +1143,7 @@ export default class SettingsWindow extends PureComponent {
         // hubs can assign a different UID on every reconnect, which would
         // silently disarm the block. Matching is by substring against the
         // device path, so hand-entered instance keys also still work.
+        if (!monitor.hwid?.[1]) return
         const disableDDCDisplays = Object.assign({}, this.state.rawSettings?.disableDDCDisplays)
         disableDDCDisplays[monitor.hwid?.[1]] = value
         this.setSetting("disableDDCDisplays", disableDDCDisplays)

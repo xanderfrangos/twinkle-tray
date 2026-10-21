@@ -4,13 +4,7 @@ import DDCCISliders from "./DDCCISliders"
 import HDRSliders from "./HDRSliders";
 import TranslateReact from "../TranslateReact"
 import getMonitorName from "../utils/BrightnessPanel/getMonitorName";
-
-// Per-display opt-in: the primary slider drives the display's gamma ramp
-// instead of the brightness control that was detected for it.
-function usesGammaSlider(monitor) {
-  if (!window.settings?.gammaAsMainSliderDisplays?.[monitor?.key]) return false
-  return (monitor?.gammaBrightness >= 0)
-}
+import { usesGammaSlider, isAdjustableDisplay } from "./utilts/monitor.util";
 
 const BrightnessPanel = memo(function BrightnessPanel() {
 
@@ -36,7 +30,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const numMonitors = useMemo(() => {
     let localNumMonitors = 0
     for (let key in state.monitors) {
-      if ((state.monitors[key].type != "none" || state.monitors[key].hdr === "active") && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
+      if ((isAdjustableDisplay(state.monitors[key]) || state.monitors[key].hdr === "active") && !(state.hideDisplays?.[key] === true)) localNumMonitors++;
     }
     return localNumMonitors
   }, [state.monitors, state.hideDisplays])
@@ -157,7 +151,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       setLevelsChanged(false)
       try {
         for (let idx in monitors) {
-          if (monitors[idx].type != "none" && monitors[idx].brightness != lastLevels[idx]) {
+          if (isAdjustableDisplay(monitors[idx]) && monitors[idx].brightness != lastLevels[idx]) {
             window.updateBrightness(monitors[idx].id, monitors[idx].brightness)
           }
         }
@@ -283,7 +277,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         }
 
         return sorted.map((monitor) => {
-          if ((monitor.type == "none" && monitor.hdr !== "active" && !usesGammaSlider(monitor)) || window.settings?.hideDisplays?.[monitor.key] === true) {
+          if ((!isAdjustableDisplay(monitor) && monitor.hdr !== "active") || window.settings?.hideDisplays?.[monitor.key] === true) {
             return (<div key={monitor.key}></div>)
           } else {
             if (monitor.type == "wmi" || monitor.type == "studio-display" || monitor.type == "software" || (monitor.type == "ddcci" && monitor.brightnessType) || monitor.hdr === "active" || usesGammaSlider(monitor)) {

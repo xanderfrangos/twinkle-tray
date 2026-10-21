@@ -264,11 +264,12 @@ window.addEventListener("set-sdr-brightness", e => {
 })
 
 const SunCalc = require('suncalc')
-function getSunCalcTimes(lat, long) {
+function getSunCalcTimes(lat, long, offsetMinutes = 0) {
     const localTimes = SunCalc.getTimes(new Date(), lat, long)
+    const offset = parseInt(offsetMinutes) || 0
     for (const timeName in localTimes) {
-        const time = localTimes[timeName].toLocaleTimeString()
-        localTimes[timeName] = `${time.slice(0,4)}${time.slice(7)}`
+        const time = new Date(localTimes[timeName].getTime() + offset * 60000)
+        localTimes[timeName] = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     }
     return localTimes
 }
@@ -298,3 +299,8 @@ window.versionTag = getArgumentVars().appVersionTag
 window.versionBuild = getArgumentVars().appBuild
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
 window.settingsPath = getArgumentVars().settingsPath
+
+window.addEventListener("set-volume", e => {
+    const { monitor, value } = e.detail
+    ipc.send("set-volume", { monitor, value })
+})

@@ -82,6 +82,22 @@ Napi::Object makeFailure(const Napi::Env& env)
     return failed;
 }
 
+// The query worked, but no display reports brightness through WMI (desktops,
+// and panels whose brightness is OEM-controlled). Unlike a failure, retrying
+// or switching to WMIC (which queries the same class) won't find anything.
+Napi::Object makeUnsupported(const Napi::Env& env)
+{
+    Napi::Object unsupported = makeFailure(env);
+    unsupported.Set("unsupported", Napi::Boolean::New(env, true));
+    return unsupported;
+}
+
+// How WMI says a class has no provider or instances on this machine
+bool isUnsupportedResult(HRESULT hr)
+{
+    return (hr == WBEM_E_NOT_SUPPORTED || hr == WBEM_E_NOT_FOUND || hr == WBEM_E_INVALID_CLASS);
+}
+
 std::string bstr_to_str(BSTR bstr)
 {
     if (bstr == NULL) {
@@ -173,16 +189,23 @@ Napi::Object getWMIBrightness(const Napi::CallbackInfo& info)
                                     NULL,
                                     enumerator.GetAddressOf());
     if (FAILED(hr)) {
-        return failed;
+        return (isUnsupportedResult(hr) ? makeUnsupported(env) : failed);
     }
 
+    bool foundInstance = false;
     while (true) {
         ComPtr<IWbemClassObject> clsObj;
         ULONG returned = 0;
         hr = enumerator->Next(500, 1, clsObj.GetAddressOf(), &returned);
-        if (FAILED(hr) || returned == 0 || !clsObj) {
+        // Forward-only queries can report an unsupported class on the first Next()
+        if (FAILED(hr) && !foundInstance && isUnsupportedResult(hr)) {
+            return makeUnsupported(env);
+        }
+        // WBEM_S_TIMEDOUT also returns nothing, but the enumeration isn't over
+        if (FAILED(hr) || hr == WBEM_S_TIMEDOUT || returned == 0 || !clsObj) {
             break;
         }
+        foundInstance = true;
 
         VARIANT instanceName;
         VariantInit(&instanceName);
@@ -225,6 +248,11 @@ Napi::Object getWMIBrightness(const Napi::CallbackInfo& info)
         return monitor;
     }
 
+    // An enumeration that ended cleanly without a single instance means there's
+    // nothing to read. Instances that couldn't be read are a real failure.
+    if (!foundInstance && hr == WBEM_S_FALSE) {
+        return makeUnsupported(env);
+    }
     return failed;
 }
 

@@ -1,10 +1,13 @@
-import React from "react"
+import React, { useEffect } from "react"
+const { scaleVolume, unscaleVolume } = require("../volume-utils")
 import { useObject } from "../hooks/useObject"
 import Slider from "./Slider"
 
 export default function DDCCISliders(props) {
     const { monitor, monitorFeatures } = props
 
+    const volumeSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid?.[1]]?.["0x62"]
+    const volumeLevel = unscaleVolume(monitor.features?.["0x62"]?.[0] ?? 0, monitor.features?.["0x62"], volumeSettings)
     const defaultValues = {}
 
     for (const vcp in monitor?.features) {
@@ -12,7 +15,9 @@ export default function DDCCISliders(props) {
             ? monitor?.features?.[vcp] ?? 0
             : monitor?.features?.[vcp]?.[0] ?? 0
     }
+    defaultValues["0x62"] = volumeLevel
     const [values, setValues] = useObject(defaultValues)
+    useEffect(() => { setValues({ "0x62": volumeLevel }) }, [monitor.id, volumeLevel])
 
     const inputsData = {
         1: "VGA-1",
@@ -68,7 +73,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); window.dispatchEvent(new CustomEvent("set-volume", { detail: { monitor: monitor.id, value: scaleVolume(val, feature, volumeSettings) } })) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else if (vcp === "0x60") {

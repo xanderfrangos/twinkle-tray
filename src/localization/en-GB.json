@@ -185,6 +185,7 @@
     "SETTINGS_TIME_SUN_TITLE": "Coordinates for sun position",
     "SETTINGS_TIME_SUN_DESC": "To use \"sun position\" for time adjustments, enter your current latitude and longitude so the correct times can be determined.",
     "SETTINGS_TIME_USE_SUN_POSITION": "Use sun position",
+    "SETTINGS_TIME_SUN_OFFSET": "Offset (minutes)",
     "SETTINGS_TIME_LAT": "Latitude",
     "SETTINGS_TIME_LONG": "Longitude",
     "SETTINGS_TIME_SUN_GET": "Get coordinates",

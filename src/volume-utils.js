@@ -5,6 +5,11 @@ function getVolumeMaximum(feature, settings = {}) {
     }
 
     const reportedMaximum = Number(feature?.[1])
+    // Some displays report 65535 but only accept 0-100. A current value
+    // within 0-100 gives that away, so treat the maximum as 100.
+    if (reportedMaximum === 0xFFFF && Number(feature?.[0]) <= 100) {
+        return 100
+    }
     return (Number.isFinite(reportedMaximum) && reportedMaximum > 0 ? reportedMaximum : 100)
 }
 

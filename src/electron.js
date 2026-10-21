@@ -18,6 +18,7 @@ const isAppX = (app.name == "twinkle-tray-appx" ? true : false)
 const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
+const { scaleVolume } = require("./volume-utils")
 const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
@@ -3054,7 +3055,10 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   // updates at once. Keep each VCP target separate so one linked feature does
   // not replace another feature (or the brightness update) in the queue.
   // VCP codes arrive as "0x12" or 18, so normalize them like updateBrightness does.
-  const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp : `0x${parseInt(vcp).toString(16)}`)
+  // Raw volume from the sliders shares 0x62's target with linked volume updates.
+  const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp
+    : vcp === "volume-raw" ? "0x62"
+    : `0x${parseInt(vcp).toString(16)}`)
   const target = `${id}::${vcpKey}`
   let state = brightnessThrottleTargets.get(target)
   if (!state) {
@@ -3121,7 +3125,12 @@ function applyLinkedFeatures(monitor, newLevel, useCap = true) {
       }
 
       const capped = parseInt(normalizeBrightness(processedLevel, true, 0, maxBrightness))
-      updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+      if (vcp === "0x62") {
+        // Scale volume the same way the volume sliders do, so it respects the maximum override
+        updateBrightnessThrottle(monitor.id, scaleVolume(capped, monitor.features[vcp], featuresSettings[vcp]), useCap, false, "volume-raw")
+      } else {
+        updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+      }
     }
   }
 }

@@ -10,11 +10,20 @@ test('misreported volume maximum can be overridden and cleared', () => {
     const feature = [30, 65535]
     assert.equal(scaleVolume(30, feature, { maxRawValue: 100 }), 30)
     assert.equal(unscaleVolume(30, feature, { maxRawValue: 100 }), 30)
-    assert.equal(getVolumeMaximum(feature, {}), 65535)
     for (const maxRawValue of [0, -1, 65536, 1.5, '', 'invalid']) {
-        assert.equal(getVolumeMaximum(feature, { maxRawValue }), 65535)
+        assert.equal(getVolumeMaximum([30000, 65535], { maxRawValue }), 65535)
     }
     assert.equal(getVolumeMaximum([0, 0]), 100)
+})
+
+test('a reported 65535 maximum is treated as 100 while the current value fits within 0-100', () => {
+    assert.equal(getVolumeMaximum([30, 65535], {}), 100)
+    assert.equal(getVolumeMaximum([100, 65535], {}), 100)
+    assert.equal(getVolumeMaximum([101, 65535], {}), 65535)
+    assert.equal(getVolumeMaximum([30, 255], {}), 255)
+    assert.equal(getVolumeMaximum([30, 65535], { maxRawValue: 200 }), 200)
+    assert.equal(unscaleVolume(30, [30, 65535], {}), 30)
+    assert.equal(scaleVolume(30, [30, 65535], {}), 30)
 })
 
 test('raw values round-trip through percentage and range limits', () => {
@@ -69,10 +78,13 @@ test('volume slider writes raw values without clipping or double normalization',
     }
 })
 
-test('existing linked volume behavior is unchanged by the override', () => {
-    const { context, monitor, messages } = createContext({ linked: true, maxVisual: 100, min: 20, max: 80, maxRawValue: 200 })
+test('linked volume is scaled the same way as the volume slider', () => {
+    const settings = { linked: true, maxVisual: 100, min: 20, max: 80, maxRawValue: 200 }
+    const { context, monitor, messages } = createContext(settings)
     context.applyLinkedFeatures(monitor, 50)
-    assert.equal(messages[0].value, 50)
+    assert.equal(messages[0].code, 0x62)
+    assert.equal(messages[0].value, scaleVolume(50, monitor.features['0x62'], settings))
+    assert.equal(messages[0].value, 100)
 })
 
 test('contrast and manual VCP requests retain their original normalization', () => {

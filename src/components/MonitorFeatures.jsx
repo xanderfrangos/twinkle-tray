@@ -3,6 +3,7 @@ import { useObject } from "../hooks/useObject"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import Slider from "./Slider"
 import VCP from "../vcp-codes"
+const { getVolumeMaximum } = require("../volume-utils")
 const ignoreCodes = ["0x10", "0x12", "0x13", "0x62", "0xD6", "0x60"]
 
 const deleteIcon = (<span className="icon" dangerouslySetInnerHTML={{ __html: "&#xE74D;" }}></span>)
@@ -82,7 +83,7 @@ export default function MonitorFeatures(props) {
                     <div className="inputToggle-generic"><input onChange={() => { props?.toggleFeature(monitor.hwid[1], vcp) }} checked={(enabled ? true : false)} data-checked={(enabled ? true : false)} type="checkbox" /></div>
                 }>
                     <SettingsChild>
-                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} reportedMaximum={monitor.features[vcp]?.[1]} />
+                        <MonitorFeaturesSettings onChange={onChange} key={vcp + "_settings"} enabled={enabled} settings={settings} hwid={monitor?.hwid?.[1]} T={T} vcp={vcp} reportedMaximum={monitor.features[vcp] && getVolumeMaximum(monitor.features[vcp])} />
                     </SettingsChild>
                 </SettingsOption>
             )

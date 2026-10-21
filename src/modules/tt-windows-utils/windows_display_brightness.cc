@@ -24,7 +24,6 @@ std::mutex gammaMutex;
 constexpr int kMinimumBrightness = 20;
 constexpr int kMinimumDriverScale = 70;
 constexpr int kMinimumReliableCurve = 60;
-constexpr int kAssumeDefaultBrightness = 95;
 constexpr size_t kChannelEntries = 256;
 constexpr size_t kGreenChannel = kChannelEntries;
 constexpr int kSetAttempts = 3;
@@ -149,8 +148,7 @@ int brightnessFromRamp(const std::vector<WORD>& baseRamp, const std::vector<WORD
     return (std::max)(kMinimumBrightness, (std::min)(100, static_cast<int>(std::lround(brightness))));
 }
 
-// Gamma ramps outlive the process, so a display can already be dimmed the first
-// time it's read. Undo the curve to recover the ramp it started out with.
+// Undo the curve to recover the ramp a dimmed display started out with.
 std::vector<WORD> restoreBaseRamp(const std::vector<WORD>& ramp, int brightness)
 {
     const BrightnessCurve curve = curveForBrightness(brightness);
@@ -164,30 +162,76 @@ std::vector<WORD> restoreBaseRamp(const std::vector<WORD>& ramp, int brightness)
     return baseRamp;
 }
 
-bool ensureState(const std::wstring& displayName, HDC dc, GammaState*& state)
+// Works out the level when the ramp is our curve over the given base. Levels
+// near the measured one are tried too, since drivers that keep fewer bits per
+// entry can push the measurement a level or two either way.
+bool levelFromRamp(const std::vector<WORD>& baseRamp, const std::vector<WORD>& ramp, int& level)
 {
-    const std::wstring normalized = normalizeDisplayName(displayName);
-    auto found = gammaStates.find(normalized);
-    if (found != gammaStates.end()) {
-        state = &found->second;
-        return true;
+    const int measured = brightnessFromRamp(baseRamp, ramp);
+    for (const int candidate : { measured, measured - 1, measured + 1, measured - 2, measured + 2 }) {
+        if (candidate < kMinimumBrightness || candidate > 100) continue;
+        if (rampsMatch(buildBrightnessRamp(baseRamp, candidate), ramp)) {
+            level = candidate;
+            return true;
+        }
     }
-    GammaState initial;
+    return false;
+}
+
+// Gamma ramps outlive the process, so a display can already be dimmed the first
+// time it's read. Our curve lowers the peak of every channel, while calibration
+// and colour tools (f.lux, Night light) leave at least one channel at full
+// output. So only a ramp with every channel short of full is taken to be ours,
+// and its peak gives the level without depending on the shape of the base.
+GammaState stateFromRamp(const std::vector<WORD>& ramp)
+{
+    GammaState state;
+    state.baseRamp = ramp;
+    if (ramp.size() < 3 * kChannelEntries) return state;
+
+    WORD top = 0;
+    for (size_t channel = 0; channel < 3; channel++) {
+        top = (std::max)(top, ramp[(channel * kChannelEntries) + kChannelEntries - 1]);
+    }
+    const double peak = (top / 65535.0) * 100.0;
+    const double tolerance = (kRampVerificationTolerance / 65535.0) * 100.0;
+    if (peak >= 100.0 - tolerance || peak < kMinimumDriverScale - tolerance) return state;
+
+    int level;
+    if (peak >= kMinimumDriverScale + (tolerance / 2)) {
+        // Above the driver-safe peak the curve is a plain scale, so the peak is the level
+        level = static_cast<int>(std::lround(kMinimumBrightness
+            + ((peak - kMinimumReliableCurve) * (100.0 - kMinimumBrightness)
+                / (100.0 - kMinimumReliableCurve))));
+    } else {
+        // The peak is pinned here, and only the mid-tones carry the level. There's
+        // no base to measure them against, so a default ramp has to stand in.
+        level = brightnessFromRamp(defaultRamp(), ramp);
+    }
+    level = (std::max)(kMinimumBrightness, (std::min)(99, level));
+    state.brightness = level;
+    state.baseRamp = restoreBaseRamp(ramp, level);
+    return state;
+}
+
+// Brings the stored state in line with the ramp Windows currently has. If the
+// ramp is no longer our curve over the stored base, something else replaced it
+// (a display reset, a new colour profile, another app, or a renumbered display),
+// so the base is taken from the ramp again instead of being reused.
+bool syncState(const std::wstring& displayName, HDC dc, GammaState*& state)
+{
     std::vector<WORD> current;
     if (!readRamp(dc, current)) return false;
 
-    // Measured against a default ramp, since there's no stored base yet. A
-    // calibrated display reads a little under 100, so only a clearly dimmed
-    // ramp is treated as one of ours.
-    const int measured = brightnessFromRamp(defaultRamp(), current);
-    if (measured >= kAssumeDefaultBrightness) {
-        initial.baseRamp = std::move(current);
-    } else {
-        initial.brightness = measured;
-        initial.baseRamp = restoreBaseRamp(current, measured);
+    const std::wstring normalized = normalizeDisplayName(displayName);
+    auto found = gammaStates.find(normalized);
+    int level;
+    if (found != gammaStates.end() && levelFromRamp(found->second.baseRamp, current, level)) {
+        found->second.brightness = level;
+        state = &found->second;
+        return true;
     }
-    auto inserted = gammaStates.emplace(normalized, std::move(initial));
-    state = &inserted.first->second;
+    state = &(gammaStates[normalized] = stateFromRamp(current));
     return true;
 }
 
@@ -202,14 +246,10 @@ Napi::Number getBrightness(const Napi::CallbackInfo& info)
     HDC dc = openDisplay(displayName);
     if (!dc) return Napi::Number::New(env, -1);
     GammaState* state = nullptr;
-    const bool initialized = ensureState(displayName, dc, state);
 
     // Re-read the ramp rather than trusting the last value set here. Another
     // app, or an earlier session, may have changed it since.
-    std::vector<WORD> current;
-    if (initialized && readRamp(dc, current)) {
-        state->brightness = brightnessFromRamp(state->baseRamp, current);
-    }
+    const bool initialized = syncState(displayName, dc, state);
     DeleteDC(dc);
     return Napi::Number::New(env, initialized ? state->brightness : -1);
 }
@@ -230,7 +270,7 @@ Napi::Boolean setBrightness(const Napi::CallbackInfo& info)
     HDC dc = openDisplay(displayName);
     if (!dc) return Napi::Boolean::New(env, false);
     GammaState* state = nullptr;
-    if (!ensureState(displayName, dc, state)) {
+    if (!syncState(displayName, dc, state)) {
         DeleteDC(dc);
         return Napi::Boolean::New(env, false);
     }

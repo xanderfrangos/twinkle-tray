@@ -15,6 +15,11 @@ constexpr USAGE kConsumerControlUsage = 0x01;
 constexpr USAGE kBrightnessIncrementUsage = 0x006F;
 constexpr USAGE kBrightnessDecrementUsage = 0x0070;
 
+// The device that sent the last brightness key. Only its reports can release
+// that key; reports from other Consumer Control devices (media keys, a
+// mouse's horizontal scrolling) say nothing about it.
+HANDLE heldKeyDevice = NULL;
+
 bool GetWindowHandle(const Napi::Value& value, HWND* handle)
 {
     if (value.IsBigInt()) {
@@ -130,14 +135,10 @@ std::string ReadBrightnessKey(HRAWINPUT inputHandle)
     if (maxUsageCount == 0) return "";
 
     std::vector<USAGE> usages(maxUsageCount);
-    bool parsedConsumerReport = false;
     for (DWORD reportIndex = 0; reportIndex < hid.dwCount; reportIndex++) {
         PCHAR report = reinterpret_cast<PCHAR>(
           input->data.hid.bRawData + (reportIndex * hid.dwSizeHid));
         ULONG usageCount = maxUsageCount;
-        // This is a valid Consumer Control report even when its usage list is
-        // empty (the documented key-release report uses usage value zero).
-        parsedConsumerReport = true;
         NTSTATUS usageStatus = HidP_GetUsages(HidP_Input,
                                               kConsumerUsagePage,
                                               0,
@@ -148,13 +149,22 @@ std::string ReadBrightnessKey(HRAWINPUT inputHandle)
                                               hid.dwSizeHid);
         if (usageStatus != HIDP_STATUS_SUCCESS) continue;
         for (ULONG usageIndex = 0; usageIndex < usageCount; usageIndex++) {
-            if (usages[usageIndex] == kBrightnessIncrementUsage) return "up";
-            if (usages[usageIndex] == kBrightnessDecrementUsage) return "down";
+            if (usages[usageIndex] == kBrightnessIncrementUsage ||
+                usages[usageIndex] == kBrightnessDecrementUsage) {
+                heldKeyDevice = input->header.hDevice;
+                return (usages[usageIndex] == kBrightnessIncrementUsage ? "up" : "down");
+            }
         }
     }
 
-    // Consumer Control devices send a zero-usage report when a key is released.
-    return parsedConsumerReport ? "release" : "";
+    // A report from the same device without the key means it was let go:
+    // either the zero-usage release report, or another key on that device
+    // replacing it. Anything else is unrelated to the held key.
+    if (heldKeyDevice != NULL && input->header.hDevice == heldKeyDevice) {
+        heldKeyDevice = NULL;
+        return "release";
+    }
+    return "other";
 }
 
 Napi::String GetBrightnessKey(const Napi::CallbackInfo& info)

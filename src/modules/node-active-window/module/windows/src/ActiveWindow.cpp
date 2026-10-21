@@ -9,13 +9,7 @@ namespace PaymoActiveWindow {
 	}
 
 	ActiveWindow::~ActiveWindow() {
-		// stop watch thread
-		if (this->watchThread != NULL) {
-			this->threadShouldExit.store(true, std::memory_order_relaxed);
-			this->watchThread->join();
-			delete this->watchThread;
-			this->watchThread = NULL;
-		}
+		this->stopWatchThread();
 
 		// tear down COM
 		CoUninitialize();
@@ -104,7 +98,28 @@ namespace PaymoActiveWindow {
 	void ActiveWindow::unwatchActiveWindow(watch_t watch) {
 		this->mutex.lock();
 		this->watches.erase(watch);
+		bool noWatchesLeft = this->watches.empty();
 		this->mutex.unlock();
+
+		// remove hook when nobody is listening anymore
+		if (noWatchesLeft) {
+			this->stopWatchThread();
+		}
+	}
+
+	void ActiveWindow::stopWatchThread() {
+		if (this->watchThread == NULL) {
+			return;
+		}
+
+		this->threadShouldExit.store(true, std::memory_order_relaxed);
+
+		// wake the message loop so it doesn't wait for the next timer tick
+		PostThreadMessage(GetThreadId((HANDLE)this->watchThread->native_handle()), WM_NULL, 0, 0);
+
+		this->watchThread->join();
+		delete this->watchThread;
+		this->watchThread = NULL;
 	}
 
 	std::wstring ActiveWindow::getWindowTitle(HWND hWindow) {
@@ -279,28 +294,32 @@ namespace PaymoActiveWindow {
 	}
 
 	void ActiveWindow::runWatchThread() {
-		HWINEVENTHOOK hHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_OBJECT_NAMECHANGE, NULL, WinEventProcCb, 0, 0, WINEVENT_OUTOFCONTEXT);
+		// Hook each event on its own. A single EVENT_SYSTEM_FOREGROUND..EVENT_OBJECT_NAMECHANGE range
+		// also covers frequent events like EVENT_OBJECT_LOCATIONCHANGE, which Windows would then have
+		// to deliver to us from every app, slowing down their UI.
+		HWINEVENTHOOK hForegroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, NULL, WinEventProcCb, 0, 0, WINEVENT_OUTOFCONTEXT);
+		HWINEVENTHOOK hNameChangeHook = SetWinEventHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE, NULL, WinEventProcCb, 0, 0, WINEVENT_OUTOFCONTEXT);
 
 		// store context for callback
 		ActiveWindow::smutex.lock();
-		ActiveWindow::winEventProcCbCtx[hHook] = this;
+		ActiveWindow::winEventProcCbCtx[hForegroundHook] = this;
+		ActiveWindow::winEventProcCbCtx[hNameChangeHook] = this;
 		ActiveWindow::smutex.unlock();
 
 		MSG msg;
 		UINT_PTR timer = SetTimer(NULL, NULL, 500, nullptr); // run message loop at least every 500 ms
 
 		for (;;) {
+			// check if we should exit. Checked before waiting too, since a stop
+			// requested before this thread had a message queue couldn't wake it.
+			if (this->threadShouldExit.load(std::memory_order_relaxed)) {
+				break;
+			}
+
 			BOOL getMsgRet = GetMessage(&msg, NULL, 0, 0);
 
 			if (getMsgRet == -1) {
 				continue;
-			}
-
-			if (msg.message = WM_TIMER) {
-				// check if we should exit
-				if (this->threadShouldExit.load(std::memory_order_relaxed)) {
-					break;
-				}
 			}
 
 			TranslateMessage(&msg);
@@ -310,12 +329,14 @@ namespace PaymoActiveWindow {
 		// remove timer
 		KillTimer(NULL, timer);
 
-		// remove hook
-		UnhookWinEvent(hHook);
+		// remove hooks
+		UnhookWinEvent(hForegroundHook);
+		UnhookWinEvent(hNameChangeHook);
 
 		// remove context
 		ActiveWindow::smutex.lock();
-		ActiveWindow::winEventProcCbCtx.erase(hHook);
+		ActiveWindow::winEventProcCbCtx.erase(hForegroundHook);
+		ActiveWindow::winEventProcCbCtx.erase(hNameChangeHook);
 		ActiveWindow::smutex.unlock();
 	}
 

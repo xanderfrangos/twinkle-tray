@@ -80,7 +80,7 @@ const { fork, exec } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
 
-const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup} = require("tt-windows-utils")
+const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup, DisplayBrightness} = require("tt-windows-utils")
 const setWindowPos = () => { }
 const AccentColors = require("windows-accent-colors")
 const Acrylic = require("acrylic")
@@ -632,6 +632,10 @@ let nativeHotkeyRecording = false
 let nativeBrightnessKey = false
 let nativeBrightnessKeyRepeatDelay = false
 let nativeBrightnessKeyRepeat = false
+const NATIVE_BRIGHTNESS_KEY_REPEAT_LIMIT = 10000 // Holding the key longer than this needs a fresh press
+// Kept clear of doHotkey's 100 ms throttle. At exactly 100 ms, timer jitter
+// decides whether a repeat is dropped, so the rate wobbles between 100-200 ms.
+const NATIVE_BRIGHTNESS_KEY_REPEAT_INTERVAL = 120
 
 function stopNativeBrightnessKeyRepeat() {
   nativeBrightnessKey = false
@@ -672,25 +676,45 @@ function handleNativeBrightnessKey(key) {
     nativeBrightnessKey = false
     return
   }
+  // The release report can go missing (a Bluetooth keyboard sleeping or
+  // disconnecting while the key is held), so a repeat stops on its own.
+  const repeatUntil = Date.now() + NATIVE_BRIGHTNESS_KEY_REPEAT_LIMIT
   nativeBrightnessKeyRepeatDelay = setTimeout(() => {
     nativeBrightnessKeyRepeat = setInterval(() => {
+      if(Date.now() > repeatUntil) return stopNativeBrightnessKeyRepeat();
       if(nativeBrightnessKey) triggerNativeBrightnessHotkey(nativeBrightnessKey)
-    }, 100)
+    }, NATIVE_BRIGHTNESS_KEY_REPEAT_INTERVAL)
   }, 400)
 }
 
-function applyNativeBrightnessKeys() {
+// Registering sends every Consumer Control report (media keys, some mice's
+// horizontal scrolling) through the main thread, so only listen while a
+// BrightnessUp/Down hotkey exists or a hotkey field is recording.
+let nativeBrightnessKeysWanted = false
+function syncNativeBrightnessKeys(force = false) {
+  const wanted = !!mainWindow && (nativeHotkeyRecording || !!settings.hotkeys?.some?.(hotkey => (
+    Object.values(nativeBrightnessAccelerators).includes(hotkey?.accelerator)
+  )))
+  if(!force && wanted === nativeBrightnessKeysWanted) return nativeBrightnessKeysRegistered;
+  nativeBrightnessKeysWanted = wanted
+
   try {
     stopNativeBrightnessKeyRepeat()
     BrightnessKeys.unregister()
     nativeBrightnessKeysRegistered = false
-    if(mainWindow) {
+    if(wanted) {
       nativeBrightnessKeysRegistered = BrightnessKeys.register(getMainWindowHandle())
       console.log(`Native brightness keys: ${nativeBrightnessKeysRegistered ? "enabled" : "unavailable"}`)
     }
   } catch(e) {
     console.log("Couldn't apply native brightness keys:", e)
   }
+  return nativeBrightnessKeysRegistered
+}
+
+// The panel window was (re)created, so register against its new handle
+function applyNativeBrightnessKeys() {
+  syncNativeBrightnessKeys(true)
   applyHotkeys()
   return nativeBrightnessKeysRegistered
 }
@@ -847,6 +871,7 @@ if (!fs.existsSync(configFilesDir)) {
 const GAMMA_BRIGHTNESS_MIN = 20
 const EXTENDED_MINIMUM_BREAKPOINT_DEFAULT = 20
 const EXTENDED_MINIMUM_BREAKPOINT_MAX = 90
+const EXTENDED_MINIMUM_FLOOR_TOLERANCE = 4 // Hardware percent; below the usual 5-10% brightness key step
 
 const defaultSettings = {
   isDev,
@@ -873,6 +898,7 @@ const defaultSettings = {
   monitorFeatures: {},
   monitorFeaturesSettings: {},
   hideDisplays: {},
+  disableDDCDisplays: {},
   hdrDisplays: {},
   gammaAsMainSliderDisplays: {},
   extendMinimumDisplays: {},
@@ -1085,6 +1111,7 @@ function readSettings(doProcessSettings = true) {
       for(const time of settings.adjustmentTimes) {
         time.useSunCalc = false
         time.sunCalc = "sunrise"
+        time.offset = 0
       }
       console.log("Upgraded Adjustment Times to v1.16.0 format!")
     } catch(e) {
@@ -1214,6 +1241,7 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   let doRestartPanel = false
   let rebuildTray = false
   let shouldRefreshMonitors = false
+  let shouldReadBrightness = false
 
   try {
 
@@ -1279,6 +1307,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     }
 
     if (newSettings.userDDCBrightnessVCPs !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
+    if (newSettings.disableDDCDisplays !== undefined) {
       shouldRefreshMonitors = true
     }
 
@@ -1357,12 +1389,23 @@ function processSettings(newSettings = {}, sendUpdate = true) {
       shouldRefreshMonitors = true
     }
 
-    if (newSettings.gammaAsMainSliderDisplays !== undefined
-      || newSettings.extendMinimumDisplays !== undefined
-      || newSettings.extendMinimumBreakpoints !== undefined) {
-      restoreUnusedGammaRamps()
+    // Detection method overrides only apply to the next scan
+    if (newSettings.disableWMI !== undefined || newSettings.disableWMIC !== undefined
+      || newSettings.disableWin32 !== undefined || newSettings.disableAppleStudio !== undefined) {
       shouldRefreshMonitors = true
     }
+
+    if (newSettings.gammaAsMainSliderDisplays !== undefined
+      || newSettings.extendMinimumDisplays !== undefined) {
+      restoreUnusedGammaRamps(lastGammaOptIns)
+      extendedMinimumPinned.clear() // The next slider move writes hardware again
+      shouldRefreshMonitors = true
+    } else if (newSettings.extendMinimumBreakpoints !== undefined) {
+      // Only the slider mapping changed, so reading brightness is enough to
+      // remap the slider. The displays themselves don't need a rescan.
+      shouldReadBrightness = true
+    }
+    lastGammaOptIns = getGammaOptIns()
 
     if (settings.profiles) {
       rebuildTray = true
@@ -1421,6 +1464,8 @@ function processSettings(newSettings = {}, sendUpdate = true) {
   if (sendUpdate) sendToAllWindows('settings-updated', settings);
   if (shouldRefreshMonitors) {
     refreshMonitors(true, true)
+  } else if (shouldReadBrightness) {
+    refreshMonitors(false, true)
   }
 }
 
@@ -1428,13 +1473,32 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 // instead of the brightness control that was detected for it.
 function usesGammaSlider(monitor) {
   if (!settings.gammaAsMainSliderDisplays?.[monitor?.key]) return false
+  if (!canUseGammaRamp(monitor)) return false
   return (monitor?.gammaBrightness >= 0)
+}
+
+// The gamma slider spans the ramp's usable range. It's mapped here, after the
+// display's own normalization, so the user's min/max and calibration still apply.
+function sliderLevelToGammaLevel(level) {
+  return Math.round(minMax(GAMMA_BRIGHTNESS_MIN + (level * (100 - GAMMA_BRIGHTNESS_MIN) / 100), GAMMA_BRIGHTNESS_MIN, 100))
+}
+
+function gammaLevelToSliderLevel(gammaLevel) {
+  return minMax((gammaLevel - GAMMA_BRIGHTNESS_MIN) * 100 / (100 - GAMMA_BRIGHTNESS_MIN), 0, 100)
+}
+
+// Windows ignores gamma ramps while HDR is on, and writing one fails its
+// read-back check (with retries) every time. The display's other controls,
+// such as the SDR slider, stay in charge until HDR is turned off.
+function canUseGammaRamp(monitor) {
+  return (monitor?.hdr !== "active")
 }
 
 // Per-display opt-in: the bottom of the slider range keeps hardware brightness
 // at its minimum and dims further with the gamma ramp.
 function usesExtendedMinimum(monitor) {
   if (!settings.extendMinimumDisplays?.[monitor?.key]) return false
+  if (!canUseGammaRamp(monitor)) return false
   if (usesGammaSlider(monitor)) return false // Gamma is already the primary control
   if (!(monitor?.gammaBrightness >= 0)) return false
   return (monitor?.type === "ddcci" || monitor?.type === "wmi" || monitor?.type === "studio-display")
@@ -1447,16 +1511,39 @@ function getExtendedMinimumBreakpoint(monitor) {
   return breakpoint
 }
 
+// Displays whose hardware we pinned at its floor for the extended range
+const extendedMinimumPinned = new Set()
+
+// Some panels read back a little above 0 at their floor (quantized WMI levels,
+// DDC/CI monitors that clamp to 1, calibration that doesn't map the raw floor
+// to 0). Readings this close count as the floor while it's ours: we pinned it,
+// or the ramp is dimmed (which only happens with hardware at its floor).
+function isAtExtendedMinimumFloor(monitor, hardwareLevel) {
+  if (hardwareLevel <= 0) return true
+  if (!(hardwareLevel <= EXTENDED_MINIMUM_FLOOR_TOLERANCE)) return false
+  return (extendedMinimumPinned.has(monitor.id) || monitor.gammaBrightness < 100)
+}
+
 // Slider space value for a display using the extended range
 function getExtendedMinimumLevel(monitor, hardwareLevel = 0) {
   const breakpoint = getExtendedMinimumBreakpoint(monitor)
+  const atFloor = isAtExtendedMinimumFloor(monitor, hardwareLevel)
 
   // The ramp is only meaningful while hardware sits at its floor. Anything else
   // means another app (or a display event) changed it, so report the hardware.
-  if (monitor.gammaBrightness < 100 && hardwareLevel <= 0) {
+  if (monitor.gammaBrightness < 100 && atFloor) {
     return Math.round((monitor.gammaBrightness - GAMMA_BRIGHTNESS_MIN) * breakpoint / (100 - GAMMA_BRIGHTNESS_MIN))
   }
-  return Math.round(breakpoint + (hardwareLevel * (100 - breakpoint) / 100))
+  return Math.round(breakpoint + ((atFloor ? 0 : hardwareLevel) * (100 - breakpoint) / 100))
+}
+
+// Hardware left its floor while the ramp was dimmed (brightness keys, Quick
+// Settings, another app). The ramp only belongs below the breakpoint, so drop
+// it instead of leaving the display dimmer than its slider says.
+function releaseExtendedMinimumRamp(monitor, hardwareLevel) {
+  if (!usesExtendedMinimum(monitor) || isAtExtendedMinimumFloor(monitor, hardwareLevel)) return false
+  extendedMinimumPinned.delete(monitor.id)
+  return setTrackedGammaLevel(monitor, 100)
 }
 
 // Set the ramp and track the level. Writes are coalesced, so transitions
@@ -1508,13 +1595,54 @@ function reapplyGammaRamps() {
   }
 }
 
-// Undo software dimming for displays that no longer use their gamma ramp
-function restoreUnusedGammaRamps() {
+// Gamma opt-ins as of the last processed settings, so the next change can tell
+// which displays just lost theirs.
+let lastGammaOptIns = false
+
+function getGammaOptIns() {
+  return {
+    gammaAsMainSliderDisplays: Object.assign({}, settings.gammaAsMainSliderDisplays),
+    extendMinimumDisplays: Object.assign({}, settings.extendMinimumDisplays)
+  }
+}
+
+function hasGammaOptIn(monitor, optIns = settings) {
+  return !!(optIns?.gammaAsMainSliderDisplays?.[monitor?.key] || optIns?.extendMinimumDisplays?.[monitor?.key])
+}
+
+// Undo our software dimming on displays that just lost their gamma opt-in. A
+// dimmed ramp on any other display isn't ours to reset (the fallback,
+// calibration, f.lux), so it's left alone.
+function restoreUnusedGammaRamps(previousOptIns) {
   for (const key in monitors) {
     const monitor = monitors[key]
-    if (usesExtendedMinimum(monitor) || usesGammaSlider(monitor)) continue
+    if (!hasGammaOptIn(monitor, previousOptIns) || hasGammaOptIn(monitor)) continue
+    if (usesGammaRamp(monitor)) continue // Still dimmed by the software fallback
+    if (!canUseGammaRamp(monitor)) continue
     if (!(monitor?.gammaBrightness >= 0) || monitor.gammaBrightness >= 100) continue
     setTrackedGammaLevel(monitor, 100)
+  }
+}
+
+// Gamma dimming outlives the app, and unlike hardware brightness, there's no
+// way to undo it without the app. So the ramps we dimmed are handed back on quit.
+function restoreGammaRampsOnQuit() {
+  try {
+    // Stop the worker first, so a queued ramp write can't land after the restore
+    if (gammaBrightnessTimeout) clearTimeout(gammaBrightnessTimeout)
+    gammaBrightnessQueue = {}
+    if (monitorsThreadReal?.exitCode === null) monitorsThreadReal.kill()
+
+    const restored = new Set()
+    for (const monitor of Object.values(monitors)) {
+      if (!usesGammaRamp(monitor) || !(monitor?.gammaBrightness < 100)) continue
+      const path = monitor.softwarePath || monitor.path
+      if (typeof path !== "string" || path.length === 0 || restored.has(path)) continue
+      restored.add(path) // Displays can share a ramp
+      console.log(`Restoring gamma ramp for ${monitor.id}: ${DisplayBrightness.setBrightness(path, 100) ? "ok" : "failed"}`)
+    }
+  } catch (e) {
+    console.log("Couldn't restore gamma ramps on quit:", e)
   }
 }
 
@@ -1671,6 +1799,7 @@ function applyProfile(profile = {}, useTransition = false, transitionSpeed = 1, 
 
 function applyHotkeys(monitorList = monitors) {
   try {
+    syncNativeBrightnessKeys()
     globalShortcut.unregisterAll()
     const claimedNativeAccelerators = new Set()
     if (settings.hotkeys !== undefined && settings.hotkeys?.length) {
@@ -1776,7 +1905,9 @@ async function doHotkey(hotkey, options = {}) {
                 }
                 newValue = currentValue + parseInt(action.value);
               } else if (action.type === "cycle") {
-                if (!action.values?.length) return -1;
+                // Nothing to cycle through. Returning here would leave doingHotkey
+                // set, which blocks every hotkey until restart.
+                if (!action.values?.length) continue;
                 if (!hotkeyCycleIndexes[hotkey.id]) {
                   hotkeyCycleIndexes[hotkey.id] = 0
                 }
@@ -2197,12 +2328,21 @@ function getSettings() {
   sendToAllWindows('settings-updated', settings)
 }
 
+// Read overrides the way the settings field does: as hex, with or without "0x",
+// so a saved "13" is 0x13 rather than 13. Numbers (from monitor-rules.json) are
+// used as-is.
+function parseBrightnessVCP(value) {
+  const code = (typeof value === "string" ? parseInt(value, 16) : value)
+  return (Number.isInteger(code) && code >= 0x01 && code <= 0xFF ? code : false)
+}
+
 function getDDCBrightnessVCPs() {
   try {
     // Create a new object to avoid mutating knownDDCBrightnessVCPs
     let ids = Object.assign({}, knownDDCBrightnessVCPs, settings.userDDCBrightnessVCPs)
     for (let mon in ids) {
-      ids[mon] = parseInt(ids[mon])
+      ids[mon] = parseBrightnessVCP(ids[mon])
+      if (ids[mon] === false) delete ids[mon]; // Not a usable code, so no override
     }
     return ids
   } catch (e) {
@@ -2663,14 +2803,13 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}) {
 
     // Replace detected brightness with the gamma ramp level
     if(usesGammaSlider(monitor)) {
-      monitor.min = GAMMA_BRIGHTNESS_MIN
-      monitor.max = 100
-      monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+      monitor.brightness = normalizeBrightness(gammaLevelToSliderLevel(monitor.gammaBrightness), true, monitor.min, monitor.max, monitor.calibration)
       monitor.brightnessRaw = monitor.gammaBrightness
     }
 
     // Fold the gamma ramp into the bottom of the slider range
     if(usesExtendedMinimum(monitor)) {
+      releaseExtendedMinimumRamp(monitor, monitor.brightness)
       monitor.brightness = getExtendedMinimumLevel(monitor, monitor.brightness)
     }
 
@@ -2907,42 +3046,53 @@ function flushGammaBrightness() {
   }, settings.updateInterval || 100)
 }
 
-let updateBrightnessTimeout = false
-let updateBrightnessQueue = []
-let lastBrightnessTimes = []
+// Throttle state per monitor + VCP target: when it was last written, the
+// latest update waiting to be written, and the timer that will write it.
+const brightnessThrottleTargets = new Map()
 function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
-  let idx = updateBrightnessQueue.length
-  const found = updateBrightnessQueue.findIndex(item => item.id === id)
-  updateBrightnessQueue[(found > -1 ? found : idx)] = {
-    id,
-    level,
-    useCap,
-    vcp
+  // A monitor can receive its brightness update and several linked feature
+  // updates at once. Keep each VCP target separate so one linked feature does
+  // not replace another feature (or the brightness update) in the queue.
+  // VCP codes arrive as "0x12" or 18, so normalize them like updateBrightness does.
+  const vcpKey = (vcp === "brightness" || vcp === "sdr" ? vcp : `0x${parseInt(vcp).toString(16)}`)
+  const target = `${id}::${vcpKey}`
+  let state = brightnessThrottleTargets.get(target)
+  if (!state) {
+    state = { lastTime: 0, pending: null, timeout: false }
+    brightnessThrottleTargets.set(target, state)
   }
+
+  // While a write is pending, always go through it so updates stay in order
   const now = Date.now()
-  if (lastBrightnessTimes[id] === undefined || now >= lastBrightnessTimes[id] + settings.updateInterval) {
-    lastBrightnessTimes[id] = now
+  if (!state.timeout && now >= state.lastTime + settings.updateInterval) {
+    state.lastTime = now
     updateBrightness(id, level, useCap, vcp)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
-  } else if (!updateBrightnessTimeout) {
-    lastBrightnessTimes[id] = now
-    updateBrightnessTimeout = setTimeout(() => {
-      const updateBrightnessQueueCopy = updateBrightnessQueue.splice(0)
-      for (let bUpdate of updateBrightnessQueueCopy) {
-        if (bUpdate) {
-          try {
-            updateBrightness(bUpdate.id, bUpdate.level, bUpdate.useCap, bUpdate.vcp)
-          } catch (e) {
-            console.error(e)
-          }
-        }
-      }
-      updateBrightnessTimeout = false
-      if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
-    }, settings.updateInterval)
+  }
+
+  // Keep only the latest level, but still notify windows if any skipped update asked to
+  state.pending = { id, level, useCap, vcp, sendUpdate: (sendUpdate || state.pending?.sendUpdate) }
+  if (!state.timeout) {
+    // Each target has its own timer, so it's never written sooner than
+    // updateInterval after its own last write
+    state.timeout = setTimeout(() => flushBrightnessThrottle(state), Math.max(0, state.lastTime + settings.updateInterval - now))
   }
   return false
+}
+
+function flushBrightnessThrottle(state) {
+  const update = state.pending
+  state.pending = null
+  state.timeout = false
+  if (!update) return
+  state.lastTime = Date.now()
+  try {
+    updateBrightness(update.id, update.level, update.useCap, update.vcp)
+  } catch (e) {
+    console.error(e)
+  }
+  if (update.sendUpdate) sendToAllWindows('monitors-updated', monitors);
 }
 
 
@@ -2978,6 +3128,11 @@ function applyLinkedFeatures(monitor, newLevel, useCap = true) {
 
 function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
   if(isWindowsUserIdle) return false; // Skip if displays are off
+  // NaN reaches the worker as null, which the VCP path writes as 0
+  if (!Number.isFinite(parseFloat(newLevel))) {
+    console.log(`updateBrightness: Ignoring invalid level for ${index}:`, newLevel)
+    return false
+  }
   try {
     let level = newLevel
     let vcp = "brightness"
@@ -3054,8 +3209,15 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
 
     const normalized = normalizeBrightness(hardwareLevel, false, (useCap ? monitor.min : 0), (useCap ? monitor.max : 100), (useCap ? monitor.calibration : []))
 
-    // Moving within the extended range leaves hardware where it already is
-    const skipHardware = (extendedMinimum && monitor.brightnessRaw === normalized)
+    // Moving within the extended range leaves hardware where it already is.
+    // A pinned floor may read back above the value written, so it's tracked
+    // separately instead of compared.
+    const skipHardware = (extendedMinimum && (monitor.brightnessRaw === normalized
+      || (hardwareLevel <= 0 && extendedMinimumPinned.has(monitor.id))))
+    if (extendedMinimum) {
+      if (hardwareLevel <= 0) extendedMinimumPinned.add(monitor.id)
+      else extendedMinimumPinned.delete(monitor.id)
+    }
 
     if (vcp === "sdr") {
       monitorsThread.send({
@@ -3069,7 +3231,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         monitor.brightnessRaw = normalized
       }
     } else if (vcp === "gamma") {
-      const gammaLevel = Math.round(minMax(normalized, GAMMA_BRIGHTNESS_MIN, 100))
+      const gammaLevel = sliderLevelToGammaLevel(normalized)
       monitor.brightness = level
       monitor.brightnessRaw = gammaLevel
       monitor.gammaBrightness = gammaLevel
@@ -3292,7 +3454,10 @@ function transitionBrightness(level, eventMonitors = [], stepSpeed = 1) {
           }
         }
       }
-      if (monitor.brightness < normalized + (step + 1) && monitor.brightness > normalized - (step + 1)) {
+      if (!Number.isFinite(monitor.brightness) || !Number.isFinite(parseFloat(normalized))) {
+        // Nothing to step from or to, so don't hold the transition open
+        numDone++
+      } else if (monitor.brightness < normalized + (step + 1) && monitor.brightness > normalized - (step + 1)) {
         updateBrightness(monitor.id, normalized, undefined, undefined, false)
         numDone++
       } else {
@@ -3768,13 +3933,21 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
       if(!ignoreBrightnessEvent) {
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
-          if(monitor.type === "wmi") {
+          // The slider drives the ramp on these, so the backlight isn't its value
+          if(monitor.type === "wmi" && !usesGammaSlider(monitor)) {
             const normalized = normalizeBrightness(setting.data, true, monitor.min, monitor.max, monitor.calibration)
             monitor.brightness = normalized
             monitor.brightnessRaw = setting.data
+
+            // Map hardware back into the extended slider range
+            if(usesExtendedMinimum(monitor)) {
+              releaseExtendedMinimumRamp(monitor, normalized)
+              monitor.brightness = getExtendedMinimumLevel(monitor, normalized)
+            }
           }
-          sendToAllWindows('monitors-updated', monitors)
         }
+        setTrayPercent()
+        sendToAllWindows('monitors-updated', monitors)
       }
     }
   })
@@ -4082,7 +4255,9 @@ function windowMatchesProfile(window) {
 function applyProfileBrightness(profile) {
   try {
     Object.values(monitors)?.forEach(monitor => {
-      updateBrightness(monitor.id, profile.monitors[monitor.id], true, "brightness")
+      // Displays whose slider was never moved have no stored level. Use the 50 the settings slider shows.
+      const level = profile.monitors?.[monitor.id]
+      updateBrightness(monitor.id, (Number.isFinite(level) ? level : 50), true, "brightness")
     })
     sendToAllWindows('monitors-updated', monitors)
   } catch (e) {
@@ -4379,6 +4554,7 @@ app.on("activate", () => {
 });
 
 app.on('quit', () => {
+  restoreGammaRampsOnQuit()
   try {
     PowerEvents.unregisterPowerSettingNotifications()
     BrightnessKeys.unregister()
@@ -4524,7 +4700,7 @@ function setTrayPercent() {
         }
       }
       if (i > 0) {
-        averagePerc = Math.floor(averagePerc / i)
+        averagePerc = Math.round(averagePerc / i)
         tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
       }
     }
@@ -4681,6 +4857,7 @@ let settingsWindow
 ipcMain.on("set-native-hotkey-recording", (event, recording) => {
   if(settingsWindow?.webContents.id !== event.sender.id) return;
   nativeHotkeyRecording = Boolean(recording)
+  syncNativeBrightnessKeys()
 })
 
 function createSettings() {
@@ -4759,6 +4936,7 @@ function createSettings() {
 
   settingsWindow.on("closed", () => {
     nativeHotkeyRecording = false
+    syncNativeBrightnessKeys()
     settingsWindow = null
   });
 
@@ -5445,7 +5623,7 @@ function getCurrentAdjustmentEvent() {
   let foundEvent = false
   try {
     for (let event of settings.adjustmentTimes) {
-      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc) : event.time)
+      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc, event.offset) : event.time)
       const eventValue = Utils.parseTime(eventTime)
 
       // Check if event is not later than current time, last event time, or last found time
@@ -5474,7 +5652,7 @@ function getNextAdjustmentEvent() {
 
   try {
     for (let event of settings.adjustmentTimes) {
-      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc) : event.time)
+      const eventTime = (event.useSunCalc ? getSunCalcTime(event.sunCalc, event.offset) : event.time)
       const eventValue = Utils.parseTime(eventTime)
 
       // Check if event is later than current time, and less than the last found event
@@ -5543,9 +5721,10 @@ function getCurrentAdjustmentEventLERP() {
   }
 }
 
-function getSunCalcTime(timeName = "solarNoon") {
+function getSunCalcTime(timeName = "solarNoon", offsetMinutes = 0) {
   const localTimes = SunCalc.getTimes(new Date(), settings.adjustmentTimeLatitude, settings.adjustmentTimeLongitude)
   const time = new Date(localTimes[timeName])
+  time.setMinutes(time.getMinutes() + (parseInt(offsetMinutes) || 0))
   return `${time.getHours()}:${time.getMinutes()}`
 }
 
@@ -5615,10 +5794,12 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
                   monitor.brightness = monitor.sdrLevel
                 }
                 if (usesGammaSlider(monitor)) {
-                  monitor.brightness = normalizeBrightness(monitor.gammaBrightness, true, monitor.min, monitor.max, monitor.calibration)
+                  monitor.brightness = normalizeBrightness(gammaLevelToSliderLevel(monitor.gammaBrightness), true, monitor.min, monitor.max, monitor.calibration)
                 }
                 if (usesExtendedMinimum(monitor)) {
-                  monitor.brightness = getExtendedMinimumLevel(monitor, normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration))
+                  const hardwareLevel = normalizeBrightness(monitor.brightness, true, monitor.min, monitor.max, monitor.calibration)
+                  releaseExtendedMinimumRamp(monitor, hardwareLevel)
+                  monitor.brightness = getExtendedMinimumLevel(monitor, hardwareLevel)
                 }
               }
               applyAdjustment(new Set(Object.keys(knownBrightness)))

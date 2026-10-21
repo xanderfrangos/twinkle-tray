@@ -898,6 +898,7 @@ const defaultSettings = {
   monitorFeatures: {},
   monitorFeaturesSettings: {},
   hideDisplays: {},
+  disableDDCDisplays: {},
   hdrDisplays: {},
   gammaAsMainSliderDisplays: {},
   extendMinimumDisplays: {},
@@ -1306,6 +1307,10 @@ function processSettings(newSettings = {}, sendUpdate = true) {
     }
 
     if (newSettings.userDDCBrightnessVCPs !== undefined) {
+      shouldRefreshMonitors = true
+    }
+
+    if (newSettings.disableDDCDisplays !== undefined) {
       shouldRefreshMonitors = true
     }
 

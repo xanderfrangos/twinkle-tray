@@ -1512,9 +1512,6 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_DISPLAYS_DESC")} expandable={true}>
                                         {this.getHideMonitors()}
                                     </SettingsOption>
-                                    <SettingsOption title={T.t("SETTINGS_MONITORS_DDC_BLOCK_TITLE")} description={T.t("SETTINGS_MONITORS_DDC_BLOCK_DESC")} expandable={true}>
-                                        {this.getDDCBlockedMonitors()}
-                                    </SettingsOption>
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_HIDE_INTERNAL_TITLE")} description={T.t("SETTINGS_MONITORS_HIDE_INTERNAL_DESC")} input={this.renderToggle("hideClosedLid")} />
                                     <SettingsOption title={T.t("SETTINGS_MONITORS_RENAME_TITLE")} description={T.t("SETTINGS_MONITORS_RENAME_DESC")} expandable={true}>
                                         {this.getRenameMonitors()}
@@ -1567,7 +1564,10 @@ export default class SettingsWindow extends PureComponent {
                                         </select>
                                     }>
                                         <SettingsChild description={<>⚠️ <em>{T.t("SETTINGS_FEATURES_POWER_WARNING")}</em></>} />
-                                    </SettingsOption>                                
+                                    </SettingsOption>
+                                    <SettingsOption title={T.t("SETTINGS_MONITORS_DDC_BLOCK_TITLE")} description={T.t("SETTINGS_MONITORS_DDC_BLOCK_DESC")} expandable={true}>
+                                        {this.getDDCBlockedMonitors()}
+                                    </SettingsOption>
                                 </div>
                             </SettingsPage>
 

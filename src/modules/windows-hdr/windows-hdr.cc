@@ -54,6 +54,24 @@ typedef struct _DISPLAYCONFIG_SET_SDR_WHITE_LEVEL {
     unsigned char finalValue;
 } _DISPLAYCONFIG_SET_SDR_WHITE_LEVEL;
 
+// Windows 11 SDK device-info type that sets a display's Advanced Color
+// (HDR) state. Defined locally (distinct name) so this builds with older
+// SDKs; on Windows 10/older 11 the call simply fails.
+enum {
+    TT_DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE = 10
+};
+
+typedef struct _TT_DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE {
+    DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+    union {
+        struct {
+            UINT32 enableAdvancedColor : 1;
+            UINT32 reserved : 31;
+        };
+        UINT32 value;
+    };
+} TT_DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE;
+
 LONG pathSetSdrWhite(DISPLAYCONFIG_PATH_INFO path, int nits) {
     _DISPLAYCONFIG_SET_SDR_WHITE_LEVEL sdrWhiteParams = {};
     sdrWhiteParams.header.type = (DISPLAYCONFIG_DEVICE_INFO_TYPE) DISPLAYCONFIG_DEVICE_INFO_SET_SDR_WHITE_LEVEL;
@@ -121,6 +139,22 @@ boolean setSDRBrightness(DISPLAYCONFIG_PATH_INFO target, int desiredNits, bool s
         return false;
     }
 
+    return true;
+}
+
+bool setAdvancedColor(DISPLAYCONFIG_PATH_INFO target, bool enable, bool silent) {
+    TT_DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE colorState = {};
+    colorState.header.type = (DISPLAYCONFIG_DEVICE_INFO_TYPE) TT_DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE;
+    colorState.header.size = sizeof(colorState);
+    colorState.header.adapterId = target.targetInfo.adapterId;
+    colorState.header.id = target.targetInfo.id;
+    colorState.value = enable ? 1 : 0;
+
+    LONG result = DisplayConfigSetDeviceInfo(&colorState.header);
+    if (result != ERROR_SUCCESS) {
+        if (!silent) fprintf(stderr, "Error on DisplayConfigSetDeviceInfo for advanced color state\n");
+        return false;
+    }
     return true;
 }
 
@@ -300,9 +334,30 @@ Napi::Boolean nodeSetSDRBrightness(const Napi::CallbackInfo& info) {
     return Napi::Boolean::New(info.Env(), result);
 }
 
+Napi::Boolean nodeSetAdvancedColor(const Napi::CallbackInfo& info) {
+    if (info.Length() != 2 || !info[0].IsString() || !info[1].IsBoolean()) {
+        return Napi::Boolean::New(info.Env(), false);
+    }
+    Napi::String path = info[0].As<Napi::String>();
+    bool enable = info[1].As<Napi::Boolean>().Value();
+
+    std::map<std::string, Display> displays = getDisplays();
+
+    bool result = false;
+    for (auto& display : displays) {
+        if (display.second.path == (std::string)path) {
+            result = setAdvancedColor(display.second.target, enable, false);
+            break;
+        }
+    }
+
+    return Napi::Boolean::New(info.Env(), result);
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "getDisplays"), Napi::Function::New(env, nodeGetDisplays));
     exports.Set(Napi::String::New(env, "setSDRBrightness"), Napi::Function::New(env, nodeSetSDRBrightness));
+    exports.Set(Napi::String::New(env, "setAdvancedColor"), Napi::Function::New(env, nodeSetAdvancedColor));
     return exports;
 }
 

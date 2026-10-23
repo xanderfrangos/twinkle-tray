@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import Slider from "./Slider"
 import TranslateReact from "../TranslateReact"
-import { displayLevel } from "./utilts/monitor.util"
+import { displayLevel, isLGTVDisplay } from "./utilts/monitor.util"
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
@@ -42,6 +42,12 @@ export default function MonitorInfo(props) {
             </div>
         )
     }
+
+    const communicationMethod = isLGTVDisplay(monitor)
+        ? (monitor.type === "none"
+            ? <>{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_WINDOWS_NONE")}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>
+            : <>{getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>)
+        : getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
 
     // Brightness
     if (monitor?.features?.["0x10"]) {
@@ -116,7 +122,7 @@ export default function MonitorInfo(props) {
             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
             <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{name}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
-                <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {communicationMethod}
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : displayLevel(monitor.brightness))}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>

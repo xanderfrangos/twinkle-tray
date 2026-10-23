@@ -18,7 +18,7 @@ import MonitorInfo from "./MonitorInfo"
 import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
-import { getMonitorName, isAdjustableDisplay, displayLevel } from './utilts/monitor.util';
+import { getMonitorName, isAdjustableDisplay, displayLevel, isLGTVDisplay } from './utilts/monitor.util';
 import { LightSensorSettings } from "./light-sensor/LightSensorSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
@@ -153,7 +153,8 @@ export default class SettingsWindow extends PureComponent {
             addFeatureMonitor: "",
             addFeatureValue: "",
             addFeatureError: false,
-            ddcSafetyStatus: false
+            ddcSafetyStatus: false,
+            lgtvCliPathDraft: window.settings.lgtvCliPath || ""
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -374,6 +375,11 @@ export default class SettingsWindow extends PureComponent {
                 id: "features",
                 label: T.t("SETTINGS_SIDEBAR_FEATURES"),
                 icon: "&#xE9E9;"
+            },
+            {
+                id: "lgtvcli",
+                label: T.t("SETTINGS_SIDEBAR_LGTVCLI"),
+                icon: "&#xE7F4;"
             },
             {
                 id: "time",
@@ -862,6 +868,11 @@ export default class SettingsWindow extends PureComponent {
 
                 let brightness = displayLevel(monitor.brightness)
                 let brightnessMax = monitor.brightnessMax
+                const communicationMethod = isLGTVDisplay(monitor)
+                    ? (monitor.type === "none"
+                        ? <>{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_WINDOWS_NONE")}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>
+                        : <>{this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>)
+                    : this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
 
                 if (monitor.type == "ddcci" && !monitor.brightnessType) {
                     brightness = "???"
@@ -874,7 +885,7 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {communicationMethod}
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
@@ -1216,6 +1227,7 @@ export default class SettingsWindow extends PureComponent {
         const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
+            lgtvCliPathDraft: (settings.lgtvCliPath || ""),
             openAtLogin,
             brightnessAtStartup,
             linkedLevelsActive,
@@ -1484,7 +1496,6 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </SettingsPage>
 
-
                             <SettingsPage current={this.state.activePage} id="monitors">
 
                                 <div className="pageSection">
@@ -1560,6 +1571,27 @@ export default class SettingsWindow extends PureComponent {
                                     }>
                                         <SettingsChild description={<>⚠️ <em>{T.t("SETTINGS_FEATURES_POWER_WARNING")}</em></>} />
                                     </SettingsOption>                                
+                                </div>
+                            </SettingsPage>
+
+                            <SettingsPage current={this.state.activePage} id="lgtvcli">
+                                <div className="pageSection">
+                                    <div className="sectionTitle">{T.t("SETTINGS_LGTVCLI_TITLE")}</div>
+                                    <p>{T.t("SETTINGS_LGTVCLI_DESC")}</p>
+                                    <SettingsOption title={T.t("SETTINGS_LGTVCLI_PATH_TITLE")} description={T.t("SETTINGS_LGTVCLI_PATH_DESC")} input={
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={this.state.lgtvCliPathDraft ?? this.state.rawSettings.lgtvCliPath ?? ""}
+                                                onChange={e => this.setState({ lgtvCliPathDraft: e.target.value })}
+                                            />
+                                            <a className="button" onClick={() => {
+                                                this.setSetting("lgtvCliPath", this.state.lgtvCliPathDraft.trim())
+                                            }}>{T.t("GENERIC_SAVE")}</a>
+                                            <a className="button" onClick={() => window.ipc.send("select-lgtvcli-path")}>{T.t("SETTINGS_LGTVCLI_BROWSE")}</a>
+                                        </div>
+                                    } />
+                                    <p>{T.t("SETTINGS_LGTVCLI_INSTALL_TEXT")} <a href="javascript:window.openURL('lgtv-companion')">{T.t("SETTINGS_LGTVCLI_INSTALL_LINK_TEXT")}</a></p>
                                 </div>
                             </SettingsPage>
 

@@ -48,9 +48,7 @@ export default function MonitorInfo(props) {
     }
 
     const communicationMethod = isLGTVDisplay(monitor)
-        ? (monitor.type === "none"
-            ? <>{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_WINDOWS_NONE")}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>
-            : <>{getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}; {T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION_LGTV")}</>)
+        ? getDebugMonitorType("lgtvcli")
         : getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
 
     // Brightness
@@ -180,7 +178,9 @@ function getGammaLevel(monitor) {
 }
 
 function getDebugMonitorType(type) {
-    if (type == "none") {
+    if (type == "lgtvcli") {
+        return (<><b>LGTVcli</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else if (type == "none") {
         return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
     } else if (type == "ddcci") {
         return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)

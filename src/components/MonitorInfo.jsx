@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import Slider from "./Slider"
 import TranslateReact from "../TranslateReact"
-import { displayLevel } from "./utilts/monitor.util"
+import { displayLevel, isLGTVDisplay } from "./utilts/monitor.util"
 const { scaleVolume, unscaleVolume } = require("../volume-utils")
 
 export default function MonitorInfo(props) {
@@ -46,6 +46,18 @@ export default function MonitorInfo(props) {
             </div>
         )
     }
+
+    const communicationMethod = isLGTVDisplay(monitor)
+        ? getDebugMonitorType("lgtvcli")
+        : getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
+    const hdrDisabled = monitor.hdr === "disabled"
+    const hdrStatus = monitor.hdr === "active"
+        ? T.t("GENERIC_ACTIVE")
+        : monitor.hdr === "supported"
+            ? T.t("GENERIC_SUPPORTED")
+            : hdrDisabled
+                ? T.t("GENERIC_DISABLED")
+                : T.t("GENERIC_UNSUPPORTED")
 
     // Brightness
     if (monitor?.features?.["0x10"]) {
@@ -120,11 +132,11 @@ export default function MonitorInfo(props) {
             <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
             <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{name}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
-                <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {communicationMethod}
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : displayLevel(monitor.brightness))}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
-                <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{hdrStatus}</b>{hdrDisabled ? <> (<a onClick={() => window.openURL("windows-display-settings")}>{T.t("GENERIC_ENABLE")}</a>)</> : null}
             </p>
             {extraHTML}
         </div>
@@ -174,7 +186,9 @@ function getGammaLevel(monitor) {
 }
 
 function getDebugMonitorType(type) {
-    if (type == "none") {
+    if (type == "lgtvcli") {
+        return (<><b>LGTVcli</b> <span className="icon green vfix">&#xE73D;</span></>)
+    } else if (type == "none") {
         return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
     } else if (type == "ddcci") {
         return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)

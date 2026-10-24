@@ -1,4 +1,4 @@
-const { app, shell } = require('electron');
+const { app, shell, dialog } = require('electron');
 const fs = require('fs')
 
 const path = require('path');
@@ -77,9 +77,11 @@ let updateKnownDisplaysTimeout
 const monitorRules = require('./monitor-rules.json')
 const knownDDCBrightnessVCPs = monitorRules?.ddcBrightnessCodes
 
-const { fork, exec } = require('child_process');
+const { fork, exec, execFile } = require('child_process');
 const { VerticalRefreshRateContext, addDisplayChangeListener } = require("win32-displayconfig");
 const refreshCtx = new VerticalRefreshRateContext();
+
+const DEFAULT_LGTV_CLI_PATH = path.join(process.env.ProgramFiles || "C:\\Program Files", "LGTV Companion", "LGTVcli.exe")
 
 const {WindowUtils, BrightnessKeys, MediaStatus, PowerEvents, AppStartup, DisplayBrightness} = require("tt-windows-utils")
 const setWindowPos = () => { }
@@ -874,6 +876,62 @@ const EXTENDED_MINIMUM_BREAKPOINT_DEFAULT = 20
 const EXTENDED_MINIMUM_BREAKPOINT_MAX = 90
 const EXTENDED_MINIMUM_FLOOR_TOLERANCE = 4 // Hardware percent; below the usual 5-10% brightness key step
 
+function createDefaultHotkeys() {
+  const createBrightnessAction = value => ({
+    type: "set",
+    target: "brightness",
+    monitors: {},
+    allMonitors: true,
+    value,
+    values: [0],
+    includeLGTV: true,
+    id: uuid()
+  })
+
+  return [
+    {
+      accelerator: "Super+Alt+nummult",
+      actions: [{
+        type: "off",
+        target: "brightness",
+        monitors: {},
+        allMonitors: true,
+        includeLGTV: true,
+        id: uuid()
+      }],
+      id: uuid()
+    },
+    {
+      accelerator: "Super+Alt+numadd",
+      actions: [createBrightnessAction(100)],
+      id: uuid()
+    },
+    {
+      accelerator: "Super+Alt+numsub",
+      actions: [createBrightnessAction(0)],
+      id: uuid()
+    }
+  ]
+}
+
+function hasDefaultBrightnessHotkeys(hotkeys) {
+  if (!Array.isArray(hotkeys) || hotkeys.length !== 2) return false
+
+  const expectedValues = {
+    "Super+Alt+numadd": 100,
+    "Super+Alt+numsub": 0
+  }
+
+  return hotkeys.every(hotkey => {
+    const action = hotkey.actions?.length === 1 ? hotkey.actions[0] : false
+    return expectedValues[hotkey.accelerator] !== undefined
+      && action?.type === "set"
+      && action.target === "brightness"
+      && action.allMonitors === true
+      && Number(action.value) === expectedValues[hotkey.accelerator]
+  })
+}
+
 const defaultSettings = {
   isDev,
   settingsVer: "v" + appVersion,
@@ -886,7 +944,7 @@ const defaultSettings = {
   brightnessAtStartup: true,
   killWhenIdle: false,
   remaps: {},
-  hotkeys: [],
+  hotkeys: createDefaultHotkeys(),
   hotkeyPercent: 10,
   adjustmentTimes: [],
   adjustmentTimeIndividualDisplays: false,
@@ -918,6 +976,7 @@ const defaultSettings = {
   useAcrylic: false,
   useNativeAnimation: false,
   sleepAction: "ps",
+  lgtvCliPath: DEFAULT_LGTV_CLI_PATH,
   hotkeysBreakLinkedLevels: true,
   enableSunValley: true,
   isWin11: isReallyWin11,
@@ -1156,6 +1215,11 @@ function readSettings(doProcessSettings = true) {
     // settings.useWin32Event = false
   }
 
+  if (settingsVersion < Utils.getVersionValue("v1.18.0") && hasDefaultBrightnessHotkeys(settings.hotkeys)) {
+    settings.hotkeys = createDefaultHotkeys()
+    console.log("Updated default hotkeys to include LG TV control.")
+  }
+
   // v1.18.0: Store monitor order as an ordered list of IDs. Check the shape
   // as well as the version because prerelease versions share the base numeric
   // version with the final release.
@@ -1219,6 +1283,10 @@ if (settings.forceLowPowerGPU) {
 
 let writeSettingsTimeout = false
 function writeSettings(newSettings = {}, processAfter = true, sendUpdate = true) {
+  if (Object.prototype.hasOwnProperty.call(newSettings, "lgtvCliPath")
+    && (typeof newSettings.lgtvCliPath !== "string" || !newSettings.lgtvCliPath.trim())) {
+    newSettings = { ...newSettings, lgtvCliPath: DEFAULT_LGTV_CLI_PATH }
+  }
   settings = Object.assign(settings, newSettings)
 
   if (!writeSettingsTimeout) {
@@ -1834,6 +1902,20 @@ let hotkeyOverlayTimeout
 let hotkeyThrottle = []
 let doingHotkey = false
 const hotkeyCycleIndexes = []
+let lgtvPowerIsOff = false
+
+function sendLGTVCommand(...args) {
+  const cliPath = settings.lgtvCliPath || DEFAULT_LGTV_CLI_PATH
+  execFile(cliPath, args, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`LGTVcli command failed (${args.join(" ")}) using "${cliPath}":`, error)
+      return
+    }
+    if (stderr?.trim()) console.error(`LGTVcli reported an error (${args.join(" ")}):`, stderr.trim())
+    if (stdout?.trim()) console.log(`LGTVcli (${args.join(" ")}):`, stdout.trim())
+  })
+}
+
 async function doHotkey(hotkey, options = {}) {
   const now = Date.now()
   if (!doingHotkey && (hotkeyThrottle[hotkey.id] === undefined || now > hotkeyThrottle[hotkey.id] + 100)) {
@@ -1859,7 +1941,17 @@ async function doHotkey(hotkey, options = {}) {
 
         if (action.type === "off") {
           showOverlay = false
-          sleepDisplays(settings.sleepAction, 500)
+          if (action.includeLGTV) {
+            lgtvPowerIsOff = !lgtvPowerIsOff
+            if (lgtvPowerIsOff) {
+              sleepDisplays(settings.sleepAction, 500)
+              sendLGTVCommand("-poweroff")
+            } else {
+              sendLGTVCommand("-poweron")
+            }
+          } else {
+            sleepDisplays(settings.sleepAction, 500)
+          }
         } else if (action.type === "refresh") {
           showOverlay = false
           await refreshMonitors(true, true)
@@ -1995,6 +2087,12 @@ async function doHotkey(hotkey, options = {}) {
             }
           }
 
+          if (action.includeLGTV && action.type === "set" && action.target === "brightness") {
+            const brightness = Number(action.value)
+            if (Number.isFinite(brightness)) {
+              sendLGTVCommand("-backlight", String(minMax(brightness)))
+            }
+          }
         }
 
 
@@ -2373,12 +2471,57 @@ ipcMain.on('send-settings', (event, data) => {
   writeSettings(data.newSettings, true, data.sendUpdate)
 })
 
+ipcMain.on('select-lgtvcli-path', async () => {
+  try {
+    const result = await dialog.showOpenDialog(settingsWindow, {
+      title: "Select LGTVcli.exe",
+      properties: ["openFile"],
+      filters: [{ name: "LGTVcli.exe", extensions: ["exe"] }]
+    })
+    if (!result.canceled && result.filePaths[0]) {
+      writeSettings({ lgtvCliPath: result.filePaths[0] })
+    }
+  } catch (error) {
+    console.error("Couldn't select the LGTVcli executable.", error)
+  }
+})
+
 ipcMain.on('request-ddc-safety-status', event => {
   sendDDCSafetyStatus(event.sender)
 })
 
 ipcMain.on('retry-ddc-validation', () => {
   retryDDCCIValidation()
+})
+
+ipcMain.on('request-lgtv-brightness', async (event) => {
+  const cliPath = settings.lgtvCliPath || DEFAULT_LGTV_CLI_PATH
+  execFile(cliPath, ["-get_system_settings", "picture", '[\\\"backlight\\\"]'], (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Couldn't read LG TV backlight using "${cliPath}":`, error)
+      event.sender.send('lgtv-brightness', { error: true })
+      return
+    }
+    if (stderr?.trim()) console.error("LGTVcli reported an error while reading backlight:", stderr.trim())
+
+    try {
+      const devices = JSON.parse(stdout)
+      const brightness = {}
+      for (const [device, result] of Object.entries(devices || {})) {
+        const value = Number(result?.payload?.settings?.backlight)
+        if (Number.isFinite(value) && value >= 0 && value <= 100) {
+          brightness[device] = Math.round(value)
+        }
+      }
+      event.sender.send('lgtv-brightness', {
+        brightness,
+        error: Object.keys(brightness).length === 0
+      })
+    } catch (parseError) {
+      console.error("Couldn't parse LGTVcli backlight response:", parseError, stdout)
+      event.sender.send('lgtv-brightness', { error: true })
+    }
+  })
 })
 
 ipcMain.on('request-settings', (event) => {
@@ -3664,6 +3807,10 @@ ipcMain.on('open-url', (event, url) => {
     require("electron").shell.openExternal("https://twinkletray.com/privacy-policy.html")
   } else if (url === "troubleshooting-features") {
     require("electron").shell.openExternal("https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues#disabling-monitor-detection-methods-available-in-v1140")
+  } else if (url === "lgtv-companion") {
+    require("electron").shell.openExternal("https://github.com/JPersson77/LGTVCompanion")
+  } else if (url === "windows-display-settings") {
+    require("electron").shell.openExternal("ms-settings:display")
   }
 })
 
@@ -5495,6 +5642,74 @@ let notIdleMonitor
 let lastIdleTime = 0
 
 let preIdleMonitors = {}
+let preIdleLGTVBacklights = false
+
+function runLGTVCommand(args) {
+  return new Promise((resolve, reject) => {
+    const cliPath = settings.lgtvCliPath || DEFAULT_LGTV_CLI_PATH
+    execFile(cliPath, args, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`LGTVcli command failed (${args.join(" ")}) using "${cliPath}":`, error)
+        reject(error)
+        return
+      }
+      if (stderr?.trim()) console.error(`LGTVcli reported an error (${args.join(" ")}):`, stderr.trim())
+      resolve(stdout)
+    })
+  })
+}
+
+async function dimLGTVForIdle() {
+  const output = await runLGTVCommand(["-get_system_settings", "picture", '[\\\"backlight\\\"]'])
+  let devices
+  try {
+    devices = JSON.parse(output)
+  } catch (error) {
+    console.error("Couldn't parse LGTVcli backlight response:", error, output)
+    return false
+  }
+
+  const backlights = {}
+  for (const [device, result] of Object.entries(devices || {})) {
+    const value = Number(result?.payload?.settings?.backlight)
+    if (Number.isFinite(value)) backlights[device] = value
+  }
+  if (!Object.keys(backlights).length) {
+    console.error("LGTVcli returned no configured TV backlight values.")
+    return false
+  }
+  preIdleLGTVBacklights = backlights
+
+  let succeeded = true
+  for (const device of Object.keys(backlights)) {
+    try {
+      await runLGTVCommand(["-backlight", "0", device])
+    } catch {
+      succeeded = false
+    }
+  }
+  if (!succeeded) console.error("Couldn't dim every configured LG TV for idle.")
+  return succeeded
+}
+
+async function restoreLGTVAfterIdle() {
+  if (!preIdleLGTVBacklights) return true
+
+  let succeeded = true
+  for (const [device, brightness] of Object.entries(preIdleLGTVBacklights)) {
+    try {
+      await runLGTVCommand(["-backlight", String(brightness), device])
+    } catch {
+      succeeded = false
+    }
+  }
+  if (succeeded) {
+    preIdleLGTVBacklights = false
+  } else {
+    console.error("Couldn't restore every LG TV's brightness after idle.")
+  }
+  return succeeded
+}
 
 function getIdleSettingValue() {
   const detectIdleTime = (parseInt(settings.detectIdleTimeSeconds) + (settings.detectIdleTimeMinutes * 60))
@@ -5543,7 +5758,7 @@ function isMediaPlaying() {
   }
 }
 
-function idleCheckShort() {
+async function idleCheckShort() {
   try {
     const idleTime = powerMonitor.getSystemIdleTime()
 
@@ -5569,6 +5784,11 @@ function idleCheckShort() {
       } catch (e) {
         console.log(`Error dimming displays`, e)
       }
+      try {
+        await dimLGTVForIdle()
+      } catch (e) {
+        console.error("Couldn't dim LG TV for idle.", e)
+      }
     }
 
     if (isUserIdle && (idleTime < lastIdleTime || idleTime < getIdleSettingValue())) {
@@ -5582,6 +5802,11 @@ function idleCheckShort() {
         // Always restore when dimmed
         const block = blockBadDisplays("idle:restore")
         setKnownBrightness(false)
+        try {
+          await restoreLGTVAfterIdle()
+        } catch (e) {
+          console.error("Couldn't restore LG TV brightness after idle.", e)
+        }
         block.release()
       } else {
         // Not dimmed, try checking ToD first. sKB as backup.

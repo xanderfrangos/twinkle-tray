@@ -2494,6 +2494,36 @@ ipcMain.on('retry-ddc-validation', () => {
   retryDDCCIValidation()
 })
 
+ipcMain.on('request-lgtv-brightness', async (event) => {
+  const cliPath = settings.lgtvCliPath || DEFAULT_LGTV_CLI_PATH
+  execFile(cliPath, ["-get_system_settings", "picture", '[\\\"backlight\\\"]'], (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Couldn't read LG TV backlight using "${cliPath}":`, error)
+      event.sender.send('lgtv-brightness', { error: true })
+      return
+    }
+    if (stderr?.trim()) console.error("LGTVcli reported an error while reading backlight:", stderr.trim())
+
+    try {
+      const devices = JSON.parse(stdout)
+      const brightness = {}
+      for (const [device, result] of Object.entries(devices || {})) {
+        const value = Number(result?.payload?.settings?.backlight)
+        if (Number.isFinite(value) && value >= 0 && value <= 100) {
+          brightness[device] = Math.round(value)
+        }
+      }
+      event.sender.send('lgtv-brightness', {
+        brightness,
+        error: Object.keys(brightness).length === 0
+      })
+    } catch (parseError) {
+      console.error("Couldn't parse LGTVcli backlight response:", parseError, stdout)
+      event.sender.send('lgtv-brightness', { error: true })
+    }
+  })
+})
+
 ipcMain.on('request-settings', (event) => {
   getSettings()
   getThemeRegistry() // Technically, it doesn't belong here, but it's a good place to piggy-back off of

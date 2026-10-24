@@ -24,6 +24,7 @@
     "GENERIC_NO_COMPATIBLE_DISPLAYS": "No compatible displays found. Please check that \"DDC/CI\" is enabled for your displays.",
     "GENERIC_NO_DISPLAYS_SHORT": "No compatible displays detected.",
     "GENERIC_NOT_SUPPORTED": "Not supported",
+    "GENERIC_UNAVAILABLE": "Unavailable",
     "GENERIC_SUPPORTED": "Supported",
     "GENERIC_UNSUPPORTED": "Unsupported",
     "GENERIC_ACTIVE": "Active",

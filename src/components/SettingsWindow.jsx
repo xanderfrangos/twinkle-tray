@@ -154,7 +154,10 @@ export default class SettingsWindow extends PureComponent {
             addFeatureValue: "",
             addFeatureError: false,
             ddcSafetyStatus: false,
-            lgtvCliPathDraft: window.settings.lgtvCliPath || ""
+            lgtvCliPathDraft: window.settings.lgtvCliPath || "",
+            lgtvBrightness: {},
+            lgtvBrightnessLoading: false,
+            lgtvBrightnessError: false
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -185,6 +188,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("ddcSafetyStatus", this.recievedDDCSafetyStatus)
         window.addEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
+        window.addEventListener("lgtvBrightness", this.recievedLGTVBrightness)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages });  T.setLocalizationData(e.detail.desired, e.detail.default)}); 
         window.addEventListener("windowHistory", e => this.setState({ windowHistory: e.detail }))
 
@@ -220,7 +224,22 @@ export default class SettingsWindow extends PureComponent {
 
     componentWillUnmount() {
         window.removeEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
+        window.removeEventListener("lgtvBrightness", this.recievedLGTVBrightness)
         window.ipc.send("set-native-hotkey-recording", false)
+    }
+
+    recievedLGTVBrightness = (event) => {
+        this.setState({
+            lgtvBrightness: event.detail.brightness || {},
+            lgtvBrightnessLoading: false,
+            lgtvBrightnessError: event.detail.error === true
+        })
+    }
+
+    requestLGTVBrightness = () => {
+        if (!Object.values(this.state.monitors).some(isLGTVDisplay)) return
+        this.setState({ lgtvBrightnessLoading: true, lgtvBrightnessError: false })
+        window.ipc.send("request-lgtv-brightness")
     }
 
 
@@ -409,7 +428,7 @@ export default class SettingsWindow extends PureComponent {
             }
         ]
         return items.map((item, index) => {
-            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.currentSettingsPage = item.id; this.scrollToTop(); window.reloadReactMonitors(); window.requestMonitors(); }}>
+            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.currentSettingsPage = item.id; this.scrollToTop(); window.reloadReactMonitors(); window.requestMonitors(); if (item.id === "monitors") this.requestLGTVBrightness(); }}>
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })
@@ -868,6 +887,9 @@ export default class SettingsWindow extends PureComponent {
 
                 let brightness = displayLevel(monitor.brightness)
                 let brightnessMax = monitor.brightnessMax
+                const isLGTV = isLGTVDisplay(monitor)
+                const lgtvDevice = `Device${Object.values(this.state.monitors).filter(isLGTVDisplay).indexOf(monitor) + 1}`
+                const lgtvBrightness = this.state.lgtvBrightness[lgtvDevice]
                 const communicationMethod = isLGTVDisplay(monitor)
                     ? this.getDebugMonitorType("lgtvcli")
                     : this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
@@ -884,9 +906,9 @@ export default class SettingsWindow extends PureComponent {
                         <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {communicationMethod}
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(isLGTV ? (lgtvBrightness ?? (this.state.lgtvBrightnessLoading ? "..." : this.state.lgtvBrightnessError ? T.t("GENERIC_UNAVAILABLE") : T.t("GENERIC_NOT_SUPPORTED"))) : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(isLGTV || monitor.type === "wmi" ? "100" : (monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(isLGTV ? "0 - 100" : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max))}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
                         </p>
                     </div>

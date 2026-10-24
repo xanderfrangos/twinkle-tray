@@ -159,6 +159,7 @@
     "SETTINGS_FEATURES_POWER_COMPAT": "Leginkább kompatibilis",
     "GENERIC_CALIBRATION_POINT": "Kalibrációs pont",
     "GENERIC_NOT_SUPPORTED": "Nem támogatott",
+    "GENERIC_UNAVAILABLE": "Nem érhető el",
     "GENERIC_SUPPORTED": "Támogatott",
     "GENERIC_UNSUPPORTED": "Nem támogatott",
     "GENERIC_ACTIVE": "Aktív",

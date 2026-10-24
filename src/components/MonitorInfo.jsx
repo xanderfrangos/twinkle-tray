@@ -50,6 +50,14 @@ export default function MonitorInfo(props) {
     const communicationMethod = isLGTVDisplay(monitor)
         ? getDebugMonitorType("lgtvcli")
         : getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
+    const hdrDisabled = monitor.hdr === "disabled"
+    const hdrStatus = monitor.hdr === "active"
+        ? T.t("GENERIC_ACTIVE")
+        : monitor.hdr === "supported"
+            ? T.t("GENERIC_SUPPORTED")
+            : hdrDisabled
+                ? T.t("GENERIC_DISABLED")
+                : T.t("GENERIC_UNSUPPORTED")
 
     // Brightness
     if (monitor?.features?.["0x10"]) {
@@ -128,7 +136,7 @@ export default function MonitorInfo(props) {
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : displayLevel(monitor.brightness))}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.brightnessMax)}</b>
                 <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
-                <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
+                <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{hdrStatus}</b>{hdrDisabled ? <> (<a onClick={() => window.openURL("windows-display-settings")}>{T.t("GENERIC_ENABLE")}</a>)</> : null}
             </p>
             {extraHTML}
         </div>

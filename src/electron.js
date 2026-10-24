@@ -3809,6 +3809,8 @@ ipcMain.on('open-url', (event, url) => {
     require("electron").shell.openExternal("https://github.com/xanderfrangos/twinkle-tray/wiki/Display-Detection-&-Support-Issues#disabling-monitor-detection-methods-available-in-v1140")
   } else if (url === "lgtv-companion") {
     require("electron").shell.openExternal("https://github.com/JPersson77/LGTVCompanion")
+  } else if (url === "windows-display-settings") {
+    require("electron").shell.openExternal("ms-settings:display")
   }
 })
 

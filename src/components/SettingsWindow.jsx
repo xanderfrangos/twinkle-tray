@@ -890,6 +890,14 @@ export default class SettingsWindow extends PureComponent {
                 const isLGTV = isLGTVDisplay(monitor)
                 const lgtvDevice = `Device${Object.values(this.state.monitors).filter(isLGTVDisplay).indexOf(monitor) + 1}`
                 const lgtvBrightness = this.state.lgtvBrightness[lgtvDevice]
+                const hdrDisabled = monitor.hdr === "disabled"
+                const hdrStatus = monitor.hdr === "active"
+                    ? T.t("GENERIC_ACTIVE")
+                    : monitor.hdr === "supported"
+                        ? T.t("GENERIC_SUPPORTED")
+                        : hdrDisabled
+                            ? T.t("GENERIC_DISABLED")
+                            : T.t("GENERIC_UNSUPPORTED")
                 const communicationMethod = isLGTVDisplay(monitor)
                     ? this.getDebugMonitorType("lgtvcli")
                     : this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
@@ -909,7 +917,7 @@ export default class SettingsWindow extends PureComponent {
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(isLGTV ? (lgtvBrightness ?? (this.state.lgtvBrightnessLoading ? "..." : this.state.lgtvBrightnessError ? T.t("GENERIC_UNAVAILABLE") : T.t("GENERIC_NOT_SUPPORTED"))) : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness))}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(isLGTV || monitor.type === "wmi" ? "100" : (monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax))}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(isLGTV ? "0 - 100" : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max))}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{hdrStatus}</b>{hdrDisabled ? <> (<a onClick={() => window.openURL("windows-display-settings")}>{T.t("GENERIC_ENABLE")}</a>)</> : null}
                         </p>
                     </div>
                 )

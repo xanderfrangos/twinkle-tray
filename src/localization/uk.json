@@ -288,5 +288,11 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART": "Віртуальний хаб можна налаштувати на автозапуск, запустивши його в командному рядку з параметром «-i»",
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Дивіться «-i : встановлення як служби» тут",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "URL-адреса Віртуального хабу:",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Від’єднано"
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Від’єднано",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Гама-корекція замінює основний повзунок",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Якщо ваш дисплей не підтримує стандартне керування яскравістю, ви можете використовувати це як альтернативу.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Розширити діапазон мінімальної яскравості",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Зменште яскравість нижче стандартного мінімального рівня, налаштувавши гамма-корекцію програмно. За бажанням встановіть відсоток на повзунку для використання програмного затемнення замість апаратного.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Відсоток повзунка, який використовує програмне затемнення",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Windows усе одно регулюватиме яскравість вбудованого дисплея під час натискання клавіші яскравості. Не використовуйте гарячі клавіші BrightnessUp або BrightnessDown для регулювання яскравості вбудованого дисплея."
 }

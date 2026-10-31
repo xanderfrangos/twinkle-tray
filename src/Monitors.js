@@ -1193,7 +1193,13 @@ getHDRDisplays = async (monitors) => {
                 hwid,
                 sdrNits: display.nits,
                 sdrLevel: parseInt((display.nits - 80) / 4),
-                hdr: (display.hdrActive ? "active" : display.hdrEnabled ? "supported" : "unsupported")
+                hdr: (display.hdrActive
+                    ? "active"
+                    : display.hdrSupported && !display.hdrEnabled
+                        ? "disabled"
+                        : display.hdrSupported
+                            ? "supported"
+                            : "unsupported")
             }
 
             if(display.name) {

@@ -18,7 +18,7 @@ import MonitorInfo from "./MonitorInfo"
 import MonitorFeatures from "./MonitorFeatures"
 import { SettingsOption, SettingsChild } from "./SettingsOption";
 import SafeRender from "./SafeRender";
-import { getMonitorName, isAdjustableDisplay, displayLevel } from './utilts/monitor.util';
+import { getMonitorName, isAdjustableDisplay, displayLevel, isLGTVDisplay } from './utilts/monitor.util';
 import { LightSensorSettings } from "./light-sensor/LightSensorSettings";
 
 import DefaultIcon from "../assets/tray-icons/dark/icon@4x.png"
@@ -153,7 +153,11 @@ export default class SettingsWindow extends PureComponent {
             addFeatureMonitor: "",
             addFeatureValue: "",
             addFeatureError: false,
-            ddcSafetyStatus: false
+            ddcSafetyStatus: false,
+            lgtvCliPathDraft: window.settings.lgtvCliPath || "",
+            lgtvBrightness: {},
+            lgtvBrightnessLoading: false,
+            lgtvBrightnessError: false
         }
         this.numMonitors = 0
         this.downKeys = {}
@@ -184,6 +188,7 @@ export default class SettingsWindow extends PureComponent {
         window.addEventListener("settingsUpdated", this.recievedSettings)
         window.addEventListener("ddcSafetyStatus", this.recievedDDCSafetyStatus)
         window.addEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
+        window.addEventListener("lgtvBrightness", this.recievedLGTVBrightness)
         window.addEventListener("localizationUpdated", (e) => { this.setState({ languages: e.detail.languages });  T.setLocalizationData(e.detail.desired, e.detail.default)}); 
         window.addEventListener("windowHistory", e => this.setState({ windowHistory: e.detail }))
 
@@ -219,7 +224,22 @@ export default class SettingsWindow extends PureComponent {
 
     componentWillUnmount() {
         window.removeEventListener("nativeBrightnessKey", this.recievedNativeBrightnessKey)
+        window.removeEventListener("lgtvBrightness", this.recievedLGTVBrightness)
         window.ipc.send("set-native-hotkey-recording", false)
+    }
+
+    recievedLGTVBrightness = (event) => {
+        this.setState({
+            lgtvBrightness: event.detail.brightness || {},
+            lgtvBrightnessLoading: false,
+            lgtvBrightnessError: event.detail.error === true
+        })
+    }
+
+    requestLGTVBrightness = () => {
+        if (!Object.values(this.state.monitors).some(isLGTVDisplay)) return
+        this.setState({ lgtvBrightnessLoading: true, lgtvBrightnessError: false })
+        window.ipc.send("request-lgtv-brightness")
     }
 
 
@@ -376,6 +396,11 @@ export default class SettingsWindow extends PureComponent {
                 icon: "&#xE9E9;"
             },
             {
+                id: "lgtvcli",
+                label: T.t("SETTINGS_SIDEBAR_LGTVCLI"),
+                icon: "&#xE7F4;"
+            },
+            {
                 id: "time",
                 label: T.t("SETTINGS_SIDEBAR_TIME"),
                 icon: "&#xE823;"
@@ -403,7 +428,7 @@ export default class SettingsWindow extends PureComponent {
             }
         ]
         return items.map((item, index) => {
-            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.currentSettingsPage = item.id; this.scrollToTop(); window.reloadReactMonitors(); window.requestMonitors(); }}>
+            return (<div key={item.id} className="item" data-active={this.isSection(item.id)} data-type={item.type || "none"} onClick={() => { this.setState({ activePage: item.id }); window.currentSettingsPage = item.id; this.scrollToTop(); window.reloadReactMonitors(); window.requestMonitors(); if (item.id === "monitors") this.requestLGTVBrightness(); }}>
                 <div className="icon" dangerouslySetInnerHTML={{ __html: (item.icon || "&#xE770;") }}></div><div className="label">{item.label || `Item ${index}`}</div>
             </div>)
         })
@@ -862,6 +887,20 @@ export default class SettingsWindow extends PureComponent {
 
                 let brightness = displayLevel(monitor.brightness)
                 let brightnessMax = monitor.brightnessMax
+                const isLGTV = isLGTVDisplay(monitor)
+                const lgtvDevice = `Device${Object.values(this.state.monitors).filter(isLGTVDisplay).indexOf(monitor) + 1}`
+                const lgtvBrightness = this.state.lgtvBrightness[lgtvDevice]
+                const hdrDisabled = monitor.hdr === "disabled"
+                const hdrStatus = monitor.hdr === "active"
+                    ? T.t("GENERIC_ACTIVE")
+                    : monitor.hdr === "supported"
+                        ? T.t("GENERIC_SUPPORTED")
+                        : hdrDisabled
+                            ? T.t("GENERIC_DISABLED")
+                            : T.t("GENERIC_UNSUPPORTED")
+                const communicationMethod = isLGTVDisplay(monitor)
+                    ? this.getDebugMonitorType("lgtvcli")
+                    : this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))
 
                 if (monitor.type == "ddcci" && !monitor.brightnessType) {
                     brightness = "???"
@@ -874,11 +913,11 @@ export default class SettingsWindow extends PureComponent {
                         <div className="sectionSubtitle"><div className="icon">&#xE7F4;</div><div>{monitor.name}</div></div>
                         <p>{T.t("SETTINGS_MONITORS_DETAILS_NAME")}: <b>{getMonitorName(monitor, this.state.names)}</b>
                             <br />{T.t("SETTINGS_MONITORS_DETAILS_INTERNAL_NAME")}: <b>{monitor.hwid[1]}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {this.getDebugMonitorType((monitor.type === "ddcci" && monitor.highLevelSupported?.brightness ? "ddcci-hl" : monitor.type))}
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness)}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax)}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max)}</b>
-                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{(monitor.hdr == "active" ? T.t("GENERIC_ACTIVE") : monitor.hdr == "supported" ? T.t("GENERIC_SUPPORTED") : T.t("GENERIC_UNSUPPORTED"))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_COMMUNICATION")}: {communicationMethod}
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS")}: <b>{(isLGTV ? (lgtvBrightness ?? (this.state.lgtvBrightnessLoading ? "..." : this.state.lgtvBrightnessError ? T.t("GENERIC_UNAVAILABLE") : T.t("GENERIC_NOT_SUPPORTED"))) : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : brightness))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_MAX_BRIGHTNESS")}: <b>{(isLGTV || monitor.type === "wmi" ? "100" : (monitor.type !== "ddcci" && monitor.type !== "software" ? T.t("GENERIC_NOT_SUPPORTED") : brightnessMax))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_BRIGHTNESS_NORMALIZATION")}: <b>{(isLGTV ? "0 - 100" : (monitor.type == "none" ? T.t("GENERIC_NOT_SUPPORTED") : monitor.min + " - " + monitor.max))}</b>
+                            <br />{T.t("SETTINGS_MONITORS_DETAILS_HDR")}: <b>{hdrStatus}</b>{hdrDisabled ? <> (<a onClick={() => window.openURL("windows-display-settings")}>{T.t("GENERIC_ENABLE")}</a>)</> : null}
                         </p>
                     </div>
                 )
@@ -1163,7 +1202,9 @@ export default class SettingsWindow extends PureComponent {
     }
 
     getDebugMonitorType = (type) => {
-        if (type == "none") {
+        if (type == "lgtvcli") {
+            return (<><b>LGTVcli</b> <span className="icon green vfix">&#xE73D;</span></>)
+        } else if (type == "none") {
             return (<><b>None</b> <span className="icon red vfix">&#xEB90;</span></>)
         } else if (type == "ddcci") {
             return (<><b>DDC/CI</b> <span className="icon green vfix">&#xE73D;</span></>)
@@ -1255,6 +1296,7 @@ export default class SettingsWindow extends PureComponent {
         const scrollShortcut = settings.scrollShortcut
         this.setState({
             rawSettings: (Object.keys(settings).length > 0 ? settings : this.state.rawSettings),
+            lgtvCliPathDraft: (settings.lgtvCliPath || ""),
             openAtLogin,
             brightnessAtStartup,
             linkedLevelsActive,
@@ -1523,7 +1565,6 @@ export default class SettingsWindow extends PureComponent {
                                 </div>
                             </SettingsPage>
 
-
                             <SettingsPage current={this.state.activePage} id="monitors">
 
                                 <div className="pageSection">
@@ -1602,6 +1643,27 @@ export default class SettingsWindow extends PureComponent {
                                     <SettingsOption title={T.t("SETTINGS_FEATURES_DDC_BLOCK_TITLE")} description={T.t("SETTINGS_FEATURES_DDC_BLOCK_DESC")} expandable={true}>
                                         {this.getDDCBlockedMonitors()}
                                     </SettingsOption>
+                                </div>
+                            </SettingsPage>
+
+                            <SettingsPage current={this.state.activePage} id="lgtvcli">
+                                <div className="pageSection">
+                                    <div className="sectionTitle">{T.t("SETTINGS_LGTVCLI_TITLE")}</div>
+                                    <p>{T.t("SETTINGS_LGTVCLI_DESC")}</p>
+                                    <SettingsOption title={T.t("SETTINGS_LGTVCLI_PATH_TITLE")} description={T.t("SETTINGS_LGTVCLI_PATH_DESC")} input={
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={this.state.lgtvCliPathDraft ?? this.state.rawSettings.lgtvCliPath ?? ""}
+                                                onChange={e => this.setState({ lgtvCliPathDraft: e.target.value })}
+                                            />
+                                            <a className="button" onClick={() => {
+                                                this.setSetting("lgtvCliPath", this.state.lgtvCliPathDraft.trim())
+                                            }}>{T.t("GENERIC_SAVE")}</a>
+                                            <a className="button" onClick={() => window.ipc.send("select-lgtvcli-path")}>{T.t("SETTINGS_LGTVCLI_BROWSE")}</a>
+                                        </div>
+                                    } />
+                                    <p>{T.t("SETTINGS_LGTVCLI_INSTALL_TEXT")} <a href="javascript:window.openURL('lgtv-companion')">{T.t("SETTINGS_LGTVCLI_INSTALL_LINK_TEXT")}</a></p>
                                 </div>
                             </SettingsPage>
 

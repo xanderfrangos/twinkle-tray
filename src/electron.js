@@ -3940,6 +3940,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
       // Internal display brightness change
       if(!settings.useGuidBrightnessEvent) return false;
       if(!ignoreBrightnessEvent) {
+        let internalLevel
         for(const hwid2 in monitors) {
           const monitor = monitors[hwid2]
           // The slider drives the ramp on these, so the backlight isn't its value
@@ -3953,6 +3954,18 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
               releaseExtendedMinimumRamp(monitor, normalized)
               monitor.brightness = getExtendedMinimumLevel(monitor, normalized)
             }
+            internalLevel = monitor.brightness
+          }
+        }
+
+        // With linked levels, the other displays follow the internal display
+        if(settings.linkedLevelsActive && internalLevel !== undefined) {
+          for(const key in monitors) {
+            const monitor = monitors[key]
+            if(monitor.type === "wmi" || (monitor.type === "none" && !usesGammaSlider(monitor))) continue;
+            monitor.brightness = internalLevel
+            if(settings.sdrAsMainSliderDisplays?.[monitor.key]) monitor.sdrLevel = internalLevel;
+            updateBrightnessThrottle(monitor.id, internalLevel, true, false)
           }
         }
         setTrayPercent()

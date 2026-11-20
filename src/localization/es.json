@@ -296,5 +296,13 @@
     "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Extender brillo mínimo",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Reduce el brillo más bajo que los niveles mínimos estándar ajustando la rampa gamma por software. Opcionalmente establece un porcentaje del deslizador para emplear atenuación por software en vez de atenuación por hardware.",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Porcentaje del deslizador que emplea atenuación por software",
-    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Windows aún ajustará la pantalla integrada cuando se pulse una tecla de brillo. No utilices un acceso rápido SubirBrillo o BajarBrillo para ajustar el brillo de la pantalla integrada."
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Windows aún ajustará la pantalla integrada cuando se pulse una tecla de brillo. No utilices un acceso rápido SubirBrillo o BajarBrillo para ajustar el brillo de la pantalla integrada.",
+    "SETTINGS_MONITORS_GAMMA_HDR_UNAVAILABLE": "No disponible mientras HDR es encima",
+    "SETTINGS_FEATURES_DDC_BLOCK_TITLE": "Bloque DDC/CI comunicación",
+    "SETTINGS_FEATURES_DDC_BLOCK_DESC": "Parón Twinkle Bandeja de enviar cualesquier #DDC/#CI órdenes a exposiciones concretas. Uso esto para exposiciones que lentos abajo o congelar vuestro sistema cuándo probed, como aquellos conectado a través de uno-la manera óptica HDMI cables, o adaptadores que no pasa DDC/CI a través de. Aplica a todo conectó exposiciones del mismo modelo, y bloqueó las exposiciones no pueden ser controladas encima DDC/CI.",
+    "SETTINGS_FEATURES_DDC_MAXIMUM": "#Ddc máximo de volumen override",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_PLACEHOLDER": "Valor informado",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_DESC": "Uso esto si la exposición informa un incorrect volumen máximo. Deja espacio para utilizar el valor informado.",
+    "SETTINGS_TIME_SUN_OFFSET": "Offset (minutos)",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK": "Un checkmark sólo significa Twinkle la bandeja está escuchando para tonos de brillo. Muchos portátiles manejan estos tonos en firmware, así que nunca logran Twinkle Bandeja. Prensa el clave de hacer seguro el hotkey obras."
 }

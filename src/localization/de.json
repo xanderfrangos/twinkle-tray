@@ -296,5 +296,13 @@
     "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Erweiter Minimale Helligkeit",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Setz herunter die Helligkeit senkt als das tarifliche Minimum Levels anpassen mal den #Gamma #Nepp in Software. Gegebenenfalls #setzen einen Prozentsatz von dem Schieber zu benutzen Software dimmen statt Hardware dimmend.",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Prozentsatz von dem Schieber jene Nutzungen Software dimmend",
-    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Fenster wollen noch das #errichtet anpassen-in zeigen als ist gedrückt einen Helligkeit Schlüssel. Benutz nicht ein BrightnessUp oder BrightnessDown hotkey zu anpassen das #errichtet-in DisplaysHelligkeit."
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "Fenster wollen noch das #errichtet anpassen-in zeigen als ist gedrückt einen Helligkeit Schlüssel. Benutz nicht ein BrightnessUp oder BrightnessDown hotkey zu anpassen das #errichtet-in DisplaysHelligkeit.",
+    "SETTINGS_MONITORS_GAMMA_HDR_UNAVAILABLE": "Nicht verfügbar #während HDR ist weiter",
+    "SETTINGS_FEATURES_DDC_BLOCK_TITLE": "Block DDC/CI Kommunikation",
+    "SETTINGS_FEATURES_DDC_BLOCK_DESC": "Stopp Glitzert Tablett von senden etwas DDC/CI Befehle zu spezifisch Displays. Benutz dies für Displays jener bremst ab oder frieren eure System #wann #untersucht, wie jene gekoppelt durch #man-Weg optisch HDMI Kabel, oder Adapter #abspielen nicht jener DDC/CI durch. Bewirbt zu alle verbundenen Displays von ebensolchem gleichen Model, und blockte Displays können nicht sein reguliert über DDC/CI.",
+    "SETTINGS_FEATURES_DDC_MAXIMUM": "DDC Inhalt #höchster Überbrückung",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_PLACEHOLDER": "Berichtet Wert",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_DESC": "Benutz dies ob die Display Berichte ein inkorrektes Maximum Inhalt. Abschied Lücke zu benutzen die berichtet Wert.",
+    "SETTINGS_TIME_SUN_OFFSET": "Verschiebung (Minuten)",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK": "Ein checkmark einziges Mittel Glitzert Tablett ist #zuhören für Helligkeit Schlüssel. Viele Laptops bedienen diese Schlüssel in #Firmware, so sie ankommen Glitzern nie Tablett. Drück das wesentliches zu machen sicher das hotkey Arbeiten."
 }

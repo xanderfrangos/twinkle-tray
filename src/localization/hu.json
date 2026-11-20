@@ -294,5 +294,13 @@
     "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "A minimális fényerő kiterjesztése",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Csökkenthető a fényerő a szabványos minimum szint alá a szoftveres gamma szint beállításával. Opcionálisan beállítható egy százalék a csúszkán szoftveres halványítás használatához a hardveres fényerő-szabályozás helyett.",
     "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "A csúszka százalékos értéke szoftveres halványítás használatához",
-    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "A Windows továbbra is módosítja a beépített kijelző fényerejét, amikor megnyomja a fényerő-szabályozó gombot. Ne használjon Fényerő növelése vagy Fényerő csökkentése gyorsbillentyűket a beépített kijelző fényerejének beállításához."
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "A Windows továbbra is módosítja a beépített kijelző fényerejét, amikor megnyomja a fényerő-szabályozó gombot. Ne használjon Fényerő növelése vagy Fényerő csökkentése gyorsbillentyűket a beépített kijelző fényerejének beállításához.",
+    "SETTINGS_MONITORS_GAMMA_HDR_UNAVAILABLE": "Nem érhető el, ha a HDR be van kapcsolva",
+    "SETTINGS_FEATURES_DDC_BLOCK_TITLE": "DDC/CI kommunikáció blokkolása",
+    "SETTINGS_FEATURES_DDC_BLOCK_DESC": "Letiltja a Twinkle Tray DDC/CI parancsok küldését bizonyos kijelzőknek. Használja ezt olyan kijelzőkhöz, amelyek lelassítják vagy lefagyasztják a rendszert, például az egyirányú optikai HDMI-kábellel csatlakoztatottakhoz, vagy olyan adapterekhez, amelyek nem engedik át a DDC/CI jelet. Az azonos modellhez tartozó összes csatlakoztatott kijelzőre vonatkozik, és a blokkolt kijelzők nem vezérelhetők DDC/CI-n keresztül.",
+    "SETTINGS_FEATURES_DDC_MAXIMUM": "DDC hangerő maximum felülbírálása",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_PLACEHOLDER": "Jelentett érték",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_DESC": "Használja ezt, ha a kijelző helytelen maximális hangerőt jelez. Hagyja üresen a jelentett érték használatához.",
+    "SETTINGS_TIME_SUN_OFFSET": "Eltolás (perc)",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK": "A pipa csak azt jelenti, hogy a Twinkle Tray figyeli a fényerő-szabályozó gombokat. Sok laptop firmware-ben kezeli ezeket a gombokat, így soha nem érik el a Twinkle Tray-t. Nyomja meg a gombot, hogy megbizonyosodjon arról, hogy a gyorsbillentyű működik."
 }

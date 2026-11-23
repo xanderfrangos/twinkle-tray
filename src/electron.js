@@ -517,6 +517,7 @@ function stopMonitorThread() {
   console.log("Killing monitor thread")
   monitorsThreadReady = false
   monitorsThreadStarting = false
+  activeRefresh = false
   setIsRefreshing(false)
 
   const thread = monitorsThreadReal
@@ -2553,6 +2554,10 @@ const setIsRefreshing = (newValue, lockSliders = false) => {
   slidersLocked = (isRefreshing && lockSliders)
   sendToAllWindows("sliders-locked", slidersLocked)
 }
+// The refresh that turned isRefreshing on, so only it turns it off. A refresh
+// whose monitor process was stopped times out later, possibly while a newer
+// refresh is running. stopMonitorThread clears this.
+let activeRefresh = false
 
 
 refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
@@ -3003,7 +3008,15 @@ function queueCapabilitiesEnrichment(generation) {
     }
 
     const oldMonitors = Object.assign({}, monitors)
-    commitRefreshedMonitors(data.monitors, oldMonitors, readStartedAt)
+    try {
+      commitRefreshedMonitors(data.monitors, oldMonitors, readStartedAt)
+    } catch (e) {
+      // The monitor process did its part. Keep this out of the catch below,
+      // which restarts the process and scans again, so a save that keeps
+      // failing can't loop.
+      console.log("Couldn't save the capabilities scan results.", e)
+      clearFeaturesPendingAfterEnrichmentFailure()
+    }
   }).catch(async error => {
     console.log("Couldn't enrich monitor capabilities", error)
     if (error?.code === "MONITOR_WORKER_STOPPED") {
@@ -3079,57 +3092,71 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
     console.log("\x1b[34m---------------------------------------------- \x1b[0m")
     return monitors;
   }
-  setIsRefreshing(true, fullRefresh)
-
-  // Reset all known displays
-  if (fullRefresh) {
-    console.log("Doing full refresh.")
-  }
-
-  // Save old monitors for comparison
-  let oldMonitors = Object.assign({}, monitors)
-  let newMonitors
-  let canEnrichCapabilities = false
-  const generation = (reservedGeneration || ++monitorRefreshGeneration)
-
-  let failed = false
-  const readStartedAt = Date.now()
+  const refreshToken = {}
+  activeRefresh = refreshToken
+  let handedToEnrichment = false
+  // Everything from turning isRefreshing on is in this try, so an error can't
+  // leave it on. That would hold back every later refresh and brightness change.
   try {
-    const result = await refreshMonitorsJob(fullRefresh, generation)
-    newMonitors = result?.monitors
-    canEnrichCapabilities = !!result?.canEnrichCapabilities
-    if (!newMonitors) {
-      failed = true;
-      throw "No monitors recieved!";
+    setIsRefreshing(true, fullRefresh)
+
+    // Reset all known displays
+    if (fullRefresh) {
+      console.log("Doing full refresh.")
     }
-    if (generation !== monitorRefreshGeneration) {
-      console.log("Discarding a superseded monitor refresh.")
+
+    // Save old monitors for comparison
+    let oldMonitors = Object.assign({}, monitors)
+    let newMonitors
+    let canEnrichCapabilities = false
+    const generation = (reservedGeneration || ++monitorRefreshGeneration)
+
+    let failed = false
+    const readStartedAt = Date.now()
+    try {
+      const result = await refreshMonitorsJob(fullRefresh, generation)
+      newMonitors = result?.monitors
+      canEnrichCapabilities = !!result?.canEnrichCapabilities
+      if (!newMonitors) {
+        failed = true;
+        throw "No monitors recieved!";
+      }
+      if (generation !== monitorRefreshGeneration) {
+        console.log("Discarding a superseded monitor refresh.")
+        failed = true
+      } else {
+        lastEagerUpdate = Date.now()
+      }
+    } catch (e) {
       failed = true
-    } else {
-      lastEagerUpdate = Date.now()
+      console.log('Couldn\'t refresh monitors', e)
+    }
+
+    if (!failed) {
+      commitRefreshedMonitors(newMonitors, oldMonitors, readStartedAt)
+    }
+
+    if (shouldShowPanel) {
+      shouldShowPanel = false
+      setTimeout(() => toggleTray(true), 333)
+    }
+
+    console.log("\x1b[34m---------------------------------------------- \x1b[0m")
+    if (!failed && canEnrichCapabilities) {
+      const enrichmentPromise = queueCapabilitiesEnrichment(generation)
+      // The capabilities scan turns isRefreshing off when it ends
+      handedToEnrichment = true
+      if (waitForFeatureEnrichment) await enrichmentPromise
     }
   } catch (e) {
-    failed = true
-    console.log('Couldn\'t refresh monitors', e)
+    console.log("Monitor refresh failed.", e)
+  } finally {
+    if (activeRefresh === refreshToken) {
+      activeRefresh = false
+      if (!handedToEnrichment) setIsRefreshing(false)
+    }
+    flushQueuedMonitorCommands()
   }
-
-  if (!failed) {
-    commitRefreshedMonitors(newMonitors, oldMonitors, readStartedAt)
-  }
-
-  if (shouldShowPanel) {
-    shouldShowPanel = false
-    setTimeout(() => toggleTray(true), 333)
-  }
-
-  console.log("\x1b[34m---------------------------------------------- \x1b[0m")
-  if (!failed && canEnrichCapabilities) {
-    const enrichmentPromise = queueCapabilitiesEnrichment(generation)
-    if (waitForFeatureEnrichment) await enrichmentPromise
-  } else {
-    setIsRefreshing(false)
-  }
-  flushQueuedMonitorCommands()
   return monitors;
 }
 

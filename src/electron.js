@@ -517,6 +517,12 @@ function recoverMonitorThread(thread, error) {
   return monitorThreadRecoveryPromise
 }
 
+// A process that has ended has an exit code, or the signal that ended it.
+// One ended by a signal has no exit code.
+function monitorThreadHasExited(thread) {
+  return thread.exitCode !== null || thread.signalCode !== null
+}
+
 function stopMonitorThread() {
   console.log("Killing monitor thread")
   monitorsThreadReady = false
@@ -525,7 +531,7 @@ function stopMonitorThread() {
   setIsRefreshing(false)
 
   const thread = monitorsThreadReal
-  if(!thread || thread.exitCode !== null) {
+  if(!thread || monitorThreadHasExited(thread)) {
     if(monitorsThreadReal === thread) monitorsThreadReal = undefined
     return Promise.resolve()
   }
@@ -550,7 +556,7 @@ function stopMonitorThread() {
 
     try {
       if(!thread.kill()) {
-        if(thread.exitCode !== null) {
+        if(monitorThreadHasExited(thread)) {
           handleExit()
         } else {
           cleanup()

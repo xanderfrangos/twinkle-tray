@@ -536,6 +536,11 @@ function invalidateFeatureSnapshots(monitorIds) {
     }
 }
 
+// Milliseconds since a process.hrtime.bigint() start time, keeping whole seconds
+function elapsedMS(startTime) {
+    return Number(process.hrtime.bigint() - startTime) / 1000000
+}
+
 let busyLevel = 0
 refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendUpdate = false) => {
     try {
@@ -555,26 +560,30 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
             if (useCapabilityEnrichment) applyFeatureSnapshots(foundMonitors)
             monitors = foundMonitors
         } else {
-            let startTime = process.hrtime()
+            let startTime = process.hrtime.bigint()
 
             // DDC/CI
             try {
                 if (settings?.getDDCBrightnessUpdates) {
                     if(!getDDCCI()) {
+                        const rescanStart = process.hrtime.bigint()
                         ddcci._refresh(
                             (shouldEnrichCapabilities() ? "fast" : determineDDCCIMethod()),
                             true,
                             !settings.disableHighLevel,
                             getDDCBlockedKeys()
                         )
+                        console.log(`DDC/CI rescan: ${elapsedMS(rescanStart)}ms`)
                     }
                     for (const hwid2 in monitors) {
                         if (monitors[hwid2].type === "ddcci" && monitors[hwid2].brightnessType) {
+                            const monitorStart = process.hrtime.bigint()
                             const monitor = await getBrightnessDDC(monitors[hwid2])
                             monitors[hwid2] = monitor
+                            console.log(`getBrightnessDDC(${hwid2}): ${elapsedMS(monitorStart)}ms`)
                         }
                     }
-                    console.log(`getBrightnessDDC() Total: ${process.hrtime(startTime)[1] / 1000000}ms`)
+                    console.log(`getBrightnessDDC() Total: ${elapsedMS(startTime)}ms`)
                 }
             } catch (e) {
                 console.log("\x1b[41m" + "getBrightnessDDC() failed!" + "\x1b[0m", e)

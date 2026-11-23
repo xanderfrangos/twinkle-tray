@@ -219,6 +219,16 @@ async function flushQueuedMonitorCommands(beforeRefresh = false) {
   }
 }
 
+// The monitor control a held write sets, or false for other commands
+function queuedCommandTarget(data) {
+  if (data.type === "brightness" || data.type === "sdr" || data.type === "gamma") {
+    // Internal display brightness is sent without an id
+    return `${data.type}::${data.id ?? ""}`
+  }
+  if (data.type === "vcp") return `vcp::${data.monitor}::${parseInt(data.code)}`
+  return false
+}
+
 function queuedCommandTargetsCurrentMonitor(data) {
   if (data.type === "brightness" || data.type === "sdr" || data.type === "gamma") {
     if (!data.id) return true
@@ -255,7 +265,17 @@ let monitorsThread = {
   send: function (data) {
     if (monitorCommandsThatMutateWorkerState.has(data.type) && monitorWorkerHasExclusiveWork()) {
       return new Promise((resolve, reject) => {
-        queuedMonitorCommands.push({ data, resolve, reject, generation: monitorRefreshGeneration })
+        const command = { data, resolve, reject, generation: monitorRefreshGeneration }
+        // Only the newest held value for a monitor control matters. Replace an
+        // older one in place, and resolve it so nothing waits on it forever.
+        const target = queuedCommandTarget(data)
+        const olderIndex = (target ? queuedMonitorCommands.findIndex(queued => queuedCommandTarget(queued.data) === target) : -1)
+        if (olderIndex >= 0) {
+          queuedMonitorCommands[olderIndex].resolve(true)
+          queuedMonitorCommands[olderIndex] = command
+        } else {
+          queuedMonitorCommands.push(command)
+        }
       })
     }
     return this.sendNow(data)

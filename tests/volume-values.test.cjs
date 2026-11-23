@@ -56,7 +56,7 @@ function createContext(featureSettings) {
         monitors: { ONE: monitor }, monitorsThread: { send: message => messages.push(message) },
         isWindowsUserIdle: false, currentTransition: null,
         usesExtendedMinimum: () => false, shouldSkipDisplay: () => false,
-        setTrayPercent() {}, updateKnownDisplays() {},
+        setTrayPercent() {}, updateKnownDisplays() {}, recordMonitorWrite() {},
         console: { log() {} }, debug: { error: (...args) => { throw new Error(args.join(' ')) } }
     }
     vm.createContext(context)

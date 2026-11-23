@@ -161,7 +161,7 @@
     }
 }
 
-[data-refreshing="true"] .monitor-item .input--range {
+[data-sliders-locked="true"] .monitor-item .input--range {
     pointer-events: none;
     opacity: 0.35;
 }

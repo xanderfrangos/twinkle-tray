@@ -18,7 +18,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     update: false,
     sleeping: false,
     updateProgress: 0,
-    isRefreshing: window.isRefreshing
+    slidersLocked: window.slidersLocked
   })
   const [doBackgroundEvent, setDoBackgroundEvent] = useState(false)
   const [levelsChanged, setLevelsChanged] = useState(false)
@@ -196,7 +196,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     updateInterval = setInterval(() => syncBrightness(), (state.updateInterval || 500))
   }
 
-  const handleIsRefreshingUpdate = (e) => setState(prev => ({ ...prev, isRefreshing: e.detail }))
+  const handleSlidersLockedUpdate = (e) => setState(prev => ({ ...prev, slidersLocked: e.detail }))
   const handleUpdateProgress = (e) => setState(prev => ({ ...prev, updateProgress: e.detail.progress }))
 
   useEffect(() => {
@@ -216,7 +216,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     }
     const handleUpdateUpdated = (e) => recievedUpdate(e)
     const handleSleepUpdated = (e) => recievedSleep(e)
-    const handleRefreshingUpdated = (e) => handleIsRefreshingUpdate(e)
+    const handleSlidersLockedUpdated = (e) => handleSlidersLockedUpdate(e)
     const handleProgressUpdated = (e) => handleUpdateProgress(e)
 
     window.addEventListener("monitorsUpdated", handleMonitorsUpdated)
@@ -224,7 +224,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     window.addEventListener("localizationUpdated", handleLocalizationUpdated)
     window.addEventListener("updateUpdated", handleUpdateUpdated)
     window.addEventListener("sleepUpdated", handleSleepUpdated)
-    window.addEventListener("isRefreshing", handleRefreshingUpdated)
+    window.addEventListener("slidersLocked", handleSlidersLockedUpdated)
 
     if (window.isAppX === false) {
       window.addEventListener("updateProgress", handleProgressUpdated)
@@ -242,7 +242,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       window.removeEventListener("localizationUpdated", handleLocalizationUpdated)
       window.removeEventListener("updateUpdated", handleUpdateUpdated)
       window.removeEventListener("sleepUpdated", handleSleepUpdated)
-      window.removeEventListener("isRefreshing", handleRefreshingUpdated)
+      window.removeEventListener("slidersLocked", handleSlidersLockedUpdated)
       window.removeEventListener("updateProgress", handleProgressUpdated)
     }
   }, [])
@@ -257,7 +257,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
 
   const getMonitors = () => {
     if (!state.monitors || numMonitors == 0) {
-      if (state.isRefreshing) {
+      if (state.slidersLocked) {
         return (<div className="no-displays-message" style={{ textAlign: "center", paddingBottom: "15px" }}>{T.t("GENERIC_DETECTING_DISPLAYS")}</div>)
       }
       return (<div className="no-displays-message">{T.t("GENERIC_NO_COMPATIBLE_DISPLAYS")}</div>)
@@ -401,7 +401,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   }
 
   return (
-    <div className="window-base" data-theme={window.settings.theme || "default"} id="panel" data-refreshing={state.isRefreshing}>
+    <div className="window-base" data-theme={window.settings.theme || "default"} id="panel" data-sliders-locked={state.slidersLocked}>
       <div className="titlebar">
         <div className="title">{T.t("PANEL_TITLE")}</div>
         <div className="icons">

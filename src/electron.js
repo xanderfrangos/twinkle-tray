@@ -2544,9 +2544,14 @@ function tryVibrancy(window, value = null) {
 
 let isRefreshing = true
 let shouldShowPanel = false
-const setIsRefreshing = newValue => {
+// Greys out the panel's sliders. Only on while the list of sliders may be
+// wrong: startup, full refreshes (which display changes start) and the
+// capabilities scans that follow them. Quick reads don't lock the sliders.
+let slidersLocked = true
+const setIsRefreshing = (newValue, lockSliders = false) => {
   isRefreshing = (newValue ? true : false)
-  sendToAllWindows("isRefreshing", isRefreshing)
+  slidersLocked = (isRefreshing && lockSliders)
+  sendToAllWindows("sliders-locked", slidersLocked)
 }
 
 
@@ -3074,7 +3079,7 @@ async function refreshMonitors(fullRefresh = false, bypassRateLimit = false, byp
     console.log("\x1b[34m---------------------------------------------- \x1b[0m")
     return monitors;
   }
-  setIsRefreshing(true)
+  setIsRefreshing(true, fullRefresh)
 
   // Reset all known displays
   if (fullRefresh) {
@@ -3769,8 +3774,8 @@ ipcMain.on('flush-vcp-cache', function (event) {
   })
 })
 
-ipcMain.on('get-refreshing', () => {
-  sendToAllWindows('isRefreshing', isRefreshing)
+ipcMain.on('get-sliders-locked', () => {
+  sendToAllWindows('sliders-locked', slidersLocked)
 })
 
 ipcMain.on('open-settings', createSettings)
@@ -3897,7 +3902,7 @@ ipcMain.on('save-report', async () => {
 let panelState = "hidden"
 let panelReady = false
 
-function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = true) {
+function createPanel(toggleOnLoad = false, startLocked = false, showOnLoad = true) {
 
   console.log("Creating panel...")
 
@@ -3936,7 +3941,7 @@ function createPanel(toggleOnLoad = false, isRefreshing = false, showOnLoad = tr
         appVersion: appVersion,
         appVersionTag: appVersionTag,
         appBuild: appBuildShort,
-        isRefreshing: isRefreshing
+        slidersLocked: startLocked
       })).toString('base64')],
       allowRunningInsecureContent: true,
       webSecurity: false

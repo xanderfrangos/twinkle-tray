@@ -248,10 +248,10 @@ ipc.on('request-height', () => {
     ipc.send('panel-height', window.document.getElementById("panel").offsetHeight)
 })
 
-// Taskbar position recieved
-ipc.on('isRefreshing', (event, newValue) => {
-    window.isRefreshing = newValue
-    window.dispatchEvent(new CustomEvent('isRefreshing', {
+// Whether sliders are locked while the list of displays may change
+ipc.on('sliders-locked', (event, newValue) => {
+    window.slidersLocked = newValue
+    window.dispatchEvent(new CustomEvent('slidersLocked', {
         detail: newValue
     }))
 })
@@ -449,7 +449,7 @@ window.reactReady = false
 window.theme = "dark"
 window.settings = {}
 window.jsVars = getArgumentVars()
-window.isRefreshing = getArgumentVars().isRefreshing
+window.slidersLocked = getArgumentVars().slidersLocked
 window.isAppX = (getArgumentVars().appName == "twinkle-tray-appx" ? true : false)
 
 window.addEventListener("set-volume", e => {

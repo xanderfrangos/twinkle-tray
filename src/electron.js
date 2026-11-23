@@ -1852,9 +1852,9 @@ async function doHotkey(hotkey, options = {}) {
     for (const action of hotkey.actions) {
       try {
 
-        // Wait for refresh if user hasn't done so recently
+        // Read current brightness first if that hasn't happened recently
         if (action.type !== "refresh" && lastRefreshMonitors < Date.now() - 10000) {
-          await refreshMonitors()
+          await refreshKnownBrightness()
         }
 
         if (action.type === "off") {
@@ -2567,7 +2567,9 @@ refreshMonitorsJob = async (fullRefresh = false, generation = 0) => {
   })
 }
 
-readKnownBrightnessJob = async (requestId) => {
+// Resolves { brightness, unreadable }: readings keyed by monitor id, and the
+// ids of monitors that couldn't be read
+readKnownBrightnessJob = async (requestId, options = {}) => {
   return await new Promise((resolve, reject) => {
     let cleanup = () => { }
     try {
@@ -2578,7 +2580,7 @@ readKnownBrightnessJob = async (requestId) => {
       const listener = data => {
         if (data?.requestId !== requestId) return
         cleanup()
-        resolve(data?.brightness || {})
+        resolve({ brightness: (data?.brightness || {}), unreadable: (data?.unreadable || []) })
       }
       const workerStopped = () => {
         cleanup()
@@ -2597,7 +2599,12 @@ readKnownBrightnessJob = async (requestId) => {
       monitorsEventEmitter.on("knownBrightness", listener)
       worker.once("exit", workerStopped)
       worker.once("error", workerStopped)
-      worker.send({ type: "readKnownBrightness", requestId })
+      worker.send({
+        type: "readKnownBrightness",
+        requestId,
+        readDDC: (options.readDDC ?? true),
+        includeFeatures: (options.includeFeatures ?? false)
+      })
     } catch (e) {
       cleanup()
       reject(e)
@@ -2864,6 +2871,23 @@ function settleBrightnessReading(monitor, current, readStartedAt) {
   return keepCurrent
 }
 
+// Turn a reading's DDC/CI feature values into the values the app works with,
+// keeping any the app wrote since the read started. Those are stored like a
+// reading, so they're normalized like one.
+function settleFeatureReadings(monitor, current, readStartedAt) {
+  const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid?.[1]]
+  for(const vcp in monitor.features) {
+    if (!Array.isArray(monitor.features[vcp])) continue
+    if (current?.id === monitor.id && Array.isArray(current.features?.[vcp])
+      && wasWrittenSince(current, vcp, readStartedAt)) {
+      monitor.features[vcp][0] = current.features[vcp][0]
+    }
+    if(featuresSettings && vcp !== "0x62" && featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+      monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
+    }
+  }
+}
+
 // Save a brightness-only read (readKnownBrightness) onto the known monitors.
 // It goes through the same conversion as a refresh, including min/max and
 // calibration, which this read used to skip for plain DDC/CI monitors.
@@ -2875,6 +2899,15 @@ function applyKnownBrightness(knownBrightness, readStartedAt) {
     settleBrightnessReading(reading, monitor, readStartedAt)
     for (const field of ["brightness", "brightnessRaw", "brightnessMax", "gammaBrightness", "sdrLevel", "hdr"]) {
       if (reading[field] !== undefined) monitor[field] = reading[field]
+    }
+    // Feature values, when the read included them
+    if (known.features && monitor.features) {
+      settleFeatureReadings(reading, monitor, readStartedAt)
+      for (const vcp in reading.features) {
+        if (monitor.features[vcp] !== undefined && Array.isArray(reading.features[vcp])) {
+          monitor.features[vcp] = reading.features[vcp]
+        }
+      }
     }
   }
 }
@@ -2891,19 +2924,7 @@ function commitRefreshedMonitors(newMonitors, oldMonitors = {}, readStartedAt = 
     restoreGammaAfterReset(monitor, oldMonitors[id])
     settleBrightnessReading(monitor, current, readStartedAt)
 
-    // Other DDC/CI normalizations
-    const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-    for(const vcp in monitor.features) {
-      // Keep feature values the app wrote since the read started. They're
-      // stored like a reading, so they're normalized below like one.
-      if (current?.id === monitor.id && Array.isArray(current.features?.[vcp]) && Array.isArray(monitor.features[vcp])
-        && wasWrittenSince(current, vcp, readStartedAt)) {
-        monitor.features[vcp][0] = current.features[vcp][0]
-      }
-      if(featuresSettings && vcp !== "0x62" && featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
-        monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
-      }
-    }
+    settleFeatureReadings(monitor, current, readStartedAt)
   }
 
   monitors = newMonitors
@@ -4813,8 +4834,52 @@ function tryEagerUpdate(forceRefresh = true) {
   const now = Date.now()
   if (now > lastEagerUpdate + 5000) {
     lastEagerUpdate = now
-    refreshMonitors(forceRefresh, true)
+    if (forceRefresh) {
+      refreshMonitors(true, true)
+    } else {
+      refreshKnownBrightness()
+    }
   }
+}
+
+// A light read for flyout opens and hotkeys: the current brightness of the
+// displays already known, plus the DDC/CI features shown in the flyout. It
+// skips the DDC/CI rescan and doesn't hold back changes while it runs. If a
+// monitor can't be read, it falls back once to a normal quick refresh, which
+// rescans displays.
+let knownBrightnessReadPromise = false
+function refreshKnownBrightness() {
+  if (knownBrightnessReadPromise) return knownBrightnessReadPromise
+  // A running refresh or capabilities scan delivers fresh values itself
+  if (isWindowsUserIdle || !monitorsThreadReady || pausedMonitorUpdates || monitorWorkerHasExclusiveWork()) {
+    return Promise.resolve(monitors)
+  }
+
+  lastRefreshMonitors = Date.now()
+  const readStartedAt = Date.now()
+  const requestId = `${Date.now()}-${Math.random()}`
+  knownBrightnessReadPromise = readKnownBrightnessJob(requestId, {
+    readDDC: !!settings.getDDCBrightnessUpdates,
+    includeFeatures: "shown"
+  }).then(async ({ brightness, unreadable }) => {
+    const before = JSON.stringify(monitors)
+    applyKnownBrightness(brightness, readStartedAt)
+    if (JSON.stringify(monitors) !== before) {
+      setTrayPercent()
+      sendToAllWindows('monitors-updated', monitors)
+    }
+    if (unreadable.length) {
+      console.log(`Couldn't read brightness for ${unreadable.join(", ")}. Falling back to a quick refresh.`)
+      await refreshMonitors(false, true)
+    }
+  }).catch(async error => {
+    console.log("Couldn't read known brightness. Falling back to a quick refresh.", error)
+    await refreshMonitors(false, true)
+  }).then(() => {
+    knownBrightnessReadPromise = false
+    return monitors
+  })
+  return knownBrightnessReadPromise
 }
 
 function quitApp() {
@@ -5885,7 +5950,7 @@ function applyCurrentAdjustmentEvent(force = false, instant = true) {
           const requestId = `${Date.now()}-${Math.random()}`
           const readStartedAt = Date.now()
           readKnownBrightnessJob(requestId)
-            .then(knownBrightness => {
+            .then(({ brightness: knownBrightness }) => {
               applyKnownBrightness(knownBrightness, readStartedAt)
               applyAdjustment(new Set(Object.keys(knownBrightness)))
             })

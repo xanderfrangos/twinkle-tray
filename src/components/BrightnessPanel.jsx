@@ -230,6 +230,10 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       window.addEventListener("updateProgress", handleProgressUpdated)
     }
 
+    // The lock can change between the first draw and adding the listener
+    // above. The preload always keeps window.slidersLocked current.
+    setState(prev => (prev.slidersLocked === window.slidersLocked ? prev : { ...prev, slidersLocked: window.slidersLocked }))
+
     // Update brightness every interval, if changed
     window.requestSettings()
     window.requestMonitors()

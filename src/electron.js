@@ -4912,6 +4912,19 @@ function tryEagerUpdate(forceRefresh = true) {
 // rescans displays.
 let knownBrightnessReadPromise = false
 function refreshKnownBrightness() {
+  // Only refreshes and the capabilities scans after them lock the sliders. If
+  // none is running, the lock was left on by mistake.
+  if (slidersLocked && !monitorWorkerHasExclusiveWork()) {
+    if (!lastCompletedRefresh) {
+      // The displays aren't known yet. A full refresh keeps "Detecting
+      // displays..." on screen until it ends, where a quick one would show
+      // "No compatible displays" while it runs.
+      console.log("Sliders were locked before any refresh finished. Running a full refresh.")
+      return refreshMonitors(true, true, true)
+    }
+    console.log("Sliders were locked with no refresh running. Unlocking.")
+    setIsRefreshing(false)
+  }
   if (knownBrightnessReadPromise) return knownBrightnessReadPromise
   // A running refresh or capabilities scan delivers fresh values itself
   if (isWindowsUserIdle || !monitorsThreadReady || pausedMonitorUpdates || monitorWorkerHasExclusiveWork()) {

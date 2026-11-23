@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 const { scaleVolume, unscaleVolume } = require("../volume-utils")
 import { useObject } from "../hooks/useObject"
 import Slider from "./Slider"
@@ -17,7 +17,26 @@ export default function DDCCISliders(props) {
     }
     defaultValues["0x62"] = volumeLevel
     const [values, setValues] = useObject(defaultValues)
-    useEffect(() => { setValues({ "0x62": volumeLevel }) }, [monitor.id, volumeLevel])
+
+    // Features the user is adjusting, and when that stops counting. New
+    // monitor data doesn't move these sliders.
+    const inUseUntil = useRef({})
+    const setValueInUse = (vcp, value) => {
+        inUseUntil.current[vcp] = Date.now() + 1000
+        setValues({ [vcp]: value })
+    }
+
+    // Follow new values for every feature the user isn't adjusting
+    const defaultValuesKey = JSON.stringify(defaultValues)
+    useEffect(() => {
+        const now = Date.now()
+        const updates = {}
+        for (const vcp in defaultValues) {
+            if (inUseUntil.current[vcp] > now) continue
+            if (JSON.stringify(values[vcp]) !== JSON.stringify(defaultValues[vcp])) updates[vcp] = defaultValues[vcp]
+        }
+        if (Object.keys(updates).length) setValues(updates)
+    }, [monitor.id, defaultValuesKey])
 
     const inputsData = {
         1: "VGA-1",
@@ -42,7 +61,7 @@ export default function DDCCISliders(props) {
 
     const changeInputsState = (code) => {
         const a = [code, [...values["0x60"][1]]]
-        setValues({ ["0x60"]: a })
+        setValueInUse("0x60", a)
     }
 
     let extraHTML = []
@@ -65,7 +84,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-contrast" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else if (vcp === "0x62") {
@@ -73,7 +92,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE767;</span></div>
-                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); window.dispatchEvent(new CustomEvent("set-volume", { detail: { monitor: monitor.id, value: scaleVolume(val, feature, volumeSettings) } })) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="volume" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); window.dispatchEvent(new CustomEvent("set-volume", { detail: { monitor: monitor.id, value: scaleVolume(val, feature, volumeSettings) } })) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else if (vcp === "0x60") {
@@ -103,7 +122,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon">{icon}</div>
-                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValues({ [vcp]: val }); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 }

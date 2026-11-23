@@ -64,6 +64,10 @@ export default class Slider extends Component {
     }
 
     componentDidUpdate(oldProps) {
+        // Follow new levels from outside, so scrolling starts from the shown level
+        if (oldProps.level != this.props.level && this.cap(this.props.level) != this.state.level) {
+            this.setState({ level: this.cap(this.props.level) })
+        }
         if (oldProps.max != this.props.max || oldProps.min != this.props.min) {
             this.setState({
                 level: this.cap(this.props.level)

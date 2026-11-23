@@ -28,6 +28,9 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const changedMonitors = useRef(new Set())
   // Remaps from the last settings update, to spot a monitor whose limits changed
   const lastRemaps = useRef(null)
+  // Monitors the user is adjusting, with the level they set and when that
+  // stops counting. New monitor data doesn't move these sliders.
+  const sliderInUse = useRef({})
   const [T] = useState(new TranslateReact({}, {}))
   const [, setLocalizationVersion] = useState(0)
 
@@ -51,6 +54,15 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     })
   }
 
+  // A slider stays the user's for this long after their last input
+  const SLIDER_IN_USE_MS = 1000
+
+  const markSliderInUse = (key, level) => {
+    sliderInUse.current[key] = { level, until: Date.now() + SLIDER_IN_USE_MS }
+  }
+
+  const isSliderInUse = (key) => (sliderInUse.current[key]?.until > Date.now())
+
   // Handle <Slider> changes
   const handleChange = (level, slider) => {
     const monitors = { ...state.monitors }
@@ -61,6 +73,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
         const monitor = monitors[key]
         monitor.brightness = level
         changedMonitors.current.add(key)
+        markSliderInUse(key, level)
       }
       setState(prev => ({ ...prev, monitors }))
       setLevelsChanged(true)
@@ -70,6 +83,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       if (sliderMonitor) {
         sliderMonitor.brightness = level
         changedMonitors.current.add(slider.props.hwid)
+        markSliderInUse(slider.props.hwid, level)
       }
       setState(prev => ({ ...prev, monitors }))
       setLevelsChanged(true)
@@ -81,6 +95,13 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   // Update monitor info
   const recievedMonitors = (e) => {
     let newMonitors = { ...e.detail }
+    // New data can be behind the slider the user is moving (it was sent up
+    // to one update interval ago), so keep their level for those monitors.
+    for (const key in newMonitors) {
+      if (isSliderInUse(key) && newMonitors[key]) {
+        newMonitors[key] = { ...newMonitors[key], brightness: sliderInUse.current[key].level }
+      }
+    }
     // Reset panel height so it's recalculated
     panelHeight = -1
     setState(prev => ({

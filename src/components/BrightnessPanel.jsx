@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Slider from "./Slider";
 import DDCCISliders from "./DDCCISliders"
 import HDRSliders from "./HDRSliders";
@@ -23,7 +23,11 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   const [doBackgroundEvent, setDoBackgroundEvent] = useState(false)
   const [levelsChanged, setLevelsChanged] = useState(false)
   const [init, setInit] = useState(false)
-  const [lastLevels, setLastLevels] = useState([])
+  // Monitors whose level the user changed since the last send. Only these are
+  // sent, so opening the panel never writes old values back to every monitor.
+  const changedMonitors = useRef(new Set())
+  // Remaps from the last settings update, to spot a monitor whose limits changed
+  const lastRemaps = useRef(null)
   const [T] = useState(new TranslateReact({}, {}))
   const [, setLocalizationVersion] = useState(0)
 
@@ -56,13 +60,17 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       for (let key in monitors) {
         const monitor = monitors[key]
         monitor.brightness = level
+        changedMonitors.current.add(key)
       }
       setState(prev => ({ ...prev, monitors }))
       setLevelsChanged(true)
       if (state.updateInterval === 999) syncBrightness()
     } else if (numMonitors > 0) {
       // Update single monitor
-      if (sliderMonitor) sliderMonitor.brightness = level;
+      if (sliderMonitor) {
+        sliderMonitor.brightness = level
+        changedMonitors.current.add(slider.props.hwid)
+      }
       setState(prev => ({ ...prev, monitors }))
       setLevelsChanged(true)
       if (state.updateInterval === 999) syncBrightness()
@@ -73,7 +81,6 @@ const BrightnessPanel = memo(function BrightnessPanel() {
   // Update monitor info
   const recievedMonitors = (e) => {
     let newMonitors = { ...e.detail }
-    setLastLevels([])
     // Reset panel height so it's recalculated
     panelHeight = -1
     setState(prev => ({
@@ -84,27 +91,30 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     if (!init) setTimeout(() => { setInit(true) }, 333)
   }
 
-  const updateMinMax = (inMonitors = false) => {
-    if (numMonitors > 0) {
-      let newMonitors = Object.assign((inMonitors ? inMonitors : state.monitors), {})
-      for (let key in newMonitors) {
-        for (let remap in state.remaps) {
-          if (newMonitors[key].name == remap) {
-            newMonitors[key].min = state.remaps[remap].min
-            newMonitors[key].max = state.remaps[remap].max
-          }
-        }
+  // The remap that applies to a monitor, matched the same way as the main process
+  const getRemap = (remaps, monitor) => {
+    if (!remaps || !monitor) return undefined
+    return remaps[monitor.id] ?? remaps[monitor.name]
+  }
+
+  // Re-send a monitor's level when its min/max remap changed, so the new
+  // limits are applied to it. Other settings changes don't send anything.
+  const updateMinMax = (remaps) => {
+    const previous = lastRemaps.current
+    lastRemaps.current = remaps
+    if (!previous) return
+    let changed = false
+    const monitors = window.allMonitors || {}
+    for (const key in monitors) {
+      const monitor = monitors[key]
+      if (JSON.stringify(getRemap(previous, monitor)) !== JSON.stringify(getRemap(remaps, monitor))) {
+        changedMonitors.current.add(key)
+        changed = true
       }
+    }
+    if (changed) {
       setLevelsChanged(true)
-      if (inMonitors) {
-        return inMonitors
-      } else {
-        setState(prev => ({
-          ...prev,
-          monitors: newMonitors
-        }))
-        setDoBackgroundEvent(true)
-      }
+      setDoBackgroundEvent(true)
     }
   }
 
@@ -117,7 +127,6 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     const remaps = (settings.remaps || {})
     const names = (settings.names || {})
     const hideDisplays = (settings.hideDisplays || {})
-    setLevelsChanged(true)
     setState(prev => ({
       ...prev,
       linkedLevelsActive,
@@ -127,9 +136,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
       updateInterval,
       sleepAction
     }))
-    resetBrightnessInterval()
-    updateMinMax()
-    setDoBackgroundEvent(true)
+    updateMinMax(remaps)
   }
 
   const recievedUpdate = (e) => {
@@ -149,9 +156,11 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     if (init && levelsChanged && (window.showPanel || doBackgroundEvent) && numMonitors) {
       setDoBackgroundEvent(false)
       setLevelsChanged(false)
+      const changed = changedMonitors.current
+      changedMonitors.current = new Set()
       try {
         for (let idx in monitors) {
-          if (isAdjustableDisplay(monitors[idx]) && monitors[idx].brightness != lastLevels[idx]) {
+          if (changed.has(idx) && isAdjustableDisplay(monitors[idx])) {
             window.updateBrightness(monitors[idx].id, monitors[idx].brightness)
           }
         }
@@ -174,7 +183,7 @@ const BrightnessPanel = memo(function BrightnessPanel() {
     return () => {
       clearInterval(updateInterval)
     }
-  }, [state.monitors, numMonitors, doBackgroundEvent, levelsChanged, init])
+  }, [state.monitors, state.updateInterval, numMonitors, doBackgroundEvent, levelsChanged, init])
 
 
   useEffect(() => {

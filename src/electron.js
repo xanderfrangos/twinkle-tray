@@ -295,6 +295,9 @@ let monitorsThreadReal
 let monitorsEventEmitter = new EventEmitter()
 let monitorsThreadReady = false
 let monitorsThreadStarting = false
+// Startup skipped the monitor process because Windows said the user was away.
+// It starts when the screens wake instead.
+let monitorThreadStartDeferred = false
 let monitorsThreadFailed = false
 let monitorsThreadFailedResetTimer = false
 let monitorThreadRecoveryPromise = false
@@ -366,6 +369,7 @@ function startMonitorThread({ allowWhileWindowsIdle = false } = {}) {
   if((monitorsThreadReal?.connected && monitorsThreadReal?.exitCode === null) || monitorsThreadStarting || (isWindowsUserIdle && !allowWhileWindowsIdle)) return false;
   monitorsThreadReady = false
   monitorsThreadStarting = true
+  monitorThreadStartDeferred = false
   console.log("Starting monitor thread")
   const skipTest = (settings.preferredDDCCIMethod == "auto" ? false : true)
   monitorsThreadReal = fork(path.join(__dirname, 'Monitors.js'), ["--isdev=" + isDev, "--apppath=" + app.getAppPath(), "--skiptest=" + skipTest, "--datapath=" + app.getPath("userData")], { silent: true })
@@ -4090,6 +4094,7 @@ function createPanel(toggleOnLoad = false, startLocked = false, showOnLoad = tru
         if(isWindowsUserIdle) {
           isWindowsUserIdle = false
           console.log("Displays have woken up.")
+          if(monitorThreadStartDeferred) startMonitorThread();
           recentlyWokeUp = true
           handleMetricsChange("GUID_SESSION_USER_PRESENCE")
           if(!resumeRecoveryInProgress) clearRecentlyWokeUpLater()
@@ -4683,7 +4688,13 @@ app.on("ready", async () => {
   createPanel(false, true)
 
   await doWMIBridgeTest()
-  startMonitorThread()
+  // Windows may already say the user is away, so the monitors may be off. The
+  // power event handler starts the process when the screens wake, and the
+  // startup steps below run once it's ready.
+  if (!startMonitorThread() && isWindowsUserIdle) {
+    console.log("Displays are off. Starting the monitor thread when they wake.")
+    monitorThreadStartDeferred = true
+  }
   monitorsThread.once("ready", async () => {
 
     monitorsThread.send({

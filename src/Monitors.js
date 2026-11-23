@@ -660,6 +660,7 @@ refreshMonitors = async (fullRefresh = false, ddcciType = "default", alwaysSendU
 async function readKnownBrightness({ readDDC = true, includeFeatures = false } = {}) {
     if (!monitors) return { brightness: {}, unreadable: [] }
 
+    const startTime = process.hrtime.bigint()
     const result = {}
     const unreadableMonitorIds = new Set()
     const monitorsWithFeatures = new Set()
@@ -669,7 +670,9 @@ async function readKnownBrightness({ readDDC = true, includeFeatures = false } =
             const monitor = monitors[hwid2]
             if (!readDDC || monitor.type !== "ddcci" || !monitor.brightnessType) continue
 
+            const monitorStart = process.hrtime.bigint()
             const refreshedMonitor = await getBrightnessDDC(monitor, includeFeatures, true)
+            console.log(`readKnownBrightness DDC/CI (${hwid2}): ${elapsedMS(monitorStart)}ms`)
             if (!refreshedMonitor.brightnessReadFailed) {
                 monitors[hwid2] = refreshedMonitor
                 if (includeFeatures) monitorsWithFeatures.add(refreshedMonitor.id)
@@ -737,6 +740,7 @@ async function readKnownBrightness({ readDDC = true, includeFeatures = false } =
         }
     }
 
+    console.log(`readKnownBrightness() Total: ${elapsedMS(startTime)}ms${unreadableMonitorIds.size ? `, unreadable: ${[...unreadableMonitorIds].join(", ")}` : ""}`)
     return { brightness: result, unreadable: [...unreadableMonitorIds] }
 }
 

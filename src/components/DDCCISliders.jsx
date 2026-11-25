@@ -1,19 +1,22 @@
 import React, { useEffect, useRef } from "react"
 const { scaleVolume, unscaleVolume } = require("../volume-utils")
+const { scaleFeature, unscaleFeature } = require("../feature-utils")
 import { useObject } from "../hooks/useObject"
 import Slider from "./Slider"
 
 export default function DDCCISliders(props) {
     const { monitor, monitorFeatures } = props
 
-    const volumeSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid?.[1]]?.["0x62"]
+    const featureSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid?.[1]]
+    const volumeSettings = featureSettings?.["0x62"]
     const volumeLevel = unscaleVolume(monitor.features?.["0x62"]?.[0] ?? 0, monitor.features?.["0x62"], volumeSettings)
     const defaultValues = {}
 
+    // Feature values are raw; the sliders show them as a percentage
     for (const vcp in monitor?.features) {
         defaultValues[vcp] = vcp === "0x60"
             ? monitor?.features?.[vcp] ?? 0
-            : monitor?.features?.[vcp]?.[0] ?? 0
+            : unscaleFeature(monitor?.features?.[vcp]?.[0] ?? 0, monitor?.features?.[vcp], featureSettings?.[vcp])
     }
     defaultValues["0x62"] = volumeLevel
     const [values, setValues] = useObject(defaultValues)
@@ -65,7 +68,6 @@ export default function DDCCISliders(props) {
     }
 
     let extraHTML = []
-    const featureSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid[1]]
 
     if (monitor?.features) {
         let i = 0
@@ -84,7 +86,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-contrast" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="contrast" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), scaleFeature(val, feature, featureSettings?.[vcp]), true) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 } else if (vcp === "0x62") {
@@ -122,7 +124,7 @@ export default function DDCCISliders(props) {
                     extraHTML.push(
                         <div className="feature-row feature-volume" key={monitor.key + "_" + vcp}>
                             <div className="feature-icon">{icon}</div>
-                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), val * (monitor.features[vcp][1] / 100)) }} scrollAmount={props.scrollAmount} />
+                            <Slider type="custom" monitorID={monitor.id} level={values[vcp]} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setValueInUse(vcp, val); setVCP(monitor.id, parseInt(vcp), scaleFeature(val, feature, settings), true) }} scrollAmount={props.scrollAmount} />
                         </div>
                     )
                 }
@@ -138,12 +140,14 @@ export default function DDCCISliders(props) {
     )
 }
 
-function setVCP(monitor, code, value) {
+// raw: the value is already in the display's own units and Min/Max applied
+function setVCP(monitor, code, value, raw = false) {
     window.dispatchEvent(new CustomEvent("setVCP", {
         detail: {
             monitor,
             code,
-            value
+            value,
+            raw
         }
     }))
 }

@@ -19,6 +19,7 @@ const isPortable = (app.name == "twinkle-tray-portable" ? true : false)
 
 const Utils = require("./Utils")
 const { scaleVolume } = require("./volume-utils")
+const { scaleFeature } = require("./feature-utils")
 const logger = require("./Logger")
 
 const configFilesDir = (isPortable ? path.join(__dirname, "../../config/") : app.getPath("userData"))
@@ -2772,7 +2773,7 @@ function hasEnabledLinkedFeatures() {
   }
 }
 
-function deferFeatureUpdate(monitor, level, useCap, vcpValue, clearTransition = true) {
+function deferFeatureUpdate(monitor, level, useCap, vcpValue, clearTransition = true, raw = false) {
   if (!monitor?.id) return false
   deferredFeatureUpdates.set(`${monitor.id}:${vcpValue}`, {
     generation: monitorRefreshGeneration,
@@ -2780,7 +2781,8 @@ function deferFeatureUpdate(monitor, level, useCap, vcpValue, clearTransition = 
     level,
     useCap,
     vcpValue,
-    clearTransition
+    clearTransition,
+    raw
   })
   return true
 }
@@ -2808,7 +2810,7 @@ function flushDeferredFeatureUpdates() {
     if (update.generation !== monitorRefreshGeneration) continue
     const monitor = Object.values(monitors).find(item => item?.id === update.monitorId)
     if (monitor) {
-      updateBrightness(update.monitorId, update.level, update.useCap, update.vcpValue, update.clearTransition)
+      updateBrightness(update.monitorId, update.level, update.useCap, update.vcpValue, update.clearTransition, update.raw)
     }
   }
 
@@ -2911,19 +2913,14 @@ function settleBrightnessReading(monitor, current, readStartedAt) {
   return keepCurrent
 }
 
-// Turn a reading's DDC/CI feature values into the values the app works with,
-// keeping any the app wrote since the read started. Those are stored like a
-// reading, so they're normalized like one.
+// Keep any DDC/CI feature values the app wrote since the read started.
+// Feature values stay raw; the sliders convert them to and from percent.
 function settleFeatureReadings(monitor, current, readStartedAt) {
-  const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid?.[1]]
   for(const vcp in monitor.features) {
     if (!Array.isArray(monitor.features[vcp])) continue
     if (current?.id === monitor.id && Array.isArray(current.features?.[vcp])
       && wasWrittenSince(current, vcp, readStartedAt)) {
       monitor.features[vcp][0] = current.features[vcp][0]
-    }
-    if(featuresSettings && vcp !== "0x62" && featuresSettings[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
-      monitor.features[vcp][0] = normalizeBrightness(monitor.features[vcp][0], true, featuresSettings[vcp].min, featuresSettings[vcp].max)
     }
   }
 }
@@ -3217,7 +3214,8 @@ function flushGammaBrightness() {
 // Throttle state per monitor + VCP target: when it was last written, the
 // latest update waiting to be written, and the timer that will write it.
 const brightnessThrottleTargets = new Map()
-function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness") {
+// raw: a feature value already in the display's own units with Min/Max applied
+function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, vcp = "brightness", raw = false) {
   // A monitor can receive its brightness update and several linked feature
   // updates at once. Keep each VCP target separate so one linked feature does
   // not replace another feature (or the brightness update) in the queue.
@@ -3237,7 +3235,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   const now = Date.now()
   if (!state.timeout && now >= state.lastTime + settings.updateInterval) {
     state.lastTime = now
-    updateBrightness(id, level, useCap, vcp)
+    updateBrightness(id, level, useCap, vcp, true, raw)
     if (sendUpdate) sendToAllWindows('monitors-updated', monitors);
     return true
   }
@@ -3246,7 +3244,7 @@ function updateBrightnessThrottle(id, level, useCap = true, sendUpdate = true, v
   recordMonitorWrite(id, vcpKey)
 
   // Keep only the latest level, but still notify windows if any skipped update asked to
-  state.pending = { id, level, useCap, vcp, sendUpdate: (sendUpdate || state.pending?.sendUpdate) }
+  state.pending = { id, level, useCap, vcp, raw, sendUpdate: (sendUpdate || state.pending?.sendUpdate) }
   if (!state.timeout) {
     // Each target has its own timer, so it's never written sooner than
     // updateInterval after its own last write
@@ -3262,7 +3260,7 @@ function flushBrightnessThrottle(state) {
   if (!update) return
   state.lastTime = Date.now()
   try {
-    updateBrightness(update.id, update.level, update.useCap, update.vcp)
+    updateBrightness(update.id, update.level, update.useCap, update.vcp, true, update.raw)
   } catch (e) {
     console.error(e)
   }
@@ -3299,13 +3297,14 @@ function applyLinkedFeatures(monitor, newLevel, useCap = true) {
         // Scale volume the same way the volume sliders do, so it respects the maximum override
         updateBrightnessThrottle(monitor.id, scaleVolume(capped, monitor.features[vcp], featuresSettings[vcp]), useCap, false, "volume-raw")
       } else {
-        updateBrightnessThrottle(monitor.id, capped, useCap, false, vcp)
+        // Scale the same way the feature sliders do, so Min/Max are respected
+        updateBrightnessThrottle(monitor.id, scaleFeature(capped, monitor.features[vcp], featuresSettings[vcp]), useCap, false, vcp, true)
       }
     }
   }
 }
 
-function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true) {
+function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness", clearTransition = true, raw = false) {
   if(isWindowsUserIdle) return false; // Skip if displays are off
   // NaN reaches the worker as null, which the VCP path writes as 0
   if (!Number.isFinite(parseFloat(newLevel))) {
@@ -3360,7 +3359,7 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
     // used for brightness, but queue feature work until it is safe to run.
     if ((monitor.featuresPending || monitor.featuresRefreshing) && vcp !== "gamma"
       && ((vcp !== "brightness" && vcp !== "sdr") || monitor.type === "none")) {
-      deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition)
+      deferFeatureUpdate(monitor, newLevel, useCap, vcpValue, clearTransition, raw)
       return true
     }
 
@@ -3457,9 +3456,9 @@ function updateBrightness(index, newLevel, useCap = true, vcpValue = "brightness
         const vcpString = `0x${parseInt(vcp).toString(16).toUpperCase()}`
         try {
           
-          // Normalize VCP value, if applicable
+          // Normalize VCP value, if applicable. Sliders send raw values.
           const featuresSettings = settings.monitorFeaturesSettings?.[monitor.hwid[1]]
-          if(!rawVolume && featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
+          if(!rawVolume && !raw && featuresSettings?.[vcp] && featuresSettings[vcp].min >= 0 && featuresSettings[vcp].max <= 100) {
             level = normalizeBrightness(level, false, featuresSettings[vcp].min, featuresSettings[vcp].max)
           }
           
@@ -3889,8 +3888,10 @@ ipcMain.on('set-volume', (e, values) => {
 })
 
 ipcMain.on('set-vcp', (e, values) => {
+  const raw = (values.raw === true)
+  if (raw && (!Number.isInteger(values.value) || values.value < 0 || values.value > 0xFFFF)) return
   setRecentlyInteracted(true)
-  updateBrightnessThrottle(values.monitor, values.value, false, true, values.code)
+  updateBrightnessThrottle(values.monitor, values.value, false, true, values.code, raw)
 })
 ipcMain.on('set-sdr-brightness', (e, values) => {
   setRecentlyInteracted(true)

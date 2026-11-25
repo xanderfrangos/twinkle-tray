@@ -254,8 +254,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // VCP code handling
 window.addEventListener("setVCP", e => {
-    const { monitor, code, value } = e.detail
-    ipc.send("set-vcp", { monitor, code, value })
+    const { monitor, code, value, raw } = e.detail
+    ipc.send("set-vcp", { monitor, code, value, raw })
 })
 
 window.addEventListener("set-sdr-brightness", e => {

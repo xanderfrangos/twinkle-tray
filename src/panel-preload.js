@@ -421,8 +421,8 @@ const vcpMap = {
 }
 window.addEventListener("setVCP", e => {
     if(!window.showPanel) return false;
-    const { monitor, code, value } = e.detail
-    ipc.send("set-vcp", { monitor, code, value })
+    const { monitor, code, value, raw } = e.detail
+    ipc.send("set-vcp", { monitor, code, value, raw })
     if(vcpMap[vcp] && monitor.features[vcpMap[vcp]]) {
         monitor.features[vcpMap[vcp]][0] = level
       }

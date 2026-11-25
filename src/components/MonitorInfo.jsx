@@ -3,13 +3,15 @@ import Slider from "./Slider"
 import TranslateReact from "../TranslateReact"
 import { displayLevel } from "./utilts/monitor.util"
 const { scaleVolume, unscaleVolume } = require("../volume-utils")
+const { scaleFeature, unscaleFeature } = require("../feature-utils")
 
 export default function MonitorInfo(props) {
     const { monitor, name } = props
     const volumeSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid?.[1]]?.["0x62"]
     const volumeLevel = unscaleVolume(monitor.features?.["0x62"]?.[0] ?? 0, monitor.features?.["0x62"], volumeSettings)
+    const contrastSettings = window.settings?.monitorFeaturesSettings?.[monitor?.hwid?.[1]]?.["0x12"]
     const [brightness, setBrightness] = useState(monitor?.features?.["0x10"] ? monitor?.features?.["0x10"][0] : 50)
-    const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? monitor?.features?.["0x12"][0] : 50)
+    const [contrast, setContrast] = useState(monitor?.features?.["0x12"] ? unscaleFeature(monitor.features["0x12"][0], monitor.features["0x12"], contrastSettings) : 50)
     const [volume, setVolume] = useState(volumeLevel)
     useEffect(() => { setVolume(volumeLevel) }, [monitor.id, volumeLevel])
     const [powerState, setPowerState] = useState(monitor?.features?.["0xD6"] ? monitor?.features?.["0xD6"][0] : 50)
@@ -62,7 +64,7 @@ export default function MonitorInfo(props) {
         extraHTML.push(
             <div className="feature-row" key="contrast">
                 <div className="feature-icon"><span className="icon vfix">&#xE793;</span></div>
-                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, val * (monitor.features["0x12"][1] / 100)) }} scrolling={false} />
+                <Slider type="contrast" monitorID={monitor.id} level={contrast} monitorName={monitor.name} monitortype={monitor.type} onChange={val => { setContrast(val); setVCP(monitor.id, 0x12, scaleFeature(val, monitor.features["0x12"], contrastSettings), true) }} scrolling={false} />
             </div>
         )
     }
@@ -131,12 +133,14 @@ export default function MonitorInfo(props) {
     )
 }
 
-function setVCP(monitor, code, value) {
+// raw: the value is already in the display's own units and Min/Max applied
+function setVCP(monitor, code, value, raw = false) {
     window.dispatchEvent(new CustomEvent("setVCP", {
         detail: {
             monitor,
             code,
-            value
+            value,
+            raw
         }
     }))
 }

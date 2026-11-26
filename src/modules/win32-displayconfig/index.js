@@ -674,35 +674,44 @@ class VerticalRefreshRateContext {
     this.geometry = [];
 
     const computeDisplayGeometryFromConfig = (err, conf) => {
-      if (err !== null) {
-        this.geometry = [];
-        readyPromiseResolver();
-        return;
-      }
-      const geom = [];
+      try {
+        if (err !== null || !Array.isArray(conf)) {
+          this.geometry = [];
+          readyPromiseResolver();
+          return;
+        }
+        const geom = [];
 
-      for (const { sourceMode, targetVideoSignalInfo, inUse } of conf) {
-        if (!inUse) {
-          continue;
+        for (const { sourceMode, targetVideoSignalInfo, inUse } of conf) {
+          if (!inUse || !sourceMode) {
+            continue;
+          }
+
+          const { width, height, position } = sourceMode;
+          if (width === undefined || height === undefined || !position) {
+            continue;
+          }
+
+          const vSyncFreq = targetVideoSignalInfo?.vSyncFreq;
+          // 60Hz is a safe guess for virtual displays or broken vSyncFreq outputs
+          const vRefreshRate =
+            !vSyncFreq || vSyncFreq.Numerator === 0 || vSyncFreq.Denominator === 0
+              ? 60
+              : vSyncFreq.Numerator / vSyncFreq.Denominator;
+          const top = position.y;
+          const bottom = position.y + height;
+          const left = position.x;
+          const right = position.x + width;
+
+          geom.push({ top, bottom, left, right, vRefreshRate });
         }
 
-        const { width, height, position } = sourceMode;
-        const { vSyncFreq } = targetVideoSignalInfo;
-        // 30Hz is a safe guess for broken vSyncFreq outputs, I think...
-        const vRefreshRate =
-          vSyncFreq.Numerator === 0 || vSyncFreq.Denominator === 0
-            ? 30
-            : vSyncFreq.Numerator / vSyncFreq.Denominator;
-        const top = position.y;
-        const bottom = position.y + height;
-        const left = position.x;
-        const right = position.x + width;
-
-        geom.push({ top, bottom, left, right, vRefreshRate });
+        this.geometry = geom;
+      } catch (e) {
+        console.error("computeDisplayGeometryFromConfig error:", e);
+      } finally {
+        readyPromiseResolver();
       }
-
-      this.geometry = geom;
-      readyPromiseResolver();
     };
 
     this.changeListener = module.exports.addDisplayChangeListener(

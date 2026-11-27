@@ -151,6 +151,37 @@ body[data-use-native-animation="false"] {
 
 
 //
+// Hotkey buttons
+//
+
+.hotkey-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 14px;
+
+    .hotkey-button {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--tray-text);
+        background: transparent;
+        border: 1px solid rgba(128, 128, 128, 0.45);
+        border-radius: 4px;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &:hover, &:focus {
+            background: rgba(128, 128, 128, 0.15);
+        }
+    }
+}
+
+
+//
 // Update bar
 //
 

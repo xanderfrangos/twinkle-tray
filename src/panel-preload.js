@@ -176,6 +176,11 @@ function turnOffDisplays() {
     }, 111)
 }
 
+// Trigger a configured hotkey by id (hotkey-as-button)
+function triggerHotkey(id) {
+    ipc.send('trigger-hotkey', id)
+}
+
 function installUpdate() {
     ipc.send('get-update', window.latestVersion)
     ipc.send('clear-update', window.latestVersion.version)
@@ -441,6 +446,7 @@ window.sendHeight = sendHeight
 window.panelAnimationDone = panelAnimationDone
 window.setPanelVisibility = setPanelVisibility
 window.turnOffDisplays = turnOffDisplays
+window.triggerHotkey = triggerHotkey
 window.allMonitors = []
 window.lastUpdate = Date.now()
 window.showPanel = false

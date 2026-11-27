@@ -288,5 +288,19 @@
     "SETTINGS_LIGHT_SENSOR_YOCTO_AUTOSTART": "Hub można skonfigurować tak, aby uruchamiał się automatycznie, uruchamiając go w wierszu poleceń z opcją „-i”",
     "SETTINGS_LIGHT_SENSOR_YOCTO_SERVICE": "Zobacz „-i: Instalacja jako usługa” tutaj",
     "SETTINGS_LIGHT_SENSOR_YOCTO_URL_LABEL": "Adres URL VirtualHub:",
-    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Rozłączony"
+    "SETTINGS_LIGHT_SENSOR_YOCTO_DISCONNECTED": "Rozłączony",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_TITLE": "Zastąpienie suwaka głównego przez funkcję „Gamma Ramp”",
+    "SETTINGS_MONITORS_GAMMA_SLIDER_DESCRIPTION": "Jeśli Twój wyświetlacz nie obsługuje standardowej regulacji jasności, możesz skorzystać z tej metody jako alternatywy.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_TITLE": "Zwiększ minimalną jasność",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_DESCRIPTION": "Zmniejsz jasność poniżej standardowych poziomów minimalnych, dostosowując krzywą gamma w oprogramowaniu. Opcjonalnie możesz ustawić wartość procentową suwaka, aby korzystać z przyciemniania programowego zamiast sprzętowego.",
+    "SETTINGS_MONITORS_EXTEND_MINIMUM_BREAKPOINT": "Wartość procentowa zakresu suwaka, w której stosowane jest programowe przyciemnianie",
+    "SETTINGS_MONITORS_GAMMA_HDR_UNAVAILABLE": "Niedostępne, gdy włączona jest funkcja HDR",
+    "SETTINGS_FEATURES_DDC_BLOCK_TITLE": "Zablokuj komunikację DDC/CI",
+    "SETTINGS_FEATURES_DDC_BLOCK_DESC": "Zablokuj wysyłanie przez Twinkle Tray jakichkolwiek poleceń DDC/CI do określonych wyświetlaczy. Funkcja ta jest przeznaczona dla wyświetlaczy, które podczas wykrywania spowalniają lub zawieszają system, np. tych podłączonych za pomocą jednokierunkowych optycznych kabli HDMI lub adapterów, które nie przekazują sygnału DDC/CI. Dotyczy to wszystkich podłączonych wyświetlaczy tego samego modelu, a zablokowanych wyświetlaczy nie można sterować za pomocą DDC/CI.",
+    "SETTINGS_FEATURES_DDC_MAXIMUM": "Maksymalne nadpisanie wartości z DDC",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_PLACEHOLDER": "Zgłoszona wartość",
+    "SETTINGS_FEATURES_DDC_MAXIMUM_DESC": "Użyj tej opcji, jeśli wyświetlacz podaje nieprawidłową wartość maksymalnej głośności. Pozostaw to pole puste, aby użyć wartości podanej przez wyświetlacz.",
+    "SETTINGS_TIME_SUN_OFFSET": "Przesunięcie (minuty)",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_WARN": "System Windows nadal będzie regulował jasność wbudowanego wyświetlacza po naciśnięciu klawisza jasności. Nie należy używać skrótów klawiszowych „BrightnessUp” ani „BrightnessDown” do regulacji jasności wbudowanego wyświetlacza.",
+    "SETTINGS_HOTKEYS_NATIVE_BRIGHTNESS_CHECK": "Zaznaczenie tego pola oznacza jedynie, że program Twinkle Tray nasłuchuje klawiszy regulujących jasność. Wiele laptopów obsługuje te klawisze na poziomie oprogramowania układowego, więc sygnały z nich nigdy nie docierają do programu Twinkle Tray. Naciśnij klawisz, aby sprawdzić, czy skrót klawiszowy działa."
 }

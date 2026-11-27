@@ -194,6 +194,12 @@ ipc.on('window-history', (event, history) => {
     }))
 })
 
+ipc.on('lgtv-brightness', (event, result) => {
+    window.dispatchEvent(new CustomEvent('lgtvBrightness', {
+        detail: result
+    }))
+})
+
 // Localization recieved
 ipc.on('localization-updated', (event, localization) => {
     window.dispatchEvent(new CustomEvent('localizationUpdated', {

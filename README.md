@@ -17,6 +17,19 @@ Twinkle Tray enables brightness control on external displays in Windows 10 & 11.
 - Normalize backlight across different monitors.
 - Control DDC/CI features such as contrast.
 - Starts up with Windows.
+- Control paired LG TVs through LGTV Companion, including idle dimming, brightness, and power hotkeys.
+
+### LG TV support
+
+Install and configure [LGTV Companion](https://github.com/JPersson77/LGTVCompanion) first, including pairing the TV and enabling network power-on. Twinkle Tray calls `LGTVcli.exe` from `C:\Program Files\LGTV Companion\` by default. If it is installed elsewhere, set its path in the **LGTVcli** settings page.
+
+Idle dimming can include paired TVs: Twinkle Tray saves each TV's current backlight level, sets it to 0% after the configured idle delay, and restores the saved level when input resumes. Enable the media playback guard to skip dimming while Windows reports active media playback. LGTV Companion can separately blank the TV after its own idle delay and skip blanking while a browser video holds a Windows video wake lock.
+
+The default numpad shortcuts apply to all detected displays and configured LG TVs:
+
+- `Alt+Win+Numpad *`: toggle displays and LG TV power.
+- `Alt+Win+Numpad +`: set brightness to 100%.
+- `Alt+Win+Numpad -`: set brightness to 0%.
 
 ### Design & Personalization
 

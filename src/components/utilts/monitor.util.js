@@ -27,3 +27,7 @@ export function usesGammaSlider(monitor) {
 export function isAdjustableDisplay(monitor) {
     return (monitor?.type !== "none" || usesGammaSlider(monitor))
 }
+
+export function isLGTVDisplay(monitor) {
+    return /\bLG TV\b/i.test(monitor?.name || "")
+}

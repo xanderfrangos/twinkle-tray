@@ -80,6 +80,8 @@
       "src/vcp-codes.js",
       "src/volume-utils.js",
       "src/feature-utils.js",
+      "src/tray-icons.js",
+      "src/value-trays.js",
       "src/assets/tray-icons/dark/*.ico",
       "src/assets/tray-icons/light/*.ico",
       "src/light-sensor/*",

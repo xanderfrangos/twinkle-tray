@@ -64,6 +64,7 @@ const { Readable } = require("node:stream")
 //require("os").setPriority(0, require("os").constants.priority.PRIORITY_BELOW_NORMAL)
 const { BrowserWindow, nativeTheme, systemPreferences, Menu, ipcMain, screen, globalShortcut, powerMonitor } = require('electron')
 const uuid = require('crypto').randomUUID
+const { ValueTrayManager } = require("./value-trays")
 
 // Expose GC
 app.commandLine.appendSwitch('js-flags', '--expose_gc --max-old-space-size=128')
@@ -761,9 +762,24 @@ function enableMouseEvents() {
     mouseEvents.on('mousewheel', event => {
       if (!settings.scrollShortcut) return false;
       try {
+        const delta = settings.invertScroll ? -Math.round(event.delta) : Math.round(event.delta);
+
+        // Value icons scroll only their own display and feature
+        if (getValueTrays().handleWheel(delta, event.x, event.y, bounds)) {
+          setRecentlyInteracted(true)
+
+          // If panel isn't open, use the overlay
+          if (panelState !== "visible") {
+            hotkeyOverlayStart(undefined, true)
+          }
+
+          pauseMonitorUpdates() // Pause monitor updates to prevent judder
+          willPauseMouseEvents() // Delay pausing mouse events
+          return true
+        }
+
         if (!bounds) return false;
         if (event.x >= bounds.x && event.x <= bounds.x + bounds.width && event.y >= bounds.y && event.y <= bounds.y + bounds.height) {
-          const delta = settings.invertScroll ? -Math.round(event.delta) : Math.round(event.delta);
           const amount = delta * settings.scrollShortcutAmount;
 
           //refreshMonitors()
@@ -875,6 +891,7 @@ function pingAnalytics() {
 let monitors = {}
 let mainWindow;
 let tray = null
+let valueTrays = null
 let lastTheme = false
 
 const panelSize = {
@@ -947,6 +964,14 @@ const defaultSettings = {
   scrollShortcutAmount: 2,
   scrollFlyoutAmount: 2,
   invertScroll: false,
+  valueTrayIcons: {
+    enabled: false,
+    monitorId: "",
+    items: {
+      contrast: true
+    },
+    showLabels: true
+  },
   useAcrylic: false,
   useNativeAnimation: false,
   sleepAction: "ps",
@@ -1401,8 +1426,13 @@ function processSettings(newSettings = {}, sendUpdate = true) {
 
     if (newSettings.icon !== undefined) {
       if (tray) {
-        tray.setImage(getTrayIconPath())
+        applyTrayIcon(true)
       }
+    }
+
+    if (newSettings.valueTrayIcons !== undefined) {
+      applyTrayIcon(true)
+      getValueTrays().sync()
     }
 
     if (newSettings.checkForUpdates !== undefined) {
@@ -2459,9 +2489,8 @@ async function getThemeRegistry() {
   // Send it off!
   sendToAllWindows('theme-settings', themeSettings)
   lastTheme = themeSettings
-  if (tray) {
-    tray.setImage(getTrayIconPath())
-  }
+  applyTrayIcon(true)
+  getValueTrays().refresh(true)
 
   // Taskbar position
   // For use only if auto-hide is on
@@ -2495,6 +2524,65 @@ function getTrayIconPath() {
     icon = settings.icon
   }
   return path.join(__dirname, `assets/tray-icons/${themeDir}/${icon}.ico`)
+}
+
+// Value tray icons (brightness in the main icon, contrast in its own) live in
+// their own module. Everything they need from the app is passed in, so nothing
+// here has to be reordered.
+function getValueTrays() {
+  if (!valueTrays) {
+    valueTrays = new ValueTrayManager({
+      getSettings: () => settings,
+      getMonitors: () => monitors,
+      isLightTheme: () => !!(lastTheme && lastTheme.SystemUsesLightTheme),
+      t: (key) => T.t(key),
+      setMainImage: (image) => tray?.setImage(image),
+      setStaticMainIcon: () => {
+        try {
+          tray?.setImage(getTrayIconPath())
+        } catch (e) {
+          console.log("Couldn't restore the tray icon", e)
+        }
+      },
+      setBrightness: (monitor, level) => {
+        updateBrightnessThrottle(monitor.id, level, true, true)
+      },
+      setVcp: (monitor, code, value, raw = false) => {
+        updateBrightnessThrottle(monitor.id, value, false, true, code, raw)
+      },
+      onOpenPanel: () => toggleTray(true),
+      onOpenSettings: () => createSettings(),
+      onRefreshDisplays: () => refreshMonitors(true, true),
+      onTrayHover: () => {
+        tryEagerUpdate(false)
+        sendToAllWindows('panel-unsleep')
+        if (settings.scrollShortcut && mouseEvents?.getPaused?.()) {
+          pauseMouseEvents(false)
+        }
+        willPauseMouseEvents()
+      }
+    })
+  }
+  return valueTrays
+}
+
+// Draws the main tray icon: the live brightness value when value icons are on,
+// otherwise the icon file the user picked.
+function applyTrayIcon(force = false) {
+  if (!tray) return false
+
+  try {
+    if (getValueTrays().applyMainTrayIcon(force)) return true
+  } catch (e) {
+    console.log("Couldn't draw the value tray icon", e)
+  }
+
+  try {
+    tray.setImage(getTrayIconPath())
+  } catch (e) {
+    console.log("Couldn't set the tray icon", e)
+  }
+  return false
 }
 
 function getAccentColors() {
@@ -4750,6 +4838,7 @@ app.on('quit', () => {
     BrightnessKeys.unregister()
     nativeBrightnessKeysRegistered = false
     stopNativeBrightnessKeyRepeat()
+    valueTrays?.destroy()
     tray?.destroy()
   } catch (e) {
 
@@ -4793,6 +4882,9 @@ function createTray() {
     }
   })
 
+  // Swap in the live value once the monitor list is known
+  applyTrayIcon(true)
+  getValueTrays().sync()
 }
 
 let recreatingTray = false
@@ -4893,6 +4985,8 @@ function setTrayPercent() {
         averagePerc = Math.round(averagePerc / i)
         tray.setToolTip('Twinkle Tray' + (isDev ? " (Dev)" : "") + ' (' + averagePerc + '%)')
       }
+      // Every brightness change ends up here, so the value icons redraw from it
+      getValueTrays().refresh()
     }
   } catch (e) {
     console.log(e)
@@ -5472,7 +5566,8 @@ function handleAccentChange() {
     await getThemeRegistry()
     setTimeout(sendMicaWallpaper, 100)
     try {
-      tray.setImage(getTrayIconPath())
+      applyTrayIcon(true)
+      getValueTrays().refresh(true)
     } catch (e) {
       debug.log("Couldn't update tray icon!", e)
     }
@@ -5512,6 +5607,9 @@ function handleMonitorChange(t, e, d) {
 
     // Reset all known displays
     await refreshMonitors(true, false, false, hasEnabledLinkedFeatures())
+
+    // The value icons may follow a display that was just plugged in or removed
+    getValueTrays().sync()
 
     // During startup grace period, use current monitor brightness instead of saved profile
     // This prevents overwriting brightness that was manually set before shutdown

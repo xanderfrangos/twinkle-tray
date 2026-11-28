@@ -1323,6 +1323,69 @@ export default class SettingsWindow extends PureComponent {
         window.sendSettings(newState)
     }
 
+    // The value tray icon settings are one object, so they are merged here
+    // instead of going through setSetting().
+    setValueIconsSetting = (changes) => {
+        const current = (this.state.rawSettings.valueTrayIcons || {})
+        const next = Object.assign({}, current, changes)
+        if (changes.items) next.items = Object.assign({}, current.items, changes.items)
+
+        this.setState({
+            rawSettings: Object.assign({}, this.state.rawSettings, { valueTrayIcons: next })
+        })
+        window.sendSettings({ valueTrayIcons: next })
+    }
+
+    getValueIconsSettings = () => {
+        const valueIcons = (this.state.rawSettings.valueTrayIcons || {})
+        const enabled = (valueIcons.enabled === true)
+        const showLabels = (valueIcons.showLabels !== false)
+        const showContrast = (valueIcons.items?.contrast !== false)
+        const monitors = Object.values(this.state.monitors || {}).filter(monitor => isAdjustableDisplay(monitor))
+        const selected = (monitors.find(monitor => monitor.id === valueIcons.monitorId)
+            || monitors.find(monitor => monitor.type === "ddcci"))
+        // Contrast is a DDC/CI feature, so only displays that report 0x12 get an icon
+        const contrastSupported = !!(selected?.features?.["0x12"])
+        const toggle = (checked, disabled, onChange) => (
+            <div className="inputToggle-generic" data-textside={"right"}>
+                <input type="checkbox" checked={checked} data-checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+                <div className="text">{(checked ? T.t("GENERIC_ON") : T.t("GENERIC_OFF"))}</div>
+            </div>
+        )
+
+        return (
+            <SettingsOption
+                title={T.t("SETTINGS_GENERAL_VALUE_ICONS_TITLE")}
+                description={T.t("SETTINGS_GENERAL_VALUE_ICONS_DESC")}
+                input={toggle(enabled, false, checked => this.setValueIconsSetting({ enabled: checked }))}
+                expandable={true}
+                startExpanded={enabled}
+            >
+                <SettingsChild
+                    title={T.t("SETTINGS_GENERAL_VALUE_ICONS_MONITOR")}
+                    content={(
+                        <select value={valueIcons.monitorId || ""} onChange={e => this.setValueIconsSetting({ monitorId: e.target.value })}>
+                            <option value="">{T.t("SETTINGS_GENERAL_VALUE_ICONS_AUTO")}</option>
+                            {monitors.map(monitor => (
+                                <option key={monitor.id} value={monitor.id}>{getMonitorName(monitor, this.state.names)}</option>
+                            ))}
+                        </select>
+                    )}
+                />
+                <SettingsChild
+                    title={T.t("SETTINGS_GENERAL_VALUE_ICONS_CONTRAST")}
+                    description={(contrastSupported ? T.t("SETTINGS_GENERAL_VALUE_ICONS_CONTRAST_DESC") : T.t("SETTINGS_GENERAL_VALUE_ICONS_CONTRAST_UNSUPPORTED"))}
+                    input={toggle(showContrast && contrastSupported, !contrastSupported, checked => this.setValueIconsSetting({ items: { contrast: checked } }))}
+                />
+                <SettingsChild
+                    title={T.t("SETTINGS_GENERAL_VALUE_ICONS_LABELS")}
+                    description={T.t("SETTINGS_GENERAL_VALUE_ICONS_LABELS_DESC")}
+                    input={toggle(showLabels, false, checked => this.setValueIconsSetting({ showLabels: checked }))}
+                />
+            </SettingsOption>
+        )
+    }
+
     renderToggle = (setting, showText = true, textSide = "right", inverse = false) => {
         const isActive = (this.state.rawSettings?.[setting] ? true : false)
         const isVisiblyActive = (inverse ? !isActive : isActive)
@@ -1405,6 +1468,8 @@ export default class SettingsWindow extends PureComponent {
                                             </div>
                                         </div>
                                     )} />
+
+                                    {this.getValueIconsSettings()}
 
                                     <SettingsOption title={T.t("SETTINGS_GENERAL_ANALYTICS_TITLE")} description={T.h("SETTINGS_GENERAL_ANALYTICS_DESC", '<a href="javascript:window.openURL(\'privacy-policy\')">' + T.t("SETTINGS_GENERAL_ANALYTICS_LINK") + '</a>')} input={this.renderToggle("analytics")} />
 

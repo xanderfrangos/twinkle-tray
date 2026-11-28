@@ -16,6 +16,7 @@ Twinkle Tray enables brightness control on external displays in Windows 10 & 11.
 - Bind hotkeys to adjust the brightness of specific or all displays.
 - Normalize backlight across different monitors.
 - Control DDC/CI features such as contrast.
+- Optionally show the current value in the tray icon: the tray icon becomes a live brightness readout and a second icon shows contrast, each adjustable by scrolling over it (like ClickMonitorDDC).
 - Starts up with Windows.
 
 ### Design & Personalization

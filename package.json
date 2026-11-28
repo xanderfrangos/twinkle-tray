@@ -7,6 +7,8 @@
     "start": "electron . --dev",
     "parcel": "node src/parcel.js --mode dev",
     "parcel-build": "node src/parcel.js --mode build",
+    "test": "node --test \"test/*.test.js\"",
+    "tray-icon-preview": "node scripts/render-tray-preview.js",
     "clean": "npm ci",
     "dev": "electron . --dev",
     "electron-build": "electron-builder --x64",
